@@ -45,3 +45,11 @@ test('post and article feed snippets preserve notebook Markdown and truncate val
     expect(Array.from($.text()).length).toBeLessThanOrEqual(kind==='note'?2000:280);
   }
 });
+
+ test.each(['note', 'article'])('untitled %s reserves opening words for sharing and keeps visible titles blank', kind => {
+  const row = {id: 1, kind, title: '', public_title: '  ', markdown: 'Private draft words', public_markdown: '# One two\n\n**three** four five six seven eight nine ten', handle: 'writer'};
+  expect(Community.postView(row)).toMatchObject({title: '', shareTitle: 'One two three four five six seven eight…'});
+  expect(Community.postView(row, true)).toMatchObject({title: '', shareTitle: 'Private draft words', draftTitle: ''});
+  expect(Community.postView({...row, public_title: 'Chosen title'}).title).toBe('Chosen title');
+  expect(Community.postView({...row, public_markdown: 'بسم الله الرحمن الرحيم'}).shareTitle).toBe('بسم الله الرحمن الرحيم');
+});

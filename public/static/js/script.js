@@ -8028,7 +8028,7 @@ function quranShareModalHtml(ayah, shareId) {
 	var arabicPart = quranAyahPart(arabicRef);
 	var surahTitle = (ayah && (ayah.h1_title_en || (ayah.en && ayah.en.h1_title) || ayah.book_shortName_en)) || 'Qurʾān';
 	var chapterTitle = (ayah && (ayah.h1_title_en || (ayah.en && ayah.en.h1_title))) || '';
-	var shareTitle = ref ? `${surahTitle} ${ref}` : surahTitle;
+	var shareTitle = ContentLabels.label(surahTitle, ref);
 
 	var $modal = $('<aside>').addClass('h modal fade hadith-share-root quran-share-root')
 		.attr({ id: shareId, tabindex: '-1', 'data-dynamic-quran-share-modal': '1' });

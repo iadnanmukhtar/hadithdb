@@ -100,12 +100,12 @@ test('dedicated tafsir actions reuse the existing passage reflections without ad
 test.each([
   [{title_en:'The journey',title:'الرحلة',path:'ibnhisham/19'},'The journey'],
   [{title_en:'',title:'الرحلة',path:'ibnhisham/19'},'الرحلة'],
-  [{title_en:'',title:'',path:'ibnhisham/19'},'intro:161496']
+  [{title_en:'',title:'',path:'ibnhisham/19'},'Introduction']
 ])('introduction actions use the stored heading title and preserve their target',async(row,title)=>{
   const previous=global.query;
   global.query=jest.fn(async query=>{
     // Reject the invalid view projection that caused ER_BAD_FIELD_ERROR.
-    expect(query).toContain('SELECT t.title_en,t.title,v.path');
+    expect(query).toContain('SELECT t.title_en,t.title,t.intro_en,t.intro,v.path');
     expect(query).toContain('JOIN toc t ON t.id=v.id');
     expect(query).toContain("WHERE v.id='161496'");
     return [row];

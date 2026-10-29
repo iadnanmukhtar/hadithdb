@@ -178,7 +178,7 @@ test.each(['nested', 'flat'])('server Quran share uses %s alt Arabic through the
  if(field==='nested')ayah.ar.body_alt=normal;else ayah.body_ar_alt=normal;
  const html=ejs.render(source('views/sub-views/quran_modal.ejs'),{
   selectedAyahs:[ayah],page:{context:{}},quranShareId:'test-share',req:{},
-  utils:{quranUrl:(_req,url)=>url,quranDisplayText:s=>s || '',defaultQuranTranslationLabel:()=> 'Translation'},
+  utils:{socialMetadata:()=>require('../lib/SocialMetadata'),quranUrl:(_req,url)=>url,quranDisplayText:s=>s || '',defaultQuranTranslationLabel:()=> 'Translation'},
   arabic:{toLatinDigits:s=>s,toArabicDigits:s=>s}
  });
  const dom=new JSDOM(html,{runScripts:'outside-only'});

@@ -52,7 +52,7 @@
       && req && req.query
       && (req.query.memorize !== undefined || req.query.review !== undefined || req.query.reviewRef !== undefined));
   var quranHeadBrandName = isMudhakkirHeadPage ? 'Mudhakkir' : 'Quran Unlocked';
-  var headTitle = utils.socialMetadata().plain(page.title_en || (isQuranPathHeadPage ? quranHeadBrandName : site.name));
+  var headTitle = utils.socialMetadata().title(page.title_en, '', isQuranPathHeadPage ? quranHeadBrandName : site.name);
   var headDescription = utils.socialMetadata().excerpt(page.description_en || site.desc || '');
   var headSiteName = isQuranHeadPage ? quranHeadBrandName : site.name;
   var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;

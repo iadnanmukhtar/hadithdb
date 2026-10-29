@@ -12,7 +12,7 @@ const referenceBookName = referenceBook.shortName_en || referenceBook.name_en ||
 const headingNumber = owner && kind === 'heading' ? [owner.h1, Number(owner.level) >= 2 ? owner.h2 : null, Number(owner.level) >= 3 ? owner.h3 : null].filter(value => value !== null && value !== undefined && value !== '').map(value => utils.formatHadithHeadingNumber(value)).join('.') : '';
 const referenceLabel = owner ? (kind === 'hadith' ? `${referenceBookName} ${owner.num}` : `${referenceBookName} §${headingNumber}`) : '';
 const headingTitle = owner && kind === 'heading' ? (owner.title_en || (context.chapter && context.chapter.title_en) || owner.title || '') : '';
-const page = { menu: 'Sharh', title_en: [referenceLabel, headingTitle, title].filter(Boolean).join(' | '), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
+const page = { menu: 'Sharh', title_en: utils.socialMetadata().join([referenceLabel, headingTitle, title]), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
 page.description_en = utils.socialMetadata().description([title, referenceLabel].filter(Boolean).join(" — "), (locals.entries || [entry]).map(item => item.text_en || item.text), page.description_en);
 Object.assign(page, locals.readerNavigation || {});
 const outlines = locals.hadithHeadingOutlines || {};

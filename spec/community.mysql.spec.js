@@ -78,6 +78,12 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     expect(old.status).toBe(301);expect(old.headers.get('location')).toBe(post.shareUrl);
     post=await Community.savePost(user,postInput({action:'publish',version:post.version,markdown:'Updated'}),post.id);
     expect(post.guid).toBe(original);expect((await Community.post(original)).id).toBe(post.id);
+    const originalId=post.id,originalUrl=post.shareUrl;
+    for(const kind of ['note','article']) {
+      post=await Community.savePost(user,postInput({kind,convertToNote:kind==='note',convertToArticle:kind==='article',action:'publish',version:post.version}),originalId);
+      expect(post.id).toBe(originalId);expect(post.guid).toBe(original);expect(post.shareUrl).toBe(originalUrl);
+      expect((await Community.post(original)).kind).toBe(kind);
+    }
     const second=await Community.savePost(user,postInput({kind:'note',action:'publish'}));expect(second.guid).not.toBe(original);
     await expect(q(`UPDATE ${prefix}posts SET guid=? WHERE id=?`,[original,second.id])).rejects.toMatchObject({code:'ER_DUP_ENTRY'});
     const before={hId:9987,ref:'bukhari:1',title_en:'Before'};
@@ -198,7 +204,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.goto(base+'/community/mine');
       await page.locator('[data-edit-id="'+post.id+'"]').click();
       await page.waitForFunction(()=>document.getElementById('community-quick-dialog').open);
-      expect(await page.locator('#community-quick-post').textContent()).toBe('Save changes');
+      expect(await page.locator('#community-quick-post').textContent()).toBe('Update Post');
       await page.waitForFunction(()=>document.querySelector('#community-quick-cover img')?.naturalWidth>0);
       await page.screenshot({path:'/tmp/community-post-modal-mobile.png',fullPage:false});
       await page.setViewportSize({width:1280,height:900});await page.screenshot({path:'/tmp/community-post-modal-desktop.png',fullPage:false});await page.setViewportSize({width:390,height:844});
@@ -210,18 +216,20 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await page.waitForFunction(()=>!document.getElementById('community-quick-dialog').open);
       const saved=await Community.post(post.id,user,true);expect(saved.coverUrl).toBe('');expect(saved.markdown).toContain('https://example.com/test');expect(saved.html).not.toContain('community-link-preview');
       await page.locator('[data-edit-id="'+post.id+'"]').click();
-      await page.locator('#community-quick-convert').click();
       await page.locator('#community-quick-title').fill('Converted article');
       page.on('dialog',dialog=>dialog.accept());
       await page.locator('#community-quick-convert').click();
-      await page.waitForURL('**/community/write?post='+post.id);
+      await page.waitForURL('**/community/write?post='+post.id+'&convert=1');
       await page.waitForFunction(()=>document.getElementById('community-title').value==='Converted article');
+      const unchanged=await Community.post(post.id,user,true);expect(unchanged.kind).toBe('note');expect(unchanged.status).toBe('published');
+      await page.locator('[data-action="draft"]').click();
+      await page.waitForURL('**/community/write?post='+post.id);
       const converted=await Community.post(post.id,user,true);expect(converted.kind).toBe('article');expect(converted.status).toBe('draft');expect(converted.markdown).toContain('Link: https://example.com/test');
       await expect(Community.post(post.id)).rejects.toMatchObject({status:404});
       for(const width of [320,390]){
         await page.setViewportSize({width,height:844});
         await page.locator('.community-editor-actions').scrollIntoViewIfNeeded();await page.screenshot({path:'/tmp/community-editor-actions-'+width+'.png',fullPage:false});
-        const boxes=await page.locator('.community-editor-actions > button:visible').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,height:r.height};}));
+        const boxes=await page.locator('.community-editor-actions button:visible').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,right:r.right,bottom:r.bottom,height:r.height};}));
         expect(boxes.every(b=>b.x>=0&&b.right<=width)).toBe(true);
         for(let i=0;i<boxes.length;i++)for(let j=i+1;j<boxes.length;j++){const a=boxes[i],b=boxes[j];expect(a.right<=b.x||b.right<=a.x||a.bottom<=b.y||b.bottom<=a.y).toBe(true);}
       }

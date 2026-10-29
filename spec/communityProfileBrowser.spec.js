@@ -32,6 +32,7 @@ test('profile shell reveals data only after authorized fetch and clears it on si
   privateProfile=false;d.dispatchEvent(new w.Event('hadithAuthChanged'));await settle();
   expect(d.getElementById('community-author-profile').hidden).toBe(false);
   expect(d.getElementById('community-author-bio').textContent).toBe('Members-only bio');
+  expect(w.fetch.mock.calls.some(([url])=>url.includes('/feed?scope=everyone'))).toBe(true);
   token=null;d.dispatchEvent(new w.Event('hadithAuthChanged'));await settle();
   expect(d.getElementById('community-author-profile').hidden).toBe(true);
   expect(d.getElementById('community-author-content').hidden).toBe(true);

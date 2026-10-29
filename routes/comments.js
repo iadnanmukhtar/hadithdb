@@ -81,18 +81,7 @@ module.exports = createReflectionRouter({
   notificationFields(row) {
     return { ref: row.ref_num || row.hadithId, type: row.type || 'hadith', targetId: row.hadithId };
   },
-  describe(payload) {
-    if (payload.type === 'content') return {subject:`Reflection on this item`,url:`${global.settings.site.url}/items/${payload.targetId}`};
-    if (payload.type === 'toc')
-      return {
-        subject: `Quran passage ${payload.ref || payload.targetId}`,
-        url: `${global.settings.site.quranUrl || global.settings.site.url}/${payload.ref || payload.targetId}`
-      };
-    return {
-      subject: `Hadith ${payload.ref}`,
-      url: `${global.settings.site.url}/${payload.ref}`
-    };
-  },
+  describe: require('../lib/ActivityEmailSource').describe,
   async afterCreate(target) {
     if (target.type === 'content') {
       await global.query(`UPDATE hadiths_comments SET ref_num='items/${target.value}' WHERE hadithId=${target.value} AND type='content'`);

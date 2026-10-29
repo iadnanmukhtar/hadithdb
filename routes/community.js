@@ -61,7 +61,7 @@ api.put('/authors/:handle/follow', wrap(async (req, res) => {
   if (typeof req.body.following !== 'boolean' || typeof req.body.email !== 'boolean') return res.status(400).json({ error: 'Choose following and email preferences.' });
   res.json(await Community.follow(req.user, req.params.handle, req.body.following, req.body.email));
 }));
-api.post('/preview', wrap(async (req, res) => res.json(await Media.prepare(req.body.markdown))));
+api.post('/preview', wrap(async (req, res) => res.json({...await Media.prepare(req.body.markdown), title: Community.displayTitle('', Community.content(req.body.markdown).html, 'article')})));
 api.get('/notebook-copy', wrap(async (req, res) => {
   const user = signed(req);
   const note = await require('../lib/NotebookDrive').get(user.uid, req.query.source);
@@ -89,7 +89,7 @@ api.use((err, req, res, next) => {
 });
 function page(res, req, view, extra = {}) {
   const titles = { everyone: 'Community', following: 'Following', mine: 'My Profile', write: 'Write an article', moderation: 'Community moderation', unsubscribe: 'Email preferences' };
-  const title = extra.post?.title || extra.author?.name || titles[view] || 'Community';
+  const title = extra.post?.shareTitle || extra.post?.title || extra.author?.name || titles[view] || 'Community';
   res.locals.req = req; res.locals.res = res;
   res.set('Cache-Control', 'private, no-store');
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,

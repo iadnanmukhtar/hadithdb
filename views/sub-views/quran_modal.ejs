@@ -6,10 +6,10 @@
 	const lastRef = lastAyah.en?.num || lastAyah.num || '';
 	const firstRefPart = firstRef.split(/:/)[1] || firstRef;
 	const lastRefPart = lastRef.split(/:/)[1] || lastRef;
-	const shareRef = firstRef && lastRef && firstRef !== lastRef ? `quran:${firstRef}-${lastRefPart}` : `quran:${firstRef}`;
+	const shareRef = 'quran:' + utils.socialMetadata().range(firstRef, lastRef);
 	const surahTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
-	const shareTitleRef = firstRef && lastRef && firstRef !== lastRef ? `${firstRef}-${lastRefPart}` : firstRef;
-	const shareTitle = shareTitleRef ? `${surahTitle} ${shareTitleRef}` : surahTitle;
+	const shareTitleRef = utils.socialMetadata().range(firstRef, lastRef);
+	const shareTitle = utils.socialMetadata().label(surahTitle, shareTitleRef);
 	const shareTranslationBook = page.context.quranCommentaryBook;
 	const defaultTranslationShortName = shareTranslationBook ? utils.quranTranslationBookLabel(shareTranslationBook) : utils.defaultQuranTranslationLabel();
 %>

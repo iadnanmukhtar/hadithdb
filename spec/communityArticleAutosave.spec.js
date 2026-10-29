@@ -2,7 +2,7 @@
 const fs = require('fs'), vm = require('vm');
 const { JSDOM } = require('jsdom');
 const source = fs.readFileSync(require.resolve('../public/static/js/community.js'), 'utf8');
-const names = ['payload', 'signature', 'scheduleArticleSave', 'invalidatePreview', 'save', 'performArticleSave'];
+const names = ['payload', 'signature', 'scheduleArticleSave', 'invalidatePreview', 'save', 'performArticleSave', 'closeArticle', 'stageShortPostConversion'];
 const functions = names.map(name => {
   const start = source.search(new RegExp(`  (?:async )?function ${name}\\(`));
   const lineEnd = source.indexOf('\n', start);
@@ -12,9 +12,9 @@ function harness() {
   const dom = new JSDOM('<form id="editor-form"><input id="kind" value="article"><input id="title" required value="Title"><input id="subtitle"><input id="cover-url"><textarea id="markdown" required>Original body</textarea><input id="tags"></form><button id="publish"></button><button id="delete"></button><button id="unpublish"></button><div id="preview-panel"></div><div id="editor-status"></div>');
   const $ = id => dom.window.document.getElementById(id);
   const ctx = vm.createContext({ $, view: 'write', me: {}, dirty: false, editing: {id: 3, version: 1, status: 'published'}, epoch: 1,
-    savingPost: false, articleSaveTask: null, articleSaveTimer: null, previewSignature: null,
-    window: {}, setTimeout, clearTimeout, URL, location: {href: 'https://example.test/community/write?post=3'}, history: {replaceState: jest.fn()},
-    api: jest.fn(), populate: jest.fn(), renderEditorBlog: jest.fn(), status: jest.fn() });
+    savingPost: false, articleReturnToProfile: false, articleSaveTask: null, articleSaveTimer: null, previewSignature: null,
+    window: {confirm: jest.fn(() => true)}, document: dom.window.document, setTimeout, clearTimeout, URL, location: {href: 'https://example.test/community/write?post=3', origin: 'https://example.test', pathname: '/community/write', assign: jest.fn()}, history: {replaceState: jest.fn(), back: jest.fn(), length: 2},
+    sessionStorage: {removeItem: jest.fn(),setItem:jest.fn()}, api: jest.fn(), populate: jest.fn(() => { ctx.dirty = false; }), renderEditorBlog: jest.fn(), status: jest.fn() });
   vm.runInContext(functions, ctx);
   ctx.api.mockImplementation(async () => ({post: {id: 3, version: 2, status: 'published'}}));
   return {ctx, $};
@@ -94,4 +94,72 @@ test('a late save cannot replace another account state', async () => {
   ctx.epoch++; ctx.editing=null; ctx.dirty=false;
   resolve({post:{id:3,version:2,status:'published'}}); await jest.advanceTimersByTimeAsync(1800);
   expect(ctx.editing).toBe(null); expect(ctx.history.replaceState).not.toHaveBeenCalled();
+});
+
+test.each(['published', 'pending'])('successful %s publication returns to My Profile', async status => {
+  const {ctx} = harness();
+  ctx.api.mockResolvedValue({post: {id:3, version:2, status}});
+  await ctx.save('publish');
+  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
+});
+test('failed publish stays in the editor', async () => {
+  const {ctx} = harness(); ctx.api.mockRejectedValue(new Error('Offline'));
+  await expect(ctx.save('publish')).rejects.toThrow('Offline');
+  expect(ctx.location.assign).not.toHaveBeenCalled();
+});
+test('cancel returns to the originating page through history', () => {
+  const {ctx} = harness();
+  ctx.document = {referrer: 'https://example.test/community/following'};
+  ctx.closeArticle();
+  expect(ctx.history.back).toHaveBeenCalled();
+});
+test('cancel from a direct entry falls back to My Profile', () => {
+  const {ctx} = harness(); ctx.closeArticle();
+  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
+});
+test('declining to discard unsaved changes keeps the editor open', () => {
+  const {ctx} = harness(); ctx.dirty=true; ctx.window.confirm.mockReturnValue(false);
+  ctx.closeArticle();
+  expect(ctx.dirty).toBe(true);
+  expect(ctx.location.assign).not.toHaveBeenCalled();
+  expect(ctx.history.back).not.toHaveBeenCalled();
+});
+
+test('edits made during publish save before returning to My Profile', async () => {
+  const {ctx, $} = harness(); let finish;
+  ctx.api.mockImplementationOnce(() => new Promise(resolve => { finish=resolve; }));
+  const publishing=ctx.save('publish');
+  $('markdown').value='A newer edit'; ctx.invalidatePreview();
+  finish({post:{id:3,version:2,status:'published'}}); await publishing;
+  expect(ctx.location.assign).not.toHaveBeenCalled();
+  await jest.advanceTimersByTimeAsync(1800);
+  expect(ctx.api.mock.calls[1][2]).toMatchObject({action:'draft',markdown:'A newer edit',version:2});
+  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
+});
+
+ test('conversion edits and cancellation leave the published post untouched', async () => {
+  const {ctx, $} = harness(); ctx.editing.conversionPending=true;
+  $('markdown').value='Proposed article'; ctx.invalidatePreview();
+  await jest.advanceTimersByTimeAsync(10000);
+  await ctx.save('draft',true);
+  expect(ctx.api).not.toHaveBeenCalled();
+  ctx.closeArticle();
+  expect(ctx.api).not.toHaveBeenCalled();
+  expect(ctx.sessionStorage.removeItem).toHaveBeenCalledWith('community-convert-3');
+  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
+ });
+ test.each(['draft','publish'])('explicit %s commits the staged conversion', async action => {
+  const {ctx} = harness(); ctx.editing.conversionPending=true;
+  await ctx.save(action);
+  expect(ctx.api).toHaveBeenCalledWith('/posts/3','PUT',expect.objectContaining({convertToArticle:true,kind:'article',version:1,action}));
+  expect(ctx.sessionStorage.removeItem).toHaveBeenCalledWith('community-convert-3');
+ });
+
+test('opening short-post conversion stages editor text without saving the article', async () => {
+ const {ctx,$}=harness();ctx.me={author:{handle:'writer'}};
+ $('subtitle').value='Introduction';$('markdown').value='Full article';ctx.invalidatePreview();
+ ctx.stageShortPostConversion();await jest.advanceTimersByTimeAsync(3000);
+ expect(ctx.api).not.toHaveBeenCalled();
+ expect(JSON.parse(ctx.sessionStorage.setItem.mock.calls[0][1])).toMatchObject({markdown:'Introduction\n\nFull article',version:1,handle:'writer'});
+ expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine?editPost=3&convertToNote=1');
 });

@@ -40,3 +40,12 @@ test('existing generated revisions are decorated without classifying ordinary po
   expect(items[1].microinteraction).toBeUndefined();
  } finally {spy.mockRestore();}
 });
+
+test('unpublished article cards clearly identify drafts and link to their editor',async()=>{
+ const item={id:1958,kind:'article',activity:'post',status:'draft',title:'Draft article',excerpt:'Draft text',author:{handle:'writer',name:'Writer'},url:'/community/p/example',activityAt:'2026-10-29'};
+ const $=load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_card.ejs'),{item}));
+ expect($('.community-entry-state').text()).toBe('Unpublished Draft');
+ expect($('article').text()).toContain('Only you can see this unpublished article.');
+ expect($('h2 a').attr('href')).toBe('/community/write?post=1958');
+ expect($('[data-community-share-url]').length).toBe(0);
+});

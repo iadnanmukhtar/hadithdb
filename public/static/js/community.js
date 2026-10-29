@@ -227,7 +227,7 @@
       const author = link(item.author.name, '/community/@' + item.author.handle); author.dir = 'auto';
       const target = link(kind !== 'like' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, ''), kind !== 'like' ? item.hadithUrl : href); target.dir = 'auto';
       copy.append(author, document.createTextNode(kind === 'revision' ? ' revised ' : kind === 'title' ? ' titled ' : ' liked '), target);
-      if (kind !== 'like') copy.append(document.createTextNode(' · ' + item.hadithRef));
+      if (item.sourceRef || (kind !== 'like' && item.hadithRef)) copy.append(document.createTextNode(' · ' + (item.sourceRef || item.hadithRef)));
       if (item.activityAt) { const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
       article.append(avatar, copy);
       return article;
@@ -237,10 +237,11 @@
     const subline = node('div', undefined, 'community-entry-subline'); subline.append(node('span', kind === 'like' ? 'Liked' : kind === 'comment' ? 'In conversation' : kind === 'article' ? 'Article' : 'Post'));
     if (item.activityAt) { const dot = node('span', '·'); dot.setAttribute('aria-hidden', 'true'); const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); subline.append(dot, time); }
     identity.append(subline); meta.append(avatar, identity);
-    if (privatePost) meta.append(node('span', item.status, 'community-entry-state'));
+    if (privatePost) meta.append(node('span', item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : 'Hidden · Not published', 'community-entry-state'));
     if(item.repostedBy) { const credit=node('div',undefined,'community-repost-credit');credit.append(icon('repeat'),document.createTextNode(' Reposted by '),link(item.repostedBy.name,'/community/@'+item.repostedBy.handle));article.append(credit); }
     article.append(meta);
-    if (kind !== 'note' || (item.title && !['Note','Post'].includes(item.title))) { const heading = node('h2', undefined, 'community-entry-title'); heading.dir = 'auto'; heading.append(link(item.title, href)); article.append(heading); }
+    if (privatePost) article.append(node('p', 'Only you can see this unpublished ' + (kind === 'article' ? 'article.' : 'post.'), 'small text-muted mb-2'));
+    if (item.title && item.title.trim()) { const heading = node('h2', undefined, 'community-entry-title'); heading.dir = 'auto'; heading.append(link(item.title, href)); article.append(heading); }
     if (kind === 'article' && item.subtitle) { const subtitle = node('p', item.subtitle, 'community-article-subtitle'); subtitle.dir = 'auto'; article.append(subtitle); }
     const bodyHtml = kind === 'comment' ? item.html : item.feedHtml;
     const excerpt = node(bodyHtml ? 'div':'p', undefined, bodyHtml ? 'notebook-markdown community-reflection-body':'community-entry-excerpt'); excerpt.dir='auto';
@@ -249,10 +250,10 @@
     if (item.tags) { const tags = node('div', undefined, 'community-entry-tags'); tags.dir = 'auto'; for (const tag of item.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)) tags.append(node('span', tag)); article.append(tags); }
     let toggleDiscussion;
     const actions = item.likeSource && !privatePost ? interactionControls(item,()=>toggleDiscussion()) : node('div',undefined,'community-entry-actions');
-    if(privatePost) { const draft=link('',href);draft.title='Open draft';draft.setAttribute('aria-label','Open draft');draft.append(icon('file-earmark-text'));actions.append(draft); }
+    if(privatePost) { const draft=link(item.status === 'draft' ? 'Continue editing draft' : 'Open unpublished article',href);draft.title='Open draft';draft.setAttribute('aria-label','Open draft');draft.append(icon('file-earmark-text'));actions.append(draft); }
     if (!privatePost && ['article','note'].includes(kind)) {
       const share = node('button', undefined, 'community-like'); share.type = 'button'; share.title = 'Share'; share.setAttribute('aria-label', 'Share post');
-      share.dataset.communityShareUrl = item.shareUrl || item.url; share.dataset.communityShareTitle = item.title || 'Community post';
+      share.dataset.communityShareUrl = item.shareUrl || item.url; share.dataset.communityShareTitle = item.shareTitle || item.title || 'Community post';
       share.append(icon('share')); actions.append(share);
     }
     if (item.canDeleteRepost) {
@@ -355,12 +356,21 @@
     const img=node('img');img.alt='Post cover';if(/^\/community\/media\//.test(url))img.dataset.mediaSrc=url;else img.src=url;
     container.append(img,button('Remove cover',()=>showQuickCover(''),'btn btn-sm btn-link text-muted'));
   }
-  async function openQuickEdit(id) {
+  async function openQuickEdit(id, convertToNote = false) {
     if(quickBusy)return;const own=epoch;const {post}=await api('/posts/'+id+'?edit=1');if(own!==epoch)return;
-    if(post.kind!=='note'){location.assign('/community/write?post='+post.id);return;}
+    if(post.kind!=='note' && !convertToNote){location.assign('/community/write?post='+post.id);return;}
     $('quick-dialog').setAttribute('aria-label','Edit post');$('quick-audience').textContent=post.status==='published'?'Public post':post.status==='pending'?'Awaiting review':'Private draft';
-    $('quick-conversion-title').hidden=true;$('quick-convert').textContent='Convert to article draft';
-    quickEditing=post;showQuickCover(post.coverUrl);$('quick-text').value=post.markdown;$('quick-title').value='';$('quick-edit-actions').hidden=false;$('quick-new-article').hidden=true;$('quick-post').textContent='Save changes';$('quick-status').textContent='';$('quick-preview').hidden=true;
+    $('quick-convert').textContent='Convert to Article';
+    quickEditing=post;showQuickCover(post.coverUrl);$('quick-text').value=post.markdown;$('quick-title').value=post.draftTitle || '';$('quick-edit-actions').hidden=false;$('quick-new-article').hidden=true;$('quick-post').textContent='Update Post';$('quick-status').textContent='';$('quick-preview').hidden=true;
+    if(convertToNote && post.kind==='article') {
+      const key='community-convert-note-'+post.id, staged=JSON.parse(sessionStorage.getItem(key)||'null');
+      sessionStorage.removeItem(key);
+      quickEditing={...post,convertToNote:true};
+      if(staged && staged.handle===me.author.handle && staged.version===post.version){$('quick-title').value=staged.title;$('quick-text').value=staged.markdown;showQuickCover(staged.coverUrl);}
+      else $('quick-text').value=[post.subtitle,post.markdown].filter(Boolean).join('\n\n');
+      $('quick-edit-actions').hidden=true;$('quick-post').textContent='Update Post';
+      $('quick-dialog').setAttribute('aria-label','Convert article to short post');
+    }
     $('quick-dialog').showModal();$('quick-text').dispatchEvent(new Event('input',{bubbles:true}));$('quick-text').setSelectionRange(0,0);$('quick-text').scrollTop=0;$('quick-text').focus({preventScroll:true});
   }
   root.addEventListener('click',event=>{const edit=event.target.closest('[data-edit-kind=note]');if(!edit||!$('quick-dialog'))return;event.preventDefault();run(()=>openQuickEdit(edit.dataset.editId));});
@@ -382,7 +392,7 @@
     params.delete('shareNote');
     history.replaceState(null, '', location.pathname + (params.size ? '?' + params : '') + location.hash);
   }
-  function closeQuick(){if(quickBusy)return false;if(quickEditing && ($('quick-text').value!==quickEditing.markdown || quickCover!==(quickEditing.coverUrl||'')) && !window.confirm('Discard unsaved post changes?'))return false;$('quick-dialog').close();if(quickEditing){quickEditing=null;$('quick-form').reset();showQuickCover('');$('quick-edit-actions').hidden=true;$('quick-new-article').hidden=false;$('quick-post').textContent='Post';$('quick-text').dispatchEvent(new Event('input',{bubbles:true}));}return true;}
+  function closeQuick(){if(quickBusy)return false;if(quickEditing && ($('quick-text').value!==quickEditing.markdown || quickCover!==(quickEditing.coverUrl||'') || $('quick-title').value!==(quickEditing.draftTitle||'')) && !window.confirm('Discard unsaved post changes?'))return false;$('quick-dialog').close();if(quickEditing){quickEditing=null;$('quick-form').reset();showQuickCover('');$('quick-edit-actions').hidden=true;$('quick-new-article').hidden=false;$('quick-post').textContent='Post';$('quick-text').dispatchEvent(new Event('input',{bubbles:true}));}return true;}
   document.querySelectorAll('[data-close-quick]').forEach(button => button.addEventListener('click',closeQuick));
   $('quick-dialog')?.addEventListener('cancel', event => { event.preventDefault();closeQuick(); });
   function syncQuickComposer() {
@@ -416,23 +426,25 @@
     try {
       const result = await api('/preview', 'POST', { markdown });
       if (own !== epoch || request !== quickPreviewRequest || markdown !== $('quick-text').value) return;
-      $('quick-preview').innerHTML = window.communityPrepareMediaHtml?.(result.html) || result.html; $('quick-preview').hidden = false; $('quick-preview-button').textContent = 'Hide preview';
+      if(window.communityRenderPostPreview) window.communityRenderPostPreview($('quick-preview'),result.html,quickCover); else $('quick-preview').innerHTML=result.html; $('quick-preview').hidden = false; $('quick-preview-button').textContent = 'Hide preview';
     } catch (err) { if (own === epoch && request === quickPreviewRequest) $('quick-status').textContent = err.message; }
   });
   $('quick-form')?.addEventListener('submit', async event => {
     event.preventDefault();
     if (quickBusy || window.communityMediaPending || !$('quick-text').value.trim()) return;
+    if ($('quick-text').value.length > 10000) { $('quick-status').textContent='Shorten this post to 10,000 characters or fewer before saving.'; return; }
     const own = epoch, markdown = $('quick-text').value;
     ++quickPreviewRequest; quickBusy = true; $('quick-text').disabled = true; syncQuickComposer();
     $('quick-status').textContent = 'Posting…';
     try {
-      const { post } = await api(quickEditing ? '/posts/'+quickEditing.id : '/posts', quickEditing ? 'PUT' : 'POST', { kind: 'note', title: quickEditing?.draftTitle || '', markdown, coverUrl:quickCover, tags: quickEditing?.tags || '', version:quickEditing?.version, notifyEmail: false, action: quickEditing && quickEditing.status!=='published' ? 'draft' : 'publish' });
+      const { post } = await api(quickEditing ? '/posts/'+quickEditing.id : '/posts', quickEditing ? 'PUT' : 'POST', { kind: 'note', ...(quickEditing?.convertToNote ? {convertToNote:true} : {}), title: $('quick-title').value, markdown, coverUrl:quickCover, tags: quickEditing?.tags || '', version:quickEditing?.version, notifyEmail: false, action: quickEditing && quickEditing.status!=='published' ? 'draft' : 'publish' });
       if (own !== epoch) return;
       quickEditing=null;showQuickCover('');$('quick-edit-actions').hidden=true;$('quick-new-article').hidden=false;$('quick-post').textContent='Post';
-      $('quick-text').value = ''; $('quick-preview').replaceChildren(); $('quick-preview').hidden = true;
+      $('quick-title').value = ''; $('quick-text').value = ''; $('quick-preview').replaceChildren(); $('quick-preview').hidden = true;
       $('quick-dialog').close();
       status(post.status === 'pending' ? 'Submitted for review. See My Profile.' : post.status==='draft' ? 'Draft saved.' : 'Your post is published.');
       $('quick-status').replaceChildren(document.createTextNode(post.status === 'pending' ? 'Submitted for review. ' : post.status==='draft' ? 'Draft saved. ' : 'Your post is published. '), link(post.status !== 'published' ? 'View on My Profile' : 'View post', post.status !== 'published' ? '/community/mine' : post.url));
+      if (post.status === 'published' || post.status === 'pending') { location.assign('/community/mine'); return; }
       // Refresh failures must never invite a second submission of an already saved post.
       void loadFeed(true).catch(() => { if (own === epoch) status('Your post was saved. Reload the feed to see the latest posts.'); });
     } catch (err) { if (own === epoch) $('quick-status').textContent = err.message; }
@@ -458,26 +470,26 @@
   $('follow')?.addEventListener('click', () => run(() => changeRelation(), $('follow')));
   $('filter')?.addEventListener('change', () => run(() => loadFeed(true)));
   $('more')?.addEventListener('click', () => { firstBatchMicroOnly = false; const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
-  window.addEventListener('beforeunload',event=>{if(quickEditing && ($('quick-text').value!==quickEditing.markdown || quickCover!==(quickEditing.coverUrl||''))){event.preventDefault();event.returnValue='';}});
+  window.addEventListener('beforeunload',event=>{if(quickEditing && ($('quick-text').value!==quickEditing.markdown || quickCover!==(quickEditing.coverUrl||'') || $('quick-title').value!==(quickEditing.draftTitle||''))){event.preventDefault();event.returnValue='';}});
   $('quick-delete')?.addEventListener('click',()=>run(async()=>{
     if(!quickEditing||quickBusy||!window.confirm('Delete this post and remove its discussion from the site?'))return;
     quickBusy=true;syncQuickComposer();try{await api('/posts/'+quickEditing.id,'DELETE',{version:quickEditing.version});resetQuickComposer();await loadFeed(true);}finally{quickBusy=false;syncQuickComposer();}
   },$('quick-delete')));
   $('quick-convert')?.addEventListener('click',()=>run(async()=>{
     if(!quickEditing||quickBusy||window.communityMediaPending)return;
-    const title=$('quick-title').value.trim();if(!title){$('quick-conversion-title').hidden=false;$('quick-convert').textContent='Create article draft';$('quick-status').textContent='Enter a title for the article draft.';$('quick-title').focus();return;}
-    if(!window.confirm('Convert this post to a private article draft? You can publish it again from the article editor.'))return;
-    quickBusy=true;syncQuickComposer();try{
-      const {post}=await api('/posts/'+quickEditing.id,'PUT',{kind:'article',convertToArticle:true,title,markdown:$('quick-text').value,coverUrl:quickCover,tags:quickEditing.tags,version:quickEditing.version,action:'draft'});
-      quickEditing=null;$('quick-text').value='';location.assign('/community/write?post='+post.id);
-    }finally{quickBusy=false;syncQuickComposer();}
+    const title=$('quick-title').value.trim();
+    const key='community-convert-'+quickEditing.id;
+    sessionStorage.setItem(key,JSON.stringify({handle:me.author.handle,version:quickEditing.version,title,markdown:$('quick-text').value,coverUrl:quickCover}));
+    const target='/community/write?post='+quickEditing.id+'&convert=1';
+    quickEditing=null;$('quick-text').value='';location.assign(target);
   },$('quick-convert')));
-  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
+  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, ...(editing?.conversionPending ? {convertToArticle:true} : {}), action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
-  let articleSaveTimer, articleSaveTask = null;
+  let articleSaveTimer, articleSaveTask = null, articleReturnToProfile = false;
   function scheduleArticleSave() {
     clearTimeout(articleSaveTimer);
     if (view !== 'write' || !me || !dirty) return;
+    if (editing?.conversionPending) { $('editor-status').textContent='Conversion not saved. Save draft or Publish to convert; Cancel keeps your original post.'; return; }
     $('editor-status').textContent = savingPost ? 'Saving…' : 'Unsaved changes';
     const account = epoch;
     articleSaveTimer = setTimeout(() => {
@@ -506,11 +518,12 @@
     renderEditorCover(post); $('cover-controls').hidden=post.kind !== 'article';
     $('publish').hidden = !!post.isBlog && !me?.admin;
     $('delete').hidden = false;
+    if ($('convert-note')) $('convert-note').hidden=post.kind!=='article'||post.conversionPending||post.status==='hidden'||post.isBlog;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
     $('markdown').value = post.markdown; $('tags').value = post.tags;
-    $('title').required = post.kind === 'article';
+    $('title').required = false;
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
-    $('publish').textContent = post.status === 'published' ? 'Update published version' : 'Publish';
+    $('publish').textContent = post.status === 'published' ? 'Update' : 'Publish';
     $('editor-status').textContent = post.status === 'pending' ? 'Submitted for moderation. Your article is not public yet.' : post.status === 'hidden' ? 'A moderator has hidden this article. Contact a moderator for review.' : post.status === 'published' ? 'Published. Saving a draft keeps the current public version until you publish an update.' : 'Draft saved. Only you can see it.';
     renderEditorBlog();document.dispatchEvent(new Event('communityEditorPopulated'));
     previewSignature = null; dirty = false; $('publish').disabled = false; $('preview-panel').hidden = true;
@@ -527,7 +540,7 @@
     try { await task; } finally { if (articleSaveTask === task) articleSaveTask = null; }
   }
   async function performArticleSave(action, background) {
-    if (background && (!me || !dirty)) return;
+    if (background && (!me || !dirty || editing?.conversionPending)) return;
     if (background && window.communityMediaPending) { scheduleArticleSave(); return; }
     if(window.communityMediaPending) throw new Error('Wait for the image upload to finish.');
     if (savingPost) return;
@@ -536,7 +549,7 @@
     let saved = false;
     try {
       if (action !== 'unpublish' && !(background ? $('editor-form').checkValidity() : $('editor-form').reportValidity())) {
-        if (background) $('editor-status').textContent = 'Add a title and article text to save automatically.';
+        if (background) $('editor-status').textContent = 'Add article text to save automatically.';
         return;
       }
       const currentSignature = signature(), wasDirty = dirty;
@@ -544,8 +557,9 @@
       const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
       if (account !== epoch) return;
+      if (editing?.conversionPending) sessionStorage.removeItem('community-convert-'+editing.id);
       editing = result.post;
-      const url = new URL(location.href); url.searchParams.set('post', editing.id); url.searchParams.delete('source'); history.replaceState(null, '', url);
+      const url = new URL(location.href); url.searchParams.set('post', editing.id); url.searchParams.delete('source'); url.searchParams.delete('convert'); history.replaceState(history.state, '', url);
       // Keep edits made while the save was running; only update the server version.
       if (background) {
         // Do not repopulate inputs: preserve the live caret, selection, scroll and preview.
@@ -559,11 +573,36 @@
       else { dirty = true; $('unpublish').hidden = !['published', 'pending'].includes(editing.status); $('editor-status').textContent = 'Earlier changes saved. You still have unsaved edits.'; }
       if (!background) status(action === 'publish' ? editing.status === 'pending' ? 'Submitted for moderation.' : 'Your article is public.' : action === 'unpublish' ? 'Unpublished. The article is now private.' : 'Draft saved.');
       saved = true;
+      if (!background && action === 'publish') articleReturnToProfile = true;
+      if (articleReturnToProfile && !dirty) {
+        clearTimeout(articleSaveTimer);
+        location.assign('/community/mine');
+      }
     } finally { savingPost = false; if (saved && dirty && account === epoch) scheduleArticleSave(); }
   }
+  function stageShortPostConversion() {
+    if(!editing || editing.conversionPending || savingPost || window.communityMediaPending) { status('Wait for the current save or upload to finish.'); return; }
+    if(editing.isBlog) { status('Remove this article from the Blog before converting it.'); return; }
+    sessionStorage.setItem('community-convert-note-'+editing.id,JSON.stringify({handle:me.author.handle,version:editing.version,title:$('title').value,markdown:[$('subtitle').value,$('markdown').value].filter(Boolean).join('\n\n'),coverUrl:$('cover-url').value}));
+    clearTimeout(articleSaveTimer);dirty=false;
+    location.assign('/community/mine?editPost='+editing.id+'&convertToNote=1');
+  }
+  $('convert-note')?.addEventListener('click',()=>run(stageShortPostConversion,$('convert-note')));
+  function closeArticle() {
+      if (savingPost || window.communityMediaPending) { status('Wait for the current save or upload to finish.'); return; }
+      if (dirty && !window.confirm(editing?.conversionPending ? 'Discard this conversion? Your original post will stay unchanged.' : 'Discard unsaved article changes? Your saved draft will be kept.')) return;
+      if (editing?.conversionPending) sessionStorage.removeItem('community-convert-'+editing.id);
+      clearTimeout(articleSaveTimer);
+      dirty = false;
+      let previous;
+      try { previous = new URL(document.referrer); } catch (_) { /* Direct editor entry. */ }
+      if (previous?.origin === location.origin && previous.pathname !== location.pathname && history.length > 1) history.back();
+      else location.assign('/community/mine');
+  }
   if (view === 'write') {
+    document.querySelectorAll('[data-close-editor]').forEach(control => control.addEventListener('click', closeArticle));
     for (const control of ['title', 'subtitle', 'markdown', 'tags', 'kind']) $(control).addEventListener('input', invalidatePreview);
-    $('kind').addEventListener('change', () => { $('title').required = $('kind').value === 'article'; });
+    $('kind').addEventListener('change', () => { $('title').required = false; });
     $('editor-form').addEventListener('submit', event => {
       event.preventDefault();
       const submitter = event.submitter || $('editor-form').querySelector('[data-action="draft"]');
@@ -574,8 +613,8 @@
       if (!$('editor-form').reportValidity()) return;
       const own = signature(), result = await api('/preview', 'POST', { markdown: $('markdown').value });
       if (signature() !== own) return;
-      $('preview').innerHTML = window.communityPrepareMediaHtml?.(result.html) || result.html; $('preview-title').textContent = $('title').value || 'Untitled article'; $('preview-subtitle').textContent = $('subtitle').value;
-      $('preview-cover')?.remove(); if($('cover-url').value){const img=node('img');img.id='community-preview-cover';img.className='img-fluid mb-3';if(/^\/community\/media\//.test($('cover-url').value))img.dataset.mediaSrc=$('cover-url').value;else img.src=$('cover-url').value;img.alt='Article cover';$('preview').prepend(img);}
+      if(window.communityRenderPostPreview) window.communityRenderPostPreview($('preview'),result.html,$('cover-url').value); else $('preview').innerHTML=result.html; $('preview-title').textContent = $('title').value.trim(); $('preview-title').hidden = !$('title').value.trim(); $('preview-subtitle').textContent = $('subtitle').value;
+
       $('preview-panel').hidden = false; previewSignature = own; $('publish').disabled = false;
       $('preview-panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
     }, $('preview-button')));
@@ -901,13 +940,19 @@
         const self = me?.author.handle === handle; $('follow-controls').hidden = self;
         relation = me && !self ? await api('/authors/' + encodeURIComponent(handle) + '/relationship') : { following: false, email: false }; renderRelation();
       }
-      if (['everyone', 'following', 'mine', 'author'].includes(view)) {await Promise.all([loadFeed(true), loadContributors()]);const params=new URLSearchParams(location.search);if(params.has('editPost') && me){await openQuickEdit(params.get('editPost'));params.delete('editPost');history.replaceState(null,'',location.pathname+(params.size?'?'+params:''));}}
+      if (['everyone', 'following', 'mine', 'author'].includes(view)) {await Promise.all([loadFeed(true), loadContributors()]);const params=new URLSearchParams(location.search);if(params.has('editPost') && me){await openQuickEdit(params.get('editPost'),params.get('convertToNote')==='1');params.delete('editPost');params.delete('convertToNote');history.replaceState(null,'',location.pathname+(params.size?'?'+params:''));}}
       if (['everyone', 'following', 'mine'].includes(view)) openSharedNote();
       if (view === 'write') {
         renderEditorBlog();
         const params = new URLSearchParams(location.search);
         if (!params.get('post') && !editing && params.get('kind') === 'article') { $('kind').value = 'article'; $('kind').dispatchEvent(new Event('change')); }
-        if (params.get('post') && !editing) {const post=(await api('/posts/'+encodeURIComponent(params.get('post'))+'?edit=1')).post;if(post.kind==='note'){location.replace('/community/mine?editPost='+post.id);return;}populate(post);}
+        if (params.get('post') && !editing) {const post=(await api('/posts/'+encodeURIComponent(params.get('post'))+'?edit=1')).post;if(post.kind==='note'){
+          if(params.get('convert')!=='1'){location.replace('/community/mine?editPost='+post.id);return;}
+          const staged=JSON.parse(sessionStorage.getItem('community-convert-'+post.id)||'null');
+          populate({...post,kind:'article',conversionPending:true});
+          if(staged && staged.handle===me.author.handle && staged.version===post.version){$('title').value=staged.title;$('markdown').value=staged.markdown;renderEditorCover({coverUrl:staged.coverUrl});}
+          $('delete').hidden=true;$('unpublish').hidden=true;invalidatePreview();
+        }else populate(post);}
         if (params.get('source') && !editing) await copyNotebook(params.get('source'));
       }
       if (view === 'post') { syncReflectionComposer(); $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadPostActions(); await loadComments(); }

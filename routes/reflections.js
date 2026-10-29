@@ -35,14 +35,16 @@ function createReflectionRouter(config) {
   }
 
   async function sendCommentEmail(comment) {
-    const subject = config.describe(comment).subject;
+    const description = await config.describe(comment);
+    const subject = description.subject;
     await sendMail({
       from: comment.user.email || global.settings.smtp.from,
       to: global.settings.smtp.to,
       subject: `New reflection on ${subject}`,
       text: `
 New reflection posted
-${subject}: ${config.describe(comment).url}
+${subject}
+${description.url}
 User: ${formatUser(comment.user)}
 
 ${comment.text}
@@ -53,11 +55,13 @@ ${comment.text}
   async function sendReplyThreadEmails(reply, threadRows) {
     const recipients = getReplyThreadRecipients(threadRows, reply.user);
     if (!recipients.length) return;
-    const subject = config.describe(reply).subject;
-    const url = `${config.describe(reply).url}${config.replyAnchor}`;
+    const description = await config.describe(reply);
+    const subject = description.subject;
+    const url = description.url.includes('#') ? description.url : `${description.url}${config.replyAnchor}`;
     const text = `
 ${reply.user.name} replied in a reflection thread you are part of.
-${subject}: ${url}
+${subject}
+${url}
 
 Reply:
 ${reply.text}
@@ -74,14 +78,16 @@ ${formatThreadHistory(threadRows)}
   }
 
   async function sendVoteEmail(payload) {
-    const subject = config.describe(payload).subject;
+    const description = await config.describe(payload);
+    const subject = description.subject;
     await sendMail({
       from: payload.voter.email || global.settings.smtp.from,
       to: global.settings.smtp.to,
       subject: `New ${payload.direction}vote on ${subject}`,
       text: `
 New vote received
-${subject}: ${config.describe(payload).url}
+${subject}
+${description.url}
 Reflection ID: ${payload.commentId}
 Direction: ${payload.direction}
 Voter: ${formatUser(payload.voter)}
@@ -187,12 +193,14 @@ ${payload.text || '(no text found)'}
   async function sendVoteThreadEmails(payload, threadRows) {
     const recipients = getReplyThreadRecipients(threadRows, payload.voter);
     if (!recipients.length) return;
-    const subject = config.describe(payload).subject;
-    const url = `${config.describe(payload).url}${config.replyAnchor}`;
+    const description = await config.describe(payload);
+    const subject = description.subject;
+    const url = description.url.includes('#') ? description.url : `${description.url}${config.replyAnchor}`;
     const directionLabel = payload.direction === 'down' ? 'disliked' : 'liked';
     const text = `
 ${payload.voter.name} ${directionLabel} a reflection in a thread you are part of.
-${subject}: ${url}
+${subject}
+${url}
 
 Voted reflection:
 ${indentEmailText(payload.text || '(no text found)')}
@@ -317,7 +325,7 @@ ${formatThreadHistory(threadRows)}
       const row = rows[0];
       const comment = notificationPayload(row, user.photo);
       res.status(201).json(formatSavedComment(row, user.photo));
-      sendCommentEmail(comment);
+      sendCommentEmail(comment).catch(err => debug.error(`Reflection notification failed: ${err.message}`));
       if (parentRows[0]) {
         getReplyThreadRows(target, row.id, parentId)
           .then(threadRows => sendReplyThreadEmails(comment, threadRows))

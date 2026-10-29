@@ -10,6 +10,28 @@
     template.content.querySelectorAll('img').forEach(img=>{if(/^\/community\/media\/[a-f0-9]{32}$/.test(img.getAttribute('src')||'')){img.dataset.mediaSrc=img.getAttribute('src');img.removeAttribute('src');}});
     return template.innerHTML;
   };
+  window.communityRenderPostPreview=(container,html,cover='')=>{
+    container.innerHTML=window.communityPrepareMediaHtml(html);
+    const images=[],seen=new Set();
+    if(cover){const img=document.createElement('img');img.alt='Cover image';if(/^\/community\/media\//.test(cover))img.dataset.mediaSrc=cover;else img.src=cover;images.push(img);seen.add(cover);}
+    container.querySelectorAll('img').forEach(img=>{
+      if(img.closest('.community-link-preview'))return;
+      const source=img.dataset.mediaSrc||img.getAttribute('src');
+      if(source&&!seen.has(source)){seen.add(source);images.push(img);}
+      const parent=img.parentElement;img.remove();
+      if(parent && !parent.textContent.trim() && !parent.children.length)parent.remove();
+    });
+    if(!images.length)return;
+    const gallery=document.createElement('section');gallery.className='community-preview-gallery';gallery.setAttribute('aria-label','Image previews');
+    const track=document.createElement('div');track.className='community-preview-images';track.tabIndex=0;track.setAttribute('aria-label','Scroll through images');
+    images.forEach((img,index)=>{const slide=document.createElement('figure');slide.append(img);img.alt=img.alt||'Image '+(index+1);track.append(slide);});
+    gallery.append(track);
+    if(images.length>1){const controls=document.createElement('div');controls.className='community-preview-image-controls';
+      for(const [label,direction] of [['Previous image',-1],['Next image',1]]){const button=document.createElement('button');button.type='button';button.className='btn btn-sm btn-outline-secondary';button.textContent=label;button.addEventListener('click',()=>track.scrollBy({left:direction*track.clientWidth,behavior:'smooth'}));controls.append(button);}
+      gallery.append(controls);
+    }
+    container.append(gallery);
+  };
   function pendingChanged(delta){pending=Math.max(0,pending+delta);window.communityMediaPending=pending;document.dispatchEvent(new CustomEvent('communityMediaPending'));}
   function insert(textarea,text){const scroll=textarea.scrollTop;textarea.setRangeText(text,textarea.selectionStart,textarea.selectionEnd,'end');textarea.scrollTop=scroll;textarea.dispatchEvent(new Event('input',{bubbles:true}));}
   async function token(){const value=await window.hadithAuth?.getToken();if(!value){window.hadithAuth?.requireToken?.('Please sign in to add media.');throw Error('Please sign in to add media.');}return value;}

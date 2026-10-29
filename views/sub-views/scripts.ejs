@@ -31,6 +31,7 @@
 </script>
 <script src="/shared/quran-review-core.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/quran-reader-links.js?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="/static/js/content-labels.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/script.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/notebook-themes.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <% if (['Community', 'Notebook', 'Blog', 'Blog Post'].includes(page.menu)) { %><script src="/static/js/community-alerts.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>
@@ -1880,7 +1881,9 @@
     element.remove();
   });
 </script>
-<% } else { %>
+<% } else if (typeof req !== 'undefined' && req
+  && /^\/(?:quran\/?)?$/.test((req.baseUrl || '') + req.path)
+  && !(req.query && req.query.q)) { %>
 <!-- Buy Me a Coffee -->
 <script>
   (function loadBuyMeCoffeeForSession() {

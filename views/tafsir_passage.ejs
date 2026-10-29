@@ -19,7 +19,7 @@
     var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
     var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
     var tafsirSectionIdentifier = section && section.h1 && section.h2 ? ` §${section.h1}.${section.h2}` : '';
-    var tafsirMetaTitle = `Tafsir ${tafsirPassageTitle}${tafsirSectionIdentifier} | Ayat ${tafsirMetaRef}`;
+    var tafsirMetaTitle = utils.socialMetadata().tafsirReaderTitle({name:tafsirTitle, section:section && section.h1 && section.h2 ? `${section.h1}.${section.h2}` : '', reference:tafsirMetaRef});
     var tafsirAuthor = tafsir.author_en || tafsir.author || '';
     var tafsirMetaDescription = `Read ${tafsirTitle}${tafsirAuthor ? ` by ${tafsirAuthor}` : ''} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     tafsirMetaDescription = utils.socialMetadata().description(`${tafsirTitle} — ${surah.name_en} ${tafsirMetaRef}`, entries.map(entry => entry.translationHtml || entry.html || entry.arabicHtml), tafsirMetaDescription);

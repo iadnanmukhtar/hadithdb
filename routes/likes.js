@@ -102,14 +102,14 @@ async function sendLikeEmail(payload) {
   const transport = getMailer();
   if (!transport) return;
   const action = payload.action === 'unlike' ? 'unlike' : 'like';
-  const targetLabel = payload.type === 'content' ? 'item' : payload.type === 'toc' ? 'TOC passage' : 'Hadith';
-  const subject = `New ${action} on ${targetLabel} ${payload.ref || payload.hadithId}`;
-  const url = itemUrl(payload);
+  const source = await require('../lib/ActivityEmailSource').describe(payload);
+  const subject = `New ${action}: ${source.subject}`;
+  const url = source.url;
   const body = `
 New ${action} received
-Target: ${url}
-Target Type: ${payload.type || 'hadith'}
-Target ID: ${payload.hadithId}
+${source.subject}
+${url}
+
 Likes total: ${payload.likes}
 Visitor: IP ${payload.ip || 'unknown'} | UA ${payload.ua || 'unknown'}
 User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider || 'google.com'}${payload.user.email ? ', ' + payload.user.email : ''})` : 'Unknown'}
@@ -125,23 +125,24 @@ User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider 
     debug.error(`Like email notification failed: ${e.message}\n${e.stack || ''}`);
   }
   if (action === 'like')
-    await sendLikeParticipantEmails(payload, url, targetLabel);
+    await sendLikeParticipantEmails(payload, source);
 }
 
-async function sendLikeParticipantEmails(payload, url, targetLabel) {
+async function sendLikeParticipantEmails(payload, source) {
   const recipients = await getLikeRecipients(payload);
   if (!recipients.length) return;
   const userLabel = payload.user ? `${payload.user.name || 'Someone'}` : 'Someone';
   const body = `
-${userLabel} liked ${targetLabel} ${payload.ref || payload.hadithId}.
-${url}
+${userLabel} liked:
+${source.subject}
+${source.url}
 
 Likes total: ${payload.likes}
 `;
   await Promise.all(recipients.map(recipient => sendMail({
     from: global.settings.smtp.from,
     to: recipient.email,
-    subject: `New like on ${targetLabel} ${payload.ref || payload.hadithId}`,
+    subject: `New like: ${source.subject}`,
     text: body
   }, 'Like participant email notification failed')));
 }
@@ -178,12 +179,6 @@ function isLikeOwner(row, user) {
   if (!row || !user) return false;
   if (row.user_uid === user.uid) return true;
   return !!(row.user_email && user.email && row.user_email === user.email && row.user_provider === user.provider);
-}
-
-function itemUrl(payload) {
-  const site = global.settings && global.settings.site ? global.settings.site : {};
-  const baseUrl = payload.type === 'toc' ? (site.quranUrl || site.url || '') : (site.url || '');
-  return `${baseUrl.replace(/\/$/, '')}/${String(payload.ref || payload.hadithId).replace(/^\//, '')}`;
 }
 
 async function verifyGoogle(req, res, next) {
