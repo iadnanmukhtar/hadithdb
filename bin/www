@@ -23,6 +23,7 @@ async function startServer() {
   try {
     await app.locals.startupPromise;
     server.listen(port);
+    require('../lib/CommunityDrive').start();
   } catch (error) {
     console.error(`Application initialization failed; worker will exit: ${error.stack || error}`);
     process.exit(1);

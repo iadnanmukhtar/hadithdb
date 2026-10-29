@@ -148,3 +148,39 @@ The Following button shows a private unread count for new followed-author activi
 The existing Community schema initializer adds `community_alert_reads` and a nullable `created_at` to `community_dislikes`. Historical dislikes without dates are not assigned invented alert times. New disagreements through Community and the contextual reflection widget record their timestamps. No alert emails are sent by this feature.
 
 Community post detail uses the shared reflection disclosure, count, comment bubbles, avatars, vote/reply controls, and compact composer styles. Existing `#comment-ID` links open the disclosure and locate the reply; comments retain their existing Community storage and permissions.
+
+## Optional Google Drive copies
+
+Settings → Notes → Google Drive has an opt-in switch for copying posts and articles.
+It reuses the user's existing encrypted Drive connection and limited `drive.file`
+permission. The application database remains authoritative; Drive is never read
+when loading a post or article. Copies contain the latest saved draft, including
+its title, subtitle, tags, publication status and dates, in Markdown with YAML
+frontmatter. Media references are retained; this does not export media binaries.
+
+Enabling the switch does not scan or copy existing content. A subsequent create
+or update queues that item in the same transaction as its primary write. Deletion
+queues removal of an existing copy into Drive trash; it never creates a copy of
+deleted content. Generated activity and comments are not included.
+
+`CommunityDrive` maintains a durable, coalescing queue and file mappings in
+`community_drive_files`, with opt-in state and the dedicated folder ID in
+`community_drive_settings`. `bin/www` runs a background batch every 15 seconds.
+Failures remain pending and retry after a minute. A MySQL advisory lock serializes
+workers across processes; generation checks prevent an upload from acknowledging
+a newer edit. Reserved Drive IDs make uncertain creation responses retryable
+without duplicates. Copies live in `Hadith Unlocked Posts and Articles`, separate
+from the notebook folder.
+
+Disabling or disconnecting pauses delivery and preserves Drive files. Previously
+queued/mirrored items retain pending changes while paused and resume on reconnect
+and opt-in. New writes while disconnected remain queued if copying is enabled. Unmirrored
+content changed while copying is switched off is not backfilled.
+Drive edits do not flow back and are overwritten on the next app update. The
+settings panel reports pending updates when loaded. A trashed export folder must
+be restored in Drive before writes can resume.
+
+Focused tests: `npx jest spec/communityDrive.spec.js spec/notebookDriveControls.spec.js`.
+Optional isolated MySQL tests use only a local test database:
+`HADITHDB_MYSQL_INTEGRATION=1 npx jest spec/communityDrive.mysql.spec.js --runInBand`
+(`MYSQL_TEST_PORT`, `MYSQL_TEST_USER`, `MYSQL_TEST_PASSWORD`, `MYSQL_TEST_DATABASE`).

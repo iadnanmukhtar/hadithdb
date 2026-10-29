@@ -37,7 +37,7 @@
 
       <section class="border-top pt-3 mt-3" id="settings-notebook-section">
         <div class="mb-3">
-          <h2 class="fs-5 fw-bold mb-1">Notes</h2>
+          <h2 class="fs-5 fw-bold mb-1">Community</h2>
           <p class="text-muted small mb-0" id="settings-notebook-theme-status">Choose the background used for all your notes.</p>
         </div>
         <div class="notebook-theme-options settings-notebook-theme-options" data-notebook-theme-options role="group" aria-label="Default note background"></div>
@@ -45,7 +45,7 @@
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-2">
           <div>
             <h3 class="fs-6 fw-bold mb-1">Google Drive</h3>
-            <p class="text-muted small mb-0">Manage Google Drive storage for My Notebook. Sign in to manage your connection.</p>
+            <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. Sign in to manage your connection.</p>
           </div>
         </div>
         <div class="small" data-notebook-drive-panel data-notebook-drive-settings hidden>
@@ -55,6 +55,15 @@
           <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-import hidden>Import from Google Drive</button>
           <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
           <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-disconnect hidden>Disconnect</button>
+          <div class="mt-3 w-100" data-community-drive-controls hidden>
+            <label class="form-check form-switch">
+              <input type="checkbox" class="form-check-input" data-community-drive-enabled>
+              <span class="form-check-label">Keep copies of my posts and articles in Google Drive</span>
+            </label>
+            <p class="text-muted small mb-1">Copies are saved as Markdown in the “Hadith Unlocked Posts and Articles” folder in Google Drive. New posts and articles sync automatically; existing content is copied only when you update it. Deleting content moves its copy to Drive trash. Changes made in Drive do not sync back.</p>
+            <p class="text-muted small mb-1">Turning this off or disconnecting pauses syncing and leaves your copies in Drive.</p>
+            <span class="small text-muted" data-community-drive-status role="status"></span>
+          </div>
         </div>
         </div>
       </section>

@@ -67,6 +67,12 @@ router.post('/share', async (req, res, next) => {
 router.delete('/share', async (req, res, next) => {
   try { res.json(await Shares.revoke(req.user.uid, req.body?.source_key)); } catch (err) { next(err); }
 });
+router.get('/drive/shadow', async (req, res, next) => {
+  try { res.json(await require('../lib/CommunityDrive').status(req.user.uid)); } catch (err) { next(err); }
+});
+router.put('/drive/shadow', async (req, res, next) => {
+  try { res.json(await require('../lib/CommunityDrive').configure(req.user.uid, req.body?.enabled)); } catch (err) { next(err); }
+});
 router.get('/drive', async (req, res, next) => {
   try { res.json(await Notebook.connectionStatus(req.user.uid)); } catch (err) { next(err); }
 });

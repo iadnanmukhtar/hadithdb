@@ -15,7 +15,7 @@ async function setup(connected, needsDriveAccess = false, pickerConfig = { apiKe
     if (options.method === 'DELETE') connected = false;
     return { ok: true, json: async () => ({ configured: true, connected, migrated: true, needsDriveAccess, picker: pickerConfig, folderId: "folder", folderUrl: connected ? 'https://drive.google.com/drive/folders/example' : null }) };
   });
-  const document = { querySelectorAll: selector => selector === '[data-notebook-drive-import]' ? [importButton] : [notebook, settings], addEventListener() {}, dispatchEvent: jest.fn() };
+  const document = { querySelector: () => null, querySelectorAll: selector => selector === '[data-notebook-drive-import]' ? [importButton] : [notebook, settings], addEventListener() {}, dispatchEvent: jest.fn() };
   const initTokenClient = jest.fn(() => ({ requestAccessToken: jest.fn() }));
   const initCodeClient = jest.fn(() => ({ requestCode: jest.fn() }));
   vm.runInNewContext(script, { window: { location: { origin: 'http://localhost:3004' }, hadithAuth: { getToken: async () => 'test-token' }, google: { picker: pickerApi, accounts: { oauth2: { initCodeClient, initTokenClient } } } }, document, fetch, quranApiPath: path => '/api' + path, CustomEvent: function(type) { this.type = type; } });

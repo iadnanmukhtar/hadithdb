@@ -3,7 +3,7 @@
   'use strict';
   if (window.notebookDrive) return;
   let state = null, working = false, generation = 0, message = '';
-  let pickerLoading;
+  let pickerLoading, shadow = null;
   const importButtons = [...document.querySelectorAll('[data-notebook-drive-import]')];
   const panels = [...document.querySelectorAll('[data-notebook-drive-panel]')];
   async function request(path = '', method = 'GET', body) {
@@ -23,6 +23,14 @@
       button.disabled = working || !!state?.needsDriveAccess;
     }
     for (const panel of panels) {
+      const controls = panel.querySelector('[data-community-drive-controls]');
+      if (controls) {
+        controls.hidden = !state?.connected || !shadow;
+        const toggle = controls.querySelector('[data-community-drive-enabled]');
+        toggle.checked = !!shadow?.enabled;
+        toggle.disabled = working;
+        controls.querySelector('[data-community-drive-status]').textContent = !shadow?.enabled ? 'Copying is off.' : shadow.pending ? `${shadow.pending} copy update(s) pending. Sync retries automatically while connected.` : 'Copying is on. New saves will sync automatically.';
+      }
       const settingsPanel = panel.hasAttribute('data-notebook-drive-settings');
       panel.hidden = !state || (!settingsPanel && state.connected && state.migrated && !state.needsDriveAccess && !message);
       if (!state) continue;
@@ -48,7 +56,10 @@
       if (!await window.hadithAuth?.getToken()) { state = null; paint(); return; }
       const result = await request();
       if (ownGeneration !== generation) return;
-      state = result; paint();
+      state = result;
+      if (document.querySelector('[data-community-drive-controls]')) shadow = await request('/shadow');
+      if (ownGeneration !== generation) return;
+      paint();
     } catch (err) { if (ownGeneration === generation) { message = err.message; paint(); } }
   }
   async function migrate(ownGeneration) {
@@ -159,6 +170,15 @@
     });
     tokenClient.requestAccessToken();
   }
+  document.querySelector('[data-community-drive-enabled]')?.addEventListener('change', async event => {
+    const enabled = event.target.checked, ownGeneration = generation;
+    working = true; paint();
+    try {
+      const result = await request('/shadow', 'PUT', { enabled });
+      if (ownGeneration === generation) { shadow = result; message = ''; }
+    } catch (err) { if (ownGeneration === generation) message = err.message; }
+    finally { if (ownGeneration === generation) { working = false; paint(); } }
+  });
   for (const button of importButtons) button.addEventListener('click', importFromDrive);
   for (const panel of panels) {
     panel.querySelector('[data-notebook-drive-connect]').addEventListener('click', connect);
@@ -172,6 +192,6 @@
     });
   }
   window.notebookDrive = { required: () => { refresh(); } };
-  document.addEventListener('hadithAuthChanged', () => { ++generation; state = null; message = ''; working = false; paint(); refresh(); });
+  document.addEventListener('hadithAuthChanged', () => { ++generation; state = null; shadow = null; message = ''; working = false; paint(); refresh(); });
   refresh();
 })();

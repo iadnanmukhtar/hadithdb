@@ -5,7 +5,7 @@ const saveSource=source.slice(source.indexOf('async function savePost('),source.
 function harness(overrides={}){
  const row={id:9,author_uid:'owner',kind:'article',status:'published',version:4,published_at:'2026-10-29',...overrides};
  const q=jest.fn(async sql=>sql.startsWith('SELECT *')?[row]:[]);
- const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate:async()=>{}},queueEmails:jest.fn()});
+ const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate:async()=>{}},queueEmails:jest.fn()});
  vm.runInContext(saveSource,ctx);
  return {q,save:(input={},user={uid:'owner'})=>ctx.savePost(user,{kind:'note',convertToNote:true,title:'Title',markdown:'Body',version:4,action:'publish',...input},9)};
 }

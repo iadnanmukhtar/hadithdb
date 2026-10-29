@@ -5,6 +5,7 @@ jest.mock('../lib/GoogleAuth', () => ({ verifyRequest: jest.fn(async req => {
   if (uid === 'expired') throw new Error('Expired session');
   return ['alice', 'bob', 'moderator', 'mallory'].includes(uid) ? { uid, name: uid === 'alice' ? 'Amina أحمد' : uid, email: uid + '@private.test' } : null;
 }) }));
+jest.mock('../lib/CommunityDrive', () => ({ ensure: jest.fn(), enqueue: jest.fn() }));
 jest.mock('../lib/NotebookDrive', () => ({ get: jest.fn(async (uid, source) => uid === 'alice' && source === 'item:42' ? { title: 'Notebook title', markdown: '---\nsecret: private metadata\n---\nPrivate notebook body\n\n[[Secret|Label]]', tags: ['learning'] } : null) }));
 const mysql = require('mysql');
 const { promisify } = require('util');
