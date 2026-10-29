@@ -35,6 +35,13 @@ ecosystem.config.cjs
 !packages/quran-review-core/index.test.js
 apps
 
-# Checked-in Community workflow research and browser verification.
+# Checked-in Community workflow research; local screenshots stay untracked.
 !docs/community-substack/
 !docs/community-substack/**
+
+# Local Community UI preview images.
+docs/community-substack/**/*.jpg
+docs/community-substack/**/*.jpeg
+docs/community-substack/**/*.png
+docs/community-substack/**/*.webp
+docs/community-substack/**/*.gif
