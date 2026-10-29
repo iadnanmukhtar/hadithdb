@@ -238,7 +238,9 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community :is(.community-feed-media,.notebook-markdown) img { max-width: 100%; height: auto; border-radius: .5rem; }
 .community-feed-media > img { max-height: 480px; object-fit: contain; }
 .community-link-preview { margin-block: .75rem; overflow: hidden; border: 1px solid var(--community-line); border-radius: .6rem; }
-/* Cards keep the feed appearance even inside a post's Markdown body. */
+/* Share dialogs also appear outside the Community page. */
+.community-share-dialog .community-link-card,
+.community-share-dialog .community-link-card:hover,
 .community .community-link-card,
 .community .community-link-card:hover,
 .community .notebook-markdown a.community-link-card:hover { display: flex; color: var(--community-ink); text-decoration: none; }
