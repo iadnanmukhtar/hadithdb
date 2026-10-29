@@ -54,6 +54,23 @@ describe('browser-ready HTML cache artifacts', () => {
     expect(gunzip).not.toHaveBeenCalled();
   });
 
+  test.each(['hadithunlocked.com', 'quran.islamunlocked.com'])('refreshes cached preview CSS after a CSS-only deployment on %s', hostname => {
+    req.hostname = hostname;
+    req.headers.host = hostname;
+    const html = '<html><head><link rel="stylesheet" href="/static/css/community.css?v=old"></head><body>cached page</body></html>';
+    fs.writeFileSync(`${cachedFile}.gz`, zlib.gzipSync(Buffer.from(html)));
+    const version = jest.spyOn(Utils, 'styleAssetVersion').mockReturnValue('before-css-change');
+    const first = Utils.readCachedHtmlResponse(cachedFile, req);
+    const originalArtifact = Utils.browserReadyHtmlArtifact(cachedFile, req);
+    expect(zlib.gunzipSync(first.body).toString()).toContain('community.css?v=before-css-change');
+
+    version.mockReturnValue('after-css-change');
+    expect(Utils.browserReadyHtmlArtifact(cachedFile, req).gzip).not.toBe(originalArtifact.gzip);
+    const second = Utils.readCachedHtmlResponse(cachedFile, req);
+    expect(zlib.gunzipSync(second.body).toString()).toContain('community.css?v=after-css-change');
+    expect(zlib.gunzipSync(second.body).toString()).not.toContain('before-css-change');
+  });
+
   test('serves clients without gzip from the compressed artifact', () => {
     Utils.readCachedHtmlResponse(cachedFile, req);
     req.get = () => '';
