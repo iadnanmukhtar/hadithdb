@@ -152,3 +152,31 @@ test('cached pages refresh deferred notebook scripts as well as the main script'
     expect(Utils.injectCachedAssetVersions(html)).toBe(`<script src="/static/js/${file}.js?v=${Utils.scriptAssetVersion()}" defer></script>`);
   }
 });
+
+
+test('cached Quran pages refresh the image composer with the main sharing script', () => {
+  const html = '<script src="/static/js/script.js?v=v521-new"></script>\n<script src="/static/js/community-post-share.js?v=v521-old" defer></script>';
+  const result = Utils.injectCachedAssetVersions(html);
+  expect(result).toContain(`/static/js/script.js?v=${Utils.scriptAssetVersion()}`);
+  expect(result).toContain(`/static/js/community-post-share.js?v=${Utils.scriptAssetVersion()}" defer`);
+  expect(result).not.toContain('v521-old');
+});
+
+test('changing only the community composer changes the script asset version', () => {
+  const previous = Utils.SCRIPT_ASSET_VERSION;
+  const read = fs.readFileSync;
+  let spy;
+  try {
+    Utils.SCRIPT_ASSET_VERSION = null;
+    const before = Utils.scriptAssetVersion();
+    spy = jest.spyOn(fs, 'readFileSync').mockImplementation((filename, ...args) => {
+      const result = read(filename, ...args);
+      return String(filename).endsWith('/community-post-share.js') ? Buffer.concat([result, Buffer.from('\n// composer revision')]) : result;
+    });
+    Utils.SCRIPT_ASSET_VERSION = null;
+    expect(Utils.scriptAssetVersion()).not.toBe(before);
+  } finally {
+    spy?.mockRestore();
+    Utils.SCRIPT_ASSET_VERSION = previous;
+  }
+});

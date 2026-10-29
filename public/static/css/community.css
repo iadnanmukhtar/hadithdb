@@ -11,12 +11,22 @@
   --community-line: var(--bs-border-color);
   --community-paper: var(--bs-body-bg);
   --community-accent: var(--c-accent);
+  /* Shared notebook markup should use the Community theme on public pages. */
+  --note-ink: var(--community-ink);
+  --note-link: var(--community-accent);
+  --note-edge: var(--community-accent);
   max-width: 1120px;
   padding-bottom: 3rem !important;
 }
 .community-heading { margin-bottom: 1.5rem; max-width: 850px; }
 .community-heading h1 { margin-bottom: .4rem; overflow-wrap: anywhere; }
 .community-intro { color: var(--community-muted); margin: 0; }
+.community .btn-link {
+  --bs-btn-color: var(--community-accent);
+  --bs-btn-hover-color: color-mix(in srgb, var(--community-accent) 86%, black);
+  --bs-btn-active-color: color-mix(in srgb, var(--community-accent) 78%, black);
+}
+.community .notebook-markdown a:hover { color: color-mix(in srgb, var(--community-accent) 86%, black); }
 #community-status:empty { display: none; }
 #community-status { border-inline-start: 2px solid var(--community-accent); padding: .65rem .85rem; }
 .community-columns { display: grid; grid-template-columns: minmax(0, 740px) minmax(220px, 1fr); gap: 2rem; align-items: start; }
