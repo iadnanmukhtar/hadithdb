@@ -394,3 +394,54 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-preview-images img { display: block; width: 100%; height: min(55vh,420px); object-fit: contain; margin: 0; }
 .community-preview-image-controls { display: flex; justify-content: space-between; gap: .5rem; margin-top: .5rem; }
 .community-preview-image-controls button { min-height: 44px; }
+
+/* Consistent Community surfaces and controls across reading and composition. */
+.community, .community-share-dialog {
+  --community-ink: var(--bs-body-color, #212529);
+  --community-muted: var(--c-muted, #65717d);
+  --community-line: var(--bs-border-color, #dee2e6);
+  --community-paper: var(--bs-body-bg, #fff);
+  --community-accent: var(--c-accent, #238fce);
+}
+.community :is(.form-control,.form-select), .community-share-dialog textarea { font-size: 1rem; }
+.community :is(input,textarea,button,a,select):focus-visible,
+.community-share-dialog :is(input,textarea,button,a):focus-visible { outline: 2px solid var(--community-accent); outline-offset: 3px; }
+.community :is(.community-card,.community-editor,.community-composer), .community-quick-dialog { border-radius: .75rem; }
+.community-heading h1 { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; letter-spacing: -.015em; }
+.community[data-view="post"] > :is(.community-heading,.community-profile) { max-width: 780px; margin-inline: auto; }
+.community[data-view="post"] .community-reading { margin-top: 1.25rem; }
+.community-entry-meta { align-items: flex-start; row-gap: .5rem; flex-wrap: wrap; }
+.community-entry-state { font-size: .75rem; line-height: 1.4; padding: .3rem .55rem; border: 1px solid var(--community-line); border-radius: 999px; }
+.community-entry-title, .community-article-subtitle, .community-reflection-body { overflow-wrap: anywhere; }
+.community-entry-actions :is(a,button,.community-like) { min-height: 44px; min-width: 44px; font-size: .8rem; padding: .4rem .5rem; border-radius: .5rem; }
+.community-entry-actions .bi { font-size: 1rem; }
+.community-entry-actions { gap: .15rem; margin-top: .65rem; }
+.community-media-toolbar button { min-height: 44px; padding: .4rem .6rem; font-size: .8rem; }
+.community-quick-dialog .community-composer-heading { margin-bottom: 1rem; padding-inline-end: 2.5rem; }
+.community-quick-dialog .community-composer-close { min-width: 44px; min-height: 44px; padding: 0; background-size: .8rem; }
+.community-quick-dialog :is(.community-composer-footer,.community-maintenance-actions) { margin-top: .85rem; }
+.community-quick-dialog .community-composer { padding: 1.25rem; }
+.community-quick-dialog :is(input[type="file"],.form-control) { max-width: 100%; min-width: 0; }
+.community-feed-media > img { max-width: 100%; height: auto; max-height: 420px; object-fit: contain; border-radius: .65rem; }
+.community-reading .community-reflection-body { font-size: 1rem; line-height: 1.8; }
+.community-reading .community-reflection-body :is(img,video) { height: auto; border-radius: .65rem; }
+.community-preview-gallery { border: 1px solid var(--community-line); border-radius: .75rem; padding: .65rem; background: var(--community-paper); }
+.community-preview-images { background: var(--bs-tertiary-bg, #f8f9fa); }
+.community :is(#community-preview-panel,#community-quick-preview) { background: var(--community-paper); border: 1px solid var(--community-line); border-radius: .75rem; }
+@media (max-width: 575.98px) {
+  .community-quick-dialog { width: calc(100% - 1rem); max-height: calc(100dvh - 1rem); }
+  .community-quick-dialog .community-composer { padding: 1rem; }
+  .community-editor { padding: 1rem; }
+  .community-editor .community-article-title { font-size: 1.25rem; }
+  .community-editor-top { gap: .65rem; margin-bottom: 1rem; padding-bottom: 1rem; }
+  .community-format-toolbar button { width: 40px; min-height: 44px; }
+  .community-format-toolbar select { min-height: 44px; }
+  .community-feed-toolbar { flex-wrap: wrap; }
+  .community-entry-state { margin-inline-start: auto; }
+  .community-reading { padding: 1rem; }
+}
+.community .community-editor .community-article-title { font-size: clamp(1.25rem, 2vw, 1.6rem); }
+.community-editor #community-markdown { height: clamp(18rem, 45vh, 32rem); min-height: 18rem; }
+.community-editor .btn-close { min-width: 44px; min-height: 44px; padding: 0; background-size: .85rem; }
+.community-editor-top { padding-inline-end: 2.5rem; }
+.community-profile-actions > button { min-height: 44px; }
