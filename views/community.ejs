@@ -44,14 +44,16 @@
       <button type="button" class="btn-close community-composer-close" data-close-quick aria-label="Close editor"></button>
       <div class="community-composer-heading"><span class="community-avatar" id="community-quick-avatar" aria-hidden="true"><i class="bi bi-person"></i></span><div><span class="community-composer-name" id="community-quick-name">Share a post</span><span id="community-quick-audience" class="community-composer-audience"><i class="bi bi-globe2" aria-hidden="true"></i> Public post</span></div></div>
       <label class="visually-hidden" for="community-quick-text">What's on your mind?</label>
+      <details id="community-quick-options" class="community-post-options"><summary>Title and cover <span class="text-muted">(optional)</span></summary>
       <label for="community-quick-title" class="small text-muted">Title (optional)</label><input id="community-quick-title" class="form-control form-control-sm mb-2" maxlength="240" dir="auto" placeholder="Leave blank for no visible title">
-      <textarea id="community-quick-text" rows="6" maxlength="10000" required dir="auto" placeholder="What's on your mind?" aria-describedby="community-quick-status"></textarea>
-      <div class="community-media-toolbar" data-media-editor="quick-text"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
-      <div id="community-quick-attachments" class="community-attachment-list"></div>
       <div id="community-quick-cover" class="community-editor-cover" hidden></div>
       <label class="small text-muted">Cover image <input id="community-quick-cover-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="form-control form-control-sm"></label>
+      </details>
+      <textarea data-short-editor id="community-quick-text" rows="6" maxlength="10000" required dir="auto" placeholder="What's on your mind?" aria-describedby="community-quick-status"></textarea>
+      <div class="community-media-toolbar" data-media-editor="quick-text"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
+      <div id="community-quick-attachments" class="community-attachment-list"></div>
       <div id="community-quick-preview" class="notebook-markdown" hidden></div>
-      <div class="community-composer-footer"><a id="community-quick-new-article" href="/community/write?kind=article"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Write an article</a><div class="community-posting-actions"><button id="community-quick-preview-button" type="button" class="community-preview-action" hidden>Preview</button><button type="button" class="btn btn-sm btn-outline-secondary" data-close-quick>Cancel</button><button id="community-quick-post" class="btn btn-sm btn-primary" type="submit" disabled>Post <i class="bi bi-arrow-up" aria-hidden="true"></i></button></div></div>
+      <div class="community-composer-footer"><a id="community-quick-new-article" href="/community/write?kind=article"><i class="bi bi-file-earmark-text" aria-hidden="true"></i> Write an article</a><div class="community-posting-actions"><button id="community-quick-preview-button" type="button" class="community-preview-action" hidden>Preview</button><button type="button" class="btn btn-sm btn-outline-secondary" data-close-quick>Cancel</button><button id="community-quick-post" class="btn btn-sm btn-primary" type="submit" disabled>Post</button></div></div>
       <div id="community-quick-edit-actions" class="community-maintenance-actions" hidden><button id="community-quick-convert" type="button" class="btn btn-sm btn-link community-secondary-action">Convert to Article</button><button id="community-quick-delete" type="button" class="btn btn-sm btn-link text-danger">Delete post</button></div>
       <p id="community-quick-status" class="community-composer-status" role="status" aria-live="polite"></p>
     </form>
@@ -72,15 +74,7 @@
     <div id="community-feed-sentinel" class="community-feed-sentinel" aria-hidden="true"></div>
     <p id="community-feed-status" class="small text-muted" role="status" aria-live="polite"></p>
     <button class="btn btn-sm btn-outline-secondary community-more" id="community-more" type="button" hidden>Load more</button>
-  </section><div class="community-rail-slot"><aside class="community-aside" aria-label="Community contributors">
-    <section class="community-contributors-section" aria-labelledby="community-contributors-heading">
-      <h2 id="community-contributors-heading" class="hadith-heading-toc-title">Top contributors</h2>
-      <p class="community-rail-caption">Public posts, reflections, and comments</p>
-      <div id="community-contributors" aria-live="polite"><p class="community-rail-caption">Loading contributors…</p></div>
-    </section>
-    <a class="community-notebook-link" href="/notebook"><i class="bi bi-journal-text" aria-hidden="true"></i><span><strong>My Notebook</strong><small>Your private reading notes</small></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
-    <p class="community-sidebar-footnote">Writing here reflects the author’s perspective. Community posts are not scholarly verification.</p>
-  </aside></div></div>
+  </section><%- include('sub-views/community_rail.ejs'); %></div>
   <% } %>
   <% if (view === 'mine') { %>
   <dialog id="community-profile-dialog" class="community-quick-dialog community-profile-dialog" aria-labelledby="community-profile-dialog-title">
@@ -128,39 +122,29 @@
     <form id="community-editor-form">
       <input id="community-kind" type="hidden" value="article">
       <div id="community-import-panel" class="community-card" hidden><label class="form-label" for="community-notebook-search">Find a saved note</label><input id="community-notebook-search" class="form-control mb-2" type="search" dir="auto"><div id="community-notebook-results"></div><button id="community-notebook-more" class="btn btn-sm btn-outline-secondary mt-2" type="button" hidden>More notes</button></div>
-      <label class="form-label" for="community-title">Article title (optional)</label><input id="community-title" class="form-control community-article-title mb-4" maxlength="240" dir="auto" placeholder="Leave blank for no visible title">
+      <label class="visually-hidden" for="community-title">Article title (optional)</label><input id="community-title" class="form-control community-article-title mb-4" maxlength="240" dir="auto" placeholder="Article title (optional)">
+      <details id="community-article-options" class="community-post-options community-article-options"><summary>Subtitle and cover <span class="text-muted">(optional)</span></summary>
       <label class="form-label" for="community-subtitle">Subtitle <span class="text-muted">(optional)</span></label><input id="community-subtitle" class="form-control mb-4" maxlength="1000" dir="auto" placeholder="Add a short introduction to your article">
       <div class="mb-4" id="community-cover-controls"><input id="community-cover-url" type="hidden"><label class="form-label d-block" for="community-cover-file">Cover image</label><input id="community-cover-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" class="form-control form-control-sm"><button id="community-cover-remove" type="button" class="btn btn-sm btn-link text-muted" hidden>Remove cover</button><span id="community-cover-status" class="small text-muted" role="status"></span></div>
+      </details>
       <div class="community-media-toolbar" data-media-editor="markdown"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
       <div id="community-article-attachments" class="community-attachment-list"></div>
-      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Markdown supported · Preview optional</span></div>
+      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Select text to format · Markdown available</span></div>
       <div id="community-format-toolbar" class="community-format-toolbar" role="group" aria-label="Article formatting">
         <select id="community-format-style" aria-label="Text style"><option value="0">Normal</option><% for (let level=1;level<=6;level++) { %><option value="<%= level %>">Heading <%= level %></option><% } %></select>
         <% for (const [action,label,icon] of [['bold','Bold','type-bold'],['italic','Italic','type-italic'],['underline','Underline','type-underline'],['strike','Strikethrough','type-strikethrough'],['highlight','Highlight','brush'],['numbered','Numbered list','list-ol'],['bullets','Bullet list','list-ul'],['quote','Quotation','quote'],['link','Insert link','link-45deg'],['clear','Clear formatting','eraser']]) { %>
         <button type="button" data-format="<%= action %>" title="<%= label %>" aria-label="<%= label %>"><i class="bi bi-<%= icon %>" aria-hidden="true"></i></button><% } %>
+        <button type="button" data-format="parallel" title="Parallel English and Arabic text" aria-label="Parallel English and Arabic text"><span class="community-parallel-icon" dir="ltr" aria-hidden="true">a|ج</span></button>
         <button type="button" class="community-format-help" data-bs-toggle="modal" data-bs-target="#community-markdown-help-modal" title="Markdown help" aria-label="Markdown help"><i class="bi bi-question-circle" aria-hidden="true"></i></button>
       </div>
-      <textarea id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required aria-describedby="community-markdown-help" placeholder="Start with your opening paragraph…
-
-## A section heading
-
-Use **bold** for emphasis and *italics* for a title.
-
-> Add a quotation here.
-
-- Your first point
-- Your next point
-
-[Link text](https://example.com)
-
-العربية والإنجليزية مدعومتان."></textarea>
+      <textarea data-short-editor data-article-editor id="community-markdown" class="form-control mb-3" rows="16" dir="auto" required aria-label="Article" aria-describedby="community-markdown-help" placeholder="Start writing your article…"></textarea>
       <input id="community-tags" type="hidden" value="">
       <div id="community-blog-control" class="form-check form-switch mb-3" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch"><label class="form-check-label" for="community-blog-toggle">Blog post</label><small id="community-blog-help" class="d-block text-muted">Publish the article first to add it to the Blog.</small></div>
       <div class="community-editor-actions">
         <div class="community-publishing-actions"><button id="community-publish" class="btn btn-primary" type="submit" data-action="publish">Publish</button><button class="btn btn-sm btn-outline-secondary" type="submit" data-action="draft">Save draft</button><button id="community-preview-button" class="btn btn-sm btn-outline-secondary" type="button">Preview</button><button type="button" class="btn btn-sm btn-link community-secondary-action" data-close-editor>Cancel</button></div>
         <div class="community-maintenance-actions"><button id="community-convert-note" type="button" class="btn btn-sm btn-link community-secondary-action" hidden>Convert to Post</button><button id="community-unpublish" class="btn btn-sm btn-link text-danger" type="button" hidden>Unpublish</button><button id="community-delete" class="btn btn-sm btn-link text-danger" type="button" hidden><i class="bi bi-trash" aria-hidden="true"></i> Delete post</button></div>
       </div>
-      <p class="small text-muted mt-2" id="community-editor-status" role="status">Drafts save automatically once a title and article text are entered. Your first publication will be reviewed by a moderator.</p>
+      <p class="small text-muted mt-2" id="community-editor-status" role="status">Drafts save automatically as you write. Your first publication will be reviewed by a moderator.</p>
     </form><section id="community-preview-panel" class="community-card mt-4" hidden aria-label="Public preview"><h2 class="h5">Public preview</h2><p class="small text-muted">Check that this contains only what you want to share publicly.</p><h3 id="community-preview-title" dir="auto"></h3><p id="community-preview-subtitle" class="community-article-subtitle" dir="auto"></p><div id="community-preview" class="notebook-markdown"></div></section>
   </section>
   <% } %>
@@ -169,7 +153,7 @@ Use **bold** for emphasis and *italics* for a title.
     <% if (post.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= post.subtitle %></p><% } %>
     <% if (post.coverUrl) { %><figure class="community-editor-cover"><img src="<%= post.coverUrl %>" alt="Article cover"></figure><% } %>
     <div class="notebook-markdown community-reflection-body" dir="auto"><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
-    <div id="community-post-actions" class="community-entry-actions mt-3"><button type="button" class="community-like" title="Share" aria-label="Share post" data-community-share-url="<%= post.shareUrl || post.url %>" data-community-share-title="<%= post.shareTitle || post.title || 'Community post' %>"><i class="bi bi-share" aria-hidden="true"></i></button><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="community-like" type="button" title="Report" aria-label="Report post"><i class="bi bi-flag" aria-hidden="true"></i></button><a id="community-edit-post" class="community-entry-secondary" title="Edit post" aria-label="Edit post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden><i class="bi bi-pencil" aria-hidden="true"></i></a><a class="community-entry-secondary" href="<%= post.url %>" title="Post permalink" aria-label="Post permalink"><i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+    <div id="community-post-actions" class="community-entry-actions mt-3"><button type="button" class="community-like" title="Share" aria-label="Share post" data-community-share-url="<%= post.shareUrl || post.url %>" data-community-share-handle="<%= post.author.handle %>" data-community-share-author="<%= post.author.name %>" data-community-share-photo="<%= post.author.photo || post.author.avatarFallback || '' %>" data-community-share-cover="<%= post.coverUrl || '' %>" data-community-share-excerpt="<%= post.excerpt || '' %>" data-community-share-title="<%= post.shareTitle || post.title || 'Community post' %>"><i class="bi bi-share" aria-hidden="true"></i></button><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="community-like" type="button" title="Report" aria-label="Report post"><i class="bi bi-flag" aria-hidden="true"></i></button><a id="community-edit-post" class="community-entry-secondary" title="Edit post" aria-label="Edit post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden><i class="bi bi-pencil" aria-hidden="true"></i></a><a class="community-entry-secondary" href="<%= post.url %>" title="Post permalink" aria-label="Post permalink"><i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
   </article>
   <%- include('sub-views/community_reflections.ejs', { post }); %>
   <% } %>
@@ -193,6 +177,7 @@ Use **bold** for emphasis and *italics* for a title.
 <script src="/static/js/community-bio.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-profile-photo.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-social-share.js?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="/static/js/community-cover-cards.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
 <% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>

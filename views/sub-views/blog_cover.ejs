@@ -1,0 +1,19 @@
+<%
+  const entry = locals.entry;
+  const detail = locals.detail === true;
+  const writer = entry.authorName || entry.author || '';
+  const photo = entry.authorPhoto || entry.authorAvatarFallback || '';
+  const image = entry.cover || '';
+  const safeImage = /^(https?:\/\/|\/(?!\/))/i.test(image) ? image : '';
+  const safePhoto = /^(https?:\/\/|\/(?!\/))/i.test(photo) ? photo : '';
+%>
+<% if (!detail) { %><a href="<%= entry.url || ('/blog/' + entry.file) %>" class="community-cover-card blog-cover-card<%= safeImage ? '' : ' community-cover-unavailable' %>"><% } else { %><header class="community-cover-card blog-cover-card blog-cover-hero<%= safeImage ? '' : ' community-cover-unavailable' %>"><% } %>
+  <% if (safeImage) { %><img class="community-cover-image" src="<%= safeImage %>" alt=""<% if (!detail) { %> loading="lazy"<% } else { %> fetchpriority="high"<% } %>><% } %>
+  <div class="community-cover-copy">
+    <% if (writer) { %><div class="community-cover-author"><% if (safePhoto) { %><span class="community-avatar"><img src="<%= safePhoto %>" alt="" loading="lazy" referrerpolicy="no-referrer"></span><% } %><span dir="auto"><%= writer %></span></div><% } %>
+    <% if (detail) { %><h1 class="community-cover-title" dir="auto"><%= entry.title %></h1><% } else { %><h2 class="community-cover-title" dir="auto"><%= entry.title %></h2><% } %>
+    <% if (entry.subtitle) { %><p class="community-cover-subtitle" dir="auto"><%= entry.subtitle %></p><% } %>
+    <% if (entry.description && entry.description !== entry.subtitle) { %><p class="community-cover-excerpt" dir="auto"><%= entry.description %></p><% } %>
+    <time class="blog-cover-date" datetime="<%= entry.published.toISOString() %>"><%= entry.published.toDateString() %></time>
+  </div>
+<% if (!detail) { %></a><% } else { %></header><% } %>

@@ -18,6 +18,7 @@
       feed: `${site.url}/feed`,
       cover: encodeURI(attr.coverUrl),
       context: {},
+      ...(attr.socialMetadata || {}),
     };
 %> 
 
@@ -30,25 +31,17 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
   <div class="container">
-    <main class="blog-post">
-      <div class="row justify-content-center">
-        <div class="col-12 col-lg-8">
+    <main class="blog-post community" id="community" data-view="blog-article">
+      <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
+      <div class="community-columns">
+        <div class="community-wall">
           <article>
-            <header>
-              <h1 class="fs-3 mb-0"><strong><%= attr.title %></strong></h1>
-              <% if (attr.subtitle) { %>
-                <h2 class="fs-6 mb-0 text-body-secondary"><%= attr.subtitle %></h2>
-              <% } %>
-              <p class="fs-6 text-muted"><%= attr.published.toDateString() %></p>
-              <% if (attr.postId) { %><a hidden data-blog-edit data-author="<%= attr.authorHandle %>" href="/community/write?post=<%= attr.postId %>" class="small text-muted text-decoration-none" aria-label="Edit article"><i class="bi bi-pencil" aria-hidden="true"></i> Edit article</a><% } %>
-            </header>
-            <figure>
-              <img class="img-fluid" src="<%- attr.cover %>" alt="<%= attr.title %> cover image">
-            </figure>
+            <%- include('sub-views/blog_cover.ejs', { entry: attr, detail: true }); %>
+            <% if (attr.postId) { %><a hidden data-blog-edit data-author="<%= attr.authorHandle %>" href="/community/write?post=<%= attr.postId %>" class="small text-muted text-decoration-none" aria-label="Edit article"><i class="bi bi-pencil" aria-hidden="true"></i> Edit article</a><% } %>
             <section class="body">
              <%- body %>
             </section>
-            <button type="button" class="btn btn-sm btn-outline-secondary my-3" data-community-share-url="<%= attr.shareUrl || ('/blog/' + slugVal) %>" data-community-share-title="<%= attr.title %>"><i class="bi bi-share" aria-hidden="true"></i> Share</button>
+            <button type="button" class="btn btn-sm btn-outline-secondary my-3" data-community-share-url="<%= attr.shareUrl || ('/blog/' + slugVal) %>" data-community-share-title="<%= attr.title %>" data-community-share-author="<%= attr.authorName || attr.author || '' %>" data-community-share-photo="<%= attr.authorPhoto || '' %>" data-community-share-cover="<%= attr.cover || '' %>" data-community-share-excerpt="<%= attr.subtitle || '' %>"><i class="bi bi-share" aria-hidden="true"></i> Share</button>
           </article>
           <%- include('sub-views/comment_widget.ejs', {
             widgetId: 'blog-comments',
@@ -59,6 +52,7 @@
             subjectLabel: 'reflection'
           }); %>
         </div>
+        <%- include('sub-views/community_rail.ejs'); %>
       </div>
     </main>
   </div>
@@ -68,6 +62,7 @@
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
 <script src="<%= utils.staticAssetUrl('/static/js/blog-edit.js') %>" defer></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community.js') %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>" defer></script>
 </body>
 </html>

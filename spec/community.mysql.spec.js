@@ -17,9 +17,9 @@ jest.setTimeout(30000);
 const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : describe.skip;
 suite('Community publication, privacy, subscriptions, discussion and moderation', () => {
   const prefix = `c_test_${process.pid}_${Date.now()}_`;
-  const tables = ['alert_reads','hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
+  const tables = ['activity_state','activity','alert_reads','hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
   // Rewrite identifiers only: source names stored as SQL string values must stay canonical.
-  const rewrite = statement => statement.replace(/'(?:''|\.|[^'])*'|\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b|\bcommunity_(alert_reads|hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (match, source, table) => match.startsWith("'") ? match : prefix + (source || table));
+  const rewrite = statement => statement.replace(/'(?:''|\.|[^'])*'|\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b|\bcommunity_(activity_state|activity|alert_reads|hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (match, source, table) => match.startsWith("'") ? match : prefix + (source || table));
   let pool, server, base, q, firstId, adminSpy, blogDir, pendingQueries=0;
   const trackedQuery=(connection,s,v,cb)=>{pendingQueries++;return connection.query(rewrite(s),v,(err,result)=>{pendingQueries--;cb(err,result);});};
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });

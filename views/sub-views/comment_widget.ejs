@@ -49,9 +49,10 @@
             <p class="comment-auth-hint text-muted small mb-2" id="<%= widgetId %>-hint">Sign in from the top menu to add or reply to reflections.</p>
             <div class="comment-current-user d-none" id="<%= widgetId %>-user"></div>
             <form class="comment-form" id="<%= widgetId %>-form">
+              <div class="community-reply-context" id="<%= widgetId %>-reply-context" hidden></div>
               <div class="mb-2">
                 <label class="visually-hidden" for="<%= widgetId %>-text">Your reflection</label>
-                <textarea class="form-control comment-input" id="<%= widgetId %>-text" rows="3" placeholder="<%= placeholder %>" maxlength="10000" required disabled></textarea>
+                <textarea data-short-editor dir="auto" class="form-control comment-input" id="<%= widgetId %>-text" rows="3" placeholder="<%= placeholder %>" maxlength="10000" required disabled></textarea>
               </div>
               <input type="hidden" id="<%= widgetId %>-parent">
               <div class="comment-form-toolbar">
@@ -60,8 +61,7 @@
                   <button type="button" class="btn btn-link btn-sm comment-form-link d-none" id="<%= widgetId %>-cancel-reply">Cancel reply</button>
                   <button type="button" class="btn btn-link btn-sm comment-form-link d-none" id="<%= widgetId %>-cancel-edit">Cancel edit</button>
                   <button type="submit" class="btn btn-sm comment-submit-btn" disabled title="Post reflection">
-                    <i class="bi bi-send-fill" aria-hidden="true"></i>
-                    <span class="visually-hidden">Post reflection</span>
+                    Post
                   </button>
                 </div>
               </div>
@@ -159,10 +159,8 @@
         const setSubmitButton = (mode = 'post') => {
           const label = mode === 'edit' ? `Update ${subjectLabel}` : `Post ${subjectLabel}`;
           submitBtn.title = label;
-          submitBtn.innerHTML = `
-            <i class="bi bi-send-fill" aria-hidden="true"></i>
-            <span class="visually-hidden">${escapeHtml(label)}</span>
-          `;
+          submitBtn.textContent = mode === 'edit' ? 'Save' : 'Post';
+          submitBtn.setAttribute('aria-label', label);
         };
 
         const waitForHadithAuth = (timeoutMs = 5000) => new Promise(resolve => {
@@ -252,6 +250,7 @@
         };
 
         const resetFormState = (clearText = false) => {
+          document.getElementById('<%= widgetId %>-reply-context').hidden = true;
           editingId = null;
           parentInput.value = '';
           setSubmitButton('post');
@@ -294,14 +293,14 @@
               const reactionCount = upVote + downVote;
               const reactionBadge = reactionCount > 0 ? `
                 <div class="comment-reactions-badge" title="${reactionCount} reactions">
-                  ${upVote > 0 ? '<span class="comment-reaction-icon comment-reaction-like"><i class="bi bi-hand-thumbs-up-fill"></i></span>' : ''}
+                  ${upVote > 0 ? '<span class="comment-reaction-icon comment-reaction-like"><i class="bi bi-heart-fill"></i></span>' : ''}
                   ${downVote > 0 ? '<span class="comment-reaction-icon comment-reaction-disagree"><i class="bi bi-hand-thumbs-down-fill"></i></span>' : ''}
                   <span class="comment-reaction-count">${reactionCount}</span>
                 </div>
               ` : '';
               const voteControls = deleted ? '' : `
                 <button type="button" class="comment-action comment-vote${userVote === 'up' ? ' is-active' : ''}" data-id="${c.id}" data-direction="up" aria-pressed="${userVote === 'up' ? 'true' : 'false'}" aria-label="Like" title="Like">
-                  <i class="bi ${userVote === 'up' ? 'bi-hand-thumbs-up-fill' : 'bi-hand-thumbs-up'}" aria-hidden="true"></i>
+                  <i class="bi ${userVote === 'up' ? 'bi-heart-fill' : 'bi-heart'}" aria-hidden="true"></i>
                 </button>
                 <button type="button" class="comment-action comment-vote comment-action-negative${userVote === 'down' ? ' is-active' : ''}" data-id="${c.id}" data-direction="down" aria-pressed="${userVote === 'down' ? 'true' : 'false'}" aria-label="Disagree" title="Disagree">
                   <i class="bi ${userVote === 'down' ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-down'}" aria-hidden="true"></i>
@@ -361,7 +360,9 @@
               const parentComment = comments.find((c) => String(c.id) === btn.dataset.id);
               cancelReply.classList.remove('d-none');
               setFormStatus(`Replying to ${parentComment && parentComment.user && parentComment.user.name ? parentComment.user.name : 'this reflection'}`);
+              window.CommunityReplyContext?.show(document.getElementById('<%= widgetId %>-reply-context'), parentComment?.user, parentComment?.html || '', parentComment?.text);
               textarea.focus();
+              form.scrollIntoView({block: 'center', behavior: 'smooth'});
             };
           });
           threadEl.querySelectorAll('.comment-save-note').forEach((btn) => {
@@ -429,6 +430,7 @@
         };
 
         cancelReply.onclick = () => {
+          document.getElementById('<%= widgetId %>-reply-context').hidden = true;
           parentInput.value = '';
           cancelReply.classList.add('d-none');
           if (!editingId) setFormStatus('');
@@ -493,10 +495,12 @@
 
         form.onsubmit = async (e) => {
           e.preventDefault();
+          if (submitBtn.disabled) return;
           const user = currentUser;
           if (!user) { renderUser(); return; }
           const text = textarea.value.trim();
           if (!text) return;
+          submitBtn.disabled = true;
           const isEditing = !!editingId;
           const submittedText = !isEditing && commentPrefix ? `${commentPrefix}\n\n${text}` : text;
           try {
@@ -532,6 +536,8 @@
           } catch (err) {
             console.error('Could not submit comment', err);
             alert(isEditing ? `Could not update ${subjectLabel} right now. Please try again.` : `Could not post ${subjectLabel} right now. Please try again.`);
+          } finally {
+            submitBtn.disabled = !currentUser;
           }
         };
 

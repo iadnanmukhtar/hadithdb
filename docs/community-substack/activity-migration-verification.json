@@ -1,0 +1,111 @@
+{
+  "verifiedAt": "2026-10-29T22:04:39.005Z",
+  "state": [
+    {
+      "id": 1,
+      "version": 1
+    }
+  ],
+  "coverage": {
+    "post": {
+      "eligible": 1922,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "comment": {
+      "eligible": 0,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "hadiths_comments": {
+      "eligible": 70,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "blog_comments": {
+      "eligible": 1,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "like": {
+      "eligible": 2,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "hadith_like": {
+      "eligible": 463,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "hadiths_comments_like": {
+      "eligible": 18,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "blog_comments_like": {
+      "eligible": 0,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    },
+    "repost": {
+      "eligible": 0,
+      "missing": 0,
+      "mismatched": 0,
+      "stale": 0
+    }
+  },
+  "totals": [
+    {
+      "source": "blog_comments",
+      "count": 1
+    },
+    {
+      "source": "hadith_like",
+      "count": 463
+    },
+    {
+      "source": "hadiths_comments",
+      "count": 70
+    },
+    {
+      "source": "hadiths_comments_like",
+      "count": 18
+    },
+    {
+      "source": "like",
+      "count": 2
+    },
+    {
+      "source": "post",
+      "count": 1922
+    }
+  ],
+  "maintenanceTriggers": 27,
+  "titleRevision": [
+    {
+      "kind": "title",
+      "total": 1865,
+      "missing": 0
+    },
+    {
+      "kind": "revision",
+      "total": 10,
+      "missing": 0
+    }
+  ],
+  "publicFeed": {
+    "pages": 124,
+    "uniqueRecords": 2475,
+    "expected": 2475,
+    "duplicates": 0
+  },
+  "applicationDeployment": "not performed"
+}

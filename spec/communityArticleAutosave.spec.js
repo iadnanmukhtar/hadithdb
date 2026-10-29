@@ -163,3 +163,8 @@ test('opening short-post conversion stages editor text without saving the articl
  expect(JSON.parse(ctx.sessionStorage.setItem.mock.calls[0][1])).toMatchObject({markdown:'Introduction\n\nFull article',version:1,handle:'writer'});
  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine?editPost=3&convertToNote=1');
 });
+test('blank rich article source does not autosave even when native required is delegated to the rich editor',async()=>{
+ const {ctx,$}=harness();$('markdown').required=false;$('markdown').value='   ';
+ ctx.invalidatePreview();await jest.advanceTimersByTimeAsync(1800);
+ expect(ctx.api).not.toHaveBeenCalled();expect($('editor-status').textContent).toBe('Add article text to save.');
+});

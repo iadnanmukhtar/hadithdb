@@ -7,9 +7,18 @@
   const markers = {bold:'**', italic:'*', underline:'__', strike:'~~', highlight:'=='};
   function apply(action) {
     if (editor.disabled || editor.readOnly) return;
+    const surface=window.CommunityShortEditor?.get(editor);
+    if(surface?.mode==='rich') {
+      const native={bold:'bold',italic:'italic',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'formatBlock',link:'link',parallel:'parallel'};
+      if(native[action]) {surface.format(native[action],action==='quote'?'blockquote':action==='style'?(style.value==='0'?'p':'h'+style.value):undefined);return;}
+      // Preserve extended underline/highlight syntax through the existing source commands.
+      surface.toSource();
+    }
     let start=editor.selectionStart, end=editor.selectionEnd, value=editor.value;
     let selected=value.slice(start,end), edit;
-    if (markers[action]) {
+    if (action==='parallel') {
+      edit=window.CommunityParallelText.replacement(value,start);
+    } else if (markers[action]) {
       if (selected.trim()) edit=window.NotebookShortcuts.replacement(value,start,end,markers[action]);
       else {const marker=markers[action],text='text';edit={start,end,text:marker+text+marker,selectStart:start+marker.length,selectEnd:start+marker.length+text.length};}
     } else if (action==='link') {

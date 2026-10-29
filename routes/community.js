@@ -54,6 +54,11 @@ api.put('/reposts/:source/:id', wrap(async (req,res)=>res.json(await Interaction
 api.get('/discussion/:source/:id', wrap(async (req,res)=>res.json(await Interactions.discussion(req.params.source,req.params.id,req.user,req.query.offset))));
 api.post('/discussion/:source/:id', wrap(async (req,res)=>res.status(201).json(await Interactions.reply(signed(req),req.params.source,req.params.id,req.body))));
 api.get('/contributors', wrap(async (req, res) => res.json({contributors:await Community.contributors(req.user)})));
+api.get('/blog-feed-state', wrap(async(req,res)=>{
+  const ids=String(req.query.ids || '').split(',').map(Number);
+  if(!ids.length || ids.length>50 || ids.some(id=>!Number.isSafeInteger(id)||id<1))throw require('http-errors')(400,'Invalid posts.');
+  res.json({items:await require('../lib/BlogFeed').states([...new Set(ids)],req.user)});
+}));
 api.get('/feed', wrap(async (req, res) => res.json(await Community.feed(req.query, req.user))));
 api.get('/authors/:handle', wrap(async (req, res) => res.json({author:await Community.profile(req.params.handle, signed(req))})));
 api.get('/authors/:handle/relationship', wrap(async (req, res) => res.json(await Community.relationship(signed(req), req.params.handle))));

@@ -10,7 +10,7 @@ const BlogImport = require('../lib/CommunityBlogImport');
 
 const router = express.Router();
 router.use(require('../lib/BlogPageCache').middleware());
-const BLOG_PLACEHOLDER_COVER = '/static/img/pearls_of_the_deep.jpg';
+const BLOG_PLACEHOLDER_COVER = require('../lib/BlogCover');
 
 router.get('/', function (req,res,next) { return listPosts(req,res,next).catch(next); });
 async function listPosts(req, res, next) {
@@ -44,9 +44,14 @@ async function listPosts(req, res, next) {
     delete pagination.nextOffset;
 
   posts = posts.slice(offset, offset + pageSize);
+  await decorateBlogAuthors(posts);
+  const feedItems = posts.map(require('../lib/BlogFeed').item);
+  const states = feedItems.length ? await require('../lib/BlogFeed').states(feedItems.map(item=>item.id)) : [];
+  for (const item of feedItems) Object.assign(item, states.find(state=>state.id===item.id));
 
   res.render('blog', {
     posts: posts,
+    feedItems,
     pagination: pagination
   });
 
@@ -95,7 +100,13 @@ router.get('/:title', async function (req, res, next) {
   try { migrated=(await BlogImport.records()).find(row=>row.slug===slug); } catch(err) { return next(err); }
   if (migrated) {
     if (migrated.status!=='published') return next(createError(404,'Post not found'));
-    return res.render('blog_post',{attr:applyCoverFallback(BlogImport.attributes(migrated)),body:renderHtml(migrated.public_markdown),slug});
+    const attr=BlogImport.attributes(migrated),body=renderHtml(migrated.public_markdown);
+    await decorateBlogAuthors([attr]);
+    if (!attr.cover) {
+      const author={name:attr.authorName,handle:attr.authorHandle,photo:attr.authorPhoto,avatarFallback:attr.authorAvatarFallback};
+      attr.socialMetadata=require('../lib/CommunitySocialMetadata')('post',{post:{title:attr.title,subtitle:attr.subtitle,excerpt:require('../lib/SocialMetadata').excerpt(migrated.public_markdown),html:body,author}});
+    }
+    return res.render('blog_post',{attr:applyCoverFallback(attr),body,slug});
   }
   return next(createError(404, 'Post not found'));
 
@@ -113,6 +124,16 @@ async function getPosts() {
     return b.published - a.published;
   });
   return posts;
+}
+
+async function decorateBlogAuthors(posts) {
+  const authors = posts.map(post => ({name: post.authorName || post.author, handle: post.authorHandle}));
+  await require('../lib/UserAvatar').decorateAuthors(authors);
+  posts.forEach((post, index) => {
+    post.authorName = authors[index].name || '';
+    post.authorPhoto = authors[index].photo;
+    post.authorAvatarFallback = authors[index].avatarFallback;
+  });
 }
 
 function applyCoverFallback(post) {

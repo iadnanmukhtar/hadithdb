@@ -36,7 +36,7 @@
   }
 
   const $ = id => document.getElementById('community-' + id);
-  let me = null, epoch = 0, offset = 0, relation = { following: false, email: false }, editing = null;
+  let me = null, epoch = 0, offset = 0, feedCursor = null, relation = { following: false, email: false }, editing = null;
   let previewSignature = null, dirty = false, replyId = null, loadingFeed = false, feedEpoch = 0, notebookOffset = 0, notebookRequest = 0, savingPost = false, changingRelation = false;
   const status = message => { $('status').textContent = message; };
   function activityDate(item) {
@@ -63,7 +63,7 @@
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
     const result = await response.json();
     if (requestEpoch !== epoch) throw new Error('Account changed. Please try again.');
-    if (!response.ok) throw new Error(result.error || 'Unable to complete this request.');
+    if (!response.ok) throw Object.assign(new Error(result.error || 'Unable to complete this request.'), {status:response.status});
     return result;
   }
   function installReferenceExpansion(editor, available) {
@@ -128,12 +128,12 @@
   }
   root.addEventListener('error', event => avatarError(event.target), true);
   root.querySelectorAll('[data-avatar-fallback]').forEach(img => { if (img.complete && !img.naturalWidth) avatarError(img); });
-  function interactionControls(item, openReplies) {
+  function interactionControls(item, openReplies, replying = false) {
     const actions=node('div',undefined,'community-entry-actions');
     const source=item.likeSource, target=String(item.likeId || item.id);
     actions.dataset.source=source; actions.dataset.target=target;
-    const isReflection=source!=='post';
     const sync=result=>{
+      if(item.blogCommentSlug) delete result.commentCount;
       for(const group of root.querySelectorAll('.community-entry-actions[data-source]')) {
         if(group.dataset.source===source && group.dataset.target===target) group.renderInteraction?.(result);
       }
@@ -145,7 +145,7 @@
     };
     const up=button('',vote('up'),'community-like');
     const down=button('',vote('down'),'community-dislike');
-    const reply=button('',openReplies,'community-reply'); reply.title='Reply';reply.setAttribute('aria-label','Reply');reply.setAttribute('aria-expanded','false');
+    const reply=button('',openReplies,'community-reply'); reply.title=replying?'Reply':'View comments';reply.setAttribute('aria-label',reply.title);if(!replying)reply.setAttribute('aria-expanded','false');
     const repost=button('',async()=>{
       const own=epoch;
       const result=await api('/reposts/'+source+'/'+target,'PUT',{reposted:repost.getAttribute('aria-pressed')!=='true'});
@@ -153,12 +153,12 @@
     },'community-repost');
     function render(result={}) {
       Object.assign(item,result);
-      for(const [control,selected,count,glyph,label] of [[up,item.liked,item.likeCount,isReflection?'hand-thumbs-up':'heart','Like'],[down,item.disliked,item.dislikeCount,'hand-thumbs-down','Dislike'],[repost,item.reposted,item.repostCount,'repeat','Repost']]) {
+      for(const [control,selected,count,glyph,label] of [[up,item.liked,item.likeCount,'heart','Like'],[down,item.disliked,item.dislikeCount,'hand-thumbs-down','Dislike'],[repost,item.reposted,item.repostCount,'repeat','Repost']]) {
         control.replaceChildren(icon(glyph+(selected&&glyph!=='repeat'?'-fill':'')),document.createTextNode(count?' '+count:''));
         control.setAttribute('aria-pressed',String(!!selected));control.title=selected?'Undo '+label.toLowerCase():label;
         control.setAttribute('aria-label',control.title+(count?', '+count:''));
       }
-      reply.replaceChildren(icon('reply'),document.createTextNode(item.commentCount?' '+item.commentCount:''));
+      reply.replaceChildren(icon(replying ? 'reply' : 'chat-right-text'),document.createTextNode(item.commentCount?' '+item.commentCount:''));
     }
     actions.renderInteraction=render;render();actions.append(up,down,reply,repost);return actions;
   }
@@ -168,11 +168,12 @@
     const list=node('div'), message=node('p',undefined,'small text-muted');message.setAttribute('role','status');
     const form=node('form',undefined,'community-inline-reply');
     const label=node('label','Reply','small text-muted');
-    const textarea=node('textarea');textarea.rows=3;textarea.maxLength=10000;textarea.required=true;textarea.dir='auto';textarea.placeholder='Write a reply…';textarea.setAttribute('aria-label','Write a reply');
+    const context=node('div',undefined,'community-reply-context');context.hidden=true;
+    const textarea=node('textarea');textarea.dataset.shortEditor='';textarea.rows=3;textarea.maxLength=10000;textarea.required=true;textarea.dir='auto';textarea.placeholder='Write a reply…';textarea.setAttribute('aria-label','Write a reply');
     label.append(textarea);
     const submit=node('button','Reply','btn btn-sm btn-outline-primary');submit.type='submit';
-    const cancel=button('Cancel reply',()=>{selected=item;label.firstChild.textContent='Reply';textarea.value='';},'btn btn-sm btn-link');
-    form.append(label,submit,cancel);
+    const cancel=button('Cancel reply',()=>{selected=item;label.firstChild.textContent='Reply';context.hidden=true;context.replaceChildren();cancel.hidden=true;},'btn btn-sm btn-link');cancel.hidden=true;
+    form.append(context,label,submit,cancel);
     let selected=item, loaded=false, loading=false, offset=0, entries=[];
     const more=button('Load more replies',()=>load(false),'community-more btn btn-sm btn-outline-secondary');more.hidden=true;
     panel.append(list,more,form,message);article.append(panel);
@@ -183,11 +184,11 @@
       function append(c,depth){
         if(seen.has(c.id))return;seen.add(c.id);
         const row=node('article',undefined,'community-thread-reply');row.style.marginInlineStart=Math.min(depth,4)*.65+'rem';
-        const meta=node('div',undefined,'community-entry-meta');const avatar=node('span',undefined,'community-avatar');avatarImage(avatar,c.author);meta.append(avatar,link(c.author.name,'/community/@'+c.author.handle));
+        const meta=node('div',undefined,'community-entry-meta');const avatar=node('span',undefined,'community-avatar');avatarImage(avatar,c.author);meta.append(avatar,c.author.handle?link(c.author.name,'/community/@'+c.author.handle):node('span',c.author.name));
         if(c.parentId && byId.has(c.parentId))meta.append(node('small','Replying to '+byId.get(c.parentId).author.name));
         const body=node('div',undefined,'notebook-markdown community-reflection-body');body.dir='auto';if(c.deleted)body.textContent='Comment removed.';else body.innerHTML=c.html;
         row.append(meta,body);
-        if(!c.deleted)row.append(interactionControls(c,()=>{selected=c;label.firstChild.textContent='Replying to '+c.author.name;textarea.focus();}));
+        if(!c.deleted)row.append(interactionControls(c,()=>{selected=c;label.firstChild.textContent='Replying to '+c.author.name;showReplyContext(context,c.author,c.html);cancel.hidden=false;textarea.focus();},true));
         list.append(row);for(const child of children.get(c.id)||[])append(child,depth+1);
       }
       for(const c of children.get(null)||[])append(c,0);
@@ -196,14 +197,18 @@
     async function load(reset=true){
       if(loading)return;loading=true;const own=epoch;message.textContent='Loading replies…';
       try{
-        const data=await api('/discussion/'+item.likeSource+'/'+item.likeId+'?offset='+(reset?0:offset));
+        let data;
+        if(item.blogCommentSlug){
+          const rows=await api('/'+encodeURIComponent(item.blogCommentSlug),'GET',undefined,'/blog-comments');
+          data={items:rows.map(c=>({...c,parentId:c.parentId,author:{...c.user,handle:c.user?.handle || ''},html:c.html || '',likeSource:'blog_comments',likeId:c.id,liked:c.userVote==='up',disliked:c.userVote==='down',likeCount:c.upVote,dislikeCount:c.downVote})),offset:rows.length,hasMore:false};
+        }else data=await api('/discussion/'+item.likeSource+'/'+item.likeId+'?offset='+(reset?0:offset));
         if(own!==epoch||!article.isConnected)return;
         entries=reset?data.items:entries.concat(data.items.filter(c=>!entries.some(e=>e.id===c.id)));offset=data.offset;draw();loaded=true;more.hidden=!data.hasMore;message.textContent=entries.length?'':'Be the first to reply.';
       }catch(err){message.textContent=err.message;}finally{loading=false;}
     }
     form.addEventListener('submit',async event=>{
-      event.preventDefault();if(submit.disabled)return;submit.disabled=true;const own=epoch;
-      try{await api('/discussion/'+selected.likeSource+'/'+(selected.likeId||selected.id),'POST',{markdown:textarea.value});if(own!==epoch)return;textarea.value='';await load();actions.renderInteraction({commentCount:Number(item.commentCount||0)+1});}
+      event.preventDefault();if(submit.disabled || !textarea.value.trim())return;submit.disabled=true;const own=epoch;
+      try{if(item.blogCommentSlug)await api('/'+encodeURIComponent(item.blogCommentSlug),'POST',{text:textarea.value,parentId:selected===item?null:selected.id},'/blog-comments');else await api('/discussion/'+selected.likeSource+'/'+(selected.likeId||selected.id),'POST',{markdown:textarea.value});if(own!==epoch)return;textarea.value='';selected=item;context.hidden=true;cancel.hidden=true;label.firstChild.textContent='Reply';await load();actions.renderInteraction({commentCount:Number(item.commentCount||0)+1});}
       catch(err){message.textContent=err.message;}finally{submit.disabled=false;}
     });
     function labelToggle(){toggle.textContent=panel.hidden?(item.commentCount?'View comments ('+item.commentCount+')':'Add a comment'):'Hide comments';}
@@ -253,6 +258,7 @@
     if(privatePost) { const draft=link(item.status === 'draft' ? 'Continue editing draft' : 'Open unpublished article',href);draft.title='Open draft';draft.setAttribute('aria-label','Open draft');draft.append(icon('file-earmark-text'));actions.append(draft); }
     if (!privatePost && ['article','note'].includes(kind)) {
       const share = node('button', undefined, 'community-like'); share.type = 'button'; share.title = 'Share'; share.setAttribute('aria-label', 'Share post');
+      share.dataset.communityShareHandle=item.author.handle;share.dataset.communityShareAuthor=item.author.name;share.dataset.communitySharePhoto=item.author.photo || item.author.avatarFallback || '';share.dataset.communityShareCover=item.coverUrl || '';share.dataset.communityShareExcerpt=item.excerpt || '';
       share.dataset.communityShareUrl = item.shareUrl || item.url; share.dataset.communityShareTitle = item.shareTitle || item.title || 'Community post';
       share.append(icon('share')); actions.append(share);
     }
@@ -268,9 +274,23 @@
     if (item.canEdit) actions.append(editPostLink(item));
     if (!privatePost && ['article','note'].includes(kind)) { const read = link('', href, 'community-entry-secondary'); read.title = kind === 'article' ? 'Read article' : 'Open post'; read.setAttribute('aria-label', read.title); read.append(icon('arrow-right')); actions.append(read); }
     article.append(actions);
+    window.CommunityCoverCards?.enhance(article, {...item, url:href, authorName:item.author.name});
     if(item.likeSource && !privatePost) toggleDiscussion=attachDiscussion(article,item,actions);
     return article;
   }
+  function hydrateBlogCards(force=false) {
+    const ids=[],own=epoch;
+    for (const wrapper of root.querySelectorAll('[data-blog-feed-entry]')) {
+      if (!force && wrapper.dataset.blogHydrated) continue;
+      const data=wrapper.querySelector('[data-blog-feed-item]');if(!data)continue;
+      const item=JSON.parse(data.textContent);
+      item.canEdit=!!me && me.author.handle===item.author.handle;
+      wrapper.dataset.blogHydrated='1';ids.push(item.id);
+      const entry=card(item);const old=wrapper.querySelector('.community-entry');if(old)old.replaceWith(entry);else wrapper.append(entry);
+    }
+    for(let start=0;start<ids.length;start+=50)void api('/blog-feed-state?ids='+ids.slice(start,start+50).join(',')).then(data=>{if(own!==epoch)return;for(const state of data.items)for(const actions of root.querySelectorAll('.community-entry-actions[data-source="post"]'))if(actions.dataset.target===String(state.id))actions.renderInteraction?.(state);}).catch(()=>{});
+  }
+  if(view==='blog')new MutationObserver(()=>hydrateBlogCards()).observe(root.querySelector('[data-blog-infinite]'),{childList:true,subtree:true});
   let feedHasMore = false, feedObserver = null, reactionRun = null, firstBatchMicroOnly = false;
   function appendFeedCard(item) {
     const entry = card(item);
@@ -307,23 +327,25 @@
     }, { rootMargin: '300px 0px' });
   }
   async function loadFeed(reset = false) {
+    if (view === 'blog') return;
     if (loadingFeed && !reset) return;
     const request = ++feedEpoch; loadingFeed = true;
     feedObserver?.disconnect();
     $('feed-status').textContent = 'Loading…';
     $('more').hidden = true;
-    if (reset) { offset = 0; firstBatchMicroOnly = false; }
+    if (reset) { offset = 0; feedCursor = null; firstBatchMicroOnly = false; }
     try {
       // A page containing only collapsed rows must advance to the next visible
       // activity, rather than presenting a Load more button that appears inert.
       while (true) {
         const params = new URLSearchParams({ scope: view === 'author' ? 'everyone' : view, kind: $('filter')?.value || 'all', offset: String(offset) });
+        if (feedCursor) params.set('cursor', feedCursor);
         if (view === 'author') params.set('author', handle);
         const data = await api('/feed?' + params);
         if (request !== feedEpoch) return;
         if (reset) {
           $('feed').replaceChildren(); feedKeys.clear(); reactionRun = null;
-          firstBatchMicroOnly = data.hasMore && data.items.every(item => !!microType(item));
+          firstBatchMicroOnly = data.hasMore && data.items.length > 0 && data.items.every(item => !!microType(item));
         }
         let addedVisible = false;
         for (const item of data.items) {
@@ -332,6 +354,8 @@
         }
         if (!$('feed').children.length) $('feed').append(node('p', view === 'following' ? 'Follow an author to see their posts, reflections, and comments here.' : view === 'mine' ? 'Your wall is ready. Write a post or copy a saved notebook note.' : 'No activity yet.', 'community-empty'));
         if (data.hasMore && (!Number.isSafeInteger(data.offset) || data.offset <= offset)) throw new Error('Feed pagination did not advance. Please try again.');
+        if (data.hasMore && data.cursor && data.cursor === feedCursor) throw new Error('Feed cursor did not advance. Please refresh.');
+        feedCursor = data.cursor || null;
         offset = data.offset; feedHasMore = data.hasMore; reset = false;
         if (feedHasMore && !addedVisible && !firstBatchMicroOnly) {
           $('feed-status').textContent = 'Loading past collapsed activity…';
@@ -345,7 +369,7 @@
       if (request === feedEpoch) {
         feedHasMore = false; $('feed-status').textContent = 'Could not load the feed. Try again.';
         $('more').textContent = 'Try again'; $('more').hidden = false;
-        $('more').dataset.retryReset = reset ? '1' : '0';
+        $('more').dataset.retryReset = reset || [400,409].includes(err.status) ? '1' : '0';
       }
       throw err;
     } finally { if (request === feedEpoch) { loadingFeed = false; observeFeedEnd(); } }
@@ -371,6 +395,7 @@
       $('quick-edit-actions').hidden=true;$('quick-post').textContent='Update Post';
       $('quick-dialog').setAttribute('aria-label','Convert article to short post');
     }
+    if ($('quick-options')) $('quick-options').open=!!($('quick-title').value || quickCover);
     $('quick-dialog').showModal();$('quick-text').dispatchEvent(new Event('input',{bubbles:true}));$('quick-text').setSelectionRange(0,0);$('quick-text').scrollTop=0;$('quick-text').focus({preventScroll:true});
   }
   root.addEventListener('click',event=>{const edit=event.target.closest('[data-edit-kind=note]');if(!edit||!$('quick-dialog'))return;event.preventDefault();run(()=>openQuickEdit(edit.dataset.editId));});
@@ -521,6 +546,7 @@
     if ($('convert-note')) $('convert-note').hidden=post.kind!=='article'||post.conversionPending||post.status==='hidden'||post.isBlog;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
     $('markdown').value = post.markdown; $('tags').value = post.tags;
+    if($('article-options'))$('article-options').open=!!(post.subtitle || post.coverUrl);
     $('title').required = false;
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
     $('publish').textContent = post.status === 'published' ? 'Update' : 'Publish';
@@ -548,6 +574,7 @@
     const account = epoch;
     let saved = false;
     try {
+      if(action!=='unpublish' && !$('markdown').value.trim()){$('editor-status').textContent='Add article text to save.';if(!background)$('markdown').focus();return;}
       if (action !== 'unpublish' && !(background ? $('editor-form').checkValidity() : $('editor-form').reportValidity())) {
         if (background) $('editor-status').textContent = 'Add article text to save automatically.';
         return;
@@ -695,6 +722,9 @@
     }
     previous.replaceWith(actions);
   }
+  function showReplyContext(container,author,html) {
+    window.CommunityReplyContext?.show(container, author, html);
+  }
   async function loadComments() {
     const data = await api('/posts/' + postId + '/comments');
     $('comments').replaceChildren();
@@ -725,11 +755,11 @@
       const date = new Date(c.createdAt);
       if (!Number.isNaN(date.getTime())) { const time = node('time', date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), 'comment-time'); time.dateTime = date.toISOString(); time.title = date.toLocaleString(); controls.append(time); }
       if (!c.deleted) {
-        for (const [direction, selected, total, glyph, label] of [['up', c.liked, c.likeCount, 'hand-thumbs-up', 'Like'], ['down', c.disliked, c.dislikeCount, 'hand-thumbs-down', 'Disagree']]) {
+        for (const [direction, selected, total, glyph, label] of [['up', c.liked, c.likeCount, 'heart', 'Like'], ['down', c.disliked, c.dislikeCount, 'hand-thumbs-down', 'Disagree']]) {
           const vote = reflectionAction(label, glyph + (selected ? '-fill' : ''), async () => { await api('/votes/comment/' + c.id, 'PUT', { direction: selected ? null : direction }); await loadComments(); }, 'comment-vote' + (selected ? ' is-active' : ''));
           vote.setAttribute('aria-pressed', String(!!selected)); if (total) vote.append(document.createTextNode(' ' + total)); controls.append(vote);
         }
-        controls.append(reflectionAction('Reply', 'reply', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; $('comment-text').focus(); }, 'comment-reply'));
+        controls.append(reflectionAction('Reply', 'reply', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; showReplyContext($('reply-context'),c.author,c.html);$('comment-text').focus();$('comment-form').scrollIntoView({block:'center',behavior:'smooth'}); }, 'comment-reply'));
         controls.append(reflectionAction('Report', 'flag', () => report(c.id)));
         if (c.canDelete) controls.append(reflectionAction('Delete', 'trash', async () => { if (!window.confirm('Remove this reflection?')) return; await api('/comments/' + c.id, 'DELETE'); if (replyId === c.id) cancelReply(); await loadComments(); }, 'comment-delete comment-action-delete'));
       }
@@ -744,7 +774,7 @@
       (document.getElementById(location.hash.slice(1)) || $('reflections-disclosure')).scrollIntoView({ block: 'center' });
     }
   }
-  function cancelReply() { replyId = null; $('reply-target').hidden = true; $('cancel-reply').hidden = true; }
+  function cancelReply() { if($('reply-context')){$('reply-context').hidden=true;$('reply-context').replaceChildren();}replyId = null; $('reply-target').hidden = true; $('cancel-reply').hidden = true; }
   $('cancel-reply')?.addEventListener('click', cancelReply);
   $('blog-toggle')?.addEventListener('change',()=>{
     const toggle=$('blog-toggle'),enabled=toggle.checked,own=epoch;
@@ -755,7 +785,7 @@
   });
   $('report-post')?.addEventListener('click', () => run(() => report(), $('report-post')));
   $('comment-form')?.addEventListener('submit', event => { event.preventDefault(); run(async () => {
-    const markdown = $('comment-text').value; await api('/posts/' + postId + '/comments', 'POST', { markdown, parentId: replyId });
+    const markdown = $('comment-text').value;if(!markdown.trim())return; await api('/posts/' + postId + '/comments', 'POST', { markdown, parentId: replyId });
     if ($('comment-text').value === markdown) $('comment-text').value = ''; cancelReply(); await loadComments(); $('comment-status').textContent = 'Reflection posted.';
   }, $('comment-form').querySelector('[type="submit"]')); });
   async function loadModeration() {
@@ -893,17 +923,17 @@
       $('feed')?.replaceChildren();
     }
     const own = ++epoch; ++feedEpoch; loadingFeed = false; feedHasMore = false; feedObserver?.disconnect(); me = null; status('');
-    $('moderation-link').hidden = true;
+    if($('moderation-link'))$('moderation-link').hidden = true;
     if($('blog-control'))$('blog-control').hidden=true;
     try {
-      const publicView = ['everyone', 'author', 'post'].includes(view);
+      const publicView = ['everyone', 'author', 'post', 'blog', 'blog-article'].includes(view);
       try {
         const token = await window.hadithAuth?.getToken();
         if (own !== epoch) return;
         if (token) me = await api('/me');
       } catch (err) { if (!publicView) throw err; me = null; }
       if (own !== epoch) return;
-      $('moderation-link').hidden = !me?.moderator;
+      if($('moderation-link'))$('moderation-link').hidden = !me?.moderator;
       if ($('quick-name')) { $('quick-name').textContent = me?.author.publicName || me?.author.name.trim().split(/\s+/u)[0] || 'Share a post'; if (me) { avatarImage($('quick-avatar'), me.author); avatarImage($('prompt-avatar'), me.author); } }
       if (!me && view === 'author') { status('Please sign in using the account button to view this profile.'); return; }
       if (!me && ['author', 'mine', 'following', 'write', 'moderation'].includes(view)) { status('Please sign in using the account button to open your ' + (view === 'write' ? 'publication editor.' : 'personal wall.')); return; }
@@ -940,6 +970,8 @@
         const self = me?.author.handle === handle; $('follow-controls').hidden = self;
         relation = me && !self ? await api('/authors/' + encodeURIComponent(handle) + '/relationship') : { following: false, email: false }; renderRelation();
       }
+      if (view === 'blog') hydrateBlogCards(true);
+      if (['blog','blog-article'].includes(view)) await loadContributors();
       if (['everyone', 'following', 'mine', 'author'].includes(view)) {await Promise.all([loadFeed(true), loadContributors()]);const params=new URLSearchParams(location.search);if(params.has('editPost') && me){await openQuickEdit(params.get('editPost'),params.get('convertToNote')==='1');params.delete('editPost');params.delete('convertToNote');history.replaceState(null,'',location.pathname+(params.size?'?'+params:''));}}
       if (['everyone', 'following', 'mine'].includes(view)) openSharedNote();
       if (view === 'write') {

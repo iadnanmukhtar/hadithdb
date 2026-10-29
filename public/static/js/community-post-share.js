@@ -58,12 +58,14 @@
     try {
       const token = await window.hadithAuth?.getToken();
       if (own !== revision || request !== authRevision) return;
-      if (!token) { $('name').textContent = 'Share a post'; return; }
+      if (!token) { $('name').textContent = 'Share a post';$('avatar')?.replaceChildren(); return; }
       const response = await fetch(quranApiPath('/community/me'), {cache:'no-store',headers:{Authorization:'Bearer '+token}});
       if (!response.ok) return;
       const data = await response.json();
       if (own !== revision || request !== authRevision) return;
       if (owner && owner !== data.author.handle) { source = null; $('text').value = ''; dialog.close(); return; }
+      const avatar=$('avatar');
+      if(avatar){const img=element('img');img.alt='';img.referrerPolicy='no-referrer';img.src=data.author.photo || data.author.avatarFallback || '/static/img/pwa/hadith-512.png';img.addEventListener('error',()=>img.remove(),{once:true});avatar.replaceChildren(img);}
       owner = data.author.handle; $('name').textContent = data.author.publicName || data.author.name.trim().split(/\s+/u)[0];
     } catch (_) { /* The editor remains available while account details load. */ }
   }

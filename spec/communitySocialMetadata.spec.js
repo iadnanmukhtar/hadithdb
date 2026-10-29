@@ -57,3 +57,23 @@ test('imported blog metadata carries the existing public display name',()=>{
   expect(attr.authorName).toBe('Amina');
   expect(attr.shareUrl).toBe('/community/p/'+guid);
 });
+
+test.each(['note','article'])('imageless %s previews use public author identity and profile photo',kind=>{
+ const post={kind,title:'A reflection',author:{name:'Amina',handle:'amina',photo:'/community/profile-photo/amina/hash'},excerpt:'Mercy and رحمة'};
+ const result=metadata('post',{post}),$=head({canonical:'/community/p/'+guid,context:{},...result});
+ expect($('meta[property="og:title"]').attr('content')).toBe('Amina (@amina)');
+ expect($('meta[property="og:description"]').attr('content')).toBe('A reflection — Mercy and رحمة');
+ expect($('meta[property="og:image"]').attr('content')).toBe('https://hadith.example/community/profile-photo/amina/hash');
+ expect($('meta[name="twitter:image"]').attr('content')).toBe('https://hadith.example/community/profile-photo/amina/hash');
+});
+test('an image in the published body takes precedence over the author-photo fallback',()=>{
+ const result=metadata('post',{post:{title:'With image',author:{name:'Amina',photo:'/profile.png'},html:'<p>Text</p><img src="/community/media/public">'}});
+ expect(result.cover).toBe('/community/media/public');expect(result.title_en).toBe('With image — Amina');
+});
+test('imported articles without a cover do not acquire a fake /blog/ image',async()=>{
+ const sql=jest.spyOn(C,'sql').mockResolvedValue([{post_id:2,slug:'reflection',attributes_json:'{"title":"Reflection"}'}]);
+ const item={id:2,kind:'article',title:'Reflection',coverUrl:'',author:{name:'Amina'}};
+ await require('../lib/CommunityBlogImport').decorate([item]);
+ expect(item.coverUrl).toBeNull();expect(item.mediaHtml).not.toContain('<img');
+ sql.mockRestore();
+});

@@ -39,42 +39,30 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container col-lg-8 mx-auto">
-
-    <main class="posts" data-blog-infinite="1" data-blog-current-url="<%= req.originalUrl || req.url || '/blog' %>" data-blog-page-number="<%= pagination.number %>"<% if (page.prev) { %> data-blog-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-blog-next-url="<%= page.next %>"<% } %>>
-
-    <% for (var i = 0; i < posts.length; i++) { %>
-
-        <div class="card mb-3">
-          <div class="row g-0">
-            <div class="col-md-4 card-thumb">
-              <a href="<%= posts[i].url || ('/blog/' + posts[i].file) %>"><img src="<%- posts[i].cover %>" class="img-fluid rounded-start" alt="..."></a>
-            </div>
-            <div class="col-md-8">
-              <div class="card-body">
-                <% if (posts[i].postId) { %><a hidden data-blog-edit data-author="<%= posts[i].authorHandle %>" href="/community/write?post=<%= posts[i].postId %>" class="small text-muted text-decoration-none" aria-label="Edit article"><i class="bi bi-pencil" aria-hidden="true"></i> Edit article</a><% } %>
-                <h5 class="card-title"><a href="<%= posts[i].url || ('/blog/' + posts[i].file) %>"><%= posts[i].title %></a></h5>
-                <button type="button" class="btn btn-sm btn-link p-0" data-community-share-url="<%= posts[i].shareUrl || posts[i].url || ('/blog/' + posts[i].file) %>" data-community-share-title="<%= posts[i].title %>"><i class="bi bi-share" aria-hidden="true"></i> Share</button>
-                <p class="card-text mb-0"><%= posts[i].subtitle %></p>
-                <p class="card-text"><small class="text-body-secondary"><% if (posts[i].author) { %><%= posts[i].author %> · <% } %><%= posts[i].published.toDateString() %></small></p>
-              </div>
-            </div>
-          </div>
+  <main class="container py-4 community" id="community" data-view="blog">
+    <div class="community-heading"><h1>Pearls of the Deep</h1><p class="community-intro"><%= page.description_en %></p></div>
+    <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
+    <div class="community-columns"><section class="community-wall" aria-label="Blog articles">
+      <div class="posts community-feed" data-blog-infinite="1" data-blog-current-url="<%= req.originalUrl || req.url || '/blog' %>" data-blog-page-number="<%= pagination.number %>"<% if (page.prev) { %> data-blog-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-blog-next-url="<%= page.next %>"<% } %>>
+      <% for (const item of feedItems) { %>
+        <div data-blog-feed-entry>
+          <script type="application/json" data-blog-feed-item><%- JSON.stringify(item).replace(/</g, '\\u003c') %></script>
+          <%- include('sub-views/community_card.ejs', {item}); %>
         </div>
-
-    <% } %>
-
-    </main>
-
-    <div class="reader-infinite-status text-muted small" data-blog-infinite-status aria-live="polite"></div>
-    <div class="reader-infinite-sentinel" data-blog-infinite-sentinel aria-hidden="true"></div>
-  </div>
+      <% } %>
+      </div>
+      <div class="reader-infinite-status text-muted small" data-blog-infinite-status aria-live="polite"></div>
+      <div class="reader-infinite-sentinel" data-blog-infinite-sentinel aria-hidden="true"></div>
+    </section><%- include('sub-views/community_rail.ejs'); %></div>
+  </main>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
-<script src="<%= utils.staticAssetUrl('/static/js/blog-edit.js') %>" defer></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-cover-cards.js') %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community.js') %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-media.js') %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>" defer></script>
 </body>
 </html>

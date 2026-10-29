@@ -33,7 +33,7 @@
     container.append(gallery);
   };
   function pendingChanged(delta){pending=Math.max(0,pending+delta);window.communityMediaPending=pending;document.dispatchEvent(new CustomEvent('communityMediaPending'));}
-  function insert(textarea,text){const scroll=textarea.scrollTop;textarea.setRangeText(text,textarea.selectionStart,textarea.selectionEnd,'end');textarea.scrollTop=scroll;textarea.dispatchEvent(new Event('input',{bubbles:true}));}
+  function insert(textarea,text){window.CommunityShortEditor?.get(textarea)?.toSource();const scroll=textarea.scrollTop;textarea.setRangeText(text,textarea.selectionStart,textarea.selectionEnd,'end');textarea.scrollTop=scroll;textarea.dispatchEvent(new Event('input',{bubbles:true}));}
   async function token(){const value=await window.hadithAuth?.getToken();if(!value){window.hadithAuth?.requireToken?.('Please sign in to add media.');throw Error('Please sign in to add media.');}return value;}
   async function upload(textarea,files,message){
     const batchAccount=account;
