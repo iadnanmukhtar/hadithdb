@@ -149,7 +149,7 @@
     const repost=button('',async()=>{
       const own=epoch;
       const result=await api('/reposts/'+source+'/'+target,'PUT',{reposted:repost.getAttribute('aria-pressed')!=='true'});
-      if(own===epoch) {sync(result); status(result.reposted?'Reposted to your activity.':'Repost removed.');}
+      if(own===epoch) {sync(result); if(!result.reposted && $('feed')) await loadFeed(true); status(result.reposted?'Reposted to your activity.':'Repost removed.');}
     },'community-repost');
     function render(result={}) {
       Object.assign(item,result);
@@ -250,6 +250,20 @@
     let toggleDiscussion;
     const actions = item.likeSource && !privatePost ? interactionControls(item,()=>toggleDiscussion()) : node('div',undefined,'community-entry-actions');
     if(privatePost) { const draft=link('',href);draft.title='Open draft';draft.setAttribute('aria-label','Open draft');draft.append(icon('file-earmark-text'));actions.append(draft); }
+    if (!privatePost && ['article','note'].includes(kind)) {
+      const share = node('button', undefined, 'community-like'); share.type = 'button'; share.title = 'Share'; share.setAttribute('aria-label', 'Share post');
+      share.dataset.communityShareUrl = item.shareUrl || item.url; share.dataset.communityShareTitle = item.title || 'Community post';
+      share.append(icon('share')); actions.append(share);
+    }
+    if (item.canDeleteRepost) {
+      const remove=button('',async()=>{
+        const own=epoch;
+        await api('/reposts/'+item.likeSource+'/'+item.likeId,'PUT',{reposted:false});
+        if(own===epoch) {await loadFeed(true);status('Repost removed.');}
+      },'community-delete-repost');
+      remove.title='Delete repost';remove.setAttribute('aria-label','Delete repost');remove.append(icon('trash'));
+      actions.append(remove);
+    }
     if (item.canEdit) actions.append(editPostLink(item));
     if (!privatePost && ['article','note'].includes(kind)) { const read = link('', href, 'community-entry-secondary'); read.title = kind === 'article' ? 'Read article' : 'Open post'; read.setAttribute('aria-label', read.title); read.append(icon('arrow-right')); actions.append(read); }
     article.append(actions);
@@ -841,6 +855,7 @@
         if (window.CommunityBio) window.CommunityBio.render($('author-bio'), author.bio);
         else $('author-bio').textContent = author.bio || '';
         $('author-stats').textContent = `${author.followers} followers · ${author.following} following · ${author.posts} posts · ${author.comments} reflections`;
+        if ($('author-federation')) { $('author-federation').hidden = !author.federatedAddress; $('author-federation').textContent = author.federatedAddress ? 'Follow from the fediverse: ' + author.federatedAddress : ''; }
         avatarImage($('author-avatar'), author);
         $('author-profile').hidden = false; $('author-content').hidden = false;
       }
@@ -848,6 +863,7 @@
       if (view === 'mine') {
         $('wall-name').textContent = me.author.name;
         $('wall-handle').textContent = '@' + me.author.handle;
+        if ($('wall-federation')) { $('wall-federation').hidden = !me.author.federatedAddress; $('wall-federation').textContent = me.author.federatedAddress ? 'Follow from the fediverse: ' + me.author.federatedAddress : ''; }
         if (window.CommunityBio) window.CommunityBio.render($('wall-bio'), me.author.bio);
         else $('wall-bio').textContent = me.author.bio || '';
         const followers = button(`${me.author.followers} ${Number(me.author.followers) === 1 ? 'follower' : 'followers'}`, () => showPeople('followers'), 'community-profile-stat');

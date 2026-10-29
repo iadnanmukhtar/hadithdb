@@ -76,7 +76,7 @@ describe('Hadith and Quran share modals', () => {
 
 describe('Share pane actions', () => {
   const { JSDOM } = require('jsdom');
-  test('offers five choices, routes Image to the existing modal, copies text/link and invokes native sharing', async () => {
+  test('offers social sharing choices, routes Image to the existing modal, copies text/link and invokes native sharing', async () => {
     const dom = new JSDOM('<div id="image-modal"><article data-share-card data-share-ref="quran:2:255-257" data-share-url="https://quranunlocked.com/quran/2:255-257"><h2 class="hadith-share-title">Baqarah 2:255–257</h2></article></div>', { url: 'https://quranunlocked.com/community', runScripts: 'outside-only' });
     try {
       const w = dom.window;
@@ -93,7 +93,12 @@ describe('Share pane actions', () => {
       const modal = w.document.getElementById('image-modal'), card = modal.querySelector('article');
       w.openContentSharePane(modal, card);
       const pane = w.document.getElementById('content-share-pane'), buttons = pane.querySelectorAll('.content-share-options button');
-      expect([...buttons].map(b => b.textContent)).toEqual(['Image', 'Post', 'Text', 'Link', 'More…']);
+      expect([...buttons].map(b => b.textContent)).toEqual(['Image', 'Post', 'Text', 'Copy link', 'More…']);
+      expect([...pane.querySelectorAll('.content-share-options > * span')].map(el => el.textContent)).toEqual(['Image', 'Post', 'Text', 'Copy link', 'More…', 'Facebook', 'WhatsApp', 'Telegram', 'Threads', 'X', 'Reddit']);
+      for (const a of pane.querySelectorAll('.content-share-options a')) {
+        expect(decodeURIComponent(a.href)).toContain('https://quranunlocked.com/quran/2:255-257');
+        expect(a.rel).toBe('noopener noreferrer');
+      }
       buttons[0].click(); expect(show).toHaveBeenCalledTimes(1); expect(modal.dataset.shareImageRequested).toBe('true'); expect(pane.open).toBe(false);
       w.openContentSharePane(modal, card);
       const actions = pane.querySelectorAll('.content-share-options button');
@@ -105,7 +110,7 @@ describe('Share pane actions', () => {
       expect(w.document.querySelectorAll('#content-share-pane')).toHaveLength(1);
       card.dataset.shareImageAllowed = 'false';
       w.openContentSharePane(modal, card);
-      expect([...pane.querySelectorAll('.content-share-options button')].map(b=>b.textContent)).toEqual(['Post', 'Text', 'Link', 'More…']);
+      expect([...pane.querySelectorAll('.content-share-options button')].map(b=>b.textContent)).toEqual(['Post', 'Text', 'Copy link', 'More…']);
       delete card.dataset.shareImageAllowed;
       w.openContentSharePane(modal, card);
       w.navigator.share = undefined;

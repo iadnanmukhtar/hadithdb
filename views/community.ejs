@@ -21,6 +21,7 @@
         <button id="community-edit-profile" type="button" class="btn btn-sm btn-outline-secondary ms-auto flex-shrink-0" aria-haspopup="dialog" aria-controls="community-profile-dialog">Edit profile</button>
       </div>
       <p id="community-wall-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-wall-stats" class="small text-muted mb-0"></p>
+      <p id="community-wall-federation" class="small text-muted mt-2 mb-0" hidden></p>
     </div>
   </section>
   <% } %>
@@ -28,7 +29,7 @@
   <section id="community-author-profile" class="community-profile mb-4" aria-label="About the author"<% if (view === 'author') { %> hidden<% } %>>
     <span id="community-author-avatar" class="community-avatar community-avatar-large" aria-hidden="true"><%- include('sub-views/community_avatar.ejs', { avatar: author }) %></span>
     <div class="community-profile-copy"><a id="community-author-name" class="fw-semibold" href="/community/@<%= author.handle %>" dir="auto"><%= author.name %></a><span class="small text-muted ms-2">@<%= author.handle %></span>
-    <% if (view === 'author') { %><p id="community-author-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-author-stats" class="small text-muted mb-0"></p><% } %></div>
+    <% if (view === 'author') { %><p id="community-author-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-author-stats" class="small text-muted mb-0"></p><p id="community-author-federation" class="small text-muted mt-2 mb-0" hidden></p><% } %></div>
     <div id="community-follow-controls" class="d-flex flex-wrap gap-2"><button class="btn btn-outline-primary" id="community-follow" type="button">Follow</button></div>
   </section>
   <% } %>
@@ -107,6 +108,7 @@
         <label class="form-check-label" for="community-visibility">Public profile</label>
       </div>
       <p id="community-visibility-help" class="small text-muted">On: signed-in users can view your profile. Off: only you can view it. Published posts and comments remain visible in Community.</p>
+      <% if (page.context && page.context.federationEnabled) { %><p class="small text-muted">With a public profile, your public activity is also shared with fediverse followers. Making your profile private stops sharing and requests removal of previously shared activity.</p><% } %>
       <p id="community-profile-error" class="small text-danger" role="status"></p>
       <div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" data-close-profile-dialog>Cancel</button><button class="btn btn-sm btn-primary" type="submit">Save profile</button></div>
     </form>
@@ -160,7 +162,7 @@ Use **bold** for emphasis and *italics* for a title.
     <% if (post.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= post.subtitle %></p><% } %>
     <% if (post.coverUrl) { %><figure class="community-editor-cover"><img src="<%= post.coverUrl %>" alt="Article cover"></figure><% } %>
     <div class="notebook-markdown"><%- post.html %></div><% if (post.tags) { %><p class="small text-muted mt-4" dir="auto"><%= post.tags %></p><% } %>
-    <div class="d-flex gap-3 flex-wrap small mt-3"><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="btn btn-sm btn-link p-0" type="button">Report</button><a id="community-edit-post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden>Edit post</a></div>
+    <div class="d-flex gap-3 flex-wrap small mt-3"><button type="button" class="btn btn-sm btn-link p-0" data-community-share-url="<%= post.shareUrl || post.url %>" data-community-share-title="<%= post.title || 'Community post' %>"><i class="bi bi-share" aria-hidden="true"></i> Share</button><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="btn btn-sm btn-link p-0" type="button">Report</button><a id="community-edit-post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden>Edit post</a></div>
   </article>
   <%- include('sub-views/community_reflections.ejs', { post }); %>
   <% } %>
@@ -183,6 +185,7 @@ Use **bold** for emphasis and *italics* for a title.
 <%- include('sub-views/scripts.ejs', { site, page }); %>
 <script src="/static/js/community-bio.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-profile-photo.js?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="/static/js/community-social-share.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
 <% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>

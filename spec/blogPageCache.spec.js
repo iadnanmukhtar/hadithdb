@@ -52,6 +52,16 @@ test('first request writes to disk and a later request skips rendering', async (
   expect(second.body).toBe('published HTML');
   expect(fs.readdirSync(dir)).toHaveLength(1);
 });
+test('GUID routes cache featured articles but leave ordinary posts uncached',async()=>{
+  rows[0].guid='483bb19c-9951-46fd-8f61-e07a1196e6ee';rows[0].slug=null;
+  const route={baseUrl:'/community',path:'/p/'+rows[0].guid};
+  const first=setup(route);expect(await Cache.prepare(first.req,first.res,true)).toBe(false);
+  first.res.render('community',{});await first.done;
+  const second=setup(route);expect(await Cache.prepare(second.req,second.res,true)).toBe(true);
+  rows[0].featured=null;
+  const ordinary=setup(route);expect(await Cache.prepare(ordinary.req,ordinary.res,true)).toBe(false);
+  expect(ordinary.res.render).not.toHaveBeenCalled();
+});
 test('updates, publications, unpublishing and feature changes invalidate all listing pagination', async () => {
   for (const change of [() => rows[0].version++, () => rows.push({ id: 2, version: 1, status: 'published', featured: 1 }), () => rows[0].status = 'draft', () => rows[0].featured = null]) {
     const before = await visit({ path: '/', query: { o: '5' } });

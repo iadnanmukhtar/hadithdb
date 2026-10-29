@@ -13744,3 +13744,57 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 .content-item-actions .personal-note-actions { display:inline-flex; align-items:center; gap:.55rem; }
 
 .site-navbar .top-nav-community-icon { color: var(--c-accent); margin-inline-end: .25rem; }
+
+
+:is(#community-social-share, #content-share-pane) .content-share-options a {
+  display:flex; flex-direction:column; align-items:center; gap:10px;
+  color:inherit; font-size:.8rem; text-decoration:none;
+}
+:is(#community-social-share, #content-share-pane) .content-share-options a:hover i { background:var(--c-accent-18, #e2e8f0); transform:translateY(-2px); }
+:is(#community-social-share, #content-share-pane) a:focus-visible { outline:2px solid var(--c-accent, #436b87); outline-offset:4px; }
+
+#community-social-share .content-share-options { grid-template-columns:repeat(4, minmax(0, 1fr)); row-gap:20px; }
+@media (max-width:360px) { #community-social-share .content-share-options { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+
+#content-share-pane .content-share-options a {
+  align-self:center;
+  min-height:44px;
+  gap:5px;
+  color:var(--c-footnote-muted, #76787a);
+  font-size:.72rem;
+}
+#content-share-pane .content-share-options a i {
+  width:30px;
+  height:30px;
+  border-radius:9px;
+  background:transparent;
+  color:inherit;
+  font-size:1.05rem;
+}
+#content-share-pane .content-share-options a:hover { color:var(--c-accent, #436b87); }
+#content-share-pane .content-share-community { color:var(--c-accent, #436b87); font-weight:600; }
+#content-share-pane .content-share-community i { background:var(--c-accent-18, #e2e8f0); }
+
+#content-share-pane { width:min(560px, calc(100vw - 24px)); box-sizing:border-box; }
+#content-share-pane .content-share-options { display:block; }
+#content-share-pane .content-share-primary-row {
+  display:grid;
+  grid-template-columns:repeat(var(--share-option-count, 5), minmax(0, 1fr));
+  gap:8px;
+}
+#content-share-pane .content-share-social-row {
+  display:grid;
+  grid-template-columns:repeat(6, minmax(0, 1fr));
+  gap:6px;
+  margin-top:24px;
+  padding-top:16px;
+  border-top:1px solid var(--c-accent-10, #f1f5f9);
+}
+@media (max-width:360px) {
+  #content-share-pane { padding-inline:12px; }
+  #content-share-pane .content-share-primary-row { gap:4px; }
+  #content-share-pane .content-share-primary-row button { font-size:.72rem; }
+  #content-share-pane .content-share-primary-row i { width:42px; height:42px; }
+  #content-share-pane .content-share-social-row { gap:2px; }
+  #content-share-pane .content-share-social-row a { font-size:.62rem; }
+}

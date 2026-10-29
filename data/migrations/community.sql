@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS community_authors (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 CREATE TABLE IF NOT EXISTS community_posts (
  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, author_uid VARCHAR(128) COLLATE utf8mb4_bin NOT NULL,
+ guid CHAR(36) CHARACTER SET ascii COLLATE ascii_bin NULL, UNIQUE KEY community_posts_guid (guid),
  kind VARCHAR(12) NOT NULL, title VARCHAR(240) NOT NULL, subtitle TEXT NULL, cover_url TEXT NULL, markdown MEDIUMTEXT NOT NULL, tags VARCHAR(500) NOT NULL DEFAULT '',
  status VARCHAR(16) NOT NULL DEFAULT 'draft', version INT NOT NULL DEFAULT 1,
  public_title VARCHAR(240) NULL, public_subtitle TEXT NULL, public_cover_url TEXT NULL, public_markdown MEDIUMTEXT NULL, public_tags VARCHAR(500) NULL,

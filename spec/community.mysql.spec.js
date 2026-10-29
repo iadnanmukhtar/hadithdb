@@ -67,6 +67,34 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     adminSpy?.mockRestore();
     delete process.env.COMMUNITY_MODERATOR_UIDS;
   });
+  test('GUID sharing preserves identities, legacy links, blog pages, and publication privacy',async()=>{
+    const Identity=require('../lib/CommunityPostIdentity'),user={uid:'moderator',name:'GUID author'};
+    let post=await Community.savePost(user,postInput({action:'publish'}));
+    expect(Identity.valid(post.guid)).toBe(true);expect(post.shareUrl).toBe('/community/p/'+post.guid);
+    const original=post.guid;
+    const response=await fetch(base+post.shareUrl);expect(response.status).toBe(200);
+    expect(await response.text()).toContain('data-community-share-url="'+post.shareUrl+'"');
+    const old=await fetch(base+'/community/@'+post.author.handle+'/'+post.id,{redirect:'manual'});
+    expect(old.status).toBe(301);expect(old.headers.get('location')).toBe(post.shareUrl);
+    post=await Community.savePost(user,postInput({action:'publish',version:post.version,markdown:'Updated'}),post.id);
+    expect(post.guid).toBe(original);expect((await Community.post(original)).id).toBe(post.id);
+    const second=await Community.savePost(user,postInput({kind:'note',action:'publish'}));expect(second.guid).not.toBe(original);
+    await expect(q(`UPDATE ${prefix}posts SET guid=? WHERE id=?`,[original,second.id])).rejects.toMatchObject({code:'ER_DUP_ENTRY'});
+    const before={hId:9987,ref:'bukhari:1',title_en:'Before'};
+    const generated=await require('../lib/CommunityHadithPosts').publish(user,'title',before,{...before,title_en:'After'});
+    expect(Identity.valid((await Community.post(generated)).guid)).toBe(true);
+    const blog=(await require('../lib/CommunityBlogImport').records())[0];
+    expect(Identity.valid(blog.guid)).toBe(true);
+    const shared=await fetch(base+'/community/p/'+blog.guid,{redirect:'manual'});
+    expect(shared.status).toBe(301);expect(shared.headers.get('location')).toBe('/blog/'+blog.slug);
+    const blogPage=await fetch(base+'/blog/'+blog.slug);expect(await blogPage.text()).toContain('data-community-share-url="/community/p/'+blog.guid+'"');
+    await Community.savePost(user,postInput({action:'unpublish',version:post.version}),post.id);
+    expect((await fetch(base+'/community/p/'+original)).status).toBe(404);
+    await q(`UPDATE ${prefix}posts SET guid=NULL WHERE id=?`,[second.id]);
+    await Identity.migrate(Community.sql);const backfilled=await Community.post(second.id);expect(Identity.valid(backfilled.guid)).toBe(true);
+    await Identity.migrate(Community.sql);expect((await Community.post(second.id)).guid).toBe(backfilled.guid);
+  },120000);
+
   test('hadith titles and revisions create public, attributed, deduplicated Community posts', async()=>{
     const publish=require('../lib/CommunityHadithPosts').publish;
     const user={uid:'hadith-editor',name:'Hadith Editor'};
@@ -501,7 +529,14 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     expect(replies.items[0].html).toContain('Child reply');
     await json('/api/community/reposts/post/'+post.id,'PUT','bob',{reposted:true});
     expect((await Community.feed({scope:'mine'},{uid:'bob'})).items.some(i=>i.activity==='repost' && i.likeSource==='post')).toBe(true);
+    const ownRepost=(await Community.feed({scope:'mine'},{uid:'bob'})).items.find(i=>i.activity==='repost' && i.likeId===post.id);
+    expect(ownRepost.canDeleteRepost).toBe(true);
+    const otherRepost=(await Community.feed({scope:'everyone'},{uid:'alice'})).items.find(i=>i.activity==='repost' && i.likeId===post.id);
+    expect(otherRepost.canDeleteRepost).toBe(false);
+    await json('/api/community/reposts/post/'+post.id,'PUT','alice',{reposted:false});
+    expect((await Community.feed({scope:'mine'},{uid:'bob'})).items.some(i=>i.activity==='repost' && i.likeId===post.id)).toBe(true);
     await json('/api/community/reposts/post/'+post.id,'PUT','bob',{reposted:false});
+    expect((await Community.post(post.id)).id).toBe(post.id);
     expect((await Community.feed({scope:'mine'},{uid:'bob'})).items.some(i=>i.activity==='repost' && i.likeSource==='post')).toBe(false);
     const blog=(await q(`INSERT INTO ${prefix}blog_comments (post_slug,user_uid,user_name,text,createdAt) VALUES ('a-blog','bob','Bob','Blog root',NOW())`)).insertId;
     await json('/api/community/discussion/blog_comments/'+blog,'POST','alice',{markdown:'Blog reply'},201);

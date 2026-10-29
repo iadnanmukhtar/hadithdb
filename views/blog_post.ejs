@@ -10,7 +10,7 @@
 
     var page = {
       menu: 'Blog Post',
-      title_en: `Pearls | ${attr.title}`,
+      title_en: `Pearls | ${attr.title}${attr.authorName ? ' — ' + attr.authorName : ''}`,
       description_en: attr.description || attr.subtitle || site.desc,
       subtitle_en: attr.subtitle || 'Blog Post',
       subtitle: null,
@@ -48,6 +48,7 @@
             <section class="body">
              <%- body %>
             </section>
+            <button type="button" class="btn btn-sm btn-outline-secondary my-3" data-community-share-url="<%= attr.shareUrl || ('/blog/' + slugVal) %>" data-community-share-title="<%= attr.title %>"><i class="bi bi-share" aria-hidden="true"></i> Share</button>
           </article>
           <%- include('sub-views/comment_widget.ejs', {
             widgetId: 'blog-comments',
@@ -67,5 +68,6 @@
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
 <script src="<%= utils.staticAssetUrl('/static/js/blog-edit.js') %>" defer></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>" defer></script>
 </body>
 </html>

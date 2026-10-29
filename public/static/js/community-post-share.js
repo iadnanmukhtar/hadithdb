@@ -17,7 +17,19 @@
     const quran = url.hostname.startsWith('quran') || /^\/(?:quran(?:[/:]|$)|\d+:|translations\/|tafsir\/)/.test(url.pathname);
     return quran ? '/static/img/quran-apple-touch-icon.png' : '/static/img/apple-touch-icon.png';
   }
+  let imagePreviewUrl = null;
+  function releaseImagePreview() {
+    if (imagePreviewUrl) URL.revokeObjectURL(imagePreviewUrl);
+    imagePreviewUrl = null;
+  }
   function preview(data) {
+    if (source.imageBlob) {
+      const image = element('img');
+      image.src = imagePreviewUrl; image.alt = source.title;
+      image.style.cssText = 'display:block;max-width:100%;max-height:55vh;object-fit:contain;margin:auto';
+      $('preview').replaceChildren(image);
+      return;
+    }
     // Composer previews always retain the compact thumbnail layout.
     const link = element('a', '', 'community-link-card');
     link.href = source.url; link.target = '_blank'; link.rel = 'noopener';
@@ -60,7 +72,10 @@
     const url = new URL(data.url, location.href);
     if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) throw Error('Invalid source link.');
     const next = {url:url.href, title:data.title || url.hostname, description:data.description || '', image:sourceIcon(url), imageKind:'icon', source:true};
-    const changed = source?.url !== next.url;
+    next.imageBlob = data.imageBlob || null;
+    const changed = source?.url !== next.url || source?.imageBlob !== next.imageBlob;
+    releaseImagePreview();
+    if (next.imageBlob) imagePreviewUrl = URL.createObjectURL(next.imageBlob);
     source = next; ++revision; waitingForSignIn = false;
     if (changed) $('text').value = typeof data.text === 'string' ? data.text : '';
     $('status').replaceChildren(); setBusy(false); preview(source);
@@ -69,6 +84,7 @@
     $('text').focus({preventScroll:true});
     // Neither authentication nor remote metadata delays opening the editor.
     profile();
+    if (source.imageBlob) return;
     const own = revision;
     fetch(quranApiPath('/community/link-preview')+'?url='+encodeURIComponent(source.url), {cache:'no-store'})
       .then(async response => { if(!response.ok) return; const data=await response.json(); if(own!==revision || !source)return;
@@ -81,7 +97,7 @@
     event.preventDefault();
     if (busy || !source) return;
     const own = revision, account = authRevision;
-    const markdown = [$('text').value.trim(), source.url].filter(Boolean).join('\n\n');
+    const draft = source, caption = $('text').value.trim();
     setBusy(true); $('status').textContent = 'Posting…';
     try {
       const token = await window.hadithAuth?.getToken();
@@ -92,6 +108,14 @@
         $('status').textContent = 'Sign in to post. Your text is kept here.';
         return;
       }
+      if (draft.imageBlob && !draft.uploadedImageUrl) {
+        const upload = await fetch(quranApiPath('/community/media'), {method:'POST',cache:'no-store',credentials:'same-origin',headers:{Authorization:'Bearer '+token,'Content-Type':draft.imageBlob.type},body:draft.imageBlob});
+        const media = await upload.json();
+        if (own !== revision || account !== authRevision) return;
+        if (!upload.ok) throw Error(media.error || 'Unable to upload your image.');
+        draft.uploadedImageUrl = media.url;
+      }
+      const markdown = [caption, draft.imageBlob ? '![Shared image](' + draft.uploadedImageUrl + ')' : '', draft.url].filter(Boolean).join('\n\n');
       const response = await fetch(quranApiPath('/community/posts'), {method:'POST',cache:'no-store',credentials:'same-origin',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({kind:'note',title:'',markdown,tags:'',notifyEmail:false,action:'publish'})});
       const data = await response.json();
       if (own !== revision || account !== authRevision) return;
@@ -101,7 +125,7 @@
       const link = element('a',post.status === 'pending' ? 'View My Profile' : 'View post');
       link.href = post.status === 'published' ? post.url : '/community/mine'; link.target='_blank';link.rel='noopener';
       $('status').replaceChildren(document.createTextNode(message),link);
-      $('text').value = ''; source = null;
+      $('text').value = ''; source = null; releaseImagePreview();
       document.dispatchEvent(new CustomEvent('communityPostShared',{detail:{post}}));
     } catch(err) { if(own===revision)$('status').textContent = err.message || 'Unable to publish your post.'; }
     finally { if(own===revision)setBusy(false); }

@@ -8054,6 +8054,7 @@ function quranShareModalHtml(ayah, shareId) {
 	$('<div>').addClass('hadith-share-tool-group')
 		.append($('<button>').attr({ type: 'button', title: 'Copy text', 'aria-label': 'Copy text' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy-text').append($('<span>').addClass('bi bi-card-text')))
 		.append($('<button>').attr({ type: 'button', title: 'Copy image', 'aria-label': 'Copy image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy').append($('<span>').addClass('bi bi-clipboard')))
+		.append($('<button>').attr({ type: 'button', title: 'Post image to Community', 'aria-label': 'Post image to Community' }).addClass('btn btn-sm btn-outline-secondary hadith-share-community').append($('<span>').addClass('bi bi-people')).append(' Post'))
 		.append($('<button>').attr({ type: 'button', title: 'Share image', 'aria-label': 'Share image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-native').append($('<span>').addClass('bi bi-share')))
 		.appendTo($actions);
 	$('<button>').attr({ type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }).addClass('btn-close').appendTo($header);
@@ -17538,6 +17539,11 @@ function initHadithShareModals(root) {
 			});
 		}
 
+		var communityButton = modal.querySelector('.hadith-share-community');
+		if (communityButton) communityButton.addEventListener('click', function () {
+			exportHadithShareCard(card, 'community', communityButton);
+		});
+
 		if (shareButton) {
 			card._shareButton = shareButton;
 			shareButton.addEventListener('click', function () {
@@ -17779,6 +17785,10 @@ async function exportHadithShareCard(card, mode, button) {
 			return;
 		}
 		var blob = await renderHadithShareImage(card);
+		if (mode === 'community') {
+			window.CommunityPostShare.open({ url: contentShareUrl(card), title: card.dataset.shareRef || 'Shared image', imageBlob: blob });
+			return;
+		}
 		var filename = getHadithShareFilename(card.dataset.shareRef);
 		if (mode === 'share') {
 			var file = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
@@ -17898,6 +17908,18 @@ function contentShareUrl(card) {
 	return new URL(explicit || path, window.location.href).href;
 }
 
+function contentSocialShareOptions(title, url) {
+	var encodedUrl = encodeURIComponent(url);
+	return [
+		['Facebook', 'facebook', 'https://www.facebook.com/sharer/sharer.php?u=' + encodedUrl],
+		['WhatsApp', 'whatsapp', 'https://wa.me/?text=' + encodeURIComponent(title + '\n' + url)],
+		['Telegram', 'telegram', 'https://t.me/share/url?url=' + encodedUrl + '&text=' + encodeURIComponent(title)],
+		['Threads', 'threads', 'https://www.threads.com/intent/post?text=' + encodeURIComponent(title + '\n' + url)],
+		['X', 'twitter-x', 'https://x.com/intent/tweet?url=' + encodedUrl + '&text=' + encodeURIComponent(title)],
+		['Reddit', 'reddit', 'https://www.reddit.com/submit?url=' + encodedUrl + '&title=' + encodeURIComponent(title)]
+	];
+}
+
 function openContentSharePane(modalRoot, card) {
 	var pane = document.getElementById('content-share-pane');
 	if (!pane) {
@@ -17918,23 +17940,31 @@ function openContentSharePane(modalRoot, card) {
 	var options = pane.querySelector('.content-share-options');
 	var imageAllowed = modalRoot && card.getAttribute('data-share-image-allowed') !== 'false';
 	options.replaceChildren();
+	var primaryRow = document.createElement('div'); primaryRow.className = 'content-share-primary-row';
+	var socialRow = document.createElement('div'); socialRow.className = 'content-share-social-row';
+	options.append(primaryRow, socialRow);
 	options.style.setProperty('--share-option-count', imageAllowed ? '5' : '4');
 	[
 		['Image', 'image', function () { pane.close(); modalRoot.dataset.shareImageRequested = 'true'; bootstrap.Modal.getOrCreateInstance(modalRoot).show(); }],
 		['Post', 'people', function () { return shareCardToCommunity(card); }],
 		['Text', 'card-text', async function () { await copyTextToClipboard(hadithShareCardText(card)); status.textContent = 'Text copied'; }],
-		['Link', 'link-45deg', async function () { await copyTextToClipboard(contentShareUrl(card)); status.textContent = 'Link copied'; }],
-		['More…', 'three-dots', async function () { if (!navigator.share) { status.textContent = 'Native sharing is unavailable in this browser. Use Text or Link to copy instead.'; return; } await navigator.share({ title: shareTitle, url: contentShareUrl(card) }); }]
+		['Copy link', 'link-45deg', async function () { await copyTextToClipboard(contentShareUrl(card)); status.textContent = 'Link copied'; }],
+		['More…', 'three-dots', async function () { if (!navigator.share) { status.textContent = 'Native sharing is unavailable in this browser. Use Text or Copy link instead.'; return; } await navigator.share({ title: shareTitle, url: contentShareUrl(card) }); }],
+		...contentSocialShareOptions(shareTitle, contentShareUrl(card))
 	].filter(function (option) { return option[0] !== 'Image' || imageAllowed; }).forEach(function (option) {
-		var button = document.createElement('button');
-		button.type = 'button';
+		var external = typeof option[2] === 'string';
+		var button = document.createElement(external ? 'a' : 'button');
+		if (option[0] === 'Post') button.className = 'content-share-community';
+		if (external) { button.href = option[2]; button.target = '_blank'; button.rel = 'noopener noreferrer'; }
+		else button.type = 'button';
 		var icon = document.createElement('i');
 		icon.className = 'bi bi-' + option[1];
 		icon.setAttribute('aria-hidden', 'true');
+		if (option[1] === 'threads' || option[1] === 'twitter-x') { icon.className = 'content-social-letter'; icon.textContent = option[1] === 'threads' ? '@' : '𝕏'; icon.style.fontStyle = 'normal'; }
 		var label = document.createElement('span'); label.textContent = option[0];
 		button.append(icon, label);
-		button.addEventListener('click', async function () { try { await option[2](); } catch (err) { if (err.name !== 'AbortError') status.textContent = err.message || 'Unable to share. Please try again.'; } });
-		options.appendChild(button);
+		if (!external) button.addEventListener('click', async function () { try { await option[2](); } catch (err) { if (err.name !== 'AbortError') status.textContent = err.message || 'Unable to share. Please try again.'; } });
+		(external ? socialRow : primaryRow).appendChild(button);
 	});
 	if (!pane.open) pane.showModal();
 }

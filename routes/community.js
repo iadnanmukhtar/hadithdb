@@ -95,7 +95,8 @@ function page(res, req, view, extra = {}) {
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
     page: { menu: 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
-      noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view } } });
+      noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
+      ...require('../lib/CommunitySocialMetadata')(view,extra) } });
 }
 router.get('/profile-photo/:handle/:hash', wrap(async (req, res) => {
   const data = await require('../lib/CommunityProfilePhoto').image(req.params.handle, req.params.hash);
@@ -122,6 +123,12 @@ router.post('/unsubscribe/:token', wrap(async (req, res) => {
   page(res, req, 'unsubscribe', { unsubscribed: true });
 }));
 router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed() })));
+router.get('/p/:guid', wrap(async (req,res) => {
+  if (!require('../lib/CommunityPostIdentity').valid(req.params.guid)) return res.sendStatus(404);
+  const post = await Community.post(req.params.guid);
+  if (post.url.startsWith('/blog/') || '/community'+req.path !== post.url) return res.redirect(301,post.url);
+  page(res,req,'post',{post,author:post.author});
+}));
 for (const view of ['following', 'mine', 'write', 'moderation']) router.get('/' + view, (req, res) => page(res, req, view));
 router.get('/@:handle', wrap(async (req, res) => {
   if (!/^[a-z0-9_.-]{3,40}$/.test(req.params.handle)) return res.sendStatus(404);
@@ -129,7 +136,7 @@ router.get('/@:handle', wrap(async (req, res) => {
 }));
 router.get('/@:handle/:id', wrap(async (req, res) => {
   const post = await Community.post(req.params.id);
-  if (post.url.startsWith('/blog/') || post.author.handle !== req.params.handle) return res.redirect(301, post.url);
+  if (post.url !== '/community'+req.path) return res.redirect(301, post.url);
   page(res, req, 'post', { post, author: post.author });
 }));
 module.exports = { pages: router, api };

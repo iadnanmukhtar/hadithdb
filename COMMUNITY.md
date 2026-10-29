@@ -16,9 +16,14 @@ The top-of-wall **What's on your mind?** composer posts short public notes witho
 - `/community/write`: Markdown editor, notebook copying, public preview, draft saving, publishing/updating, and unpublishing.
 - `/community/moderation`: first-publication review, reports, hiding, and restoring posts.
 
-The personal wall includes the author's private publication drafts; the public author wall only shows published content. Public URLs use stable numerical post identities, so changing a title does not break links. Authors may replace their generated handle once; their chosen handle is permanent.
+The personal wall includes the author's private publication drafts; the public author wall only shows published content. Each post and article has a persistent cryptographically random UUIDv4 GUID. Public community URLs and share links use `/community/p/<guid>`, so changing a title or handle does not break links. Existing numeric links redirect to the new URL; imported blog share links redirect to their established blog pages. Existing rows receive GUIDs during the idempotent schema migration. GUIDs do not replace publication and ownership checks. Authors may replace their generated handle once; their chosen handle is permanent.
 
 ## Deployment
+
+Optional per-author ActivityPub federation publishes public posts, comments,
+likes, and reposts to remote followers. It is disabled by default; see
+[ActivityPub setup and delivery operations](ACTIVITYPUB.md) for activation,
+privacy behavior, the worker, and protocol scope.
 
 The application creates the eight new InnoDB tables from `data/migrations/community.sql` on first Community use. No existing notebook, source-content, or comments table is altered. The database account needs CREATE TABLE permission; alternatively install the SQL beforehand. Deploy app.js, the Community modules/routes/templates/assets, notebook navigation, and the updated notebook Share module together.
 

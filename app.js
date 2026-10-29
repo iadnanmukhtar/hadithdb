@@ -423,6 +423,12 @@ const startupPromise = (async () => {
     await require('./lib/SharhBooks').ensureEntryBooks();
     await Hadith.a_reinit();
   }));
+  // Federation signatures cover the exact request bytes, before JSON parsing.
+  app.use((req, res, next) => {
+    if (req.path === '/.well-known/webfinger' || req.path === '/activitypub' || req.path.startsWith('/activitypub/'))
+      return require('./routes/activitypub')(req, res, next);
+    next();
+  });
   app.use(express.json({ limit: REQUEST_BODY_LIMIT, verify: preserveStripeWebhookRawBody }));
   app.use(express.urlencoded({ extended: true, limit: REQUEST_BODY_LIMIT, parameterLimit: 10000 }));
   app.use(cookieParser());

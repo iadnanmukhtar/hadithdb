@@ -148,3 +148,27 @@ test('late metadata cannot replace the small brand thumbnail or expand the compo
   expect(d.querySelector('.community-link-card strong').textContent).toBe('Bukhari 1178');
  }finally{dom.window.close();}
 });
+
+test('previews and uploads the rendered image once, then publishes a short post and retains it on retry',async()=>{
+ let failPost=true;
+ const fetch=jest.fn(async url=>({ok:!url.endsWith('/posts')||!failPost,json:async()=>url.endsWith('/media')?{url:'/community/media/image-id'}:url.endsWith('/posts')?(failPost?{error:'Try again'}:{post:{status:'published',url:'/community/p/1'}}):{author:{name:'Reader',handle:'reader'}}}));
+ const {dom,w,d}=await fixture(fetch);
+ try{
+  w.URL.createObjectURL=jest.fn(()=> 'blob:rendered-image');w.URL.revokeObjectURL=jest.fn();
+  const imageBlob=new w.Blob(['png'],{type:'image/png'});
+  w.CommunityPostShare.open({url:'https://hadithunlocked.com/bukhari:1',title:'Bukhari 1',imageBlob});await settle();
+  expect(d.querySelector('#community-share-preview img').src).toBe('blob:rendered-image');
+  expect(fetch.mock.calls.some(([url])=>url.includes('link-preview'))).toBe(false);
+  d.getElementById('community-share-text').value='My caption';
+  const submit=()=>d.getElementById('community-share-form').dispatchEvent(new w.Event('submit',{cancelable:true}));
+  submit();await settle();
+  expect(d.getElementById('community-share-status').textContent).toBe('Try again');
+  expect(d.querySelector('#community-share-preview img')).not.toBeNull();
+  failPost=false;submit();await settle();
+  const uploads=fetch.mock.calls.filter(([url])=>url.endsWith('/media'));
+  expect(uploads).toHaveLength(1);expect(uploads[0][1].body).toBe(imageBlob);
+  const posts=fetch.mock.calls.filter(([url])=>url.endsWith('/posts'));
+  expect(JSON.parse(posts[1][1].body)).toMatchObject({kind:'note',title:'',action:'publish',markdown:'My caption\n\n![Shared image](/community/media/image-id)\n\nhttps://hadithunlocked.com/bukhari:1'});
+  expect(w.URL.revokeObjectURL).toHaveBeenCalledWith('blob:rendered-image');
+ }finally{dom.window.close();}
+});
