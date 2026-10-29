@@ -43,7 +43,7 @@ test.each(['Post','A reflection'])('GUID post links include author-aware titles 
 test('uses a readable fallback for an empty feed and brand artwork for posts without a cover',()=>{
   expect(metadata('everyone',{initial:{items:[]}}).description_en).toContain('Reader posts');
   const $=head({canonical:'/community/p/'+guid,context:{},...metadata('post',{post:{title:'Post',author:{name:'Reader'},excerpt:'Text'}})});
-  expect($('meta[property="og:image"]').attr('content')).toBe('https://hadith.example/static/img/logo.png');
+  expect($('meta[property="og:image"]').attr('content')).toBe('https://hadith.example/static/img/pwa/hadith-512.png');
 });
 test.each(['mine','following','author','write','moderation','unsubscribe'])('does not summarize private context from %s',view=>{
   expect(metadata(view,{initial:{items:[{excerpt:'Private content'}]}})).toEqual({});

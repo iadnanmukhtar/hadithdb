@@ -18,11 +18,11 @@ test('uses displayed translations and preserves Arabic when English is absent', 
 
 test.each([false, true])('publishes an absolute crawler-accessible brand image (Quran: %s)', quran => {
   const image = metadata.image(null, 'https://example.com', quran);
-  expect(image).toBe(`https://example.com/static/img/${quran ? 'quran-' : ''}logo.png`);
+  expect(image).toBe(`https://example.com/static/img/pwa/${quran ? 'quran' : 'hadith'}-512.png`);
   expect(fs.existsSync(path.join(__dirname, '../public', new URL(image).pathname))).toBe(true);
   const png = fs.readFileSync(path.join(__dirname, '../public', new URL(image).pathname));
-  expect(png.readUInt32BE(16)).toBe(1080);
-  expect(png.readUInt32BE(20)).toBe(1080);
+  expect(png.readUInt32BE(16)).toBe(512);
+  expect(png.readUInt32BE(20)).toBe(512);
   expect(metadata.image('javascript:alert(1)', 'https://example.com', quran)).toBe(image);
 });
 
@@ -43,9 +43,9 @@ test.each([['/bukhari:2', false], ['/quran:30:16', true]])('renders social tags 
   expect($('meta[property="og:title"]').attr('content')).toBe('Reference — A "title"');
   expect($('meta[property="og:description"]').attr('content')).toBe('Reference: A passage & its meaning.');
   expect($('meta[property="og:url"]').attr('content')).toBe(`https://${quran ? 'quran' : 'hadith'}.example${canonical}`);
-  expect($('meta[property="og:image"]').attr('content')).toBe(`https://${quran ? 'quran' : 'hadith'}.example/static/img/${quran ? 'quran-' : ''}logo.png`);
+  expect($('meta[property="og:image"]').attr('content')).toBe(`https://${quran ? 'quran' : 'hadith'}.example/static/img/pwa/${quran ? 'quran' : 'hadith'}-512.png`);
   expect($('meta[name="twitter:card"]').attr('content')).toBe('summary');
-  expect($('meta[property="og:image:width"]').attr('content')).toBe('1080');
-  expect($('meta[property="og:image:height"]').attr('content')).toBe('1080');
+  expect($('meta[property="og:image:width"]').attr('content')).toBe('512');
+  expect($('meta[property="og:image:height"]').attr('content')).toBe('512');
   expect($('link[rel="apple-touch-icon"]').attr('href')).toContain('apple-touch-icon.png');
 });
