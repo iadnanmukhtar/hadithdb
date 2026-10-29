@@ -8054,7 +8054,7 @@ function quranShareModalHtml(ayah, shareId) {
 	$('<div>').addClass('hadith-share-tool-group')
 		.append($('<button>').attr({ type: 'button', title: 'Copy text', 'aria-label': 'Copy text' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy-text').append($('<span>').addClass('bi bi-card-text')))
 		.append($('<button>').attr({ type: 'button', title: 'Copy image', 'aria-label': 'Copy image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy').append($('<span>').addClass('bi bi-clipboard')))
-		.append($('<button>').attr({ type: 'button', title: 'Post image to Community', 'aria-label': 'Post image to Community' }).addClass('btn btn-sm btn-outline-secondary hadith-share-community').append($('<span>').addClass('bi bi-people')).append(' Post'))
+		.append($('<button>').attr({ type: 'button', title: 'Post image to Community', 'aria-label': 'Post image to Community' }).addClass('btn btn-sm btn-outline-secondary hadith-share-community').append($('<span>').addClass('bi bi-people').attr('aria-hidden', 'true')))
 		.append($('<button>').attr({ type: 'button', title: 'Share image', 'aria-label': 'Share image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-native').append($('<span>').addClass('bi bi-share')))
 		.appendTo($actions);
 	$('<button>').attr({ type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': 'Close' }).addClass('btn-close').appendTo($header);
