@@ -36,13 +36,14 @@ test.each(['Post','A reflection'])('GUID post links include author-aware titles 
   const result=await page('/p/:guid',{path:'/p/'+guid,params:{guid}}),$=head(result);
   expect($('meta[property="og:title"]').attr('content')).toBe(title==='Post'?'Post by Amina أحمد':'A reflection — Amina أحمد');
   expect($('meta[property="og:image"]').attr('content')).toBe('https://hadith.example/community/media/abc');
+  expect($('meta[property="og:image:width"]').length).toBe(0);
   expect($('meta[name="twitter:image"]').attr('content')).toBe('https://hadith.example/community/media/abc');
   expect($('meta[property="og:url"]').attr('content')).toBe('https://hadith.example'+url);
 });
 test('uses a readable fallback for an empty feed and brand artwork for posts without a cover',()=>{
   expect(metadata('everyone',{initial:{items:[]}}).description_en).toContain('Reader posts');
   const $=head({canonical:'/community/p/'+guid,context:{},...metadata('post',{post:{title:'Post',author:{name:'Reader'},excerpt:'Text'}})});
-  expect($('meta[property="og:image"]').attr('content')).toBe('https://hadith.example/static/img/apple-touch-icon.png');
+  expect($('meta[property="og:image"]').attr('content')).toBe('https://hadith.example/static/img/logo.png');
 });
 test.each(['mine','following','author','write','moderation','unsubscribe'])('does not summarize private context from %s',view=>{
   expect(metadata(view,{initial:{items:[{excerpt:'Private content'}]}})).toEqual({});
