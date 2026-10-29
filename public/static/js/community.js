@@ -49,7 +49,7 @@
   function button(label, work, className = 'btn btn-sm btn-outline-secondary') {
     const el = node('button', label, className); el.type = 'button'; el.addEventListener('click', () => run(work, el)); return el;
   }
-  async function api(path, method = 'GET', body) {
+  async function api(path, method = 'GET', body, namespace = '/community') {
     const requestEpoch = epoch;
     let token = null;
     try { token = await window.hadithAuth?.getToken(); } catch (err) { if (method !== 'GET') throw err; }
@@ -58,13 +58,56 @@
       throw new Error('Please sign in to participate.');
     }
     if (requestEpoch !== epoch) throw new Error('Account changed. Please try again.');
-    const response = await fetch(quranApiPath('/community' + path), { method, cache: 'no-store', credentials: 'same-origin',
+    const response = await fetch(quranApiPath(namespace + path), { method, cache: 'no-store', credentials: 'same-origin',
       headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
       ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
     const result = await response.json();
     if (requestEpoch !== epoch) throw new Error('Account changed. Please try again.');
     if (!response.ok) throw new Error(result.error || 'Unable to complete this request.');
     return result;
+  }
+  function installReferenceExpansion(editor, available) {
+    if (!editor) return;
+    let revision = 0, composing = false;
+    const invalidate = () => { ++revision; };
+    editor.addEventListener('compositionstart', () => { composing = true; invalidate(); });
+    editor.addEventListener('compositionend', () => { composing = false; });
+    editor.form?.addEventListener('reset', invalidate);
+    editor.form?.addEventListener('submit', invalidate);
+    editor.closest('dialog')?.addEventListener('close', invalidate);
+    document.addEventListener('hadithAuthChanged', invalidate);
+    editor.addEventListener('input', async event => {
+      const own = ++revision, account = epoch;
+      if (composing || event.isComposing || editor.disabled || editor.readOnly || !available()) return;
+      if (!['insertLineBreak', 'insertParagraph'].includes(event.inputType)) return;
+      const text = editor.value, newlineOffset = editor.selectionStart - 1;
+      if (editor.selectionStart !== editor.selectionEnd || text[newlineOffset] !== '\n') return;
+      const line = text.slice(text.lastIndexOf('\n', newlineOffset - 1) + 1, newlineOffset);
+      if (!/^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(line)) return;
+      try {
+        const result = await api('/auto-expand', 'POST', { markdown: text, newlineOffset }, '/notebook');
+        if (own !== revision || account !== epoch || editor.value !== text || composing || editor.disabled || editor.readOnly || !available()) return;
+        if (!result.edits.length) return;
+        const start = editor.selectionStart, end = editor.selectionEnd, direction = editor.selectionDirection;
+        const scrollTop = editor.scrollTop, scrollLeft = editor.scrollLeft;
+        const map = position => {
+          let delta = 0;
+          for (const edit of result.edits) {
+            if (position < edit.start) break;
+            if (position < edit.end) return edit.start + delta + edit.text.length;
+            delta += edit.text.length - (edit.end - edit.start);
+          }
+          return position + delta;
+        };
+        for (const edit of [...result.edits].reverse()) editor.setRangeText(edit.text, edit.start, edit.end, 'preserve');
+        editor.setSelectionRange(map(start), map(end), direction);
+        // Notify preview, dirty-state, and composer sizing listeners of the expanded draft.
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+        editor.scrollTop = scrollTop; editor.scrollLeft = scrollLeft;
+      } catch (_) {
+        // A failed lookup leaves the author's draft intact.
+      }
+    });
   }
   async function run(work, el) {
     if (el?.disabled) return;
@@ -417,7 +460,17 @@
   },$('quick-convert')));
   function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
-  function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = false; $('preview-panel').hidden = true; }
+  let articleSaveTimer, articleSaveTask = null;
+  function scheduleArticleSave() {
+    clearTimeout(articleSaveTimer);
+    if (view !== 'write' || !me || !dirty) return;
+    $('editor-status').textContent = savingPost ? 'Saving…' : 'Unsaved changes';
+    const account = epoch;
+    articleSaveTimer = setTimeout(() => {
+      save('draft', true).catch(err => { if (account === epoch) $('editor-status').textContent = 'Not saved: ' + err.message; });
+    }, 1800);
+  }
+  function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = false; $('preview-panel').hidden = true; scheduleArticleSave(); }
   function renderEditorCover(post) {
     $('cover-url').value=post.coverUrl||''; $('cover-remove').hidden=!post.coverUrl;
     let figure=$('editor-cover');
@@ -448,22 +501,51 @@
     renderEditorBlog();document.dispatchEvent(new Event('communityEditorPopulated'));
     previewSignature = null; dirty = false; $('publish').disabled = false; $('preview-panel').hidden = true;
   }
-  async function save(action) {
+  async function save(action, background = false) {
+    clearTimeout(articleSaveTimer);
+    const account = epoch;
+    if (articleSaveTask) {
+      await articleSaveTask;
+      if (account !== epoch || background) return;
+    }
+    const task = performArticleSave(action, background);
+    articleSaveTask = task;
+    try { await task; } finally { if (articleSaveTask === task) articleSaveTask = null; }
+  }
+  async function performArticleSave(action, background) {
+    if (background && (!me || !dirty)) return;
+    if (background && window.communityMediaPending) { scheduleArticleSave(); return; }
     if(window.communityMediaPending) throw new Error('Wait for the image upload to finish.');
     if (savingPost) return;
     savingPost = true;
+    const account = epoch;
+    let saved = false;
     try {
-      if (action !== 'unpublish' && !$('editor-form').reportValidity()) return;
+      if (action !== 'unpublish' && !(background ? $('editor-form').checkValidity() : $('editor-form').reportValidity())) {
+        if (background) $('editor-status').textContent = 'Add a title and article text to save automatically.';
+        return;
+      }
       const currentSignature = signature(), wasDirty = dirty;
+      if (background) $('editor-status').textContent = 'Saving…';
       const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
+      if (account !== epoch) return;
       editing = result.post;
       const url = new URL(location.href); url.searchParams.set('post', editing.id); url.searchParams.delete('source'); history.replaceState(null, '', url);
       // Keep edits made while the save was running; only update the server version.
-      if (signature() === currentSignature && !(action === 'unpublish' && wasDirty)) populate(editing);
+      if (background) {
+        // Do not repopulate inputs: preserve the live caret, selection, scroll and preview.
+        dirty = signature() !== currentSignature;
+        $('delete').hidden = false;
+        $('kind').disabled = true;
+        $('unpublish').hidden = !['published', 'pending'].includes(editing.status);
+        renderEditorBlog();
+        $('editor-status').textContent = dirty ? 'Earlier changes saved. Saving your latest edits…' : 'Draft saved automatically. Only you can see these changes until you publish.';
+      } else if (signature() === currentSignature && !(action === 'unpublish' && wasDirty)) populate(editing);
       else { dirty = true; $('unpublish').hidden = !['published', 'pending'].includes(editing.status); $('editor-status').textContent = 'Earlier changes saved. You still have unsaved edits.'; }
-      status(action === 'publish' ? editing.status === 'pending' ? 'Submitted for moderation.' : 'Your article is public.' : action === 'unpublish' ? 'Unpublished. The article is now private.' : 'Draft saved.');
-    } finally { savingPost = false; }
+      if (!background) status(action === 'publish' ? editing.status === 'pending' ? 'Submitted for moderation.' : 'Your article is public.' : action === 'unpublish' ? 'Unpublished. The article is now private.' : 'Draft saved.');
+      saved = true;
+    } finally { savingPost = false; if (saved && dirty && account === epoch) scheduleArticleSave(); }
   }
   if (view === 'write') {
     for (const control of ['title', 'subtitle', 'markdown', 'tags', 'kind']) $(control).addEventListener('input', invalidatePreview);
@@ -486,6 +568,7 @@
     $('delete').addEventListener('click',()=>run(async()=>{
       if(!editing || !window.confirm('Delete this post? It and its discussion will be removed from the site.'))return;
       if(savingPost)throw new Error('Wait for the current save to finish.');
+      clearTimeout(articleSaveTimer);
       await api('/posts/'+editing.id,'DELETE',{version:editing.version});
       dirty=false;location.assign('/community/mine');
     },$('delete')));
@@ -794,6 +877,7 @@
     } catch (err) { if (own === epoch) status(err.message); }
   }
   document.addEventListener('hadithAuthChanged', () => {
+    clearTimeout(articleSaveTimer);
     resetQuickComposer();
     if ($('contributors')) $('contributors').replaceChildren();
     // A different account must never inherit the previous account's draft or feed.
@@ -804,5 +888,7 @@
     if (view === 'post') { me = null; cancelReply(); $('comment-text').value = ''; $('comment-status').textContent = ''; syncReflectionComposer(); }
     run(init);
   });
+  installReferenceExpansion($('markdown'), () => !!me);
+  installReferenceExpansion($('quick-text'), () => !!me && !quickBusy && $('quick-dialog').open);
   run(init);
 })();

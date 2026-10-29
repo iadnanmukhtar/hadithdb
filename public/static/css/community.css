@@ -193,7 +193,7 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-editor .community-article-title { font-family: inherit; font-size: 1.6rem; font-weight: 600; padding: .65rem .8rem; }
 .community-writing-label { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: .25rem .75rem; }
 .community-writing-label span { font-size: .7rem; color: var(--community-muted); }
-.community-editor #community-markdown { padding: 1rem; line-height: 1.8; min-height: 24rem; resize: vertical; font-family: inherit; }
+.community-editor #community-markdown { padding: 1rem; line-height: 1.8; min-height: 24rem; resize: vertical; font-family: inherit; unicode-bidi: plaintext; text-align: start; }
 .community-editor :is(input,textarea)::placeholder { color: var(--community-muted); opacity: .7; }
 .community-editor-actions { display: flex; flex-wrap: wrap; gap: .5rem; border-top: 1px solid var(--community-line); padding-top: 1rem; margin-top: 1.25rem; }
 .community-editor-actions #community-publish { margin-inline-start: auto; }

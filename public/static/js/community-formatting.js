@@ -41,4 +41,18 @@
   toolbar.addEventListener('click',event=>{const button=event.target.closest('[data-format]');if(button)apply(button.dataset.format);});
   style.addEventListener('change',()=>apply('style'));
   window.NotebookShortcuts?.install(editor,()=>true,()=>{});
+  function updateEditorCaretDirection() {
+    const position = editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd;
+    const start = position ? editor.value.lastIndexOf('\n', position - 1) + 1 : 0;
+    const nextBreak = editor.value.indexOf('\n', position);
+    const probe = document.createElement('bdi');
+    probe.dir = 'auto'; probe.hidden = true;
+    probe.textContent = editor.value.slice(start, nextBreak < 0 ? editor.value.length : nextBreak);
+    document.body.appendChild(probe);
+    editor.dir = getComputedStyle(probe).direction;
+    probe.remove();
+  }
+  editor.addEventListener('keydown', event => {
+    if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) updateEditorCaretDirection();
+  });
 })();
