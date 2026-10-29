@@ -2974,7 +2974,9 @@ async function reindexHeadingSubtreeByHeadingId(headingId) {
   var heading = (await global.query(`SELECT * FROM v_toc WHERE hId=${headingId} LIMIT 1`))[0];
   if (!heading)
     return;
-  await reindexSearchScope(buildHeadingScopeWhere(heading));
+  // Readers use search results to rebuild their disk cache. Publish the new
+  // headings and embedded item titles before invalidating that cache.
+  await reindexSearchScope(buildHeadingScopeWhere(heading), { refresh: true, strict: true });
 }
 
 async function reindexChapterSearchScope(bookId, h1, options) {
@@ -3099,6 +3101,7 @@ async function reindexSearchScope(whereClause, options) {
       debug(`reindex search scope headings indexed ${headings.length} rows in ${Date.now() - headingStarted}ms: ${whereClause}`);
     } catch (err) {
       debug.error(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);
+      if (options.strict) throw err;
     }
   }
   var itemsStarted = Date.now();
@@ -3114,6 +3117,7 @@ async function reindexSearchScope(whereClause, options) {
       debug(`reindex search scope items indexed ${items.length} rows in ${Date.now() - itemIndexStarted}ms: ${whereClause}`);
     } catch (err) {
       debug.error(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);
+      if (options.strict) throw err;
     }
   }
   if (options.refresh) {

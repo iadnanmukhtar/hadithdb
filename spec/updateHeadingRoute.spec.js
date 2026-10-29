@@ -52,10 +52,12 @@ describe('heading title update route', () => {
 	});
 
   beforeAll(() => {
+    jest.spyOn(require('../lib/Index'), 'refresh').mockResolvedValue();
     jest.spyOn(VirtualHadithSnapshot, 'queueHeading').mockImplementation(() => {});
   });
 
   afterAll(() => {
+    require('../lib/Index').refresh.mockRestore();
     VirtualHadithSnapshot.queueHeading.mockRestore();
   });
 
