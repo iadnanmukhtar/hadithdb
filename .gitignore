@@ -34,3 +34,7 @@ docs/*
 ecosystem.config.cjs
 !packages/quran-review-core/index.test.js
 apps
+
+# Checked-in Community workflow research and browser verification.
+!docs/community-substack/
+!docs/community-substack/**
