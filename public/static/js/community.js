@@ -635,10 +635,32 @@
     control.title = label; control.setAttribute('aria-label', label); control.append(icon(glyph));
     return control;
   }
+  async function loadPostActions() {
+    const previous = $('post-actions');
+    if (!previous) return;
+    const own = epoch;
+    const { post } = await api('/posts/' + postId);
+    if (own !== epoch || !post?.likeSource) return;
+    const actions = interactionControls(post, () => {
+      $('reflections-disclosure').open = true;
+      actions.querySelector('.community-reply').setAttribute('aria-expanded', 'true');
+      $('comment-text').focus();
+      $('comment-text').scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+    actions.id = 'community-post-actions';
+    actions.classList.add('mt-3');
+    // Preserve the existing share, moderation and owner controls and listeners.
+    for (const control of [...previous.children]) {
+      if (!control.matches('.community-dislike,.community-reply,.community-repost') &&
+          !control.matches('.community-like:not([data-community-share-url]):not(#community-report-post)')) actions.append(control);
+    }
+    previous.replaceWith(actions);
+  }
   async function loadComments() {
     const data = await api('/posts/' + postId + '/comments');
     $('comments').replaceChildren();
     const count = data.comments.filter(c => !c.deleted).length;
+    $('post-actions')?.renderInteraction?.({ commentCount: count });
     $('comments-count').textContent = count;
     $('comments-count').title = count + (count === 1 ? ' reflection' : ' reflections');
     const byId = new Map(data.comments.map(c => [c.id, c])), children = new Map(), rendered = new Set();
@@ -888,7 +910,7 @@
         if (params.get('post') && !editing) {const post=(await api('/posts/'+encodeURIComponent(params.get('post'))+'?edit=1')).post;if(post.kind==='note'){location.replace('/community/mine?editPost='+post.id);return;}populate(post);}
         if (params.get('source') && !editing) await copyNotebook(params.get('source'));
       }
-      if (view === 'post') { syncReflectionComposer(); $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadComments(); }
+      if (view === 'post') { syncReflectionComposer(); $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadPostActions(); await loadComments(); }
       if (view === 'moderation') await loadModeration();
     } catch (err) { if (own === epoch) status(err.message); }
   }

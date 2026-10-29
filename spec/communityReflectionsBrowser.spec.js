@@ -11,13 +11,21 @@ const comments=[{id:2,parentId:1,author:{...author,name:'قارئ'},html:'<p dir
 
 test('post reflections use shared disclosure/composer and retain nested replies, anchors, permissions, and RTL',async()=>{
   const html=await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_reflections.ejs'),{post:{kind:'note'}});
-  const dom=new JSDOM(`<a id="community-moderation-link" hidden></a><main id="community" data-view="post" data-post="1945" data-author="writer"><p id="community-status"></p><div id="community-follow-controls"><button id="community-follow"></button></div><div id="community-blog-control"><input id="community-blog-toggle" data-kind="note"></div><a id="community-edit-post"></a>${html}</main>`,{url:'http://localhost:3004/community/@writer/1945#comment-2',runScripts:'outside-only',pretendToBeVisual:true});
+  const dom=new JSDOM(`<a id="community-moderation-link" hidden></a><main id="community" data-view="post" data-post="1945" data-author="writer"><p id="community-status"></p><div id="community-follow-controls"><button id="community-follow"></button></div><div id="community-blog-control"><input id="community-blog-toggle" data-kind="note"></div><div id="community-post-actions"><button data-community-share-url="/community/p/test"><i class="bi bi-share"></i></button><a id="community-edit-post"><i class="bi bi-pencil"></i></a></div>${html}</main>`,{url:'http://localhost:3004/community/@writer/1945#comment-2',runScripts:'outside-only',pretendToBeVisual:true});
   try {
     const w=dom.window;w.HTMLElement.prototype.scrollIntoView=jest.fn();w.quranApiPath=url=>'/api'+url;
     w.hadithAuth={getToken:jest.fn(async()=> 'alice')};
-    w.fetch=jest.fn(async(url,opts)=>({ok:true,json:async()=>url.endsWith('/me')?{author,admin:false}:url.endsWith('/comments')?{comments}: {}}));
+    w.fetch=jest.fn(async(url,opts)=>({ok:true,json:async()=>url.endsWith('/me')?{author,admin:false}:url.endsWith('/comments')?{comments}:url.endsWith('/posts/1945')?{post:{id:1945,likeId:1945,likeSource:'post',likeCount:3,liked:true}}:url.includes('/votes/post/1945')?{likeCount:2,liked:false}: {}}));
     w.eval(source);await settle();
     const d=w.document;
+    const actions=d.querySelector('#community-post-actions');
+    expect([...actions.querySelectorAll('i')].map(el=>el.className)).toEqual(['bi bi-heart-fill','bi bi-hand-thumbs-down','bi bi-reply','bi bi-repeat','bi bi-share','bi bi-pencil']);
+    actions.querySelector('.community-like').click();await settle();
+    expect(w.fetch.mock.calls.some(([url,options])=>url.endsWith('/votes/post/1945') && JSON.parse(options.body).direction===null)).toBe(true);
+    expect(actions.querySelector('.community-like').getAttribute('aria-pressed')).toBe('false');
+    d.querySelector('.reflection-disclosure').open=false;
+    actions.querySelector('.community-reply').click();await settle();
+    expect(d.activeElement.id).toBe('community-comment-text');
     expect(d.querySelector('.reflection-disclosure').open).toBe(true);
     expect(d.querySelector('#community-comments-count').textContent).toBe('2');
     expect([...d.querySelectorAll('.comment-thread-item')].map(el=>el.id)).toEqual(['comment-1','comment-2']);
@@ -36,5 +44,7 @@ test('post reflections use shared disclosure/composer and retain nested replies,
     expect(d.querySelector('#community-comment-text').disabled).toBe(true);
     expect(d.querySelector('#community-comment-hint').hidden).toBe(false);
     expect(d.querySelector('#community-comment-user').hidden).toBe(true);
+    expect(d.querySelectorAll('#community-post-actions .community-reply')).toHaveLength(1);
+    expect(d.querySelectorAll('#community-post-actions [data-community-share-url]')).toHaveLength(1);
   } finally {dom.window.close();}
 });
