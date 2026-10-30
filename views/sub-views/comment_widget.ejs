@@ -8,7 +8,7 @@
   const endpoint = typeof ctx.endpoint === 'string' && ctx.endpoint.trim() ? ctx.endpoint : '/comments';
   const pingUrl = typeof ctx.pingUrl === 'string' ? ctx.pingUrl : '';
   const subjectLabel = typeof ctx.subjectLabel === 'string' && ctx.subjectLabel.trim() ? ctx.subjectLabel : 'reflection';
-  const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a comment...';
+  const placeholder = typeof ctx.placeholder === 'string' ? ctx.placeholder : 'Write a reflection…';
   const commentPrefix = typeof ctx.commentPrefix === 'string' ? ctx.commentPrefix.trim() : '';
   const noteSourceKey = typeof ctx.noteSourceKey === 'string' ? ctx.noteSourceKey : '';
   const lazyLoad = ctx.lazyLoad !== false;
@@ -126,16 +126,6 @@
           return parts.map((part) => part.charAt(0).toUpperCase()).join('');
         };
 
-        const formatProvider = (provider) => {
-          const raw = String(provider || 'google.com').trim().toLowerCase();
-          if (!raw) return 'Member';
-          if (raw === 'google.com') return 'Google';
-          if (raw === 'facebook.com') return 'Facebook';
-          if (raw === 'password') return 'Email';
-          const label = raw.replace('.com', '').replace(/[-_]/g, ' ');
-          return label.charAt(0).toUpperCase() + label.slice(1);
-        };
-
         const avatarRoot = document.getElementById('<%= widgetId %>');
         avatarRoot.addEventListener('error', event => {
           const img=event.target;
@@ -208,25 +198,11 @@
           userBox.classList.remove('d-none');
           authHint.classList.add('d-none');
           composerAvatar.innerHTML = renderAvatarMarkup(name, photo);
-          userBox.innerHTML = `
-            <div class="comment-current-user-meta">
-              <span class="text-muted small">Posting as</span>
-              <span class="fw-semibold">${escapeHtml(name)}</span>
-              <span class="comment-provider-chip">${escapeHtml(formatProvider(providerId))}</span>
-            </div>
-            <button type="button" class="btn btn-link btn-sm p-0 comment-form-link ms-auto" id="<%= widgetId %>-logout">Sign out</button>
-          `;
+          userBox.textContent = 'Posting as ' + name;
           textarea.disabled = false;
           submitBtn.disabled = false;
           setSubmitButton(editingId ? 'edit' : 'post');
-          const logoutBtn = document.getElementById('<%= widgetId %>-logout');
-          logoutBtn.onclick = async () => {
-            window.google?.accounts?.id?.disableAutoSelect();
-            if (window.hadithAuth && window.hadithAuth.clearCredential) window.hadithAuth.clearCredential();
-            await fetch(quranApiPath('/login/logout'), { credentials: 'same-origin' });
-            currentUser = null;
-            renderUser();
-          };
+
         };
 
         const formatDate = (ts) => {
@@ -234,15 +210,7 @@
           if (!(d instanceof Date) || Number.isNaN(d.getTime())) {
             return { shortLabel: '', fullLabel: '' };
           }
-          const diffMs = Date.now() - d.getTime();
-          const diffMinutes = Math.floor(diffMs / 60000);
-          const diffHours = Math.floor(diffMs / 3600000);
-          const diffDays = Math.floor(diffMs / 86400000);
-          let shortLabel = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-          if (diffMinutes < 1) shortLabel = 'Just now';
-          else if (diffMinutes < 60) shortLabel = `${diffMinutes}m`;
-          else if (diffHours < 24) shortLabel = `${diffHours}h`;
-          else if (diffDays < 7) shortLabel = `${diffDays}d`;
+          const shortLabel = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
           return {
             shortLabel,
             fullLabel: d.toLocaleString()
@@ -290,26 +258,18 @@
               const userName = c.user && c.user.name ? c.user.name : 'Community Member';
               const userPhoto = c.user && c.user.photo ? c.user.photo : '';
               const dateMeta = formatDate(c.ts);
-              const reactionCount = upVote + downVote;
-              const reactionBadge = reactionCount > 0 ? `
-                <div class="comment-reactions-badge" title="${reactionCount} reactions">
-                  ${upVote > 0 ? '<span class="comment-reaction-icon comment-reaction-like"><i class="bi bi-heart-fill"></i></span>' : ''}
-                  ${downVote > 0 ? '<span class="comment-reaction-icon comment-reaction-disagree"><i class="bi bi-hand-thumbs-down-fill"></i></span>' : ''}
-                  <span class="comment-reaction-count">${reactionCount}</span>
-                </div>
-              ` : '';
               const voteControls = deleted ? '' : `
-                <button type="button" class="comment-action comment-vote${userVote === 'up' ? ' is-active' : ''}" data-id="${c.id}" data-direction="up" aria-pressed="${userVote === 'up' ? 'true' : 'false'}" aria-label="Like" title="Like">
-                  <i class="bi ${userVote === 'up' ? 'bi-heart-fill' : 'bi-heart'}" aria-hidden="true"></i>
+                <button type="button" class="comment-action comment-vote${userVote === 'up' ? ' is-active' : ''}" data-id="${c.id}" data-direction="up" aria-pressed="${userVote === 'up' ? 'true' : 'false'}" aria-label="${userVote === 'up' ? 'Undo like' : 'Like'}" title="${userVote === 'up' ? 'Undo like' : 'Like'}">
+                  <i class="bi ${userVote === 'up' ? 'bi-heart-fill' : 'bi-heart'}" aria-hidden="true"></i>${upVote ? ` <span>${upVote}</span>` : ''}
                 </button>
-                <button type="button" class="comment-action comment-vote comment-action-negative${userVote === 'down' ? ' is-active' : ''}" data-id="${c.id}" data-direction="down" aria-pressed="${userVote === 'down' ? 'true' : 'false'}" aria-label="Disagree" title="Disagree">
-                  <i class="bi ${userVote === 'down' ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-down'}" aria-hidden="true"></i>
+                <button type="button" class="comment-action comment-vote comment-action-negative${userVote === 'down' ? ' is-active' : ''}" data-id="${c.id}" data-direction="down" aria-pressed="${userVote === 'down' ? 'true' : 'false'}" aria-label="${userVote === 'down' ? 'Undo dislike' : 'Dislike'}" title="${userVote === 'down' ? 'Undo dislike' : 'Dislike'}">
+                  <i class="bi ${userVote === 'down' ? 'bi-hand-thumbs-down-fill' : 'bi-hand-thumbs-down'}" aria-hidden="true"></i>${downVote ? ` <span>${downVote}</span>` : ''}
                 </button>
               `;
               const editControls = deleted ? '' : (c.canEdit ? `<button type="button" class="comment-action comment-edit" data-id="${c.id}" aria-label="Edit" title="Edit"><i class="bi bi-pencil" aria-hidden="true"></i></button>` : '');
               const noteControls = !deleted && c.canEdit && container.dataset.endpoint === '/comments' ? `<button type="button" class="comment-action comment-save-note" data-id="${c.id}" aria-label="Save as note" title="Save as note"><i class="bi bi-sticky" aria-hidden="true"></i></button>` : '';
               const deleteControls = deleted ? '' : (c.canDelete ? `<button type="button" class="comment-action comment-delete comment-action-delete" data-id="${c.id}" aria-label="Delete" title="Delete"><i class="bi bi-trash" aria-hidden="true"></i></button>` : '');
-              const replyControls = deleted ? '' : `<button type="button" class="comment-action comment-reply" data-id="${c.id}" aria-label="Reply" title="Reply"><i class="bi bi-reply" aria-hidden="true"></i></button>`;
+              const replyControls = deleted ? '' : `<button type="button" class="comment-action comment-reply" data-id="${c.id}" aria-label="Reply" title="Reply"><i class="bi bi-chat-right-text" aria-hidden="true"></i></button>`;
               item.innerHTML = `
                 <div class="comment-row">
                   <div class="comment-avatar">${renderAvatarMarkup(userName, userPhoto, c.user && c.user.avatarFallback)}</div>
@@ -318,12 +278,11 @@
                       <div class="comment-bubble">
                         <div class="comment-meta">
                           <div class="comment-author-wrap">
-                            <span class="comment-author">${escapeHtml(userName)}</span>
+                            ${c.user?.handle ? `<a class="comment-author" dir="auto" href="/community/@${encodeURIComponent(c.user.handle)}">${escapeHtml(userName)}</a>` : `<span class="comment-author" dir="auto">${escapeHtml(userName)}</span>`}
                           </div>
                         </div>
-                        ${deleted ? '<p class="comment-deleted">This reflection was deleted.</p>' : '<div class="comment-text"></div>'}
+                        ${deleted ? '<p class="comment-deleted">This reflection was deleted.</p>' : '<div class="comment-text notebook-markdown" dir="auto"></div>'}
                       </div>
-                      ${reactionBadge}
                     </div>
                     ${deleted ? '' : `<div class="comment-actions">
                       <span class="comment-time" title="${escapeHtml(dateMeta.fullLabel)}">${escapeHtml(dateMeta.shortLabel)}</span>

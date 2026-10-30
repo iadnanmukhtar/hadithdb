@@ -12,7 +12,7 @@ function harness() {
   const dom = new JSDOM('<form id="editor-form"><input id="kind" value="article"><input id="title" required value="Title"><input id="subtitle"><input id="cover-url"><textarea id="markdown" required>Original body</textarea><input id="tags"></form><button id="publish"></button><button id="delete"></button><button id="unpublish"></button><div id="preview-panel"></div><div id="editor-status"></div>');
   const $ = id => dom.window.document.getElementById(id);
   const ctx = vm.createContext({ $, view: 'write', me: {}, dirty: false, editing: {id: 3, version: 1, status: 'published'}, epoch: 1,
-    savingPost: false, articleReturnToProfile: false, articleSaveTask: null, articleSaveTimer: null, previewSignature: null,
+    savingPost: false, articleReturnUrl: false, articleSaveTask: null, articleSaveTimer: null, previewSignature: null,
     window: {confirm: jest.fn(() => true)}, document: dom.window.document, setTimeout, clearTimeout, URL, location: {href: 'https://example.test/community/write?post=3', origin: 'https://example.test', pathname: '/community/write', assign: jest.fn()}, history: {replaceState: jest.fn(), back: jest.fn(), length: 2},
     sessionStorage: {removeItem: jest.fn(),setItem:jest.fn()}, api: jest.fn(), populate: jest.fn(() => { ctx.dirty = false; }), renderEditorBlog: jest.fn(), status: jest.fn() });
   vm.runInContext(functions, ctx);
@@ -96,9 +96,10 @@ test('a late save cannot replace another account state', async () => {
   expect(ctx.editing).toBe(null); expect(ctx.history.replaceState).not.toHaveBeenCalled();
 });
 
-test.each(['published', 'pending'])('successful %s publication returns to My Profile', async status => {
+test.each(['published', 'pending'])('successful %s new publication returns to My Profile', async status => {
   const {ctx} = harness();
   ctx.api.mockResolvedValue({post: {id:3, version:2, status}});
+  ctx.editing=null;
   await ctx.save('publish');
   expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
 });
@@ -125,7 +126,7 @@ test('declining to discard unsaved changes keeps the editor open', () => {
   expect(ctx.history.back).not.toHaveBeenCalled();
 });
 
-test('edits made during publish save before returning to My Profile', async () => {
+test('edits made during an update save before returning to the reading view', async () => {
   const {ctx, $} = harness(); let finish;
   ctx.api.mockImplementationOnce(() => new Promise(resolve => { finish=resolve; }));
   const publishing=ctx.save('publish');
@@ -134,7 +135,7 @@ test('edits made during publish save before returning to My Profile', async () =
   expect(ctx.location.assign).not.toHaveBeenCalled();
   await jest.advanceTimersByTimeAsync(1800);
   expect(ctx.api.mock.calls[1][2]).toMatchObject({action:'draft',markdown:'A newer edit',version:2});
-  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
+  expect(ctx.location.assign).toHaveBeenCalledWith('/community/p/3');
 });
 
  test('conversion edits and cancellation leave the published post untouched', async () => {
@@ -167,4 +168,9 @@ test('blank rich article source does not autosave even when native required is d
  const {ctx,$}=harness();$('markdown').required=false;$('markdown').value='   ';
  ctx.invalidatePreview();await jest.advanceTimersByTimeAsync(1800);
  expect(ctx.api).not.toHaveBeenCalled();expect($('editor-status').textContent).toBe('Add article text to save.');
+});
+
+test('updating an existing article returns to its canonical reading page',async()=>{
+ const {ctx}=harness();ctx.api.mockResolvedValue({post:{id:3,version:2,status:'published',url:'/blog/existing-article'}});
+ await ctx.save('publish');expect(ctx.location.assign).toHaveBeenCalledWith('/blog/existing-article');
 });

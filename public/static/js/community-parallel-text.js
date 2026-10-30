@@ -24,5 +24,5 @@
     const text = left + ' || ' + arabic;
     return {start, end, text, selectStart:start + left.length + 4, selectEnd:start + text.length};
   }
-  window.CommunityParallelText = {replacement};
+  window.CommunityParallelText = {replacement,separator};
 })();

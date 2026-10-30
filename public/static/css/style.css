@@ -2976,6 +2976,11 @@ nav .nav-link[aria-current="page"] {
 	z-index: 1002;
 }
 
+.site-navbar .dropdown-menu[data-profile-menu] {
+	max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1rem);
+	overflow-y: auto;
+}
+
 .site-navbar .top-nav-desktop-actions > .nav-item.dropdown > .dropdown-menu {
 	max-height: none;
 	overflow-y: visible;
@@ -12640,6 +12645,7 @@ a.cmd-btn:hover {
 .command-search-dialog .command-search-combined-filters:not([open]) { display: none; }
 .command-search-dialog .command-search-combined-filters > summary { display: none; }
 .command-search-dialog .command-search-combined-filters > .command-search-filter-popover { border: 0; padding: 0; }
+:root { --site-compact-rail-width: 18rem; }
 .search-results-layout { max-width: 90rem; padding-inline: 1.5rem; margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)); }
 .search-results-layout > main { min-width: 0; margin-top: 0; }
 .search-filter-rail { min-width: 0; }
@@ -12650,8 +12656,8 @@ a.cmd-btn:hover {
 .search-filter-controls .command-search-filter-find input { font-size: 0.75rem; }
 .search-filter-controls .command-search-filter-panel { margin: 0 0 1rem; }
 @media (min-width: 992px) {
-	.search-results-layout { display: grid; grid-template-columns: minmax(0, 1fr) 18rem; gap: 2rem; }
-	.search-filter-rail { position: fixed; z-index: 20; top: calc(var(--site-fixed-header-height, 5rem) + 0.75rem); right: max(1.5rem, calc((100vw - 90rem) / 2 + 1.5rem)); width: 18rem; min-height: 0; }
+	.search-results-layout { display: grid; grid-template-columns: minmax(0, 1fr) var(--site-compact-rail-width); gap: 2rem; }
+	.search-filter-rail { position: fixed; z-index: 20; top: calc(var(--site-fixed-header-height, 5rem) + 0.75rem); right: max(1.5rem, calc((100vw - 90rem) / 2 + 1.5rem)); width: var(--site-compact-rail-width); min-height: 0; }
 	.search-filter-rail > [data-search-filter-rail-container] { max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; padding-inline: 1rem; border-left: 1px solid var(--bs-border-color); }
 }
 @media (max-width: 991.98px) {
@@ -13798,3 +13804,5 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
   #content-share-pane .content-share-social-row { gap:2px; }
   #content-share-pane .content-share-social-row a { font-size:.62rem; }
 }
+/* Explicit centering takes precedence over automatic language alignment. */
+center [dir] { text-align: center !important; }

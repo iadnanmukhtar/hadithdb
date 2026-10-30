@@ -460,6 +460,7 @@ textarea[data-short-editor][hidden], .community-short-editor [hidden] { display:
 .community-rich-input:empty::before { content: attr(data-placeholder); color: var(--community-muted); pointer-events: none; }
 .community-rich-input p { margin: 0 0 .8em; }
 .community-rich-input p:last-child { margin-bottom: 0; }
+.community-rich-input center [dir] { text-align: center; }
 .community-rich-input[aria-disabled="true"] { opacity: .6; }
 .community-rich-input[aria-invalid="true"] { outline: 1px solid var(--bs-danger); }
 .community-rich-input:focus-visible { box-shadow: inset 2px 0 var(--community-accent); padding-inline-start: .6rem; }
@@ -509,7 +510,7 @@ textarea[data-short-editor][hidden], .community-short-editor [hidden] { display:
 .community-article-options[open] { padding-bottom: .5rem; border-bottom: 1px solid var(--community-line); }
 .community-editor .community-format-toolbar { position: sticky; top: var(--site-fixed-header-height, 0px); z-index: 3; background: var(--community-paper); border-radius: .5rem; }
 .community-article-surface .community-rich-input { min-height: 24rem; max-height: none; overflow: visible; padding: 1.25rem .25rem; line-height: 1.8; font-size: 1rem; }
-.community-article-surface .community-selection-tools { position: relative; top: auto; margin-top: .65rem; }
+.community-article-surface .community-selection-tools { display: none !important; }
 .community-editor #community-markdown { border: 0; border-radius: 0; background: transparent; box-shadow: none; padding: 1.25rem .25rem; }
 .community-editor #community-markdown:focus-visible { outline: 1px solid var(--community-accent); outline-offset: 4px; }
 .community-article-surface .community-short-tools { padding-block: .5rem; }
@@ -624,3 +625,192 @@ main.community .community-cover-title { color: #fff; font-size: clamp(1.2rem,2vw
 .community-cover-carousel.community-cover-overlap .community-cover-copy { padding-top: max(7rem, calc(56.25cqw - 6rem)); }
 .community-cover-overlap .community-cover-copy > * { position: relative; pointer-events: auto; }
 .community-cover-overlap .community-cover-dots { top: max(4.5rem, calc(56.25cqw - 8.5rem)); }
+
+/* Both editor modes occupy the same writing surface and keep tools below it. */
+.community-short-editor :is(#community-quick-text, #community-markdown, textarea[data-short-editor]) {
+  display: block; box-sizing: border-box; width: 100%; min-height: 5rem; max-height: 45dvh;
+  margin: 0 !important; padding: .75rem 0; border: 0; border-radius: 0;
+  background: transparent; color: var(--community-ink); font: inherit; line-height: 1.65;
+  resize: none; overflow: auto; box-shadow: none; outline: none; white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.community-short-editor :is(#community-quick-text, #community-markdown, textarea[data-short-editor]):focus-visible {
+  outline: none; box-shadow: inset 2px 0 var(--community-accent); padding-inline-start: .6rem;
+}
+.community-composer .community-short-editor textarea[data-short-editor],
+.community-quick-dialog .community-short-editor #community-quick-text { min-height: 180px; }
+.community-article-surface :is(#community-markdown, textarea[data-short-editor]) {
+  min-height: 24rem; max-height: none; padding: 1.25rem .25rem; line-height: 1.8; font-size: 1rem;
+}
+
+/* Editable parallel columns use the same Markdown storage as the reader. */
+.community-edit-parallel { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 1rem; margin-block: .8rem; direction: ltr; }
+.community-edit-parallel-cell { min-width: 0; padding: .5rem; border: 1px solid var(--community-line); border-radius: .35rem; overflow-wrap: anywhere; }
+.community-edit-parallel-cell:focus-within { border-color: var(--community-accent); }
+.community-edit-parallel-cell > :last-child { margin-bottom: 0; }
+@media(max-width:575px) { .community-edit-parallel { gap: .5rem; } }
+
+.community-remove-columns { display: block; margin-inline-start: auto; font-size: .75rem; color: var(--community-muted); }
+.community-remove-columns:hover, .community-remove-columns:focus-visible { color: var(--bs-danger); }
+
+/* Remove only the layout, using a quiet floating control after the active row. */
+.community-remove-columns[aria-label="Remove column layout"] { position: absolute; z-index: 4; width: 28px; height: 28px; margin: 0; padding: 0; display: grid; place-items: center; border: 1px solid var(--community-line); border-radius: 50%; background: var(--community-paper); color: var(--community-muted); font: 400 20px/1 Arial,sans-serif; box-shadow: 0 2px 6px #0001; }
+.community-edit-parallel { margin-bottom: 2rem; }
+
+/* Enter continues a quote line without paragraph-sized visual gaps. */
+.community-rich-input blockquote p { margin-block: 0; }
+
+.community-selection-tools select { max-width: 8rem; border: 0; border-radius: .3rem; background: var(--community-paper); color: var(--community-ink); font: inherit; font-size: .85rem; padding: .25rem; }
+
+/* Avoid a non-scrolling overflow ancestor that traps the sticky article toolbar. */
+html:has(.community[data-view="write"]), body:has(.community[data-view="write"]) { overflow-x: clip; }
+
+/* Mobile writing uses one roomy surface and compact, touch-sized controls. */
+@media (max-width: 575px) {
+  .community-quick-dialog {
+    width: 100%; max-width: 100%; height: 100dvh; max-height: 100dvh;
+    margin: 0; border: 0; border-radius: 0; overscroll-behavior: contain;
+  }
+  .community-quick-dialog .community-composer {
+    min-height: 100%; display: flex; flex-direction: column;
+    padding: max(.75rem, env(safe-area-inset-top)) 1rem max(.75rem, env(safe-area-inset-bottom));
+    border-radius: 0;
+  }
+  .community-quick-dialog .community-short-editor { flex: 1 0 auto; display: flex; flex-direction: column; }
+  .community-quick-dialog .community-rich-input,
+  .community-quick-dialog #community-quick-text { flex: 1 0 auto; min-height: clamp(180px, 38dvh, 380px); max-height: none; overflow: visible; }
+  .community-quick-dialog .community-composer-footer { gap: .4rem; margin-top: .5rem; }
+  .community-quick-dialog .community-composer-footer > .community-posting-actions {
+    display: flex; flex: 1 0 100%; flex-wrap: nowrap; gap: .35rem;
+  }
+  .community-quick-dialog .community-posting-actions > button { flex: 1 1 0; min-width: 0; padding-inline: .4rem; }
+  .community-quick-dialog .community-posting-actions > .btn-primary { order: 0; width: auto; min-height: 44px; }
+  .community-quick-dialog .community-composer-footer > a { min-height: 44px; }
+  .community-selection-tools,
+  .community-editor .community-format-toolbar {
+    flex-wrap: nowrap; width: 100%; max-width: 100%; overflow-x: auto;
+    overscroll-behavior-x: contain; scrollbar-width: thin; gap: .15rem;
+  }
+  .community-selection-tools button,
+  .community-editor .community-format-toolbar button { flex: 0 0 44px; width: 44px; height: 44px; }
+  .community-selection-tools select,
+  .community-editor .community-format-toolbar select { flex: 0 0 auto; min-height: 44px; font-size: 16px; }
+  .community-selection-tools { position: sticky; top: 0; }
+  .community-editor .community-format-toolbar .community-format-help { margin-inline-start: 0; }
+  .community[data-view="write"] { padding-inline: .75rem; }
+  .community[data-view="write"] > .community-heading { margin-bottom: .75rem; }
+  .community-editor { padding: .5rem; border: 0; box-shadow: none; }
+  .community-editor-top { margin-bottom: .75rem; padding-bottom: .75rem; gap: .5rem; }
+  .community-editor-top p { display: none; }
+  .community-editor .community-article-title { font-size: 1.3rem; margin-bottom: .75rem !important; }
+  .community-article-options { margin-bottom: .5rem; }
+  .community-writing-label { align-items: baseline; gap: .25rem; }
+  #community-markdown-help { display: none; }
+  .community-article-surface .community-rich-input,
+  .community-editor #community-markdown { min-height: 50dvh; padding: .75rem .15rem; }
+  .community-short-tools { gap: .4rem; }
+  .community-editor-mode { min-height: 44px; white-space: nowrap; }
+  .community-publishing-actions { grid-template-columns: repeat(3, minmax(0,1fr)); gap: .35rem; }
+  .community-publishing-actions > [data-close-editor] { grid-column: auto; justify-self: stretch; }
+  .community-publishing-actions > .btn { padding-inline: .25rem; }
+}
+
+@media (max-width: 575px) {
+  .community-remove-columns[aria-label="Remove column layout"] { width: 44px; height: 44px; }
+  .community-edit-parallel { margin-bottom: 3rem; }
+}
+
+.community-article-toc h2 { font-size: .8rem !important; margin: 0 0 .75rem; }
+.community-article-toc ol { list-style: none; padding: 0; margin: 0; }
+.community-article-toc li { padding-inline-start: calc(var(--toc-depth, 0) * .6rem); }
+.community-article-toc a { display: block; padding: .4rem .5rem; border-inline-start: 2px solid transparent; color: var(--community-muted); font-size: .8rem; line-height: 1.4; overflow-wrap: anywhere; text-decoration: none; }
+.community-article-toc a:hover, .community-article-toc a[aria-current] { color: var(--community-accent); border-color: var(--community-accent); background: var(--c-primary-soft-08); }
+[data-article-body] :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: calc(var(--site-fixed-header-height, 0px) + 1.5rem); }
+@media (max-width: 991px) { .community-article-toc a { min-height: 44px; } }
+
+.community-rich-input [data-footnote-ref] { color: var(--community-accent); padding-inline: .12em; font-size: .75em; user-select: all; }
+.community-edit-footnote { margin-block: 1rem; padding-block-start: .65rem; border-top: 1px solid var(--community-line); }
+.community-footnote-label { display: block; font-size: .75rem; color: var(--community-muted); margin-bottom: .3rem; }
+.community-footnote-body { min-height: 1.5em; }
+.community-orphan-footnote { border-top-style: dashed; }
+.community-orphan-footnote .community-footnote-label { font-style: italic; }
+
+.community-footnote-icon { display: inline-block; font: 400 1rem/1 Arial, sans-serif; }
+.community-footnote-icon sup { font-size: .6em; margin-inline-start: .05em; }
+.community-script-icon { display: inline-block; font: 400 1rem/1 Arial, sans-serif; }
+.community-script-icon :is(sub,sup) { font-size: .65em; }
+
+/* Match the search results layout: fixed rail, fluid article, identical gutters. */
+.community-article-layout { width: 100%; max-width: 90rem; margin-inline: auto; padding-inline: 1.5rem; }
+.community-article-layout > .community { max-width: none; }
+.community-article-layout .community-reading { width: 100%; max-width: none; }
+@media (min-width: 992px) {
+  .community:has([data-article-body]) .community-columns { grid-template-columns: minmax(0, 1fr) var(--site-compact-rail-width, 18rem); gap: 2rem; }
+}
+@media (max-width: 991.98px) {
+  .community-article-layout { max-width: 60rem; padding-inline: .75rem; }
+  .community:has([data-article-body]) .community-columns { grid-template-columns: minmax(0, 1fr); }
+  .community:has([data-article-body]) .community-rail-slot { display: none; }
+}
+
+/* The bio yields space first; keep the heading rail at the search rail width. */
+.community-author-rail-slot { min-width: 0; }
+.community-author-rail { padding-inline: .35rem 1rem; border-inline-end: 1px solid var(--community-line); overflow-wrap: anywhere; }
+.community-author-rail h2 { font-size: .8rem !important; margin: 0 0 1rem; }
+.community-author-rail-name { margin: .75rem 0 .5rem; font-weight: 600; }
+.community-author-rail-name a { color: inherit; text-decoration: none; }
+.community-author-rail-bio { font-size: .85rem; line-height: 1.5; white-space: pre-line; color: var(--community-muted); }
+.community-author-profile-link { font-size: .8rem; }
+@media (min-width: 1400px) {
+  .community-article-layout { --article-bio-rail-width: clamp(12rem, calc(100vw - 66rem), var(--site-compact-rail-width, 18rem)); }
+  .community:has([data-article-body]) .community-article-columns { grid-template-columns: var(--article-bio-rail-width) minmax(0, 1fr) var(--site-compact-rail-width, 18rem); }
+  .community-author-rail { width: var(--article-bio-rail-width); position: fixed; z-index: 20; top: calc(var(--site-fixed-header-height, 5rem) + .75rem); max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; }
+  .community-article-layout:has(.community-article-columns) > .community-heading { margin-inline-start: calc(var(--article-bio-rail-width) + 2rem); max-width: calc(100% - var(--article-bio-rail-width) - var(--site-compact-rail-width, 18rem) - 4rem); }
+}
+@media (max-width: 1399.98px) {
+  .community-author-rail-slot { display: none; }
+}
+
+/* Short-post permalinks reuse the bio rail while keeping a compact reading column. */
+.community .community-short-post-columns { grid-template-columns: minmax(0, 780px); justify-content: center; }
+.community:has(.community-short-post-columns) > :is(.community-heading, .community-profile) { max-width: 780px; margin-inline: auto; }
+@media (min-width: 1400px) {
+  .community .community-short-post-columns { grid-template-columns: var(--article-bio-rail-width) minmax(0, 780px); justify-content: start; gap: 2rem; }
+  .community:has(.community-short-post-columns) > :is(.community-heading, .community-profile) { margin-inline-start: calc(var(--article-bio-rail-width) + 2rem); }
+}
+
+/* One reflection presentation for readers, articles, posts, and inline discussions. */
+.comment-feed .comment-thread { gap: 1rem; }
+.comment-feed .comment-thread-item { margin-block: 0; }
+.comment-feed .comment-row, .comment-feed .comment-composer-body { gap: .65rem; }
+.comment-feed .comment-avatar { width: 2rem; height: 2rem; flex-basis: 2rem; }
+.comment-feed .comment-bubble { display: block; width: 100%; }
+.comment-feed .comment-author { font-size: .85rem; text-decoration: none; }
+.comment-feed .comment-current-user { font-size: .8rem; color: var(--community-muted); }
+.comment-feed .comment-actions { margin: .15rem 0 0; padding: 0; gap: .2rem; }
+.comment-feed .comment-actions .comment-action { width: auto; min-width: 36px; min-height: 36px; padding: .2rem; border: 0; background: transparent; color: var(--community-muted); font-size: .8rem; }
+.comment-feed .comment-actions .comment-action:is([aria-pressed="true"],.is-active) { color: var(--community-accent); }
+.comment-feed .comment-time { font-size: .7rem; margin-inline-end: .35rem; }
+.comment-feed .comment-composer { margin-top: 1rem; }
+.comment-feed .comment-composer-panel { margin: 0; padding: .75rem; }
+.comment-feed .comment-form-toolbar { gap: .5rem; flex-wrap: wrap; }
+.comment-feed .comment-form-buttons { margin-inline-start: auto; }
+.comment-feed .comment-input { width: 100%; font: inherit; border: 0; padding: 0; margin: 0; background: transparent; }
+.comment-feed .comment-inline-label { font-size: .8rem; color: var(--community-muted); }
+.comment-feed .comment-text { overflow-wrap: anywhere; }
+.comment-feed .comment-text :is(img,video,iframe) { max-width: 100%; }
+.comment-feed .comment-empty-state, .comment-feed .comment-error-state { padding: .5rem 0; color: var(--community-muted); }
+@media (max-width: 575px) {
+  .comment-feed .comment-actions .comment-action { min-width: 44px; min-height: 44px; }
+  .comment-feed .comment-thread-reply { margin-inline-start: min(calc(var(--comment-depth, 1) * .5rem), 1rem); padding-inline-start: .5rem; }
+  .comment-feed .comment-composer-panel { padding: .5rem; }
+}
+
+/* Use the same glyph geometry for social bars and reflection actions. */
+:is(.community-entry-actions, .comment-actions) .bi {
+  display: inline-flex; align-items: center; justify-content: center;
+  flex: 0 0 1rem; width: 1rem; height: 1rem; font-size: 1rem; line-height: 1;
+}
+:is(.community-entry-actions, .comment-actions) .bi::before { vertical-align: 0; line-height: 1; }
+.comment-feed .comment-actions .comment-action { gap: .25rem; border-radius: .5rem; font-variant-numeric: tabular-nums; }
+.comment-feed .comment-actions .comment-action:hover,
+.comment-feed .comment-actions .comment-action:focus-visible { color: var(--community-accent); background: var(--c-primary-soft-08); }

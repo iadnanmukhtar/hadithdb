@@ -5,7 +5,7 @@
 <style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 </head><body class="community-page">
 <%- include('sub-views/header.ejs', { site, page }); %>
-<main class="container py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
+<main class="<%= view === 'post' ? 'container-fluid community-article-layout'  : 'container' %> py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
   <% if (view !== 'post' || post.title?.trim()) { %>
   <div class="community-heading">
     <div><h1 id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
@@ -129,11 +129,11 @@
       </details>
       <div class="community-media-toolbar" data-media-editor="markdown"><button type="button" data-add-image title="Add image"><i class="bi bi-image" aria-hidden="true"></i> Image</button><button type="button" data-add-link title="Add webpage preview"><i class="bi bi-link-45deg" aria-hidden="true"></i> Link</button><button type="button" data-add-video title="Add video preview"><i class="bi bi-play-btn" aria-hidden="true"></i> Video</button><input type="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden><span class="community-media-status" role="status"></span></div>
       <div id="community-article-attachments" class="community-attachment-list"></div>
-      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Select text to format · Markdown available</span></div>
+      <div class="community-writing-label"><label class="form-label" for="community-markdown">Article</label><span id="community-markdown-help">Use the formatting bar · Markdown available</span></div>
       <div id="community-format-toolbar" class="community-format-toolbar" role="group" aria-label="Article formatting">
-        <select id="community-format-style" aria-label="Text style"><option value="0">Normal</option><% for (let level=1;level<=6;level++) { %><option value="<%= level %>">Heading <%= level %></option><% } %></select>
-        <% for (const [action,label,icon] of [['bold','Bold','type-bold'],['italic','Italic','type-italic'],['underline','Underline','type-underline'],['strike','Strikethrough','type-strikethrough'],['highlight','Highlight','brush'],['numbered','Numbered list','list-ol'],['bullets','Bullet list','list-ul'],['quote','Quotation','quote'],['link','Insert link','link-45deg'],['clear','Clear formatting','eraser']]) { %>
-        <button type="button" data-format="<%= action %>" title="<%= label %>" aria-label="<%= label %>"><i class="bi bi-<%= icon %>" aria-hidden="true"></i></button><% } %>
+        <select id="community-format-style" aria-label="Text style"><option value="0">Normal</option><% for (let level=1;level<=6;level++) { %><option value="<%= level %>">Heading <%= level %></option><% } %><option value="subtext">Subtext</option></select>
+        <% for (const [action,label,icon] of [['bold','Bold','type-bold'],['italic','Italic','type-italic'],['underline','Underline','type-underline'],['strike','Strikethrough','type-strikethrough'],['subscript','Subscript',null],['superscript','Superscript',null],['highlight','Highlight','brush'],['center','Align center','text-center'],['numbered','Numbered list','list-ol'],['bullets','Bullet list','list-ul'],['quote','Quotation','quote'],['divider','Insert divider','hr'],['footnote','Insert footnote',null],['link','Insert link','link-45deg'],['clear','Clear formatting','eraser']]) { %>
+        <button type="button" data-format="<%= action %>" title="<%= label %>" aria-label="<%= label %>"><% if (action === 'subscript' || action === 'superscript') { %><span class="community-script-icon" dir="ltr" aria-hidden="true">x<% if (action === 'subscript') { %><sub>2</sub><% } else { %><sup>2</sup><% } %></span><% } else if (action === 'footnote') { %><span class="community-footnote-icon" dir="ltr" aria-hidden="true">A<sup>1</sup></span><% } else { %><i class="bi bi-<%= icon %>" aria-hidden="true"></i><% } %></button><% } %>
         <button type="button" data-format="parallel" title="Parallel English and Arabic text" aria-label="Parallel English and Arabic text"><span class="community-parallel-icon" dir="ltr" aria-hidden="true">a|ج</span></button>
         <button type="button" class="community-format-help" data-bs-toggle="modal" data-bs-target="#community-markdown-help-modal" title="Markdown help" aria-label="Markdown help"><i class="bi bi-question-circle" aria-hidden="true"></i></button>
       </div>
@@ -149,13 +149,15 @@
   </section>
   <% } %>
   <% if (view === 'post') { %>
+  <div class="community-columns <%= post.kind === 'article' ? 'community-article-columns' : 'community-short-post-columns' %>"><%- include('sub-views/community_author_rail.ejs', { railAuthor: post.author }); %><div class="community-wall">
   <article class="community-card community-reading"><p class="small text-muted"><%= post.kind === 'article' ? 'Article' : 'Post' %> · Community contribution · <time datetime="<%= new Date(post.publishedAt).toISOString() %>"><%= new Date(post.publishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) %></time></p>
     <% if (post.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= post.subtitle %></p><% } %>
     <% if (post.coverUrl) { %><figure class="community-editor-cover"><img src="<%= post.coverUrl %>" alt="Article cover"></figure><% } %>
-    <div class="notebook-markdown community-reflection-body" dir="auto"><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
-    <div id="community-post-actions" class="community-entry-actions mt-3"><button type="button" class="community-like" title="Share" aria-label="Share post" data-community-share-url="<%= post.shareUrl || post.url %>" data-community-share-handle="<%= post.author.handle %>" data-community-share-author="<%= post.author.name %>" data-community-share-photo="<%= post.author.photo || post.author.avatarFallback || '' %>" data-community-share-cover="<%= post.coverUrl || '' %>" data-community-share-excerpt="<%= post.excerpt || '' %>" data-community-share-title="<%= post.shareTitle || post.title || 'Community post' %>"><i class="bi bi-share" aria-hidden="true"></i></button><div id="community-blog-control" class="form-check form-switch community-blog-control" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch" data-kind="<%= post.kind %>"<% if (post.isBlog) { %> checked<% } %>><label class="form-check-label" for="community-blog-toggle">Blog post</label></div><button id="community-report-post" class="community-like" type="button" title="Report" aria-label="Report post"><i class="bi bi-flag" aria-hidden="true"></i></button><a id="community-edit-post" class="community-entry-secondary" title="Edit post" aria-label="Edit post" data-generated="<%= !!post.generatedActivity %>" href="<%= post.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= post.id %>" hidden><i class="bi bi-pencil" aria-hidden="true"></i></a><a class="community-entry-secondary" href="<%= post.url %>" title="Post permalink" aria-label="Post permalink"><i class="bi bi-arrow-right" aria-hidden="true"></i></a></div>
+    <div class="notebook-markdown community-reflection-body" dir="auto"<% if (post.kind === 'article') { %> data-article-body<% } %>><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
+    <%- include('sub-views/community_post_actions.ejs', { post }); %>
   </article>
   <%- include('sub-views/community_reflections.ejs', { post }); %>
+  </div><% if (post.kind === 'article') { %><%- include('sub-views/community_rail.ejs'); %><% } %></div>
   <% } %>
   <% if (view === 'moderation') { %><p class="text-muted">Review first publications and reported content. Approval allows the author’s future posts to publish immediately.</p><div id="community-moderation"></div><% } %>
   <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
@@ -178,6 +180,7 @@
 <script src="/static/js/community-profile-photo.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-social-share.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-cover-cards.js?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="/static/js/community-article-toc.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
 <% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>

@@ -8,15 +8,20 @@
   function apply(action) {
     if (editor.disabled || editor.readOnly) return;
     const surface=window.CommunityShortEditor?.get(editor);
+    if(['divider','footnote','subscript','superscript'].includes(action) && surface){surface.format(action);return;}
+    if(action==='style' && surface){surface.format('style',style.value);return;}
     if(surface?.mode==='rich') {
-      const native={bold:'bold',italic:'italic',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'formatBlock',link:'link',parallel:'parallel'};
+      const native={bold:'bold',italic:'italic',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'formatBlock',link:'link',parallel:'parallel',highlight:'highlight',center:'center'};
       if(native[action]) {surface.format(native[action],action==='quote'?'blockquote':action==='style'?(style.value==='0'?'p':'h'+style.value):undefined);return;}
-      // Preserve extended underline/highlight syntax through the existing source commands.
+      // Preserve extended underline syntax through the existing source commands.
       surface.toSource();
     }
     let start=editor.selectionStart, end=editor.selectionEnd, value=editor.value;
     let selected=value.slice(start,end), edit;
-    if (action==='parallel') {
+    if(action==='center'){
+      const begin=start?value.lastIndexOf('\n',start-1)+1:0,last=end>start && value[end-1]==='\n'?end-1:end,stop=value.indexOf('\n',last),finish=stop<0?value.length:stop;
+      const text='<center>\n'+value.slice(begin,finish)+'\n</center>';edit={start:begin,end:finish,text,selectStart:begin+9,selectEnd:begin+text.length-10};
+    } else if (action==='parallel') {
       edit=window.CommunityParallelText.replacement(value,start);
     } else if (markers[action]) {
       if (selected.trim()) edit=window.NotebookShortcuts.replacement(value,start,end,markers[action]);
@@ -33,7 +38,7 @@
       const strip=line=>line.replace(/^\s{0,3}(?:#{1,6}\s+|>\s?|(?:[-+*]|\d+[.)])\s+)/,'');
       const already=action==='quote'?lines.every(l=>!l.trim()||/^>\s?/.test(l)):action==='bullets'?lines.every(l=>!l.trim()||/^[-+*]\s/.test(l)):action==='numbered'?lines.every(l=>!l.trim()||/^\d+[.)]\s/.test(l)):false;
       lines=lines.map((line,i)=>{
-        if(action==='style')return line.replace(/^#{1,6}\s+/,'').replace(/^/,style.value==='0'?'':'#'.repeat(Number(style.value))+' ');
+        if(action==='style')return line.replace(/^(?:#{1,6}|-#)\s+/,'').replace(/^/,style.value==='subtext'?'-# ':style.value==='0'?'':'#'.repeat(Number(style.value))+' ');
         if(action==='clear')return strip(line).replace(/(\*\*|__|~~|==)(.+?)\1/g,'$2').replace(/([*`_])([^\n]+?)\1/g,'$2').replace(/!?\[([^\]]*)\]\([^)]+\)/g,'$1');
         return (already?'':action==='quote'?'> ':action==='bullets'?'- ':(i+1)+'. ')+strip(line);
       });

@@ -31,11 +31,12 @@ test('blog hydration, appended pages and replies use shared feed behavior and th
  expect(w.document.querySelector('#community-status').textContent).toBe('');
  expect(w.document.querySelectorAll('.community-inline-discussion')).toHaveLength(1);
  w.document.querySelector('.community-reply').click();await settle();
- expect(w.document.querySelector('.community-thread-reply').textContent).toContain('Existing reflection');
+ expect(w.document.querySelector('.comment-thread-item').textContent).toContain('Existing reflection');
+ expect(w.document.querySelector('.comment-thread-item .community-reply .bi').className).toBe('bi bi-chat-right-text');
  expect(calls.some(c=>c.url==='/api/blog-comments/example')).toBe(true);
  expect(calls.some(c=>c.url.includes('/discussion/post/'))).toBe(false);
  w.hadithAuth.getToken=async()=> 'sample-token';
- w.document.querySelector('.community-thread-reply .community-reply').click();
+ w.document.querySelector('.comment-thread-item .community-reply').click();
  w.document.querySelector('.community-inline-reply textarea').value='English || العربية';
  w.document.querySelector('.community-inline-reply').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await settle();
  const submitted=calls.find(c=>c.url==='/api/blog-comments/example' && c.options.method==='POST');

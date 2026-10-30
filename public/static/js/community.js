@@ -6,8 +6,20 @@
   const view = root.dataset.view, handle = root.dataset.author, postId = root.dataset.post;
   const railSlot = root.querySelector('.community-rail-slot');
   const rail = railSlot?.querySelector('.community-aside');
+  const authorRailSlot = root.querySelector('.community-author-rail-slot');
+  const authorRail = authorRailSlot?.querySelector('.community-author-rail');
   const footer = document.querySelector('body > footer');
   function positionCommunityRail() {
+    if (authorRailSlot) {
+      const rect = authorRailSlot.getBoundingClientRect();
+      authorRail.style.left = rect.left + 'px';
+      authorRail.style.width = rect.width + 'px';
+      const fixed = getComputedStyle(authorRail).position === 'fixed';
+      authorRailSlot.style.minHeight = fixed ? authorRail.offsetHeight + 'px' : '';
+      const top = parseFloat(getComputedStyle(authorRail).top) || 0;
+      const shift = fixed && footer ? Math.min(0, footer.getBoundingClientRect().top - 12 - top - authorRail.offsetHeight) : 0;
+      authorRail.style.transform = shift ? `translateY(${shift}px)` : '';
+    }
     if (!railSlot) return;
     const rect = railSlot.getBoundingClientRect();
     root.style.setProperty('--community-rail-left', rect.left + 'px');
@@ -19,11 +31,11 @@
     const shift = fixed && footer ? Math.min(0, footer.getBoundingClientRect().top - 12 - top - rail.offsetHeight) : 0;
     rail.style.transform = shift ? `translateY(${shift}px)` : '';
   }
-  if (railSlot) {
+  if (railSlot || authorRailSlot) {
     positionCommunityRail();
     if (typeof ResizeObserver === 'function') {
       const observer = new ResizeObserver(positionCommunityRail);
-      [railSlot, rail, root].forEach(element => observer.observe(element));
+      [railSlot, rail, authorRailSlot, authorRail, root].filter(Boolean).forEach(element => observer.observe(element));
     }
     let railFrame = 0;
     window.addEventListener('scroll', () => {
@@ -158,37 +170,51 @@
         control.setAttribute('aria-pressed',String(!!selected));control.title=selected?'Undo '+label.toLowerCase():label;
         control.setAttribute('aria-label',control.title+(count?', '+count:''));
       }
-      reply.replaceChildren(icon(replying ? 'reply' : 'chat-right-text'),document.createTextNode(item.commentCount?' '+item.commentCount:''));
+      reply.replaceChildren(icon('chat-right-text'),document.createTextNode(item.commentCount?' '+item.commentCount:''));
     }
     actions.renderInteraction=render;render();actions.append(up,down,reply,repost);return actions;
   }
   function attachDiscussion(article,item,actions) {
-    const panel=node('section',undefined,'community-inline-discussion');panel.hidden=true;panel.setAttribute('aria-label','Replies');
+    const panel=node('section',undefined,'community-inline-discussion comment-feed');panel.hidden=true;panel.setAttribute('aria-label','Replies');
     const toggle=button('',()=>togglePanel(),'community-comments-toggle');toggle.setAttribute('aria-expanded','false');article.append(toggle);
-    const list=node('div'), message=node('p',undefined,'small text-muted');message.setAttribute('role','status');
-    const form=node('form',undefined,'community-inline-reply');
-    const label=node('label','Reply','small text-muted');
+    const list=node('div',undefined,'comment-thread'), message=node('p',undefined,'small text-muted');message.setAttribute('role','status');
+    const form=node('form',undefined,'community-inline-reply comment-form comment-composer-panel');
+    const label=node('label','Your reflection','visually-hidden');
     const context=node('div',undefined,'community-reply-context');context.hidden=true;
-    const textarea=node('textarea');textarea.dataset.shortEditor='';textarea.rows=3;textarea.maxLength=10000;textarea.required=true;textarea.dir='auto';textarea.placeholder='Write a reply…';textarea.setAttribute('aria-label','Write a reply');
-    label.append(textarea);
-    const submit=node('button','Reply','btn btn-sm btn-outline-primary');submit.type='submit';
-    const cancel=button('Cancel reply',()=>{selected=item;label.firstChild.textContent='Reply';context.hidden=true;context.replaceChildren();cancel.hidden=true;},'btn btn-sm btn-link');cancel.hidden=true;
-    form.append(context,label,submit,cancel);
+    const textarea=node('textarea',undefined,'comment-input');textarea.dataset.shortEditor='';textarea.rows=3;textarea.maxLength=10000;textarea.required=true;textarea.dir='auto';textarea.placeholder='Write a reflection…';textarea.setAttribute('aria-label','Write a reply');
+    const identity=node('div',me?'Posting as '+(me.author.publicName || me.author.name):'Sign in from the top menu to add or reply to reflections.',me?'comment-current-user':'comment-auth-hint text-muted small mb-2');
+    const submit=node('button','Post','btn btn-sm comment-submit-btn');submit.type='submit';
+    const cancel=button('Cancel reply',()=>{selected=item;label.firstChild.textContent='Reply';context.hidden=true;context.replaceChildren();cancel.hidden=true;},'btn btn-link btn-sm comment-form-link');cancel.hidden=true;
+    const formButtons=node('div',undefined,'comment-form-buttons');formButtons.append(cancel,submit);
+    const formToolbar=node('div',undefined,'comment-form-toolbar');formToolbar.append(formButtons);
+    form.append(identity,context,label,textarea,formToolbar);
+    const composer=node('div',undefined,'comment-composer comment-composer-body');
+    const composerAvatar=node('span',undefined,'comment-avatar comment-avatar-composer');
+    if(me)avatarImage(composerAvatar,me.author);else composerAvatar.append(icon('person-fill'));
+    composer.append(composerAvatar,form);
     let selected=item, loaded=false, loading=false, offset=0, entries=[];
     const more=button('Load more replies',()=>load(false),'community-more btn btn-sm btn-outline-secondary');more.hidden=true;
-    panel.append(list,more,form,message);article.append(panel);
+    panel.append(list,more,composer,message);article.append(panel);
     function draw() {
       list.replaceChildren();const byId=new Map(entries.map(c=>[c.id,c])),children=new Map();
       for(const c of entries){const parent=byId.has(c.parentId)?c.parentId:null;if(!children.has(parent))children.set(parent,[]);children.get(parent).push(c);}
       const seen=new Set();
       function append(c,depth){
         if(seen.has(c.id))return;seen.add(c.id);
-        const row=node('article',undefined,'community-thread-reply');row.style.marginInlineStart=Math.min(depth,4)*.65+'rem';
-        const meta=node('div',undefined,'community-entry-meta');const avatar=node('span',undefined,'community-avatar');avatarImage(avatar,c.author);meta.append(avatar,c.author.handle?link(c.author.name,'/community/@'+c.author.handle):node('span',c.author.name));
-        if(c.parentId && byId.has(c.parentId))meta.append(node('small','Replying to '+byId.get(c.parentId).author.name));
-        const body=node('div',undefined,'notebook-markdown community-reflection-body');body.dir='auto';if(c.deleted)body.textContent='Comment removed.';else body.innerHTML=c.html;
-        row.append(meta,body);
-        if(!c.deleted)row.append(interactionControls(c,()=>{selected=c;label.firstChild.textContent='Replying to '+c.author.name;showReplyContext(context,c.author,c.html);cancel.hidden=false;textarea.focus();},true));
+        const row=node('article',undefined,'comment-thread-item'+(depth?' comment-thread-reply':''));row.style.setProperty('--comment-depth',depth);
+        const line=node('div',undefined,'comment-row'),avatar=node('span',undefined,'comment-avatar');avatarImage(avatar,c.author);
+        const entry=node('div',undefined,'comment-entry'),wrap=node('div',undefined,'comment-bubble-wrap'),bubble=node('div',undefined,'comment-bubble');
+        const meta=node('div',undefined,'comment-meta');meta.append(c.author.handle?link(c.author.name,'/community/@'+c.author.handle,'comment-author'):node('span',c.author.name,'comment-author'));
+        const body=node('div',undefined,c.deleted?'comment-deleted':'comment-text notebook-markdown');body.dir='auto';if(c.deleted)body.textContent='This reflection was deleted.';else body.innerHTML=c.html;
+        bubble.append(meta,body);wrap.append(bubble);entry.append(wrap);line.append(avatar,entry);row.append(line);
+        if(!c.deleted){
+          const controls=interactionControls(c,()=>{selected=c;label.firstChild.textContent='Replying to '+c.author.name;showReplyContext(context,c.author,c.html);cancel.hidden=false;textarea.focus();},true);
+          controls.classList.add('comment-actions');
+          const date=new Date(c.createdAt || c.ts);
+          if(!Number.isNaN(date.getTime())){const time=node('time',date.toLocaleDateString(undefined,{month:'short',day:'numeric'}),'comment-time');time.dateTime=date.toISOString();time.title=date.toLocaleString();controls.prepend(time);}
+          for(const control of controls.querySelectorAll('button'))control.classList.add('comment-action');
+          entry.append(controls);
+        }
         list.append(row);for(const child of children.get(c.id)||[])append(child,depth+1);
       }
       for(const c of children.get(null)||[])append(c,0);
@@ -452,6 +478,7 @@
       const result = await api('/preview', 'POST', { markdown });
       if (own !== epoch || request !== quickPreviewRequest || markdown !== $('quick-text').value) return;
       if(window.communityRenderPostPreview) window.communityRenderPostPreview($('quick-preview'),result.html,quickCover); else $('quick-preview').innerHTML=result.html; $('quick-preview').hidden = false; $('quick-preview-button').textContent = 'Hide preview';
+      $('quick-preview').scrollIntoView({block:'nearest',behavior:'smooth'});
     } catch (err) { if (own === epoch && request === quickPreviewRequest) $('quick-status').textContent = err.message; }
   });
   $('quick-form')?.addEventListener('submit', async event => {
@@ -462,6 +489,7 @@
     ++quickPreviewRequest; quickBusy = true; $('quick-text').disabled = true; syncQuickComposer();
     $('quick-status').textContent = 'Posting…';
     try {
+      const updating=!!quickEditing;
       const { post } = await api(quickEditing ? '/posts/'+quickEditing.id : '/posts', quickEditing ? 'PUT' : 'POST', { kind: 'note', ...(quickEditing?.convertToNote ? {convertToNote:true} : {}), title: $('quick-title').value, markdown, coverUrl:quickCover, tags: quickEditing?.tags || '', version:quickEditing?.version, notifyEmail: false, action: quickEditing && quickEditing.status!=='published' ? 'draft' : 'publish' });
       if (own !== epoch) return;
       quickEditing=null;showQuickCover('');$('quick-edit-actions').hidden=true;$('quick-new-article').hidden=false;$('quick-post').textContent='Post';
@@ -469,6 +497,7 @@
       $('quick-dialog').close();
       status(post.status === 'pending' ? 'Submitted for review. See My Profile.' : post.status==='draft' ? 'Draft saved.' : 'Your post is published.');
       $('quick-status').replaceChildren(document.createTextNode(post.status === 'pending' ? 'Submitted for review. ' : post.status==='draft' ? 'Draft saved. ' : 'Your post is published. '), link(post.status !== 'published' ? 'View on My Profile' : 'View post', post.status !== 'published' ? '/community/mine' : post.url));
+      if(updating){location.assign(post.url || '/community/p/'+post.id);return;}
       if (post.status === 'published' || post.status === 'pending') { location.assign('/community/mine'); return; }
       // Refresh failures must never invite a second submission of an already saved post.
       void loadFeed(true).catch(() => { if (own === epoch) status('Your post was saved. Reload the feed to see the latest posts.'); });
@@ -510,7 +539,7 @@
   },$('quick-convert')));
   function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, ...(editing?.conversionPending ? {convertToArticle:true} : {}), action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
-  let articleSaveTimer, articleSaveTask = null, articleReturnToProfile = false;
+  let articleSaveTimer, articleSaveTask = null, articleReturnUrl = false;
   function scheduleArticleSave() {
     clearTimeout(articleSaveTimer);
     if (view !== 'write' || !me || !dirty) return;
@@ -525,10 +554,13 @@
   function renderEditorCover(post) {
     $('cover-url').value=post.coverUrl||''; $('cover-remove').hidden=!post.coverUrl;
     let figure=$('editor-cover');
-    if(!post.coverUrl){figure?.remove();return;}
     if(!figure){figure=node('figure',undefined,'community-editor-cover');figure.id='community-editor-cover';$('title').insertAdjacentElement('afterend',figure);}
-    const img=node('img');if(/^\/community\/media\//.test(post.coverUrl))img.dataset.mediaSrc=post.coverUrl;else img.src=post.coverUrl;img.alt=post.title||'Article cover';
-    figure.replaceChildren(img,node('figcaption','Cover image','small text-muted'));
+    const fallback='/static/img/pearls_of_the_deep.jpg',img=node('img');
+    if(/^\/community\/media\//.test(post.coverUrl))img.dataset.mediaSrc=post.coverUrl;else img.src=post.coverUrl||fallback;
+    img.alt=post.title||'Article cover';
+    const caption=node('figcaption',post.coverUrl?'Cover image':'Default cover · Pearls of the Deep','small text-muted');
+    img.addEventListener('error',()=>{if(img.getAttribute('src')!==fallback){img.src=fallback;caption.textContent='Default cover · Pearls of the Deep';}});
+    figure.replaceChildren(img,caption);
   }
   document.addEventListener('communityCoverChanged',event=>{if(event.detail.editor==='quick'){showQuickCover(event.detail.url);return;}renderEditorCover({coverUrl:event.detail.url});invalidatePreview();});
   $('cover-remove')?.addEventListener('click',()=>{renderEditorCover({coverUrl:''});invalidatePreview();});
@@ -579,7 +611,7 @@
         if (background) $('editor-status').textContent = 'Add article text to save automatically.';
         return;
       }
-      const currentSignature = signature(), wasDirty = dirty;
+      const currentSignature = signature(), wasDirty = dirty, updating=!!editing?.id;
       if (background) $('editor-status').textContent = 'Saving…';
       const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
@@ -600,10 +632,10 @@
       else { dirty = true; $('unpublish').hidden = !['published', 'pending'].includes(editing.status); $('editor-status').textContent = 'Earlier changes saved. You still have unsaved edits.'; }
       if (!background) status(action === 'publish' ? editing.status === 'pending' ? 'Submitted for moderation.' : 'Your article is public.' : action === 'unpublish' ? 'Unpublished. The article is now private.' : 'Draft saved.');
       saved = true;
-      if (!background && action === 'publish') articleReturnToProfile = true;
-      if (articleReturnToProfile && !dirty) {
+      if (!background && action === 'publish') articleReturnUrl = updating ? (editing.url || '/community/p/'+editing.id) : '/community/mine';
+      if (articleReturnUrl && !dirty) {
         clearTimeout(articleSaveTimer);
-        location.assign('/community/mine');
+        location.assign(articleReturnUrl);
       }
     } finally { savingPost = false; if (saved && dirty && account === epoch) scheduleArticleSave(); }
   }
@@ -707,11 +739,14 @@
     const own = epoch;
     const { post } = await api('/posts/' + postId);
     if (own !== epoch || !post?.likeSource) return;
+    if ($('blog-toggle')) $('blog-toggle').checked = !!post.isBlog;
     const actions = interactionControls(post, () => {
-      $('reflections-disclosure').open = true;
+      const disclosure = $('reflections-disclosure') || document.getElementById('blog-comments-disclosure');
+      if (disclosure) disclosure.open = true;
       actions.querySelector('.community-reply').setAttribute('aria-expanded', 'true');
-      $('comment-text').focus();
-      $('comment-text').scrollIntoView({ block: 'center', behavior: 'smooth' });
+      const composer = $('comment-text') || document.querySelector('#blog-comments .comment-input');
+      composer?.focus();
+      (composer || document.getElementById('blog-comments'))?.scrollIntoView({ block: 'center', behavior: 'smooth' });
     });
     actions.id = 'community-post-actions';
     actions.classList.add('mt-3');
@@ -721,7 +756,14 @@
           !control.matches('.community-like:not([data-community-share-url]):not(#community-report-post)')) actions.append(control);
     }
     previous.replaceWith(actions);
+    syncBlogCommentCount();
   }
+  function syncBlogCommentCount() {
+    const count = document.getElementById('blog-comments-count');
+    if (count) $('post-actions')?.renderInteraction?.({commentCount: Number(count.textContent) || 0});
+  }
+  const blogCommentCount = document.getElementById('blog-comments-count');
+  if (blogCommentCount) new MutationObserver(syncBlogCommentCount).observe(blogCommentCount, {childList: true, characterData: true, subtree: true});
   function showReplyContext(container,author,html) {
     window.CommunityReplyContext?.show(container, author, html);
   }
@@ -755,11 +797,11 @@
       const date = new Date(c.createdAt);
       if (!Number.isNaN(date.getTime())) { const time = node('time', date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), 'comment-time'); time.dateTime = date.toISOString(); time.title = date.toLocaleString(); controls.append(time); }
       if (!c.deleted) {
-        for (const [direction, selected, total, glyph, label] of [['up', c.liked, c.likeCount, 'heart', 'Like'], ['down', c.disliked, c.dislikeCount, 'hand-thumbs-down', 'Disagree']]) {
-          const vote = reflectionAction(label, glyph + (selected ? '-fill' : ''), async () => { await api('/votes/comment/' + c.id, 'PUT', { direction: selected ? null : direction }); await loadComments(); }, 'comment-vote' + (selected ? ' is-active' : ''));
-          vote.setAttribute('aria-pressed', String(!!selected)); if (total) vote.append(document.createTextNode(' ' + total)); controls.append(vote);
+        for (const [direction, selected, total, glyph, label] of [['up', c.liked, c.likeCount, 'heart', 'Like'], ['down', c.disliked, c.dislikeCount, 'hand-thumbs-down', 'Dislike']]) {
+          const vote = reflectionAction(selected ? 'Undo ' + label.toLowerCase() : label, glyph + (selected ? '-fill' : ''), async () => { await api('/votes/comment/' + c.id, 'PUT', { direction: selected ? null : direction }); await loadComments(); }, 'comment-vote' + (selected ? ' is-active' : ''));
+          vote.setAttribute('aria-pressed', String(!!selected)); if (total) vote.append(node('span', ' ' + total)); controls.append(vote);
         }
-        controls.append(reflectionAction('Reply', 'reply', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; showReplyContext($('reply-context'),c.author,c.html);$('comment-text').focus();$('comment-form').scrollIntoView({block:'center',behavior:'smooth'}); }, 'comment-reply'));
+        controls.append(reflectionAction('Reply', 'chat-right-text', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; showReplyContext($('reply-context'),c.author,c.html);$('comment-text').focus();$('comment-form').scrollIntoView({block:'center',behavior:'smooth'}); }, 'comment-reply'));
         controls.append(reflectionAction('Report', 'flag', () => report(c.id)));
         if (c.canDelete) controls.append(reflectionAction('Delete', 'trash', async () => { if (!window.confirm('Remove this reflection?')) return; await api('/comments/' + c.id, 'DELETE'); if (replyId === c.id) cancelReply(); await loadComments(); }, 'comment-delete comment-action-delete'));
       }
@@ -915,7 +957,20 @@
     } catch (err) { if (own === epoch) $('profile-error').textContent = err.message; }
     finally { submit.disabled = false; }
   });
+  async function loadArticleAuthor(own) {
+    const bio = authorRail?.querySelector('[data-article-author-bio]');
+    if (!bio || !me || !authorRail.dataset.articleAuthor) return;
+    try {
+      const {author} = await api('/authors/' + encodeURIComponent(authorRail.dataset.articleAuthor));
+      if (own !== epoch) return;
+      window.CommunityBio.render(bio, author.bio);
+      bio.hidden = !bio.textContent.trim();
+    } catch (_) { /* Profiles retain their existing sign-in and visibility rules. */ }
+  }
   async function init() {
+    const articleBio = authorRail?.querySelector('[data-article-author-bio]');
+    if (articleBio) { articleBio.replaceChildren(); articleBio.hidden = true; }
+
     if (view === 'author') {
       $('author-profile').hidden = true; $('author-content').hidden = true;
       $('page-title').textContent = 'Profile';
@@ -932,6 +987,8 @@
         if (own !== epoch) return;
         if (token) me = await api('/me');
       } catch (err) { if (!publicView) throw err; me = null; }
+      if (own !== epoch) return;
+      await loadArticleAuthor(own);
       if (own !== epoch) return;
       if($('moderation-link'))$('moderation-link').hidden = !me?.moderator;
       if ($('quick-name')) { $('quick-name').textContent = me?.author.publicName || me?.author.name.trim().split(/\s+/u)[0] || 'Share a post'; if (me) { avatarImage($('quick-avatar'), me.author); avatarImage($('prompt-avatar'), me.author); } }
@@ -966,7 +1023,7 @@
         $('name').value = me.author.name; $('handle').value = me.author.handle; $('handle').readOnly = !/^author-[a-f0-9]{16}$/.test(me.author.handle); $('bio').value = me.author.bio;
         renderSubscriptions(me.subscriptions);
       }
-      if (handle) {
+      if (handle && $('follow-controls')) {
         const self = me?.author.handle === handle; $('follow-controls').hidden = self;
         relation = me && !self ? await api('/authors/' + encodeURIComponent(handle) + '/relationship') : { following: false, email: false }; renderRelation();
       }
@@ -987,7 +1044,11 @@
         }else populate(post);}
         if (params.get('source') && !editing) await copyNotebook(params.get('source'));
       }
-      if (view === 'post') { syncReflectionComposer(); $('blog-control').hidden = !me?.admin || $('blog-toggle').dataset.kind !== 'article'; $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadPostActions(); await loadComments(); }
+      if (view === 'blog-article' && $('post-actions')) {
+        $('edit-post').hidden = me?.author.handle !== handle;
+        await loadPostActions();
+      }
+      if (view === 'post') { syncReflectionComposer(); $('edit-post').hidden = me?.author.handle !== handle || $('edit-post').dataset.generated === 'true'; await loadPostActions(); await loadComments(); }
       if (view === 'moderation') await loadModeration();
     } catch (err) { if (own === epoch) status(err.message); }
   }

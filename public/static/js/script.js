@@ -937,21 +937,22 @@ function renderHadithAdminGear() {
       if (!item) {
         item = document.createElement('li');
         item.className = 'edit-gear px-3 py-2';
-        const toggle = document.createElement('div');
-        toggle.className = 'btn-group btn-group-sm';
-        toggle.setAttribute('role', 'group');
-        toggle.setAttribute('aria-label', 'Edit/View');
-        for (const [label, enabled] of [['Edit', true], ['View', false]]) {
-          const button = document.createElement('button');
-          button.type = 'button';
-          button.className = 'btn btn-outline-secondary';
-          button.textContent = label;
-          button.dataset.editMode = String(enabled);
-          button.addEventListener('click', () => {
-            if (getHadithEditMode() !== enabled) setHadithAdminMode(enabled);
-          });
-          toggle.appendChild(button);
-        }
+        const toggle = document.createElement('label');
+        toggle.className = 'form-check form-switch d-flex align-items-center gap-2 ps-0 mb-0';
+        const viewLabel = document.createElement('span');
+        viewLabel.textContent = 'View';
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.className = 'form-check-input float-none ms-0 mt-0';
+        input.setAttribute('role', 'switch');
+        input.setAttribute('aria-label', 'Edit mode');
+        input.dataset.editModeToggle = '';
+        input.addEventListener('change', () => {
+          if (getHadithEditMode() !== input.checked) setHadithAdminMode(input.checked);
+        });
+        const editLabel = document.createElement('span');
+        editLabel.textContent = 'Edit';
+        toggle.append(viewLabel, input, editLabel);
         item.appendChild(toggle);
         const signout = list.querySelector('[data-profile-signout]');
         const divider = document.createElement('li');
@@ -961,11 +962,7 @@ function renderHadithAdminGear() {
         list.insertBefore(item, signout);
         if (signout) list.insertBefore(divider.cloneNode(true), signout);
       }
-      item.querySelectorAll('[data-edit-mode]').forEach(button => {
-        const selected = (button.dataset.editMode === 'true') === editMode;
-        button.classList.toggle('active', selected);
-        button.setAttribute('aria-pressed', String(selected));
-      });
+      item.querySelector('[data-edit-mode-toggle]').checked = editMode;
     });
   }
 

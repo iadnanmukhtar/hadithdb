@@ -28,7 +28,7 @@ test.each(['','First paragraph\n\nCurrent paragraph'])('contextual control handl
  const w=dom.window;w.marked=marked;const e=w.document.querySelector('textarea');e.value=markdown;w.eval(short);
  const rich=w.document.querySelector('.community-rich-input'),range=w.document.createRange();range.selectNodeContents(rich);range.collapse(false);w.getSelection().removeAllRanges();w.getSelection().addRange(range);rich.focus();w.document.dispatchEvent(new w.Event('selectionchange'));
  const b=w.document.querySelector('[data-command="parallel"]');expect(b.textContent).toBe('a|ج');expect(b.hidden).toBe(false);b.click();
- expect(e.hidden).toBe(false);expect(e.value).toBe(markdown?markdown+' || نص عربي هنا':'English text here || نص عربي هنا');expect(e.value.slice(e.selectionStart,e.selectionEnd)).toBe('نص عربي هنا');
+ expect(e.hidden).toBe(true);expect(e.value).toBe(markdown?markdown+' || نص عربي هنا':'English text here || نص عربي هنا');expect(w.getSelection().toString()).toBe('نص عربي هنا');expect(rich.querySelectorAll('.community-edit-parallel-cell')).toHaveLength(2);
  }finally{dom.window.close();}
 });
 test('source-mode control preserves advanced formatting on other lines',()=>{

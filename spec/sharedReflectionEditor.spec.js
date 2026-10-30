@@ -9,7 +9,7 @@ async function setup() {
  w.marked=marked; w.HTMLElement.prototype.scrollIntoView=()=>{};
  w.hadithAuth={getUser:async()=>({displayName:'Amina',providerData:[{providerId:'fixture'}],getIdToken:async()=> 'fixture'}),getToken:async()=> 'fixture'};
  const markdown='__Keep underline__\n\nEnglish || العربية';
- const comment={id:7,text:markdown,html:'<p>Parent reflection</p>',user:{name:'Yusuf'},ts:new Date().toISOString(),canEdit:true};
+ const comment={id:7,text:markdown,html:'<p>Parent reflection</p>',user:{name:'Yusuf'},ts:new Date().toISOString(),canEdit:true,upVote:2,downVote:1};
  w.fetch=jest.fn(async(url,opts)=>({ok:true,json:async()=>opts?.method==='POST'?{...comment,id:8}: [comment]}));
  for(const file of ['community-reply-context','community-parallel-text','community-short-editor']) w.eval(fs.readFileSync('public/static/js/'+file+'.js','utf8'));
  w.eval(w.document.querySelector('script').textContent);
@@ -41,5 +41,19 @@ test('reply context treats author and excerpt as text and rejects unsafe photo U
  w.CommunityReplyContext.show(context,{name:'<b>Name</b>',photo:'javascript:alert(1)'},'<p>Safe <strong>excerpt</strong></p>');
  expect(context.querySelector('img')).toBeNull();expect(context.querySelector('b')).toBeNull();
  expect(context.textContent).toContain('<b>Name</b>Safe excerpt');
+ }finally{dom.window.close();}
+});
+
+test('reader reflections use inline reaction counts and the common quiet composer',async()=>{
+ const {dom,w,input}=await setup();try {
+ expect(w.document.querySelector('.comment-reactions-badge')).toBeNull();
+ expect(w.document.querySelector('.comment-reply .bi').className).toBe('bi bi-chat-right-text');
+ expect(w.document.querySelector('[data-direction="down"]').getAttribute('aria-label')).toBe('Dislike');
+ expect(w.document.querySelector('[data-direction="up"]').textContent.trim()).toBe('2');
+ expect(w.document.querySelector('[data-direction="down"]').textContent.trim()).toBe('1');
+ expect(w.document.querySelector('#test-comments-user').textContent).toBe('Posting as Amina');
+ expect(w.document.querySelector('.comment-provider-chip')).toBeNull();
+ expect(input.placeholder).toBe('Write a reflection…');
+ expect(w.document.querySelector('[type="submit"]').textContent).toBe('Post');
  }finally{dom.window.close();}
 });

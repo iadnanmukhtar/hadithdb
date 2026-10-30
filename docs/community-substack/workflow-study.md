@@ -213,3 +213,161 @@ Validation: 24 focused tests passed, including absent/blank covers, preserved ex
 Removed the standalone parallel-text button and the collapsed-caret parallel-only toolbar. The contextual toolbar now appears only for a nonempty text selection. Posts containing media or extended Markdown had switched into source mode, where the contextual toolbar was disabled; source selections now offer formatting too. Source commands modify only the selected range (or selected lines for lists/quotes), preserving unrelated extended Markdown. Article formatting retains its permanent toolbar.
 
 Validation: 44 editor/parallel/article/reflection tests pass. Local Chrome verified selection reveals all controls, parallel insertion preserves the current line, bold formatting works on the selected Arabic source text, and clearing the selection hides all contextual controls. Screenshot: `post-contextual-formatting.jpg`. Not deployed.
+
+### Basic and advanced form layout parity
+
+Both inputs now live inside the same editor shell, with the contextual toolbar above and the mode tools below. Markdown mode uses the same borderless background, typography, line spacing, padding, minimum height and focus accent as formatted mode. Its height grows with content up to the shared scroll limit. The article surface retains its larger writing area. Extended syntax and mode selection behavior are unchanged.
+
+Validation: 44 existing editor tests passed. Chrome confirmed identical post input font (18px), line height (29.7px), padding and minimum height (180px) in both modes, and verified the advanced layout at 390px. Local ignored screenshots: `advanced-form-matched.jpg`, `advanced-form-matched-mobile.jpg`. Not deployed.
+
+### Native formatted editing for parallel text
+
+Two-column `||` rows now parse as editable side-by-side cells inside the formatted editor. Existing posts containing ordinary prose, bold Arabic, links, and parallel text open in formatted mode; the parallel control also returns directly to that surface and selects the Arabic sample. The stored contract remains Markdown with `||`, with untouched rows retaining their exact original source. Edits serialize both cells without removing neighboring prose or rows. Escaped pipes and pipes inside code spans remain literal.
+
+Each cell retains automatic text direction. Enter/Tab moves between columns and then out into normal prose; boundary deletion and cross-column edits are guarded against accidentally merging the columns. Contextual inline formatting remains available within a cell. Other unsupported extended syntax still uses the existing lossless source fallback.
+
+Validation: 48 editor, parallel-text, article, and reflection tests passed, covering initial rendering, unchanged submission, edited serialization/reopening, multiple rows, escaped/code pipes, and keyboard navigation. Local Chrome verified insertion, direct Arabic editing, Markdown/formatted switching, and mixed prose/columns at desktop and 390px mobile. Ignored screenshots: `parallel-rich-desktop.jpg`, `parallel-rich-mobile.jpg`. Not deployed.
+
+### Delete editable parallel blocks
+
+Focusing either column reveals a Delete columns control above the writing area. It removes that block and both columns' text while preserving adjacent paragraphs, and keeps the editor in formatted mode. An Undo delete columns control restores the removed block at its original position; immediate Cmd/Ctrl+Z also restores it. Deletion is explicit because Chromium's native contenteditable delete merged the following paragraph into a leftover column container during verification.
+
+Validation: regression tests cover removing a standalone row and a row between paragraphs, plus restoration. Local Chrome verified zero remaining column containers after deletion, intact surrounding Markdown, button undo and immediate keyboard undo. Ignored screenshot: `delete-columns.jpg`. Not deployed.
+
+### Post/article editor parity verification
+
+Both the quick post textarea and article textarea mount `CommunityShortEditor`; the article's permanent toolbar delegates supported commands into that same component. Added article integration coverage for formatted column insertion, deletion, restoration, unchanged-source reopening/submission, and input events used by autosave. Local Chrome verified the article toolbar creates formatted columns and the shared Delete/Undo controls remove and restore them while the full article formatting bar remains present. Screenshot: `article-shared-columns.jpg` (ignored). No separate article implementation or deployment was needed.
+
+### Replace destructive column deletion with layout removal
+
+The prior Delete columns action is replaced by a floating × immediately after the active row, at its lower right edge. Its accessible label is Remove column layout. It unwraps the first and second columns into consecutive text blocks, preserving inline formatting, language direction, and surrounding prose. Undo restores the column layout and retains edits made to the unwrapped blocks. The shared post/article component owns this behavior.
+
+Validation: 49 focused editor tests passed with updated preservation expectations. Chrome verified the floating control, English-then-Arabic output, retained bold formatting, and layout restoration. Ignored screenshot: `remove-column-layout.jpg`. Not deployed.
+
+### Continue lists and quotes with Enter
+
+The shared editor now uses the notebook continuation helper for Markdown-mode Enter: unordered bullets repeat, ordered markers increment, task items start unchecked, and quote prefixes continue. Enter on an empty item removes its marker; an empty quote line exits the quote. Fenced code/frontmatter and Shift+Enter retain their existing literal behavior. Article shortcut listeners respect the handled event to avoid double insertion.
+
+Formatted lists retain native browser continuation and empty-item exit. Empty quote paragraphs explicitly split out into normal prose without discarding later quote paragraphs. Bare-reference expansion no longer interrupts list/quote continuation.
+
+Validation: 57 shared editor/article/parallel/reflection tests pass. Chrome verified formatted bullet continuation and empty-item exit, quote continuation and exit, and Markdown bullet continuation/exit. The separate notebook shortcut browser suite could not launch its headless Chrome under the sandbox; live Chrome checks covered the relevant interactions. Ignored screenshot: `enter-formatting.jpg`. Not deployed.
+
+### Tight quote-line continuation
+
+Formatted Enter now splits into a following line inside the same quote, rather than relying on browser paragraph/block splitting. Continuation lines have no paragraph margins and serialize without an inserted blank quoted line. Enter on the empty continuation line still exits to normal prose. Existing inline quote markup retains its previous serializer unless a continuation line was introduced.
+
+Chrome verified two typed lines share one continuous quote border and store as `> First line\n> Second line`; Enter twice then typing produces ordinary text outside the quote. Screenshot: `quote-lines.jpg` (ignored). Not deployed.
+
+### Shared centering, highlighting, and formatting icons
+
+- Short-post selection formatting now uses the article toolbar icons, including highlight, center, underline, quotation, and clear formatting. Article editing retains its permanent toolbar.
+- Center alignment wraps selected lines with `<center>` and `</center>` on separate lines. Centered blocks and `==highlight==` reopen in formatted editing; existing extended Markdown remains available.
+- The server parses Markdown inside own-line center wrappers. Explicit centering overrides automatic language alignment, including Arabic paragraphs.
+- Verified in local Chrome: highlight then center stays in formatted mode and stores `<center>\n==A moment for reflection==\n</center>`. Screenshot: `center-highlight.jpg` (ignored reference artifact).
+- Validation: 170 tests passed across six shared editor, article, parallel text, reflection, autosave, and notebook rendering suites. No production deployment.
+
+### Post/article formatting parity and Subtext
+
+Compared both toolbars: inline formatting, centering, lists, quotation, links, clearing, and parallel columns were available in both; posts lacked the article text-style menu and used a different control order. Both now offer Normal, Heading 1–6, and Subtext (-#), with matching icon order. The article retains its permanent toolbar and Markdown-help entry; posts retain selection-only controls. Code is not offered in either toolbar. Extended Markdown remains supported.
+
+Subtext renders as a small-text paragraph in the shared formatted editor, serializes as `-# text`, and can be changed back to Normal or a heading. Both heading menus use the same handler. Focus can move into the contextual menu without dismissing it. Focused editor/article/parallel regression suites: 62 tests passed. Not deployed.
+
+### Article-only sticky toolbar
+
+Articles now use only their permanent formatting toolbar; rich and Markdown selections keep the contextual toolbar hidden while preserving selection for permanent toolbar actions. Posts retain selection formatting. The global horizontal `overflow: hidden` created an ancestor that trapped sticky positioning; article write pages now use `overflow-x: clip`, matching the site's reader layouts. The toolbar retains the measured fixed-header offset.
+
+Local Chrome verification with 45 sample paragraphs: at scrollY 2668 the toolbar remained at its sticky top (0 in the headerless fixture). Screenshot: `article-sticky-toolbar.jpg` (ignored). Shared post/article tests: 52 passed. No deployment.
+
+### Mobile post and article writing audit
+
+Audited local Chrome at 390x844, 320x568, and a reduced 390x600 viewport. Found wasted post-dialog margins, stacked action buttons, small selection-toolbar targets, a three-row article toolbar, and oversized introductory spacing before the article body.
+
+Changes: mobile posts use a full-height safe-area-aware writing surface with one scrolling dialog and compact Preview/Cancel/Post actions; formatted and Markdown modes have matching room to write. Both mobile formatting bars scroll horizontally in one row with 44px touch targets. Articles retain their sticky permanent bar, use less introductory spacing, and keep at least half a viewport of editing room. Bilingual column removal has a centered 44px touch target. Post previews scroll into view after rendering.
+
+Browser checks: post formatted/Markdown switching preserved content; preview appeared and local submission returned success. Article subtext, bilingual columns, Markdown switching, preview, and draft-save response worked. No horizontal page overflow at 320px. The fixture redirects after draft save to an unsupported /community/mine route, so reopening that saved draft was not validated here. Existing regression suites cover autosave/editor behavior. These checks emulate viewport sizes, not a real iOS/Android keyboard or device. Screenshots: mobile-post-audit.jpg and mobile-article-audit.jpg (ignored). No live posts or deployment.
+
+### Article contents in the right rail
+
+Blog and Community article reading pages now derive an automatic contents rail from body headings, replacing the contributor pane only when usable headings exist. Existing authored anchors are retained, missing/duplicate anchors get unique IDs, subheadings are indented, and navigation headings/footnotes are excluded. Scroll tracking highlights the current section and keeps its link visible within a long fixed rail; heading links account for the fixed site header. Articles without headings retain contributors. Short posts are unchanged.
+
+Local Chrome confirmed section navigation, active-section highlighting, fixed-rail position, and no-heading fallback. Screenshot: article-contents-rail.jpg (ignored). Shared script hashing and cached-asset rewriting include the new navigation script. No deployment.
+
+### Article 51 advanced-mode diagnosis
+
+The local article "The Iddah and the Mourning Period for a Widow" contained a normal `---` divider after its introduction. The rich editor's multiline frontmatter guard incorrectly matched that divider anywhere in the document, and its token renderer also lacked horizontal-rule support. Frontmatter detection is now anchored to the start of the document, while normal dividers render and serialize safely. Genuine frontmatter and unsupported extended syntax still retain source-mode protection.
+
+The complete 14,656-character article was checked locally: formatted mode rendered 13 headings and one divider with source Markdown unchanged on opening. Added divider regressions; 55 shared editor/article tests passed. Included the shared editor in script cache versioning. No article content was saved or published.
+
+### Article divider and editable footnotes
+
+Article toolbar now includes Insert divider and Insert footnote. Formatted editing renders Markdown footnote references as atomic superscript markers and definitions as labeled editable text, including multiline paragraphs, inline emphasis, repeated references, and named/Arabic labels. Inserting a reference allocates an unused number, adds a definition placeholder, and selects its text for immediate editing. Markdown mode retains the same insertion controls. Nested footnote insertion is blocked inside a footnote body.
+
+Removing the last marker preserves its definition as an explicitly labeled orphaned paragraph in the serialized Markdown, rather than silently discarding it. Removing one of several references leaves the definition linked. Native Undo restores the reference and reconnects its note during the same editing session. Existing unreferenced definitions are displayed as orphaned notes. Standard dividers round-trip as `***` so a leading divider cannot be mistaken for YAML frontmatter. Unsupported extended constructs still retain source-mode protection.
+
+Local Chrome verified insertion, placeholder editing, marker deletion, and Undo. Screenshots: article-footnote-editing.jpg and article-orphan-footnote.jpg (ignored). Shared editor/article/parallel/autosave/reflection suites: 96 tests passed. No real articles saved or published, and no deployment.
+
+### Subscript and superscript controls
+
+Post contextual formatting and the article's permanent toolbar now include matching x₂/x² controls rendered as text rather than icon-font glyphs. Formatted editing uses native subscript/superscript commands and serializes to the existing `~text~` / `^text^` Markdown extensions. The shared parser reopens that syntax in formatted mode, preserves escaped spaces, and distinguishes superscript from footnote references and subscript from strikethrough. Local Chrome verified H₂O and x², visible icons, and the serialized `H~2~O and x^2^`. Screenshot: article-sub-superscript.jpg (ignored). No deployment.
+
+### Saving articles with missing covers
+
+Article 44 reproduced a save rejection: “Choose an image uploaded to your account.” Imported-blog decoration was feeding presentation cover URLs back into edit data. Editing responses now retain the stored cover before decoration. A missing cover shows Pearls of the Deep in the editor while the saved authored-cover field remains empty. Validation also accepts that exact default asset and tolerates the encoded form of an existing imported cover from older tabs, while continuing to reject unrelated unowned media. Failed cover previews display the default image. Focused cover, blog-feed, and article-autosave suites: 29 passed.
+
+Verified article 44 on localhost: missing authored cover remained empty, the editor displayed “Default cover · Pearls of the Deep,” and Save draft returned “Draft saved.” The public version was not republished. No deployment.
+
+### Consistent article rail width and update navigation
+
+Article reading layouts now use the site's shared heading-rail width token and responsive breakpoints, rather than an expanding remainder column. Verified at a 1508px viewport: the article rail was 393px, matching the shared rule.
+
+Explicit updates to existing articles and short posts return to the saved canonical reading URL (including blog URLs). New publication retains its My Profile destination. Autosave and Save draft keep the article editor open; concurrent edits finish saving before a requested update navigation. Reading pages still require an explicit Edit action to reopen editing. No deployment.
+
+### Rail breakpoint correction
+
+The previous match used the Quran/hadith expanding width, which differs from the compact search rail. Live local comparison showed 393px at 1508px on both the reader and article, but search uses 18rem; articles also incorrectly retained a 220px side column below the reader's 992px cutoff. Article rails now use 240px at 992–1199px, the shared search-width token (18rem) from 1200px upward, and no side rail below 992px. Other reader widths remain unchanged. Browser verified: 900px -> no side rail; 1100px -> 240px; 1508px and 1920px -> 324px at the site's 18px root font. This supersedes the expanding-width approach above. Screenshot: article-rail-compact-breakpoints.jpg (ignored). No deployment.
+
+### Exact search layout and fluid article correction
+
+The compact rail alone left the article constrained by Bootstrap's container and Community's 1120px outer/780px reading limits. Blog and Community article reading pages now use the search layout's 90rem outer maximum, 1.5rem gutters, 2rem column gap, and shared 18rem rail at every desktop breakpoint from 992px. The article fills the remaining column; mobile keeps a single column and .75rem gutters. This supersedes the 240px intermediate rail rule above.
+
+Verified actual local blog and search pages in Chrome: at 1512px both rail widths are 324px and both start at x=1146; at 1024px both remain 324px, with the article occupying 595px and no horizontal overflow. Templates compile, all three TOC tests pass, and diff whitespace checks pass. Screenshot: article-search-layout-match.jpg (ignored). No deployment.
+
+### Author bio rail
+
+Blog and Community article reading pages now share a left author rail with avatar, name, profile link, and the available profile bio. Bio loading uses the existing authenticated profile endpoint and safe plain-text/link renderer, preserving profile visibility and clearing displayed bios on account changes. The left rail mirrors the right rail's 18rem width, fixed header offset, footer boundary, and 992px mobile cutoff. The article occupies the middle column. Blog Community scripts now include their content version to avoid stale browser assets.
+
+Local Chrome verified the real author's bio and link, equal 324px rails at 1512px and 1024px, and both rails hidden at 390px without horizontal overflow. Screenshot: article-author-bio-rail.jpg (ignored). Templates compile; TOC, autosave, and update-navigation suites pass (26 tests). No deployment.
+
+### Bio rail yields space before the article
+
+The left bio rail now shrinks from the shared 18rem width toward 12rem as desktop space narrows, then hides below 1400px. The article recovers that column and gap. The right heading rail retains its existing 18rem width and 992px cutoff. Community article headings use the same shrinking left offset. This supersedes the equal rail cutoff above.
+
+Chrome verified: at 1463px the bio is 275px and article 723px; at 1400px the bio shrinks to 216px while article stays 719px; at 1390px the bio hides and article expands to 961px. Right rail stays 324px throughout, with no horizontal overflow. Screenshot: article-bio-responsive.jpg (ignored). Diff checks pass; no deployment.
+
+### Short-post author bio rail
+
+Short-post permalinks reuse the article author rail and existing authenticated bio loading. The rail shrinks toward 12rem and hides below 1400px, while the short-post reading and reflection column remains capped at 780px. Rail positioning now supports a left rail without a right rail, including the footer boundary. Short posts keep their existing follow controls and do not gain an unrelated heading rail.
+
+Verified the user's short-post permalink in local Chrome: author bio and link load, 324px rail beside a 780px post at 1512px; the bio hides at narrower widths and the post fills mobile space without horizontal overflow. Templates compile and 26 TOC/autosave/navigation tests pass. Screenshot: short-post-author-bio-rail.jpg (ignored). No deployment.
+
+### Shared individual-page social bar
+
+Blog articles and Community post/article pages now render one shared action template and use the same vote, comment, repost, share, report, and owner-edit controls. Individual-page bars no longer include the permalink arrow; feed cards retain their navigation. Blog comment actions open the existing blog reflection composer, and its live comment count updates the shared bar without moving or replacing existing discussions. The separate article edit/share controls were removed in favor of this bar.
+
+Verified local article and short-post pages show Like, Dislike, Comments, Repost, Share, Report, and owner Edit with no permalink arrow. Article Comments navigates to the existing blog composer. The blog discussion currently displays its existing “Failed to load comments” state; posting was not tested or performed. Shared-template, autosave, update-navigation, and blog-cache checks: 49 tests pass. Screenshot: article-shared-social-bar.jpg (ignored). No deployment.
+
+### Consistent reflections across reading and feed surfaces
+
+Post reflections, blog and reader comment widgets, and inline feed replies now use the same avatar/entry/composer classes and shared CSS. Reaction counts sit beside their icons instead of a separate floating badge; timestamps, author typography, reply rules, spacing, neutral controls, and mobile touch targets match. Composers use the same plain Post/Save controls, reflection placeholder, and quiet posting identity; account-provider badges and redundant in-composer sign-out controls were removed (account controls remain in the site menu). Blog articles use the same collapsed Reflections disclosure as individual posts. Existing reply contexts, cancellation, drafts, extended Markdown, and context-specific moderation/edit actions are retained.
+
+Fixed the discovered article-comment loading error by mounting the existing blog-comments router at both API prefixes used by the widgets/feed, while preserving its original route. Local article verification now loads the empty thread successfully instead of the prior error. Focused editor, disclosure, feed, action-template, and post-reflection checks: 70 tests pass, including nested Arabic replies, reaction counts, permissions, and cancel preserving draft text. No public comments were posted.
+
+Browser verification: article reflections now load without errors; the short-post page shows the same disclosure, empty state, and Post composer; the hadith reader widget loads with matching controls. At 390px the post reflection form has no horizontal overflow. Screenshots: reflections-consistent-article.jpg and reflections-consistent-mobile.jpg (ignored). Templates and JavaScript syntax checks pass. Not deployed.
+
+### Consistent reflection action iconography
+
+All reflection/reply renderers now use the social bar's heart, thumbs-down, and comment-bubble glyphs, including inline feed replies. Reply controls no longer use the separate bent-arrow glyph. Dislike and selected Undo labels match across widgets and Community threads. Shared icon geometry fixes size, baseline, count spacing, and hover/focus treatment while retaining filled selected reactions and compact controls.
+
+### Remove publication switch from reading pages
+
+Removed the Blog post switch from the shared full-page social bar; article editing retains its publishing control. Reading-page initialization no longer requires that switch. Reports continue to store the reporter, post, optional comment, and reason in community_reports and appear in the moderator-only /community/moderation queue. Reporting itself does not send email or automatically hide content.

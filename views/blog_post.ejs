@@ -30,22 +30,27 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container">
-    <main class="blog-post community" id="community" data-view="blog-article">
+  <div class="container-fluid community-article-layout">
+    <main class="blog-post community" id="community" data-view="blog-article" data-post="<%= attr.postId || '' %>" data-author="<%= attr.authorHandle || '' %>">
       <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
-      <div class="community-columns">
+      <div class="community-columns community-article-columns">
+        <%- include('sub-views/community_author_rail.ejs', { railAuthor: { name: attr.authorName || attr.author, handle: attr.authorHandle, photo: attr.authorPhoto, avatarFallback: attr.authorAvatarFallback } }); %>
         <div class="community-wall">
           <article>
             <%- include('sub-views/blog_cover.ejs', { entry: attr, detail: true }); %>
-            <% if (attr.postId) { %><a hidden data-blog-edit data-author="<%= attr.authorHandle %>" href="/community/write?post=<%= attr.postId %>" class="small text-muted text-decoration-none" aria-label="Edit article"><i class="bi bi-pencil" aria-hidden="true"></i> Edit article</a><% } %>
-            <section class="body">
+            <section class="body" data-article-body>
              <%- body %>
             </section>
-            <button type="button" class="btn btn-sm btn-outline-secondary my-3" data-community-share-url="<%= attr.shareUrl || ('/blog/' + slugVal) %>" data-community-share-title="<%= attr.title %>" data-community-share-author="<%= attr.authorName || attr.author || '' %>" data-community-share-photo="<%= attr.authorPhoto || '' %>" data-community-share-cover="<%= attr.cover || '' %>" data-community-share-excerpt="<%= attr.subtitle || '' %>"><i class="bi bi-share" aria-hidden="true"></i> Share</button>
+            <% if (attr.postId) { %><%- include('sub-views/community_post_actions.ejs', { post: {
+              id: attr.postId, kind: 'article', isBlog: true, title: attr.title,
+              url: attr.shareUrl || ('/blog/' + slugVal), coverUrl: attr.cover,
+              excerpt: attr.subtitle || '', author: {handle: attr.authorHandle, name: attr.authorName || attr.author, photo: attr.authorPhoto, avatarFallback: attr.authorAvatarFallback}
+            } }); %><% } %>
           </article>
           <%- include('sub-views/comment_widget.ejs', {
             widgetId: 'blog-comments',
-            heading: 'Share your reflection below:',
+            heading: 'Reflections',
+            collapsible: true,
             targetId: slugVal,
             ref: slugVal,
             endpoint: '/blog-comments',
@@ -61,8 +66,9 @@
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
-<script src="<%= utils.staticAssetUrl('/static/js/blog-edit.js') %>" defer></script>
-<script src="<%= utils.staticAssetUrl('/static/js/community.js') %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-article-toc.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-bio.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>" defer></script>
 </body>
 </html>

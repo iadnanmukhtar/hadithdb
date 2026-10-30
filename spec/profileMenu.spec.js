@@ -45,18 +45,18 @@ test.each(['inline','legacy'])('%s admin rendering only adds verified links insi
  expect(w.document.querySelector('[data-more-menu]').children).toHaveLength(0);
  expect(w.document.querySelectorAll('.offcanvas-col1 .edit-gear')).toHaveLength(1);
  for (const toggle of w.document.querySelectorAll('.edit-gear')) {
-  expect(toggle.querySelector('[data-edit-mode="false"]').getAttribute('aria-pressed')).toBe('true');
-  toggle.querySelector('[data-edit-mode="false"]').click();
+  const input = toggle.querySelector('[role="switch"]');
+  expect(input.checked).toBe(false);
+  expect(input.getAttribute('aria-label')).toBe('Edit mode');
  }
  expect(w.setHadithAdminMode).not.toHaveBeenCalled();
- w.document.querySelector('.edit-gear [data-edit-mode="true"]').click();expect(w.setHadithAdminMode).toHaveBeenCalledWith(true);
+ w.document.querySelector('.edit-gear [role="switch"]').click();expect(w.setHadithAdminMode).toHaveBeenCalledWith(true);
  w.getHadithEditMode=()=>true;w.renderHadithAdminGear();
  expect(w.document.querySelectorAll('.edit-gear')).toHaveLength(3);
- for (const toggle of w.document.querySelectorAll('.edit-gear')) {
-  expect(toggle.querySelector('[data-edit-mode="true"]').getAttribute('aria-pressed')).toBe('true');
-  expect(toggle.querySelector('[data-edit-mode="false"]').getAttribute('aria-pressed')).toBe('false');
+ for (const input of w.document.querySelectorAll('.edit-gear [role="switch"]')) {
+  expect(input.checked).toBe(true);
  }
- w.document.querySelector('.offcanvas-col1 [data-edit-mode="false"]').click();expect(w.setHadithAdminMode).toHaveBeenLastCalledWith(false);
+ w.document.querySelector('.offcanvas-col1 [role="switch"]').click();expect(w.setHadithAdminMode).toHaveBeenLastCalledWith(false);
  w.hadithAdmin=false;w.renderHadithAdminGear();expect(w.document.querySelectorAll('.admin-page-link,.edit-gear')).toHaveLength(0);
  }finally{w.close();}
 });

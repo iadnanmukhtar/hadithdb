@@ -563,3 +563,7 @@ test('hadith expansion matches the plain English citation format without a separ
   const result = await References.snapshot('muslim:2884');
   expect(result).toBe('> «عن عائشة: «عَبِثَ رَسُولُ اللَّهِ ﷺ فِي مَنَامِهِ».» ([مسلم ٢٨٨٤](/muslim:2884) صحيح)\n> Aishah ᴿᴬ reported that the Messenger of Allah ﷺ stirred in his sleep. (Muslim 2884)');
 });
+test('center block retains safe centering and renders Markdown inside it',()=>{
+ const html=require('../lib/UserNotebook').render('<center>\n==Highlighted== and **bold**\n</center>');
+ expect(html).toContain('<center>');expect(html).toContain('<mark>Highlighted</mark>');expect(html).toContain('<strong>bold</strong>');expect(html).toContain('</center>');
+});

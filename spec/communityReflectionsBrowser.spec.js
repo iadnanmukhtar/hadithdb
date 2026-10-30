@@ -19,7 +19,7 @@ test('post reflections use shared disclosure/composer and retain nested replies,
     w.eval(source);await settle();
     const d=w.document;
     const actions=d.querySelector('#community-post-actions');
-    expect([...actions.querySelectorAll('i')].map(el=>el.className)).toEqual(['bi bi-heart-fill','bi bi-hand-thumbs-down','bi bi-reply','bi bi-repeat','bi bi-share','bi bi-pencil']);
+    expect([...actions.querySelectorAll('i')].map(el=>el.className)).toEqual(['bi bi-heart-fill','bi bi-hand-thumbs-down','bi bi-chat-right-text','bi bi-repeat','bi bi-share','bi bi-pencil']);
     actions.querySelector('.community-like').click();await settle();
     expect(w.fetch.mock.calls.some(([url,options])=>url.endsWith('/votes/post/1945') && JSON.parse(options.body).direction===null)).toBe(true);
     expect(actions.querySelector('.community-like').getAttribute('aria-pressed')).toBe('false');
@@ -28,6 +28,10 @@ test('post reflections use shared disclosure/composer and retain nested replies,
     expect(d.activeElement.id).toBe('community-comment-text');
     expect(d.querySelector('.reflection-disclosure').open).toBe(true);
     expect(d.querySelector('#community-comments-count').textContent).toBe('2');
+    expect(d.querySelector('#community-comment-form [type=submit]').textContent.trim()).toBe('Post');
+    expect(d.querySelector('#comment-2 .comment-vote').textContent.trim()).toBe('2');
+    expect(d.querySelector('#comment-2 .comment-reply .bi').className).toBe('bi bi-chat-right-text');
+    expect(d.querySelector('#comment-2 .comment-vote').getAttribute('aria-label')).toBe('Undo like');
     expect([...d.querySelectorAll('.comment-thread-item')].map(el=>el.id)).toEqual(['comment-1','comment-2']);
     expect(d.querySelector('#comment-2').style.getPropertyValue('--comment-depth')).toBe('1');
     expect(d.querySelector('#comment-2 .comment-text').dir).toBe('auto');

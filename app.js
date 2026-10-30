@@ -619,6 +619,8 @@ const startupPromise = (async () => {
   app.use('/api/comments', commentsRouter);
   app.use('/quran/api/comments', commentsRouter);
   app.use('/blog-comments', blogCommentsRouter);
+  app.use('/api/blog-comments', blogCommentsRouter);
+  app.use('/quran/api/blog-comments', blogCommentsRouter);
   app.use('/api/likes', likesRouter);
   app.use('/quran/api/likes', likesRouter);
   app.use('/liked', (req, res) => res.redirect(301, '/community'));

@@ -1,0 +1,9 @@
+<div class="community-author-rail-slot">
+  <aside class="community-author-rail" aria-label="About the author" data-article-author="<%= railAuthor.handle || '' %>">
+    <h2 class="hadith-heading-toc-title">About the author</h2>
+    <span class="community-avatar community-avatar-large" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: railAuthor }) %></span>
+    <p class="community-author-rail-name" dir="auto"><% if (railAuthor.handle) { %><a href="/community/@<%= railAuthor.handle %>"><%= railAuthor.name %></a><% } else { %><strong><%= railAuthor.name || 'Author' %></strong><% } %></p>
+    <p class="community-author-rail-bio" data-article-author-bio dir="auto" hidden></p>
+    <% if (railAuthor.handle) { %><a class="community-author-profile-link" href="/community/@<%= railAuthor.handle %>">View profile</a><% } %>
+  </aside>
+</div>
