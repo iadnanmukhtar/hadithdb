@@ -814,3 +814,5 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .comment-feed .comment-actions .comment-action { gap: .25rem; border-radius: .5rem; font-variant-numeric: tabular-nums; }
 .comment-feed .comment-actions .comment-action:hover,
 .comment-feed .comment-actions .comment-action:focus-visible { color: var(--community-accent); background: var(--c-primary-soft-08); }
+
+.community-rich-input .notebook-rich-line { display: block; unicode-bidi: plaintext; text-align: start; min-height: 1em; }

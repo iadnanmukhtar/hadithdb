@@ -13,7 +13,7 @@
     const alias = tail?.[1].includes('|') ? tail[1].slice(tail[1].indexOf('|')) : '';
     return { text: `[[${title}${alias}]]`, start: ctx.start, end: ctx.cursor + (tail ? tail[0].length : 0) };
   }
-  function caretRect(editor) {
+  function caretRect(editor, offset = editor.selectionStart) {
     // Textareas do not expose a caret rectangle. Mirror the complete text so
     // wrapping and mixed Arabic/English direction agree with the editor.
     const mirror = document.createElement('div'), style = getComputedStyle(editor);
@@ -21,10 +21,10 @@
       mirror.style[property] = style[property];
     }
     Object.assign(mirror.style, { position: 'fixed', left: '-10000px', top: '0', visibility: 'hidden', boxSizing: 'border-box', width: `${editor.clientWidth}px`, whiteSpace: 'pre-wrap', overflowWrap: 'break-word' });
-    mirror.textContent = editor.value.slice(0, editor.selectionStart);
+    mirror.textContent = editor.value.slice(0, offset);
     const marker = document.createElement('span');
     marker.textContent = '\u200b';
-    mirror.append(marker, editor.value.slice(editor.selectionStart)); document.body.append(mirror);
+    mirror.append(marker, editor.value.slice(offset)); document.body.append(mirror);
     const caret = marker.getBoundingClientRect(), origin = mirror.getBoundingClientRect(), box = editor.getBoundingClientRect();
     const rect = { left: box.left + editor.clientLeft + caret.left - origin.left - editor.scrollLeft,
       top: box.top + editor.clientTop + caret.top - origin.top - editor.scrollTop,
@@ -108,5 +108,5 @@
     return { close };
   }
   if (typeof module === 'object' && module.exports) module.exports = { context, replacement };
-  else root.NotebookWiki = { install };
+  else root.NotebookWiki = { install, caretRect };
 })(typeof window === 'undefined' ? null : window);

@@ -23,7 +23,7 @@
   }
   function render(markdown) {
     const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
-    if (!window.marked || /^---[ \t]*\r?\n/.test(markdown) || /__|\[\[|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
+    if (!window.marked || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
     const root = document.createElement('div');
     let parser;const definitions=new Map();
     function append(tokens, parent) {
@@ -33,6 +33,12 @@
           if(definitions.has(t.label))throw Error('Duplicate footnote definition');
           const content=document.createElement('div');append(parser.lexer(t.text),content);
           const row=footnoteRow(t.label,content);row.dataset.footnoteRaw=t.raw.trimEnd();row.dataset.footnoteHtml=row.querySelector('.community-footnote-body').innerHTML;definitions.set(t.label,row);continue;
+        }
+        if(t.type==='notebookWiki'){
+          const link=document.createElement('a');link.dataset.wikiTarget=t.target;
+          link.dataset.wikiRaw=t.raw;link.dataset.wikiLabel=t.label;
+          link.href='/notebook?note='+encodeURIComponent(t.target);link.title=t.target;
+          link.textContent=t.label;parent.append(link);continue;
         }
         if(t.type==='footnoteReference'){
           const marker=document.createElement('sup');marker.dataset.footnoteRef=t.label;marker.contentEditable='false';marker.textContent='['+t.label+']';marker.setAttribute('aria-label','Footnote '+t.label);parent.append(marker);continue;
@@ -64,14 +70,32 @@
         if (t.type === 'list' && t.ordered && t.start !== 1) el.start = t.start;
         if (t.type === 'codespan') el.textContent = t.text;
         else if (t.type !== 'br') append(t.items || t.tokens || [], el);
+        if(t.type==='paragraph' && el.querySelector('br')) {
+          // Give each authored line its own bidi paragraph without adding blank
+          // lines to the stored Markdown. Clone inline ancestors across breaks.
+          const lines=[],breaks=[...el.querySelectorAll('br')];
+          const range=document.createRange();range.setStart(el,0);
+          for(const br of breaks) {
+            range.setEndBefore(br);const line=document.createElement('span');
+            line.className='notebook-rich-line';line.dir='auto';line.append(range.cloneContents());lines.push(line);
+            range.setStartAfter(br);
+          }
+          range.setEnd(el,el.childNodes.length);
+          const line=document.createElement('span');line.className='notebook-rich-line';line.dir='auto';line.append(range.cloneContents());lines.push(line);
+          el.replaceChildren(...lines);
+        }
         parent.append(el);
       }
     }
     try {
       const split=window.CommunityParallelText?.separator;
       if(!split && markdown.includes('||'))return null;
-      parser=new window.marked.Marked();
+      parser=new window.marked.Marked({breaks:true});
       parser.use({extensions:[
+        {name:'notebookWiki',level:'inline',start(src){return src.indexOf('[[');},tokenizer(src){
+          const m=/^\[\[([^\[\]|\r\n]+)(?:\|([^\[\]\r\n]+))?\]\]/.exec(src);
+          if(m && m[1].trim() && (m[2]===undefined || m[2].trim()))return {type:'notebookWiki',raw:m[0],target:m[1].trim(),label:(m[2] || m[1]).trim()};
+        }},
         ...[['subscript','~'],['superscript','^']].map(([name,marker])=>({name,level:'inline',start(src){return src.indexOf(marker);},tokenizer(src){
           if(src[0]!==marker || src[1]===marker)return;
           let text='',at=1;
@@ -109,6 +133,8 @@
     } catch (_) { return null; }
   }
   function serialize(root) {
+    const preserved = [];
+    const rawPrefix = 'NOTEBOOKRAW' + Math.random().toString(36).slice(2) + 'BLOCK';
     const referenced=new Set(Array.from(root.querySelectorAll('[data-footnote-ref]'),el=>el.dataset.footnoteRef));
     function contents(parent) {
       let result='';
@@ -121,6 +147,8 @@
     function read(el) {
       if (el.nodeType === 3) return escape(el.nodeValue.replace(/\u00a0/g, ' '));
       if (el.nodeType !== 1) return '';
+      if(el.dataset.wikiTarget !== undefined)return el.textContent===el.dataset.wikiLabel && el.dataset.wikiRaw ? el.dataset.wikiRaw : '[['+el.dataset.wikiTarget+'|'+el.textContent+']]';
+      if(el.dataset.notebookRaw !== undefined){const index=preserved.push(el.dataset.notebookRaw)-1;return rawPrefix+index+'END\n\n';}
       if(el.classList.contains('community-footnote-label'))return '';
       if(el.dataset.footnoteRef)return '[^'+el.dataset.footnoteRef+']';
       if(el.dataset.footnote){
@@ -133,6 +161,7 @@
         if(el.innerHTML===el.dataset.parallelHtml)return el.dataset.parallelSource+'\n\n';
         return Array.from(el.children,cell=>contents(cell).trim().replace(/\n+/g,' ')).join(' || ')+'\n\n';
       }
+      if(el.classList.contains('notebook-rich-line'))return contents(el)+(el.nextSibling?'\n':'');
       if(el.classList.contains('notebook-subtext'))return '-# '+contents(el).trim()+'\n\n';
       const text = () => contents(el);
       const wrap = marker => { const s=text();return s.replace(/^(\s*)([\s\S]*?)(\s*)$/, (_,a,b,c)=>a+(b?marker+b+marker:'')+c); };
@@ -163,11 +192,15 @@
         default: return text();
       }
     }
-    return contents(root).replace(/\n{3,}/g,'\n\n').trim();
+    let result = contents(root).replace(/\n{3,}/g,'\n\n').trim();
+    preserved.forEach((raw,index) => { result=result.replace(rawPrefix+index+'END', () => raw); });
+    return result;
   }
   function install(source) {
     if (!source || instances.has(source) || !window.marked) return;
     const isArticle=source.dataset.articleEditor!==undefined;
+    const renderContent = text => render(text) || (source.id==='notebook-editor' ? window.NotebookRichEditor?.renderAdvanced(text) : null);
+    function toFormatted() { mode='rich'; hydrate(); }
     const shell=document.createElement('div'); shell.className='community-short-editor'+(source.dataset.articleEditor!==undefined?' community-article-surface':'');
     const tools=document.createElement('div'); tools.className='community-short-tools';
     const toggle=document.createElement('button');toggle.type='button';toggle.className='community-editor-mode';toggle.textContent='Markdown';toggle.setAttribute('aria-label','Switch to Markdown editing');
@@ -178,27 +211,29 @@
     const undoColumns=document.createElement('button');undoColumns.type='button';undoColumns.className='community-remove-columns community-editor-mode';undoColumns.textContent='Undo column layout change';undoColumns.hidden=true;
     let activeRow=null, removedColumns=null;
     tools.append(hint,toggle);shell.append(format,removeColumns,undoColumns,rich,tools);source.before(shell);shell.insertBefore(source,tools);
-    let mode='rich', syncing=false, savedRange=null, composing=false, lastHTML='';
+    let mode='rich', syncing=false, savedRange=null, composing=false, lastHTML='', lastMarkdown='';
     const required=source.required;source.required=false;
     function sync() {
       if(mode!=='rich'||syncing||rich.innerHTML===lastHTML)return;
       rich.querySelectorAll('p,div,li,blockquote,h1,h2,h3,h4,h5,h6').forEach(el=>el.dir=el.classList.contains('community-edit-parallel')?'ltr':'auto');
       reconcileFootnotes(rich);
       const markdown=serialize(rich);
+      if(markdown===lastMarkdown){lastHTML=rich.innerHTML;return;}
+      lastMarkdown=markdown;
       lastHTML=rich.innerHTML;syncing=true;source.value=markdown;
       source.dispatchEvent(new Event('input',{bubbles:true}));syncing=false;
       rich.setAttribute('aria-invalid',String(source.maxLength>0 && markdown.length>source.maxLength));
     }
     function sizeSource() {
-      if(mode!=='source' || source.hidden)return;
+      if(mode!=='source' || source.hidden || source.id==='notebook-editor')return;
       source.style.height='0px';source.style.height=source.scrollHeight+'px';
     }
     function hydrate() {
       if(syncing)return;
       removedColumns=null;undoColumns.hidden=true;removeColumns.hidden=true;activeRow=null;
-      const rendered=render(source.value);
+      const rendered=renderContent(source.value);
       if(mode==='rich' && !rendered) mode='source';
-      if(rendered && mode==='rich'){rich.replaceChildren(...rendered.childNodes);lastHTML=rich.innerHTML;}
+      if(rendered && mode==='rich'){rich.replaceChildren(...rendered.childNodes);lastHTML=rich.innerHTML;lastMarkdown=serialize(rich);}
       source.hidden=mode==='rich';rich.hidden=mode!=='rich';
       source.required=mode==='source' && required;
       toggle.textContent=mode==='rich'?'Markdown':'Formatted';
@@ -209,14 +244,14 @@
     }
     if(window.ResizeObserver)new ResizeObserver(sizeSource).observe(shell);
     const value=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value');
-    Object.defineProperty(source,'value',{configurable:true,get(){return value.get.call(this);},set(v){value.set.call(this,v);hydrate();}});
+    Object.defineProperty(source,'value',{configurable:true,get(){return value.get.call(this);},set(v){const previous=value.get.call(this);value.set.call(this,v);if(value.get.call(this)!==previous)hydrate();}});
     const focus=source.focus.bind(source);source.focus=options=>mode==='rich'?rich.focus(options):focus(options);
     function toSource() {
       if(mode!=='rich')return;
       const clone=rich.cloneNode(true), range=savedRange;
       const begin='COMMUNITYSTART'+Date.now()+'MARK',end='COMMUNITYEND'+Date.now()+'MARK';
       function map(node) {const path=[];while(node!==rich){path.unshift(Array.prototype.indexOf.call(node.parentNode.childNodes,node));node=node.parentNode;}let target=clone;for(const i of path)target=target.childNodes[i];return target;}
-      if(range && rich.contains(range.startContainer) && rich.contains(range.endContainer)) {
+      if(range && !rich.querySelector('[data-notebook-raw]') && rich.contains(range.startContainer) && rich.contains(range.endContainer)) {
         const r=document.createRange();r.setStart(map(range.startContainer),range.startOffset);r.setEnd(map(range.endContainer),range.endOffset);
         const tail=r.cloneRange();tail.collapse(false);tail.insertNode(document.createTextNode(end));
         r.collapse(true);r.insertNode(document.createTextNode(begin));
@@ -224,7 +259,16 @@
         mode='source';source.value=marked.replace(begin,'').replace(end,'');hydrate();source.setSelectionRange(Math.max(0,start),Math.max(0,finish));
       } else {sync();mode='source';hydrate();source.setSelectionRange(source.value.length,source.value.length);}
     }
-    toggle.addEventListener('click',()=>{if(mode==='rich')toSource();else if(render(source.value)){mode='rich';hydrate();}source.focus();});
+    toggle.addEventListener('click',()=>{
+      if(mode==='rich'){toSource();source.focus();return;}
+      if(!renderContent(source.value))return;
+      const start=source.selectionStart,end=source.selectionEnd,direction=source.selectionDirection;
+      const active=direction==='backward'?start:end;
+      const rect=window.NotebookWiki?.caretRect(source,active);
+      const viewportY=rect ? rect.top-source.getBoundingClientRect().top : source.clientHeight/2;
+      mode='rich';hydrate();source.focus({preventScroll:true});
+      source.dispatchEvent(new CustomEvent('formattedEditorSelection',{detail:{start,end,direction,viewportY}}));
+    });
     function insertParallel() {
       if(source.disabled || source.readOnly || !window.CommunityParallelText)return;
       const wasRich=mode==='rich';
@@ -254,7 +298,7 @@
       if(!document.execCommand?.('insertText',false,edit.text))source.setRangeText(edit.text,edit.start,edit.end,'end');
       source.setSelectionRange(edit.selectStart,edit.selectEnd);
       source.dispatchEvent(new Event('input',{bubbles:true}));
-      if(wasRich && render(source.value)) {
+      if(wasRich && renderContent(source.value)) {
         const rowIndex=markdown.slice(0,edit.start).split('\n').filter(line=>window.CommunityParallelText.separator(line)>=0).length;
         mode='rich';hydrate();rich.focus();
         const cell=rich.querySelectorAll('.community-edit-parallel')[rowIndex]?.lastElementChild;
@@ -296,7 +340,7 @@
         else if(/^H[1-6]$/.test(block?.tagName || ''))value=block.tagName[1];
       }
       textStyle.value=value;
-      if(isArticle){const articleStyle=document.getElementById('community-format-style');if(articleStyle)articleStyle.value=value;}
+      if(isArticle){const articleStyle=document.getElementById(source.id==='notebook-editor'?'notebook-format-style':'community-format-style');if(articleStyle)articleStyle.value=value;}
     }
     function selection() {
       if(typeof document==='undefined')return;
@@ -372,6 +416,28 @@
     function formatAction(command,arg) {
       if(source.disabled || source.readOnly)return true;
       if(mode==='rich' && crossesColumns()){hint.textContent='Select text within one column to format';return true;}
+      if(command==='wiki') {
+        const range=savedRange;
+        const node=range?.startContainer;
+        const existing=(node?.nodeType===1?node:node?.parentElement)?.closest('a[data-wiki-target]');
+        const selected=mode==='rich'?(range?.toString() || ''):source.value.slice(source.selectionStart,source.selectionEnd);
+        const target=window.prompt('Internal note title',existing?.dataset.wikiTarget || selected);
+        if(target===null || !target.trim())return true;
+        const label=window.prompt('Display text',existing?.textContent || selected || target.trim());
+        if(label===null || !label.trim())return true;
+        if(/[\[\]\r\n|]/.test(target) || /[\[\]\r\n]/.test(label)){hint.textContent='Use a note title and display text without brackets or newlines.';return true;}
+        const title=target.trim(),text=label.trim();
+        if(mode==='source') {
+          source.setRangeText('[['+title+(text===title?'':'|'+text)+']]',source.selectionStart,source.selectionEnd,'end');
+          source.dispatchEvent(new Event('input',{bubbles:true}));return true;
+        }
+        rich.focus();
+        const active=window.getSelection();
+        if(range && rich.contains(range.startContainer)){active.removeAllRanges();active.addRange(range);}
+        const link=document.createElement('a');link.dataset.wikiTarget=title;link.href='/notebook?note='+encodeURIComponent(title);link.title=title;link.textContent=text;
+        if(existing){const replace=document.createRange();replace.selectNode(existing);active.removeAllRanges();active.addRange(replace);}
+        document.execCommand('insertHTML',false,link.outerHTML);sync();selection();return true;
+      }
       if(command==='footnote' && mode==='rich'){
         const anchor=savedRange?.startContainer;
         if((anchor?.nodeType===1?anchor:anchor?.parentElement)?.closest('.community-footnote-body')){
@@ -391,7 +457,7 @@
           source.setRangeText('\n\n***\n\n',at,at,'end');
         }
         source.dispatchEvent(new Event('input',{bubbles:true}));
-        if(wasRich && render(source.value)){
+        if(wasRich && renderContent(source.value)){
           mode='rich';hydrate();rich.focus();
           if(label){const body=Array.from(rich.querySelectorAll('[data-footnote]')).find(row=>row.dataset.footnote===label)?.querySelector('.community-footnote-body');if(body){const range=document.createRange();range.selectNodeContents(body);const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);body.scrollIntoView?.({block:'nearest'});selection();}}
         }return true;
@@ -406,7 +472,7 @@
         const prefix=arg==='subtext'?'-# ':String(arg)==='0'?'':'#'.repeat(Number(arg))+' ';
         const text=value.slice(start,end).split('\n').map(line=>prefix+line.replace(/^(?:#{1,6}|-#)\s+/, '')).join('\n');
         source.setRangeText(text,start,end,'select');source.dispatchEvent(new Event('input',{bubbles:true}));
-        if(wasRich && render(source.value)){mode='rich';hydrate();rich.focus();}return true;
+        if(wasRich && renderContent(source.value)){mode='rich';hydrate();rich.focus();}return true;
       }
       if(command==='center') {
         const wasRich=mode==='rich';if(wasRich)toSource();
@@ -415,7 +481,7 @@
         const next=value.indexOf('\n',last),end=next<0?value.length:next;
         source.setRangeText('<center>\n'+value.slice(start,end)+'\n</center>',start,end,'select');
         source.dispatchEvent(new Event('input',{bubbles:true}));
-        if(wasRich && render(source.value)){mode='rich';hydrate();rich.focus();}return true;
+        if(wasRich && renderContent(source.value)){mode='rich';hydrate();rich.focus();}return true;
       }
       if(command==='underline' && mode==='rich')toSource();
       if(mode!=='rich') {
@@ -537,7 +603,7 @@
     source.form?.addEventListener('submit',event=>{sync();if(required&&!source.value.trim() || source.maxLength>0&&source.value.length>source.maxLength){event.preventDefault();event.stopImmediatePropagation();rich.setAttribute('aria-invalid','true');source.focus();}},true);
     new MutationObserver(hydrate).observe(source,{attributes:true,attributeFilter:['disabled','readonly']});
     // One document listener serves every mounted editor, including feed replies.
-    instances.set(source,{selection,hydrate,toSource,format:formatAction,get mode(){return mode;}});hydrate();
+    instances.set(source,{selection,hydrate,toSource,toFormatted,shell,rich,sync,format:formatAction,get mode(){return mode;}});hydrate();
     return instances.get(source);
   }
   document.addEventListener('selectionchange',()=>document.querySelectorAll('[data-short-editor]').forEach(el=>instances.get(el)?.selection()));

@@ -74,9 +74,13 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
         </div>
         <div id="notebook-associated-notes" class="d-flex gap-2 flex-wrap mb-2" aria-live="polite"></div>
         <div class="notebook-metadata-tools">
+          <div id="notebook-editing-tools">
+          <span id="notebook-mode-control" hidden></span>
+        <button type="button" class="notebook-metadata-toggle" data-bs-toggle="modal" data-bs-target="#notebook-help-modal" title="Markdown help" aria-label="Markdown help"><i class="bi bi-question-circle" aria-hidden="true"></i></button>
           <button id="notebook-frontmatter" type="button" class="notebook-metadata-toggle notebook-fm-toggle" title="Show frontmatter" aria-label="Show frontmatter" aria-controls="notebook-frontmatter-panel" aria-expanded="false"><span aria-hidden="true">FM</span></button>
+          </div>
         <details id="notebook-attachments" hidden>
-          <summary class="notebook-metadata-toggle"><span>Linked items</span><span id="notebook-attachment-count" class="notebook-metadata-count" hidden></span></summary>
+          <summary class="notebook-metadata-toggle"><span>Links</span><span id="notebook-attachment-count" class="notebook-metadata-count" hidden></span></summary>
           <div class="notebook-attachment-content">
           <p class="notebook-metadata-hint">Link this note to a hadith or ayah.</p>
           <div id="notebook-attached-items" class="my-2"></div>
@@ -104,7 +108,13 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
           <input id="notebook-title-editor" class="form-control mb-2" dir="auto" maxlength="500" required aria-label="Note title" placeholder="Note title" hidden>
           <div id="notebook-note-title" dir="auto" role="button" tabindex="0" aria-label="Edit note title" hidden></div>
         </div>
-        <textarea id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" aria-autocomplete="list" aria-controls="notebook-wiki-options" aria-expanded="false" placeholder="<%= markdownPlaceholder %>" hidden></textarea>
+      <div id="notebook-format-toolbar" hidden class="community-format-toolbar" role="group" aria-label="Note formatting">
+        <select id="notebook-format-style" aria-label="Text style"><option value="0">Normal</option><% for (let level=1;level<=6;level++) { %><option value="<%= level %>">Heading <%= level %></option><% } %><option value="subtext">Subtext</option></select>
+        <% for (const [action,label,icon] of [['bold','Bold','type-bold'],['italic','Italic','type-italic'],['underline','Underline','type-underline'],['strike','Strikethrough','type-strikethrough'],['subscript','Subscript',null],['superscript','Superscript',null],['highlight','Highlight','brush'],['center','Align center','text-center'],['numbered','Numbered list','list-ol'],['bullets','Bullet list','list-ul'],['quote','Quotation','quote'],['divider','Insert divider','hr'],['footnote','Insert footnote',null],['link','Insert link','link-45deg'],['wiki','Insert or edit internal note link','journal-bookmark'],['clear','Clear formatting','eraser']]) { %>
+        <button type="button" data-format="<%= action %>" title="<%= label %>" aria-label="<%= label %>"><% if (action === 'subscript' || action === 'superscript') { %><span class="community-script-icon" dir="ltr" aria-hidden="true">x<% if (action === 'subscript') { %><sub>2</sub><% } else { %><sup>2</sup><% } %></span><% } else if (action === 'footnote') { %><span class="community-footnote-icon" dir="ltr" aria-hidden="true">A<sup>1</sup></span><% } else { %><i class="bi bi-<%= icon %>" aria-hidden="true"></i><% } %></button><% } %>
+        <button type="button" data-format="parallel" title="Parallel English and Arabic text" aria-label="Parallel English and Arabic text"><span class="community-parallel-icon" dir="ltr" aria-hidden="true">a|ج</span></button>
+      </div>
+        <textarea data-short-editor data-article-editor id="notebook-editor" class="form-control" dir="auto" rows="8" aria-label="Edit Markdown note" aria-autocomplete="list" aria-controls="notebook-wiki-options" aria-expanded="false" placeholder="<%= markdownPlaceholder %>" hidden></textarea>
         <div id="notebook-wiki-options" role="listbox" aria-label="Link to a note" hidden></div>
         <div id="notebook-preview" class="notebook-markdown" tabindex="0" aria-label="Note preview" data-placeholder="<%= markdownPlaceholder %>"></div>
       </div>
@@ -150,18 +160,22 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-associated-notes > .text-muted { width: 100%; }
 #notebook-attachment-results { max-height: 14rem; overflow-y: auto; }
 /* Compact metadata controls share the note's paper and ink colors. */
-.notebook-metadata-tools { position: relative; flex-shrink: 0; margin-bottom: .85rem; font-family: system-ui, sans-serif; font-size: .78rem; }
-.notebook-metadata-tools:has(#notebook-attachments[hidden]) { padding-top: 2rem; }
+.notebook-metadata-tools { display: flow-root; position: relative; flex-shrink: 0; margin-bottom: .85rem; font-family: system-ui, sans-serif; font-size: .78rem; }
+#notebook-editing-tools { float: inline-end; display: flex; align-items: center; justify-content: flex-end; gap: .2rem; }
+#notebook-mode-control { display: inline-flex; }
+#notebook-mode-control[hidden] { display: none; }
+#notebook-mode-control .community-editor-mode { font: inherit; color: inherit; min-height: 2rem; padding: .3rem .6rem; white-space: nowrap; }
+#notebook-mode-control .community-editor-hint { display: none; }
 .notebook-metadata-toggle { display: inline-flex; align-items: center; gap: .45rem; min-height: 2rem; padding: .3rem .6rem; border: 1px solid transparent; border-radius: .45rem; color: var(--note-ink, #805d00); background: transparent; font: inherit; font-weight: 500; cursor: pointer; }
 .notebook-metadata-toggle:hover, .notebook-metadata-toggle[aria-expanded="true"], #notebook-attachments[open] > summary { background: rgba(212,167,44,.1); border-color: var(--note-edge, #d4a72c); }
 .notebook-metadata-toggle:focus-visible { outline: 2px solid var(--note-edge, #d4a72c); outline-offset: 2px; }
-#notebook-attachments > summary { list-style: none; margin-inline-end: 3.5rem; }
+#notebook-attachments > summary { list-style: none; margin-inline-end: 0; }
 #notebook-attachments > summary::-webkit-details-marker { display: none; }
 #notebook-attachments > summary::after { content: ''; width: .4rem; height: .4rem; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(45deg); margin: -.2rem .15rem 0 .25rem; }
 #notebook-attachments[open] > summary::after { transform: rotate(225deg); margin-top: .2rem; }
-.notebook-fm-toggle { position: absolute; inset-inline-end: 0; top: 0; font-size: .7rem; letter-spacing: .04em; font-weight: 650; min-width: 2.5rem; }
+.notebook-fm-toggle { font-size: .7rem; letter-spacing: .04em; font-weight: 650; min-width: 2.5rem; }
 .notebook-metadata-count { min-width: 1.15rem; padding: .05rem .3rem; border-radius: 1rem; background: rgba(212,167,44,.15); font-size: .68rem; text-align: center; }
-.notebook-attachment-content, #notebook-frontmatter-panel { margin-top: .55rem; padding: .7rem .8rem; border: 1px solid var(--note-edge, #d4a72c); border-radius: .55rem; background: rgba(255,255,255,.25); }
+.notebook-attachment-content, #notebook-frontmatter-panel { clear: both; margin-top: .55rem; padding: .7rem .8rem; border: 1px solid var(--note-edge, #d4a72c); border-radius: .55rem; background: rgba(255,255,255,.25); }
 .notebook-metadata-hint { margin: 0 0 .6rem; opacity: .75; }
 .notebook-frontmatter-heading { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: .5rem; }
 .notebook-frontmatter-heading label { font-weight: 600; margin: 0; }
@@ -346,6 +360,17 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #personal-notebook.notebook-signed-out .notebook-tile { opacity: .55; }
 #personal-notebook .notebook-tile-open:disabled { cursor: not-allowed; }
 #personal-notebook .notebook-tile-open:disabled:hover { background: transparent; }
+
+#notebook-format-toolbar { flex: 0 0 auto; border-color: var(--note-edge); background: var(--note-paper); }
+#notebook-format-toolbar[hidden], #notebook-surface .community-short-editor[hidden] { display: none !important; }
+.notebook-numbered-surface { position: relative; display: flex; flex: 1; min-height: 0; padding-left: 2.25rem; }
+.notebook-line-numbers { position: absolute; inset: 0 auto 0 0; width: 1.8rem; overflow: hidden; pointer-events: none; user-select: none; color: var(--note-ink); opacity: .4; }
+.notebook-line-numbers span { position: absolute; right: .25rem; font: 10px/1.6 system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+#notebook-surface .community-short-editor { display: flex; flex-direction: column; flex: 1; min-height: 0; --community-paper: var(--note-paper); --community-ink: var(--note-ink); }
+#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; font-size: var(--notebook-font-size, 1rem); line-height: 1.8; box-shadow: none; }
+#notebook-surface .community-rich-input { white-space: normal; }
+#notebook-surface :is(.community-rich-input, #notebook-preview) p { margin: 0 0 1rem; }
+
 </style>
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-wiki.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
@@ -357,6 +382,8 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 <script src="/static/js/notebook-links.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-yaml.min.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook-frontmatter.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
+<script src="/static/js/notebook-rich-editor.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 <script src="/static/js/notebook.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 
 <button id="notebook-restore" type="button" class="notebook-restore-note" hidden aria-controls="notebook-modal" title="Restore note" aria-label="Restore note"><i class="bi bi-sticky" aria-hidden="true"></i><span>Restore note</span></button>

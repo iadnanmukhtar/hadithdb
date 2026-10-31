@@ -1,14 +1,15 @@
 (() => {
   'use strict';
-  const editor = document.getElementById('community-markdown');
-  const toolbar = document.getElementById('community-format-toolbar');
-  if (!editor || !toolbar) return;
-  const style = document.getElementById('community-format-style');
+  if (window.CommunityFormatting) return;
+  const installed = new WeakSet();
+  function install(editor, toolbar, style) {
+  if (!editor || !toolbar || installed.has(editor)) return;
+  installed.add(editor);
   const markers = {bold:'**', italic:'*', underline:'__', strike:'~~', highlight:'=='};
   function apply(action) {
     if (editor.disabled || editor.readOnly) return;
     const surface=window.CommunityShortEditor?.get(editor);
-    if(['divider','footnote','subscript','superscript'].includes(action) && surface){surface.format(action);return;}
+    if(['divider','footnote','subscript','superscript','wiki'].includes(action) && surface){surface.format(action);return;}
     if(action==='style' && surface){surface.format('style',style.value);return;}
     if(surface?.mode==='rich') {
       const native={bold:'bold',italic:'italic',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'formatBlock',link:'link',parallel:'parallel',highlight:'highlight',center:'center'};
@@ -54,7 +55,7 @@
   toolbar.addEventListener('mousedown',event=>{if(event.target.closest('[data-format]'))event.preventDefault();});
   toolbar.addEventListener('click',event=>{const button=event.target.closest('[data-format]');if(button)apply(button.dataset.format);});
   style.addEventListener('change',()=>apply('style'));
-  window.NotebookShortcuts?.install(editor,()=>true,()=>{});
+  if (editor.id !== 'notebook-editor') window.NotebookShortcuts?.install(editor,()=>true,()=>{});
   function updateEditorCaretDirection() {
     const position = editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd;
     const start = position ? editor.value.lastIndexOf('\n', position - 1) + 1 : 0;
@@ -69,4 +70,7 @@
   editor.addEventListener('keydown', event => {
     if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) updateEditorCaretDirection();
   });
+  }
+  window.CommunityFormatting = { install };
+  install(document.getElementById('community-markdown'), document.getElementById('community-format-toolbar'), document.getElementById('community-format-style'));
 })();

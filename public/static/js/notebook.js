@@ -53,6 +53,7 @@
   }
   document.addEventListener('notebookThemeChanged', event => applyNotebookTheme(event.detail?.theme));
   const editor = document.getElementById('notebook-editor');
+  window.NotebookRichEditor?.setPreviewRenderer(async markdown => (await api('/preview', 'POST', { markdown })).html);
   const tagEditor = document.getElementById('notebook-tag-editor');
   const titleEditor = document.getElementById('notebook-title-editor');
   let savedTitle = '';
@@ -375,9 +376,10 @@
     titleEditing = tagsEditing = false;
     wikiAutocomplete.close();
     editor.hidden = !edit; preview.hidden = edit;
+    window.NotebookRichEditor?.setEditing(edit);
     renderNoteMetadata();
     renderNoteTags();
-    const label = edit ? 'Preview' : 'Edit Markdown';
+    const label = edit ? 'Preview' : 'Edit note';
     toggle.title = label; toggle.setAttribute('aria-label', label);
     toggle.innerHTML = `<i class="bi ${edit ? 'bi-pencil' : 'bi-eye'}" aria-hidden="true"></i>`;
     if (edit) editor.focus();
@@ -565,7 +567,7 @@
       return;
     }
     // Avoid showing a stale preview while the new render is in flight.
-    preview.textContent = text;
+    preview.textContent = 'Rendering preview…';
     try {
       const result = await api('/preview', 'POST', { markdown: text });
       if (request === previewRequest && ownGeneration === generation && editor.value === text) {
@@ -664,7 +666,8 @@
   }
   function showPreview() {
     if (!editing || busy) return;
-    const offset = editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd;
+    const rich = window.CommunityShortEditor?.get(editor);
+    const offset = rich?.mode === 'rich' ? previewCaretOffset(null, undefined, rich.rich) : editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd;
     mode(false);
     renderPreview(offset);
     scheduleSave();
@@ -876,12 +879,30 @@
   tagEditor.addEventListener('input', () => {
     renderNoteTags(); scheduleSave();
   });
-  toggle.addEventListener('click', () => { if (!busy && current) editing ? showPreview() : mode(true); });
+  let togglePreviewCaret = null;
+  toggle.addEventListener('pointerdown', () => {
+    if (editing) return;
+    const selected = window.getSelection();
+    const range = selected?.rangeCount && preview.contains(selected.anchorNode) ? selected.getRangeAt(0) : null;
+    const box = preview.getBoundingClientRect();
+    const rect = range?.getBoundingClientRect();
+    const point = { clientX: rect?.left ?? box.left + 12, clientY: rect?.top ?? box.top + 12 };
+    togglePreviewCaret = { offset: range ? previewCaretOffset(null) : previewCaretOffset(point), viewportY: point.clientY - box.top };
+  });
+  toggle.addEventListener('click', () => {
+    if (busy || !current) return;
+    if (editing) showPreview();
+    else {
+      mode(true);
+      if (togglePreviewCaret) revealEditorCaret(togglePreviewCaret.offset, togglePreviewCaret.viewportY);
+    }
+    togglePreviewCaret = null;
+  });
   const wikiAutocomplete = window.NotebookWiki.install(editor, document.getElementById('notebook-wiki-options'), query => api('/links?q=' + encodeURIComponent(query)));
   window.NotebookShortcuts.install(editor, () => editing && current && !busy, () => wikiAutocomplete.close());
   // Clicking anywhere outside the editor returns to the rendered note.
   document.addEventListener('pointerdown', event => {
-    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control, #notebook-share-panel, #notebook-share, #notebook-frontmatter-panel, #notebook-frontmatter') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
+    if (modal.classList.contains('show') && editing && !event.target.closest('#notebook-editing-tools, #notebook-format-toolbar, #notebook-surface .community-short-editor, #notebook-wiki-options, #notebook-drive-file, #notebook-zoom-control, #notebook-share-panel, #notebook-share, #notebook-frontmatter-panel, #notebook-frontmatter') && !editor.contains(event.target) && !titleEditor.contains(event.target) && !document.getElementById('notebook-tag-bar').contains(event.target) && !toggle.contains(event.target) && !downloadButton.contains(event.target)) showPreview();
   });
   function updateEditorCaretDirection() {
     // dir="auto" uses the whole note's first strong character for keyboard
@@ -949,7 +970,7 @@
     const rect = range.getBoundingClientRect();
     preview.scrollTop += rect.top + rect.height / 2 - preview.getBoundingClientRect().top - preview.clientTop - preview.clientHeight / 2;
   }
-  function previewCaretOffset(event, sourceCaret) {
+  function previewCaretOffset(event, sourceCaret, surface = preview) {
     const locatingPreview = sourceCaret !== undefined;
     let lastRange = null;
     const renderedRange = (part, index) => {
@@ -959,14 +980,15 @@
     };
     let node, offset = 0;
     if (!locatingPreview) {
-      const caret = document.caretPositionFromPoint?.(event.clientX, event.clientY);
-      const range = caret ? null : document.caretRangeFromPoint?.(event.clientX, event.clientY);
+      const caret = event ? document.caretPositionFromPoint?.(event.clientX, event.clientY) : null;
+      const range = caret ? null : event ? document.caretRangeFromPoint?.(event.clientX, event.clientY) : window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
       node = caret?.offsetNode || range?.startContainer;
       offset = caret ? caret.offset : range?.startOffset;
-      if (!node || node.nodeType !== Node.TEXT_NODE || !preview.contains(node)) {
+      if (!node || node.nodeType !== Node.TEXT_NODE || !surface.contains(node)) {
+        if (!event) return 0;
         // Paragraph margins, blank space and some browser hit tests return an
         // element (or nothing). Resolve the nearest rendered text, never note end.
-        const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+        const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
         const probe = document.createRange();
         let part, nearest = null, best = Infinity;
         const distance = rect => {
@@ -1014,7 +1036,7 @@
       text += value;
     }
     positions.push(source.length);
-    const walker = document.createTreeWalker(preview, NodeFilter.SHOW_TEXT);
+    const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
     let cursor = 0, part;
     while ((part = walker.nextNode())) {
       if (part.parentElement.closest('button, .footnote-backref')) continue;
@@ -1062,6 +1084,18 @@
     return locatingPreview ? lastRange : positions[cursor];
   }
   function revealEditorCaret(offset, viewportY) {
+    const richSurface = window.CommunityShortEditor?.get(editor);
+    if (richSurface?.mode === 'rich') {
+      const rich = richSurface.rich;
+      const range = previewCaretOffset(null, offset, rich);
+      if (!range) return;
+      rich.focus({ preventScroll: true });
+      const selected = window.getSelection(); selected.removeAllRanges(); selected.addRange(range);
+      const rect = range.getBoundingClientRect();
+      rich.scrollTop += rect.top - rich.getBoundingClientRect().top - Math.max(0, Math.min(viewportY, rich.clientHeight - rect.height));
+      richSurface.selection();
+      return;
+    }
     editor.setSelectionRange(offset, offset);
     editor.focus({ preventScroll: true });
     // A textarea exposes selection offsets but no caret rectangle. Mirror its
@@ -1083,6 +1117,22 @@
     editor.scrollTop = Math.max(0, caretY - visibleY);
     mirror.remove();
   }
+  editor.addEventListener('formattedEditorSelection', event => {
+    const { start, end, direction, viewportY } = event.detail;
+    const surface = window.CommunityShortEditor?.get(editor);
+    if (surface?.mode !== 'rich') return;
+    revealEditorCaret(direction === 'backward' ? start : end, viewportY);
+    if (start !== end) {
+      const first = previewCaretOffset(null, start, surface.rich);
+      const last = previewCaretOffset(null, end, surface.rich);
+      if (first && last) {
+        const anchor = direction === 'backward' ? last : first;
+        const focus = direction === 'backward' ? first : last;
+        window.getSelection().setBaseAndExtent(anchor.startContainer, anchor.startOffset, focus.startContainer, focus.startOffset);
+        surface.selection();
+      }
+    }
+  });
   let previewPointerCaret = null;
   preview.addEventListener('pointerdown', event => {
     previewPointerCaret = !editing && current && !busy && event.button === 0

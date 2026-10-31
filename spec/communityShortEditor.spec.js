@@ -11,7 +11,7 @@ function setup(markdown='') {
 test.each([
  '__underline__ and ==highlight==', 'Term\n: Definition', '- [x] Task',
  '# Heading {#custom}',
- '<span dir="rtl">العربية</span>', '[[bukhari:1]]', '```js\nconst x=1;\n```',
+ '<span dir="rtl">العربية</span>', '```js\nconst x=1;\n```',
  '| A | B |\n|---|---|\n| 1 | 2 |', ':smile:', '![Image](/community/media/test)',
  '[Reference][id]\n\n[id]: https://example.org', '---\ntitle: Metadata\n---\nBody'
 ])('retains extended Markdown byte-for-byte through input, mode toggle and submission: %s',markdown=>{
@@ -272,4 +272,17 @@ test('Markdown style follows the caret, including headings, subtext and fenced-c
  const at=text.indexOf(needle);input.setSelectionRange(at,at);input.dispatchEvent(new w.Event('keyup'));expect(menu.value).toBe(value);
  }
  }finally{w.close();}
+});
+
+test('internal note links render and retain targets and aliases through surrounding edits',()=>{
+ const markdown='See [[The Mahdi]] and [[Original title|Display label]].';
+ const {dom,w,input,rich}=setup(markdown);
+ try {
+  expect(input.hidden).toBe(true);
+  expect([...rich.querySelectorAll('a')].map(a=>a.textContent)).toEqual(['The Mahdi','Display label']);
+  rich.querySelector('p').append(' More text.');rich.dispatchEvent(new w.Event('input'));
+  expect(input.value).toBe(markdown+' More text.');
+  const link=rich.querySelectorAll('a')[1];link.textContent='New label';rich.dispatchEvent(new w.Event('input'));
+  expect(input.value).toContain('[[Original title|New label]]');
+ }finally{dom.window.close();}
 });

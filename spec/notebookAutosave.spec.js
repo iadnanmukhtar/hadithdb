@@ -4,6 +4,7 @@ const source = fs.readFileSync(require.resolve('../public/static/js/notebook.js'
 const functions = ['dirty', 'scheduleSave', 'save', 'showPreview', 'saveAndPreview'].map(name => source.match(new RegExp(`  (?:async )?function ${name}\\([^]*?\\n  }`))[0]).join('\n');
 function harness() {
   const ctx = vm.createContext({
+    window: {},
     current: { source_key: 'general', title: 'Title', markdown: 'Before', version: '1' },
     editor: { value: 'After' }, titleEditor: { value: 'Title' }, tagEditor: { value: '' },
     savedText: 'Before', savedTitle: 'Title', savedTags: '', busy: false, saving: null,
@@ -78,7 +79,8 @@ function listHarness() {
   });
   children.push(createNoteTile(before), createNoteTile(untouched));
   const fields = { 'notebook-search': {value: ''}, 'notebook-tag': {value: ''} };
-  const ctx = vm.createContext({ list, notes: [before, untouched], listStatus: {}, createNoteTile: jest.fn(createNoteTile), document: {getElementById: id => fields[id]}, loadList: jest.fn(), loadTags: jest.fn(), hasMore: true });
+  const ctx = vm.createContext({
+    window: {}, list, notes: [before, untouched], listStatus: {}, createNoteTile: jest.fn(createNoteTile), document: {getElementById: id => fields[id]}, loadList: jest.fn(), loadTags: jest.fn(), hasMore: true });
   ctx.renderCreationCount = jest.fn();
   vm.runInContext(source.match(/  function updateList\([^]*?\n  }/)[0], ctx);
   return {ctx, fields, children, before};
@@ -121,7 +123,8 @@ test('new notes and deletions update cards locally', () => {
   expect(ctx.loadList).not.toHaveBeenCalled();
 });
 test('closing the modal does not reload the list or tags', () => {
-  const ctx = vm.createContext({ setExpanded: jest.fn(), changingPresentation: false, restoreButton: {}, floatingStorage: 'floating', sessionStorage: { removeItem: jest.fn() }, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { classList: { remove: jest.fn() }, addEventListener: jest.fn() } });
+  const ctx = vm.createContext({
+    window: {}, setExpanded: jest.fn(), changingPresentation: false, restoreButton: {}, floatingStorage: 'floating', sessionStorage: { removeItem: jest.fn() }, wikiAutocomplete: { close: jest.fn() }, clearTimeout: jest.fn(), saveTimer: null, loadList: jest.fn(), loadTags: jest.fn(), returnModal: null, modal: { classList: { remove: jest.fn() }, addEventListener: jest.fn() } });
   ctx.shareControls = { reset: jest.fn() };
   ctx.clearFloating = jest.fn();
   vm.runInContext(source.match(/  modal.addEventListener\('hidden.bs.modal', \(\) => \{[^]*?\n  \}\);/)[0], ctx);
