@@ -79,3 +79,22 @@ test('verification rejects incomplete coverage before activation',async()=>{
  await expect(Index.verify(q)).rejects.toThrow('verification failed for post');
  expect(q.mock.calls.some(([sql])=>sql.startsWith('UPDATE'))).toBe(false);
 });
+
+test.each(['everyone','following','mine'])('Posts excludes generated hadith activity before pagination for %s',async scope=>{
+ const q=db([]);await Index.page(q,{...base,scope,kind:'note',user:{uid:'reader'}});
+ const sql=q.mock.calls[1][0];
+ expect(sql).toContain("a.source='post' AND NOT EXISTS (SELECT 1 FROM community_hadith_posts hp WHERE hp.post_id=a.source_id)");
+ expect(sql.indexOf('community_hadith_posts')).toBeLessThan(sql.indexOf('LIMIT 21'));
+ q.mockClear();await Index.page(q,{...base,scope,user:{uid:'reader'}});
+ expect(q.mock.calls[1][0]).not.toContain('community_hadith_posts');
+});
+test('fallback Posts query also excludes generated hadith activity before its limit',async()=>{
+ const Community=require('../lib/Community'),previous=global.dbPool,queries=[];
+ global.dbPool={query(sql,values,callback){if(typeof values==='function')callback=values;queries.push(sql);callback(null,[]);}};
+ try {
+  await Community.feed({kind:'note'});
+  const sql=queries.find(sql=>sql.startsWith('SELECT p.*, a.handle'));
+  expect(sql).toContain('NOT EXISTS (SELECT 1 FROM community_hadith_posts hp WHERE hp.post_id=p.id)');
+  expect(sql.indexOf('NOT EXISTS')).toBeLessThan(sql.indexOf('LIMIT ?'));
+ }finally{global.dbPool=previous;}
+});

@@ -507,9 +507,38 @@
   if ($('quick-form')) window.addEventListener('beforeunload', event => {
     if (!quickEditing && $('quick-text').value.trim() && !quickBusy) { event.preventDefault(); event.returnValue = ''; }
   });
+  function syncCoverFollows() {
+    root.querySelectorAll('[data-cover-follow]').forEach(button => {
+      const target = button.dataset.coverFollow;
+      button.hidden = me?.author.handle === target;
+      const following = target === handle ? relation.following : !!me?.subscriptions?.some(author => author.handle === target);
+      const label = following ? 'Unfollow' : 'Follow';
+      if (button.textContent !== label) button.textContent = label;
+      button.setAttribute('aria-pressed', String(following));
+    });
+  }
+  new MutationObserver(syncCoverFollows).observe(root, {childList: true, subtree: true});
+  root.addEventListener('click', event => {
+    const button = event.target.closest('[data-cover-follow]');
+    if (!button) return;
+    event.preventDefault();
+    run(async () => {
+      const target = button.dataset.coverFollow;
+      const result = await api('/authors/' + encodeURIComponent(target) + '/follow', 'PUT', {following: button.getAttribute('aria-pressed') !== 'true', email: false});
+      if (me) {
+        me.subscriptions = (me.subscriptions || []).filter(author => author.handle !== target);
+        if (result.following) me.subscriptions.push({handle: target});
+      }
+      if (target === handle) { relation = result; renderRelation(); }
+      syncCoverFollows();
+    }, button);
+  });
   function renderRelation() {
-    if (!$('follow')) return;
-    $('follow').textContent = relation.following ? 'Unfollow' : 'Follow';
+    syncCoverFollows();
+    root.querySelectorAll('[data-author-follow]').forEach(button => {
+      button.textContent = relation.following ? 'Unfollow' : 'Follow';
+      button.setAttribute('aria-pressed', String(relation.following));
+    });
   }
   async function changeRelation() {
     if (changingRelation) return;
@@ -521,8 +550,29 @@
     } finally { changingRelation = false; }
   }
 
-  $('follow')?.addEventListener('click', () => run(() => changeRelation(), $('follow')));
-  $('filter')?.addEventListener('change', () => run(() => loadFeed(true)));
+  root.querySelectorAll('[data-author-follow]').forEach(button => button.addEventListener('click', () => run(() => changeRelation(), button)));
+  function writeFilterUrl(method) {
+    const url = new URL(location.href), value = $('filter').value;
+    if (value === 'all') url.searchParams.delete('filter');
+    else url.searchParams.set('filter', value);
+    if (url.href !== location.href) history[method](history.state, '', url.pathname + url.search + url.hash);
+  }
+  function restoreFeedFilter() {
+    if (!$('filter')) return;
+    const value = new URLSearchParams(location.search).get('filter');
+    $('filter').value = Array.from($('filter').options).some(option => option.value === value) ? value : 'all';
+    writeFilterUrl('replaceState');
+  }
+  restoreFeedFilter();
+  $('filter')?.addEventListener('change', () => {
+    writeFilterUrl('pushState');
+    run(() => loadFeed(true));
+  });
+  window.addEventListener('popstate', () => {
+    if (!$('filter')) return;
+    restoreFeedFilter();
+    run(init);
+  });
   $('more')?.addEventListener('click', () => { firstBatchMicroOnly = false; const reset = $('more').dataset.retryReset === '1'; delete $('more').dataset.retryReset; run(() => loadFeed(reset), $('more')); });
   window.addEventListener('beforeunload',event=>{if(quickEditing && ($('quick-text').value!==quickEditing.markdown || quickCover!==(quickEditing.coverUrl||'') || $('quick-title').value!==(quickEditing.draftTitle||''))){event.preventDefault();event.returnValue='';}});
   $('quick-delete')?.addEventListener('click',()=>run(async()=>{
@@ -900,12 +950,41 @@
     $('bio-count').classList.toggle('text-danger', !!Bio.error($('bio').value));
   }
   $('bio')?.addEventListener('input', updateBioCount);
+  let handleRequest = 0, handleTimer;
+  function showHandleStatus(accepted, message) {
+    const indicator = $('handle-icon');
+    indicator.hidden = accepted === null;
+    indicator.className = 'bi ' + (accepted ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger');
+    $('handle-status').textContent = message;
+    $('handle').setAttribute('aria-invalid', String(accepted === false));
+  }
+  async function checkHandle() {
+    clearTimeout(handleTimer);
+    const request = ++handleRequest, own = epoch, value = $('handle').value;
+    showHandleStatus(null, 'Checking availability…');
+    try {
+      const result = await api('/profile/handle-availability?handle=' + encodeURIComponent(value));
+      if (request !== handleRequest || own !== epoch || value !== $('handle').value) return false;
+      showHandleStatus(result.available, result.available ? (result.handle === me?.author.handle ? 'This is your handle.' : 'Handle available.') : result.error);
+      return result.available;
+    } catch (err) {
+      if (request === handleRequest && own === epoch) showHandleStatus(false, 'Unable to check availability. Try again.');
+      return false;
+    }
+  }
+  $('handle')?.addEventListener('input', () => {
+    ++handleRequest;
+    clearTimeout(handleTimer);
+    showHandleStatus(null, 'Checking availability…');
+    handleTimer = setTimeout(checkHandle, 300);
+  });
   const profilePhoto = window.CommunityProfilePhoto?.();
   $('profile-dialog')?.addEventListener('close', () => profilePhoto?.cancel());
   $('edit-profile')?.addEventListener('click', () => {
     $('name').value = me.author.name; $('handle').value = me.author.handle; $('bio').value = me.author.bio || '';
     $('visibility').checked = (me.author.profile_visibility || 'public') === 'public';
     updateBioCount();
+    checkHandle();
     profilePhoto?.reset(me.author);
     $('profile-error').textContent = ''; $('profile-dialog').showModal();
   });
@@ -951,6 +1030,7 @@
     const submit = $('profile-form').querySelector('[type="submit"]'), own = epoch;
     submit.disabled = true; $('profile-error').textContent = '';
     try {
+      if (!await checkHandle()) return;
       await api('/profile', 'PUT', { name: $('name').value, handle: $('handle').value, bio: $('bio').value, photo: profilePhoto?.value(), visibility: $('visibility').checked ? 'public' : 'private' });
       if (own !== epoch) return;
       $('profile-dialog').close(); await init(); status('Profile saved.');
@@ -1023,12 +1103,13 @@
         $('name').value = me.author.name; $('handle').value = me.author.handle; $('handle').readOnly = !/^author-[a-f0-9]{16}$/.test(me.author.handle); $('bio').value = me.author.bio;
         renderSubscriptions(me.subscriptions);
       }
-      if (handle && $('follow-controls')) {
-        const self = me?.author.handle === handle; $('follow-controls').hidden = self;
+      if (handle && root.querySelector('[data-author-follow]')) {
+        const self = me?.author.handle === handle;
+        root.querySelectorAll('[data-author-follow-controls]').forEach(controls => { controls.hidden = self; });
         relation = me && !self ? await api('/authors/' + encodeURIComponent(handle) + '/relationship') : { following: false, email: false }; renderRelation();
       }
       if (view === 'blog') hydrateBlogCards(true);
-      if (['blog','blog-article'].includes(view)) await loadContributors();
+      if (['blog','blog-article','post'].includes(view)) await loadContributors();
       if (['everyone', 'following', 'mine', 'author'].includes(view)) {await Promise.all([loadFeed(true), loadContributors()]);const params=new URLSearchParams(location.search);if(params.has('editPost') && me){await openQuickEdit(params.get('editPost'),params.get('convertToNote')==='1');params.delete('editPost');params.delete('convertToNote');history.replaceState(null,'',location.pathname+(params.size?'?'+params:''));}}
       if (['everyone', 'following', 'mine'].includes(view)) openSharedNote();
       if (view === 'write') {

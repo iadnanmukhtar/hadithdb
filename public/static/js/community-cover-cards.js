@@ -21,8 +21,8 @@
     const firstVideo = Array.from(article.querySelectorAll('.community-feed-media [data-preview-url]')).map(block=>videoSlide(block.dataset.previewUrl)).find(Boolean);
     const cover = item.coverUrl || firstVideo?.src || '';
     if (cover ? !/^(https?:\/\/|\/(?!\/))/i.test(cover) : !firstVideo) return;
-    const card = document.createElement('a');
-    card.className = 'community-cover-card'; card.href = item.url;
+    const card = document.createElement('div');
+    card.className = 'community-cover-card';
     const image = document.createElement('img');
     image.className = 'community-cover-image'; if(cover)image.src = cover; image.alt = ''; image.loading = 'lazy';
     function fallbackImage() {
@@ -36,10 +36,25 @@
     const byline = document.createElement('div'); byline.className = 'community-cover-author';
     const avatar = article.querySelector('.community-entry-meta .community-avatar');
     if (avatar) { const photo = document.createElement('span'); photo.className = 'community-avatar'; photo.setAttribute('aria-hidden', 'true'); photo.append(...Array.from(avatar.childNodes, child => child.cloneNode(true))); byline.append(photo); }
-    const author = document.createElement('span'); author.textContent = item.authorName || ''; author.dir = 'auto'; byline.append(author); copy.append(byline);
+    const handle = item.author?.handle || item.authorHandle || article.dataset.coverAuthorHandle;
+    const identity = document.createElement('span'); identity.className = 'community-cover-identity';
+    const author = document.createElement(handle ? 'a' : 'span'); author.textContent = item.authorName || ''; author.dir = 'auto';
+    if (handle) author.href = '/community/@' + handle;
+    identity.append(author); byline.append(identity);
+    if (handle) {
+      const label = document.createElement('span'); label.className = 'community-cover-handle'; label.dir = 'ltr'; label.textContent = '@' + handle; identity.append(label);
+      const follow = document.createElement('button'); follow.type = 'button'; follow.className = 'btn btn-sm btn-outline-light community-cover-follow'; follow.dataset.coverFollow = handle; follow.textContent = 'Follow'; byline.append(follow);
+    }
+    copy.append(byline);
     for (const [tag, className, text] of [['h2','community-cover-title',item.title],['p','community-cover-subtitle',item.subtitle],['p','community-cover-excerpt',item.excerpt]]) {
       if (!text) continue;
-      const el = document.createElement(tag); el.className = className; el.textContent = text; el.dir = 'auto'; copy.append(el);
+      const el = document.createElement(tag); el.className = className; el.textContent = text; el.dir = 'auto';
+      if (tag === 'h2') { const destination = document.createElement('a'); destination.className = 'community-cover-destination'; destination.href = item.url; destination.textContent = text; el.replaceChildren(destination); }
+      copy.append(el);
+    }
+    if (!copy.querySelector('.community-cover-destination')) {
+      const destination = document.createElement('a'); destination.className = 'community-cover-destination'; destination.href = item.url;
+      const label = document.createElement('span'); label.className = 'visually-hidden'; label.textContent = 'Read post'; destination.append(label); copy.append(destination);
     }
     card.append(image, copy);
     const content = Array.from(article.children).filter(el => el.matches('.community-entry-title,.community-article-subtitle,.community-entry-excerpt,.community-reflection-body'));

@@ -87,6 +87,8 @@ main.community .community-sidebar-footnote { font-size: var(--content-size-xs); 
 .community-card summary::after { content: '+'; float: right; color: var(--community-muted); }
 .community-card[open] summary::after { content: '−'; }
 .community-profile { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; align-items: start; gap: .85rem; padding-block: 1rem; border-block: 1px solid var(--community-line); }
+.community[data-view="post"] > #community-author-profile { border-block-end: 0; }
+.community [data-author-follow-controls][hidden] { display: none !important; }
 .community-profile-copy { overflow-wrap: anywhere; }
 .community-profile-identity { display: flex; align-items: baseline; flex-wrap: wrap; gap: .25rem .5rem; }
 .community-profile-identity > * { min-width: 0; }
@@ -761,6 +763,7 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .community-author-rail-bio { font-size: .85rem; line-height: 1.5; white-space: pre-line; color: var(--community-muted); }
 .community-author-profile-link { font-size: .8rem; }
 @media (min-width: 1400px) {
+  .community[data-view="post"]:has(.community-author-rail) > #community-author-profile { display: none; }
   .community-article-layout { --article-bio-rail-width: clamp(12rem, calc(100vw - 66rem), var(--site-compact-rail-width, 18rem)); }
   .community:has([data-article-body]) .community-article-columns { grid-template-columns: var(--article-bio-rail-width) minmax(0, 1fr) var(--site-compact-rail-width, 18rem); }
   .community-author-rail { width: var(--article-bio-rail-width); position: fixed; z-index: 20; top: calc(var(--site-fixed-header-height, 5rem) + .75rem); max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; }
@@ -770,12 +773,19 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
   .community-author-rail-slot { display: none; }
 }
 
-/* Short-post permalinks reuse the bio rail while keeping a compact reading column. */
+/* Short-post permalinks keep the author and contributors beside the reading column. */
 .community .community-short-post-columns { grid-template-columns: minmax(0, 780px); justify-content: center; }
 .community:has(.community-short-post-columns) > :is(.community-heading, .community-profile) { max-width: 780px; margin-inline: auto; }
+@media (max-width: 991.98px) {
+  .community-short-post-columns > .community-rail-slot { display: none; }
+}
+@media (min-width: 992px) {
+  .community .community-short-post-columns { grid-template-columns: minmax(0, 780px) var(--site-compact-rail-width, 18rem); }
+  .community:has(.community-short-post-columns) > :is(.community-heading, .community-profile) { max-width: min(780px, calc(100% - var(--site-compact-rail-width, 18rem) - 2rem)); margin-inline-start: max(0px, calc((100% - 780px - var(--site-compact-rail-width, 18rem) - 2rem) / 2)); }
+}
 @media (min-width: 1400px) {
-  .community .community-short-post-columns { grid-template-columns: var(--article-bio-rail-width) minmax(0, 780px); justify-content: start; gap: 2rem; }
-  .community:has(.community-short-post-columns) > :is(.community-heading, .community-profile) { margin-inline-start: calc(var(--article-bio-rail-width) + 2rem); }
+  .community .community-short-post-columns { grid-template-columns: var(--article-bio-rail-width) minmax(0, 780px) var(--site-compact-rail-width, 18rem); justify-content: start; gap: 2rem; }
+  .community:has(.community-short-post-columns) > :is(.community-heading, .community-profile) { margin-inline-start: calc(var(--article-bio-rail-width) + 2rem); max-width: calc(100% - var(--article-bio-rail-width) - var(--site-compact-rail-width, 18rem) - 4rem); }
 }
 
 /* One reflection presentation for readers, articles, posts, and inline discussions. */
@@ -816,3 +826,14 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .comment-feed .comment-actions .comment-action:focus-visible { color: var(--community-accent); background: var(--c-primary-soft-08); }
 
 .community-rich-input .notebook-rich-line { display: block; unicode-bidi: plaintext; text-align: start; min-height: 1em; }
+
+/* Independent profile and follow controls above the cover's article link. */
+.community-cover-identity { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .5rem; min-width: 0; overflow-wrap: anywhere; }
+.community-cover-identity a, .community-cover-destination { color: inherit; text-decoration: none; }
+.community-cover-identity a:hover { text-decoration: underline; }
+.community-cover-handle { font-weight: 400; letter-spacing: normal; color: #dde7f0; }
+.community-cover-follow { margin-inline-start: auto; flex-shrink: 0; min-height: 44px; }
+.community-cover-follow[hidden] { display: none !important; }
+.community-cover-destination::after { content: ''; position: absolute; inset: 0; }
+.community-cover-author { position: relative; z-index: 2; }
+@media (max-width: 575px) { .community-cover-author { flex-wrap: wrap; } .community-cover-identity { flex: 1; } }

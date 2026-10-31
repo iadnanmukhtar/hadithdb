@@ -2,8 +2,8 @@
   <aside class="community-author-rail" aria-label="About the author" data-article-author="<%= railAuthor.handle || '' %>">
     <h2 class="hadith-heading-toc-title">About the author</h2>
     <span class="community-avatar community-avatar-large" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: railAuthor }) %></span>
-    <p class="community-author-rail-name" dir="auto"><% if (railAuthor.handle) { %><a href="/community/@<%= railAuthor.handle %>"><%= railAuthor.name %></a><% } else { %><strong><%= railAuthor.name || 'Author' %></strong><% } %></p>
+    <p class="community-author-rail-name" dir="auto"><% if (railAuthor.handle) { %><a href="/community/@<%= railAuthor.handle %>"><%= railAuthor.name %></a> <span class="small text-muted fw-normal" dir="ltr">@<%= railAuthor.handle %></span><% } else { %><strong><%= railAuthor.name || 'Author' %></strong><% } %></p>
     <p class="community-author-rail-bio" data-article-author-bio dir="auto" hidden></p>
-    <% if (railAuthor.handle) { %><a class="community-author-profile-link" href="/community/@<%= railAuthor.handle %>">View profile</a><% } %>
+    <% if (railAuthor.handle) { %><a class="community-author-profile-link" href="/community/@<%= railAuthor.handle %>">View profile</a><div class="mt-3" data-author-follow-controls><button class="btn btn-sm btn-outline-primary" data-author-follow type="button">Follow</button></div><% } %>
   </aside>
 </div>

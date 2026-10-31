@@ -31,6 +31,7 @@ const Alerts = require('../lib/CommunityAlerts');
 api.get('/alerts', wrap(async (req, res) => res.json(await Alerts.unread(signed(req)))));
 api.put('/alerts/read', wrap(async (req, res) => res.json(await Alerts.markRead(signed(req), req.body.through))));
 api.get('/me/followers', wrap(async (req, res) => res.json(await Community.followers(signed(req), req.query.offset))));
+api.get('/profile/handle-availability', wrap(async (req, res) => res.json(await Community.handleAvailability(signed(req), req.query.handle))));
 api.put('/profile', wrap(async (req, res) => res.json({ author: await Community.saveProfile(req.user, req.body) })));
 api.put('/likes/:source/:id', wrap(async (req, res) => res.json(await Community.like(req.user, req.params.source, req.params.id, req.body.liked))));
 const Interactions = require('../lib/CommunityInteractions');
@@ -127,7 +128,7 @@ router.post('/unsubscribe/:token', wrap(async (req, res) => {
   if (req.body['List-Unsubscribe'] === 'One-Click') return res.sendStatus(200);
   page(res, req, 'unsubscribe', { unsubscribed: true });
 }));
-router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed() })));
+router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed({kind: ['article', 'note', 'comment', 'like'].includes(req.query.filter) ? req.query.filter : 'all'}) })));
 router.get('/p/:guid', wrap(async (req,res) => {
   if (!require('../lib/CommunityPostIdentity').valid(req.params.guid)) return res.sendStatus(404);
   const post = await Community.post(req.params.guid);

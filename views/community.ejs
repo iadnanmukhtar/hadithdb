@@ -32,7 +32,7 @@
     <span id="community-author-avatar" class="community-avatar community-avatar-large" aria-hidden="true"><%- include('sub-views/community_avatar.ejs', { avatar: author }) %></span>
     <div class="community-profile-copy"><div class="community-profile-identity"><a id="community-author-name" class="fw-semibold" href="/community/@<%= author.handle %>" dir="auto"><%= author.name %></a><span class="small text-muted">@<%= author.handle %></span></div>
     <% if (view === 'author') { %><p id="community-author-bio" class="mb-1 mt-2" dir="auto"></p><p id="community-author-stats" class="small text-muted mb-0"></p><p id="community-author-federation" class="small text-muted mt-2 mb-0" hidden></p><% } %></div>
-    <div id="community-follow-controls" class="community-profile-actions d-flex flex-wrap gap-2"><button class="btn btn-sm btn-outline-primary" id="community-follow" type="button">Follow</button></div>
+    <div id="community-follow-controls" data-author-follow-controls class="community-profile-actions d-flex flex-wrap gap-2"><button class="btn btn-sm btn-outline-primary" id="community-follow" data-author-follow type="button">Follow</button></div>
   </section>
   <% } %>
   <% if (['everyone','following','mine','author'].includes(view)) { %>
@@ -97,7 +97,7 @@
       </div>
       <label class="form-label" for="community-name">Community display name</label><input id="community-name" class="form-control mb-2" maxlength="120" required dir="auto">
       <p class="small text-muted">Your custom display name is shown as entered. If it matches your Google name, others see only your first name.</p>
-      <label class="form-label" for="community-handle">Handle</label><input id="community-handle" class="form-control mb-2" pattern="[a-zA-Z0-9_.\-]{3,40}" maxlength="40" required><p class="small text-muted">Use 3–40 letters, numbers, periods, underscores, or hyphens. Choose once; this becomes your permanent public address.</p>
+      <label class="form-label" for="community-handle">Handle</label><div class="d-flex align-items-center gap-2 mb-2"><input id="community-handle" aria-describedby="community-handle-status" class="form-control" pattern="[a-zA-Z0-9_.\-]{3,40}" maxlength="40" required><i id="community-handle-icon" class="bi" aria-hidden="true" hidden></i></div><p id="community-handle-status" class="small" role="status" aria-live="polite"></p><p class="small text-muted">Use 3–40 letters, numbers, periods, underscores, or hyphens. Choose once; this becomes your permanent public address.</p>
       <label class="form-label" for="community-bio">Bio</label><textarea id="community-bio" class="form-control" rows="3" dir="auto" aria-describedby="community-bio-help community-bio-count"></textarea>
       <div class="d-flex justify-content-between gap-2 mb-3 small text-muted"><span id="community-bio-help">Up to 150 characters, 3 lines, and 5 web links. Plain text only.</span><span id="community-bio-count" class="text-nowrap">0 / 150</span></div>
       <div class="form-check form-switch mb-2">
@@ -157,7 +157,7 @@
     <%- include('sub-views/community_post_actions.ejs', { post }); %>
   </article>
   <%- include('sub-views/community_reflections.ejs', { post }); %>
-  </div><% if (post.kind === 'article') { %><%- include('sub-views/community_rail.ejs'); %><% } %></div>
+  </div><%- include('sub-views/community_rail.ejs'); %></div>
   <% } %>
   <% if (view === 'moderation') { %><p class="text-muted">Review first publications and reported content. Approval allows the author’s future posts to publish immediately.</p><div id="community-moderation"></div><% } %>
   <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
