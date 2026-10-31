@@ -7,7 +7,7 @@ test('selects only 20 source IDs and a lookahead; deep cursor pages never increa
  const q=db();const first=await Index.page(q,base);
  expect(first.rows).toHaveLength(20);expect(first.ids.hadith_like).toHaveLength(20);expect(first.hasMore).toBe(true);
  const later=await Index.page(q,{...base,offset:9000,cursor:first.cursor});
- const [sql,params]=q.mock.calls[3];expect(sql).toContain('LIMIT 21 OFFSET ?');expect(params.at(-1)).toBe(0);expect(params.slice(0,3)).toEqual(['2026-10-29 12:34:56.123','2026-10-29 12:34:56.123','81']);expect(later.cursor).toBe(first.cursor);
+ const [sql,params]=q.mock.calls[3];expect(sql).toContain('LIMIT 21 OFFSET ?');expect(params.at(-1)).toBe(0);expect(params.slice(1,4)).toEqual(['2026-10-29 12:34:56.123','2026-10-29 12:34:56.123','81']);expect(later.cursor).toBe(first.cursor);
 });
 test('cursor rejects invalid values and reuse under a different author or feed',async()=>{
  const key=Index.scopeKey(base),cursor=Index.encode({...rows()[0],cursor_time:'2026-10-29 12:34:56.123'},key);
@@ -17,11 +17,11 @@ test('cursor rejects invalid values and reuse under a different author or feed',
 });
 test('filters scopes and source visibility before the page limit',async()=>{
  const q=db([]);const result=await Index.page(q,{...base,scope:'following',kind:'like',user:{uid:'reader'},author:{uid:'writer'}});
- const [sql,params]=q.mock.calls[1];expect(sql).toContain('community_follows');expect(sql).toContain('a.actor_uid=?');expect(sql).toContain("p.status='published'");expect(sql).toContain('c.deleted=0');expect(sql).toContain("v.direction='up'");expect(params).toEqual(['reader','writer','like',0]);expect(result).toMatchObject({rows:[],hasMore:false,cursor:null});
+ const [sql,params]=q.mock.calls[1];expect(sql).toContain('community_hidden_activity');expect(sql).toContain('community_follows');expect(sql).toContain('a.actor_uid=?');expect(sql).toContain("p.status='published'");expect(sql).toContain('c.deleted=0');expect(sql).toContain("v.direction='up'");expect(params).toEqual(['reader','reader','writer','like',0]);expect(result).toMatchObject({rows:[],hasMore:false,cursor:null});
 });
 test('owner drafts remain private and cursor reads cannot silently fall back after disabling the index',async()=>{
  const q=db([]);await Index.page(q,{...base,scope:'mine',kind:'draft',user:{uid:'owner'}});
- expect(q.mock.calls[1][0]).toContain("p.status='draft'");expect(q.mock.calls[1][1]).toEqual(['owner',0]);
+ expect(q.mock.calls[1][0]).toContain("p.status='draft'");expect(q.mock.calls[1][1]).toEqual(['owner','owner',0]);
  const missing=jest.fn(async()=>{throw Object.assign(Error('missing'),{code:'ER_NO_SUCH_TABLE'});});
  expect(await Index.page(missing,base)).toBeNull();await expect(Index.page(missing,{...base,cursor:'abc'})).rejects.toMatchObject({status:409});
  await expect(Index.page(async()=>{throw Error('connection lost');},base)).rejects.toThrow('connection lost');
@@ -37,7 +37,7 @@ test('every source has insert/update/delete maintenance, and source content is n
 test('selected microinteractions load through one bounded source query, without fetching earlier activity',async()=>{
  const q=jest.fn(async(sql,values)=>sql.includes('FROM hadiths_likes l')?[{id:7,user_uid:'reader',handle:'reader',name:'Reader',type:'hadith',ref_num:'bukhari:1',source_title:'Intentions',createdAt:new Date()}]:[]);
  const items=await require('../lib/CommunityLikes').feed(q,{scope:'everyone',limit:21,selection:{hadith_like:[7]}},()=>({html:'',excerpt:''}));
- expect(q).toHaveBeenCalledTimes(1);expect(q.mock.calls[0][0]).toContain('l.id IN (?)');expect(q.mock.calls[0][1]).toEqual([[7],21]);expect(items).toHaveLength(1);expect(items[0].sourceRef).toBe('bukhari:1');
+ expect(q).toHaveBeenCalledTimes(1);expect(q.mock.calls[0][0]).toContain('l.id IN (?)');expect(q.mock.calls[0][1]).toEqual(['',[7],21]);expect(items).toHaveLength(1);expect(items[0].sourceRef).toBe('bukhari:1');
 });
 test('backfill does not activate until every batch succeeds, and locks rows before upserting',async()=>{
  const q=jest.fn();let read=false;const tx=jest.fn(async(sql)=>{
@@ -59,14 +59,14 @@ test('the full feed hydrates only the selected page, including after offset 1000
   if(sql.startsWith('SELECT version FROM community_activity_state'))result=[{version:1}];
   else if(sql.includes('FROM community_activity a'))result=selected++===0?rows():[];
   else if(sql.includes('FROM hadiths_likes l')){
-   sourceReads.push(values);result=values[0].map(id=>({id,handle:'reader',name:'Reader',source_title:'Intentions',ref_num:'bukhari:1',type:'hadith',createdAt:new Date('2026-10-29')}));
+   sourceReads.push(values);result=values[1].map(id=>({id,handle:'reader',name:'Reader',source_title:'Intentions',ref_num:'bukhari:1',type:'hadith',createdAt:new Date('2026-10-29')}));
   }
   callback(null,result);
  }};
  try {
   const first=await Community.feed();expect(first.items).toHaveLength(20);expect(first.cursor).toBeTruthy();
   const next=await Community.feed({cursor:first.cursor,offset:10020});expect(next.items).toEqual([]);expect(next.hasMore).toBe(false);
-  expect(sourceReads).toHaveLength(1);expect(sourceReads[0][0]).toHaveLength(20);expect(sourceReads[0][1]).toBe(21);
+  expect(sourceReads).toHaveLength(1);expect(sourceReads[0][1]).toHaveLength(20);expect(sourceReads[0][2]).toBe(21);
  }finally{global.dbPool=previous;avatar.mockRestore();}
 });
 test('migration preflight refuses missing or nontransactional sources before writing',async()=>{
@@ -97,4 +97,23 @@ test('fallback Posts query also excludes generated hadith activity before its li
   expect(sql).toContain('NOT EXISTS (SELECT 1 FROM community_hadith_posts hp WHERE hp.post_id=p.id)');
   expect(sql.indexOf('NOT EXISTS')).toBeLessThan(sql.indexOf('LIMIT ?'));
  }finally{global.dbPool=previous;}
+});
+
+test('Hidden filters owner posts and microactivity before pagination and has a distinct cursor',async()=>{
+ const q=db();const options={...base,scope:'mine',kind:'hidden',user:{uid:'owner'}};
+ const result=await Index.page(q,options);
+ const [sql,params]=q.mock.calls[1];
+ expect(sql).toContain("p.status='private'");
+ expect(sql).toContain('hv.source=a.source AND hv.source_id=a.source_id');
+ expect(sql).not.toContain('a.kind=?');
+ expect(params).toEqual(['owner','owner',0]);
+ await expect(Index.page(db(),{...options,kind:'all',cursor:result.cursor})).rejects.toMatchObject({status:400});
+ const other=db([]);await Index.page(other,{...options,scope:'everyone'});
+ expect(other.mock.calls[1][0]).toContain('AND 1=0');
+});
+test('legacy hidden activity filtering happens in every source query before LIMIT',async()=>{
+ const q=jest.fn(async()=>[]);
+ await require('../lib/CommunityLikes').feed(q,{scope:'mine',user:{uid:'owner'},limit:21,hiddenOnly:true},()=>({html:'',excerpt:''}));
+ expect(q.mock.calls).toHaveLength(5);
+ for(const [sql] of q.mock.calls)expect(sql).toMatch(/AND EXISTS \(SELECT 1 FROM community_hidden_activity hv WHERE hv.source=.*hv.source_id=(l|v).id\)/);
 });

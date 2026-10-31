@@ -10,13 +10,14 @@
   <% if (['like','title','revision'].includes(entryKind)) { %>
     <a class="community-avatar" href="/community/@<%= item.author.handle %>" tabindex="-1" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: item.author }) %></a>
     <div class="community-reaction-copy"><a href="/community/@<%= item.author.handle %>" dir="auto"><%= item.author.name %></a> <%= entryKind === 'revision' ? 'revised' : entryKind === 'title' ? 'titled' : 'liked' %> <a href="<%= entryKind !== 'like' ? item.hadithUrl : entryHref %>" dir="auto"><%= entryKind !== 'like' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, '') %></a><% if (item.sourceRef || (entryKind !== 'like' && item.hadithRef)) { %> · <%= item.sourceRef || item.hadithRef %><% } %><% if (item.activityAt) { %> · <time datetime="<%= item.publicationDate || new Date(item.activityAt).toISOString() %>"><%= entryDateLabel %></time><% } %></div>
+    <%- include('community_secondary_menu.ejs', {item,entryHref}) %>
   <% } else { %>
   <% if (item.repostedBy) { %><div class="community-repost-credit"><i class="bi bi-repeat" aria-hidden="true"></i> Reposted by <a href="/community/@<%= item.repostedBy.handle %>"><%= item.repostedBy.name %></a></div><% } %>
   <div class="community-entry-meta">
     <a class="community-avatar" href="/community/@<%= item.author.handle %>" tabindex="-1" aria-hidden="true"><%- include('community_avatar.ejs', { avatar: item.author }) %></a>
     <div class="community-entry-identity"><a class="community-author" href="/community/@<%= item.author.handle %>" dir="auto"><%= item.author.name %></a>
       <div class="community-entry-subline"><span><%= entryLabel %></span><% if (item.activityAt) { %><span aria-hidden="true">·</span><time datetime="<%= item.publicationDate || new Date(item.activityAt).toISOString() %>"><%= entryDateLabel %></time><% } %></div>
-    </div><% if (isPrivatePost) { %><span class="community-entry-state"><%= item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : 'Hidden · Not published' %></span><% } %>
+    </div><%- include('community_secondary_menu.ejs', {item,entryHref}) %><% if (isPrivatePost && item.status !== 'private') { %><span class="community-entry-state"><%= item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : 'Hidden · Not published' %></span><% } %>
   </div>
   <% if (isPrivatePost) { %><p class="small text-muted mb-2">Only you can see this unpublished <%= entryKind === 'article' ? 'article' : 'post' %>.</p><% } %>
   <% if (item.title && item.title.trim()) { %><h2 class="community-entry-title" dir="auto"><a href="<%= entryHref %>"><%= item.title %></a></h2><% } %>
@@ -27,10 +28,10 @@
   <div class="community-entry-actions">
     <% if (item.likeSource) { %><span class="community-like" title="Likes" aria-label="<%= item.likeCount || 0 %> likes"><i class="bi bi-<%= 'heart' %>" aria-hidden="true"></i><% if (item.likeCount) { %> <%= item.likeCount %><% } %></span><% } %>
     <% if (item.likeSource) { %><span class="community-like" title="Dislikes" aria-label="<%= item.dislikeCount || 0 %> dislikes"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><% if (item.dislikeCount) { %> <%= item.dislikeCount %><% } %></span><% } %>
-    <a href="<%= entryHref %>" title="<%= isPrivatePost ? 'Open draft' : 'View comments' %>" aria-label="<%= isPrivatePost ? 'Open draft' : 'View comments' %>"><i class="bi bi-<%= isPrivatePost ? 'file-earmark-text' : 'chat-right-text' %>" aria-hidden="true"></i><% if (item.commentCount) { %> <%= item.commentCount %><% } %></a>
+    <a href="<%= entryHref %>" title="<%= isPrivatePost ? 'Open' : 'View comments' %>" aria-label="<%= isPrivatePost ? 'Open' : 'View comments' %>"><i class="bi bi-<%= isPrivatePost ? 'arrow-right' : 'chat-right-text' %>" aria-hidden="true"></i><% if (item.commentCount) { %> <%= item.commentCount %><% } %></a>
     <% if (item.likeSource) { %><span class="community-like" title="Reposts" aria-label="<%= item.repostCount || 0 %> reposts"><i class="bi bi-repeat" aria-hidden="true"></i><% if (item.repostCount) { %> <%= item.repostCount %><% } %></span><% } %>
     <% if (!isPrivatePost && ['article','note'].includes(entryKind)) { %><button type="button" class="community-like" data-community-share-url="<%= item.shareUrl || item.url %>" data-community-share-handle="<%= item.author.handle %>" data-community-share-author="<%= item.author.name %>" data-community-share-photo="<%= item.author.photo || item.author.avatarFallback || '' %>" data-community-share-cover="<%= item.coverUrl || '' %>" data-community-share-excerpt="<%= item.excerpt || '' %>" data-community-share-title="<%= item.shareTitle || item.title || 'Community post' %>" title="Share" aria-label="Share post"><i class="bi bi-share" aria-hidden="true"></i></button><% } %>
-    <% if (item.canEdit) { %><a class="community-entry-secondary community-edit-post" data-edit-kind="<%= item.kind %>" data-edit-id="<%= item.id %>" href="<%= item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= item.id %>" title="Edit post" aria-label="Edit post"><i class="bi bi-pencil" aria-hidden="true"></i></a><% } %><% if (!isPrivatePost && ['article','note'].includes(entryKind)) { %><a class="community-entry-secondary" href="<%= entryHref %>" title="Open post" aria-label="Open post"><i class="bi bi-arrow-right" aria-hidden="true"></i></a><% } %>
+
   </div>
   <% } %>
 </article>

@@ -246,12 +246,43 @@
   }
   function microType(item) { return ['title','revision'].includes(item.microinteraction) ? item.microinteraction : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
   function editPostLink(item) { const edit = link('', (item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=') + item.id, 'community-entry-secondary community-edit-post'); edit.dataset.editKind=item.kind;edit.dataset.editId=item.id;edit.title = 'Edit post'; edit.setAttribute('aria-label', 'Edit post'); edit.append(icon('pencil')); return edit; }
+  function openItemLink(href) {
+    const control=link('',href,'community-entry-secondary');
+    control.title='Open';control.setAttribute('aria-label','Open');
+    control.append(icon('arrow-right'),document.createTextNode('Open'));
+    return control;
+  }
+  function secondaryMenu() {
+    const menu=node('details',undefined,'community-secondary-menu');
+    const toggle=node('summary',undefined,'community-like');toggle.title='More actions';toggle.setAttribute('aria-label','More actions');toggle.append(icon('three-dots'));
+    const panel=node('div',undefined,'community-secondary-panel');menu.append(toggle,panel);
+    menu.addEventListener('keydown',event=>{if(event.key==='Escape'){menu.open=false;toggle.focus();}});
+    menu.addEventListener('toggle',()=>{if(menu.open)for(const other of root.querySelectorAll('.community-secondary-menu[open]'))if(other!==menu)other.open=false;});
+    return {menu,panel};
+  }
+  document.addEventListener('click',event=>{for(const menu of root.querySelectorAll('.community-secondary-menu[open]'))if(!menu.contains(event.target))menu.open=false;});
+  function visibilityControl(item, panel) {
+    if (!item.canHide) return;
+    const label=item.hiddenFromOthers?'Unhide':'Hide';
+    const control=button(label,async()=>{
+      await api('/visibility/'+(item.activity || 'post')+'/'+item.id,'PUT',{hidden:!item.hiddenFromOthers});
+      if ($('feed')) await loadFeed(true);
+      else { window.location.assign('/community/mine'); return; }
+      status(item.hiddenFromOthers?'Visible to others again.':'Hidden from others. You can unhide it on your wall.');
+    },'community-visibility');
+    control.prepend(icon(item.hiddenFromOthers?'eye':'eye-slash'));panel.append(control);
+  }
   function card(item) {
     const kind = ['title','revision'].includes(item.microinteraction) ? item.microinteraction : item.activity === 'comment' ? 'comment' : item.kind;
     const privatePost = item.status && item.status !== 'published';
     const href = privatePost ? '/community/write?post=' + item.id : item.url;
     const article = node('article', undefined, 'community-entry'); article.dataset.activity = item.activity; article.dataset.kind = kind; article.dataset.private=String(!!privatePost);
     const meta = node('div', undefined, 'community-entry-meta');
+    const secondary=secondaryMenu();
+    const hiddenIndicator = item.hiddenFromOthers || item.status === 'private' ? node('span', undefined, 'community-hidden-indicator') : null;
+    if (hiddenIndicator) { hiddenIndicator.title='Hidden from others'; hiddenIndicator.setAttribute('role','img'); hiddenIndicator.setAttribute('aria-label','Hidden from others'); hiddenIndicator.append(icon('eye-slash')); }
+    secondary.panel.append(openItemLink(['like','title','revision'].includes(kind) ? item.hadithUrl || item.url : href));
+    visibilityControl(item,secondary.panel);
     const avatar = link(Array.from(item.author.name.trim())[0] || '?', '/community/@' + item.author.handle, 'community-avatar'); avatar.tabIndex = -1; avatar.setAttribute('aria-hidden', 'true'); avatarImage(avatar, item.author);
     if (['like','title','revision'].includes(kind)) {
       const copy = node('div', undefined, 'community-reaction-copy');
@@ -261,6 +292,8 @@
       if (item.sourceRef || (kind !== 'like' && item.hadithRef)) copy.append(document.createTextNode(' · ' + (item.sourceRef || item.hadithRef)));
       if (item.activityAt) { const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
       article.append(avatar, copy);
+      if (hiddenIndicator) article.append(hiddenIndicator);
+      article.append(secondary.menu);
       return article;
     }
     const identity = node('div', undefined, 'community-entry-identity');
@@ -268,8 +301,10 @@
     const subline = node('div', undefined, 'community-entry-subline'); subline.append(node('span', kind === 'like' ? 'Liked' : kind === 'comment' ? 'In conversation' : kind === 'article' ? 'Article' : 'Post'));
     if (item.activityAt) { const dot = node('span', '·'); dot.setAttribute('aria-hidden', 'true'); const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); subline.append(dot, time); }
     identity.append(subline); meta.append(avatar, identity);
-    if (privatePost) meta.append(node('span', item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : 'Hidden · Not published', 'community-entry-state'));
+    if (privatePost && item.status !== 'private') meta.append(node('span', item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : item.status === 'private' ? 'Hidden from others' : 'Hidden · Not published', 'community-entry-state'));
     if(item.repostedBy) { const credit=node('div',undefined,'community-repost-credit');credit.append(icon('repeat'),document.createTextNode(' Reposted by '),link(item.repostedBy.name,'/community/@'+item.repostedBy.handle));article.append(credit); }
+    if (hiddenIndicator) meta.append(hiddenIndicator);
+    meta.append(secondary.menu);
     article.append(meta);
     if (privatePost) article.append(node('p', 'Only you can see this unpublished ' + (kind === 'article' ? 'article.' : 'post.'), 'small text-muted mb-2'));
     if (item.title && item.title.trim()) { const heading = node('h2', undefined, 'community-entry-title'); heading.dir = 'auto'; heading.append(link(item.title, href)); article.append(heading); }
@@ -281,24 +316,23 @@
     if (item.tags) { const tags = node('div', undefined, 'community-entry-tags'); tags.dir = 'auto'; for (const tag of item.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)) tags.append(node('span', tag)); article.append(tags); }
     let toggleDiscussion;
     const actions = item.likeSource && !privatePost ? interactionControls(item,()=>toggleDiscussion()) : node('div',undefined,'community-entry-actions');
-    if(privatePost) { const draft=link(item.status === 'draft' ? 'Continue editing draft' : 'Open unpublished article',href);draft.title='Open draft';draft.setAttribute('aria-label','Open draft');draft.append(icon('file-earmark-text'));actions.append(draft); }
+    if(privatePost) actions.append(openItemLink(href));
     if (!privatePost && ['article','note'].includes(kind)) {
       const share = node('button', undefined, 'community-like'); share.type = 'button'; share.title = 'Share'; share.setAttribute('aria-label', 'Share post');
       share.dataset.communityShareHandle=item.author.handle;share.dataset.communityShareAuthor=item.author.name;share.dataset.communitySharePhoto=item.author.photo || item.author.avatarFallback || '';share.dataset.communityShareCover=item.coverUrl || '';share.dataset.communityShareExcerpt=item.excerpt || '';
       share.dataset.communityShareUrl = item.shareUrl || item.url; share.dataset.communityShareTitle = item.shareTitle || item.title || 'Community post';
       share.append(icon('share')); actions.append(share);
     }
+    if (item.canEdit) {const edit=editPostLink(item);edit.append(document.createTextNode('Edit'));secondary.panel.append(edit);}
     if (item.canDeleteRepost) {
       const remove=button('',async()=>{
         const own=epoch;
         await api('/reposts/'+item.likeSource+'/'+item.likeId,'PUT',{reposted:false});
         if(own===epoch) {await loadFeed(true);status('Repost removed.');}
       },'community-delete-repost');
-      remove.title='Delete repost';remove.setAttribute('aria-label','Delete repost');remove.append(icon('trash'));
-      actions.append(remove);
+      remove.title='Delete repost';remove.setAttribute('aria-label','Delete repost');remove.append(icon('trash'),document.createTextNode('Delete repost'));
+      secondary.panel.append(remove);
     }
-    if (item.canEdit) actions.append(editPostLink(item));
-    if (!privatePost && ['article','note'].includes(kind)) { const read = link('', href, 'community-entry-secondary'); read.title = kind === 'article' ? 'Read article' : 'Open post'; read.setAttribute('aria-label', read.title); read.append(icon('arrow-right')); actions.append(read); }
     article.append(actions);
     window.CommunityCoverCards?.enhance(article, {...item, url:href, authorName:item.author.name});
     if(item.likeSource && !privatePost) toggleDiscussion=attachDiscussion(article,item,actions);
@@ -310,7 +344,7 @@
       if (!force && wrapper.dataset.blogHydrated) continue;
       const data=wrapper.querySelector('[data-blog-feed-item]');if(!data)continue;
       const item=JSON.parse(data.textContent);
-      item.canEdit=!!me && me.author.handle===item.author.handle;
+      item.canEdit=!!me && me.author.handle===item.author.handle;item.canHide=item.canEdit;
       wrapper.dataset.blogHydrated='1';ids.push(item.id);
       const entry=card(item);const old=wrapper.querySelector('.community-entry');if(old)old.replaceWith(entry);else wrapper.append(entry);
     }
@@ -788,7 +822,15 @@
     if (!previous) return;
     const own = epoch;
     const { post } = await api('/posts/' + postId);
-    if (own !== epoch || !post?.likeSource) return;
+    if (own !== epoch || !post) return;
+    const oldMenu=root.querySelector('.community-post-menu');
+    if(oldMenu){for(const id of ['edit-post','report-post'])if($(id))previous.append($(id));oldMenu.remove();}
+    const secondary=secondaryMenu();secondary.menu.classList.add('community-post-menu');
+    visibilityControl(post,secondary.panel);
+    for(const id of ['edit-post','report-post']) {const control=$(id);if(control){if(!control.textContent.trim())control.append(document.createTextNode(control.title));secondary.panel.append(control);}}
+    const article=previous.closest('article');
+    if(article)article.prepend(secondary.menu);
+    if(!post.likeSource)return;
     if ($('blog-toggle')) $('blog-toggle').checked = !!post.isBlog;
     const actions = interactionControls(post, () => {
       const disclosure = $('reflections-disclosure') || document.getElementById('blog-comments-disclosure');
@@ -896,6 +938,55 @@
     }
     if (!$('moderation').children.length) $('moderation').append(node('p', 'No publications or reports awaiting review.', 'community-empty'));
   }
+  const searchDialog = $('user-search-dialog');
+  if (searchDialog) {
+    const input = $('user-search-input'), results = $('user-search-results'), message = $('user-search-status');
+    let timer, revision = 0;
+    const invalidate = () => { clearTimeout(timer); ++revision; };
+    const search = async () => {
+      invalidate();
+      const own = revision, query = input.value.trim();
+      results.replaceChildren();
+      if (!query.replace(/^@/, '').trim()) { message.textContent = 'Find people by their name or handle.'; return; }
+      message.textContent = 'Searching…';
+      try {
+        const data = await api('/authors?' + new URLSearchParams({ q: query }));
+        if (own !== revision || !searchDialog.open) return;
+        for (const author of data.authors) {
+          const row = link('', '/community/@' + encodeURIComponent(author.handle), 'community-user-search-result');
+          const avatar = node('span', undefined, 'community-avatar'); avatarImage(avatar, author);
+          const copy = node('span', undefined, 'community-user-search-copy');
+          const name = node('strong', author.name); name.dir = 'auto';
+          copy.append(name, node('small', '@' + author.handle)); row.append(avatar, copy); results.append(row);
+        }
+        message.textContent = data.hasMore ? 'Showing the first 20 people. Refine your search to see more.' : data.authors.length ? data.authors.length + (data.authors.length === 1 ? ' person found.' : ' people found.') : 'No people found. Try another name or handle.';
+      } catch (_) {
+        if (own === revision && searchDialog.open) {
+          message.textContent = 'Search could not be loaded.';
+          results.append(button('Try again', search, 'btn btn-sm btn-outline-secondary'));
+        }
+      }
+    };
+    $('user-search-open').addEventListener('click', () => { searchDialog.showModal(); input.focus(); });
+    $('user-search-close').addEventListener('click', () => searchDialog.close());
+    searchDialog.addEventListener('keydown', event => {
+      if (event.key === 'Escape') { event.preventDefault(); searchDialog.close(); }
+    });
+    searchDialog.addEventListener('click', event => {
+      const rect = searchDialog.getBoundingClientRect();
+      if (event.target === searchDialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) searchDialog.close();
+    });
+    searchDialog.addEventListener('close', () => {
+      invalidate(); input.value = ''; results.replaceChildren(); message.textContent = 'Find people by their name or handle.';
+    });
+    input.addEventListener('input', () => {
+      invalidate(); results.replaceChildren();
+      message.textContent = input.value.trim() ? 'Searching…' : 'Find people by their name or handle.';
+      timer = setTimeout(search, 250);
+    });
+    $('user-search-form').addEventListener('submit', event => { event.preventDefault(); search(); });
+    document.addEventListener('hadithAuthChanged', () => { invalidate(); if (searchDialog.open) search(); });
+  }
   async function loadContributors() {
     if (!$('contributors')) return;
     const own = epoch;
@@ -942,6 +1033,57 @@
     }
     if (!items.length) $('subscriptions').textContent = 'You are not following any authors yet.';
   }
+  const emailKeys = ['enabled','likes','reflections','replies','reactions','articles'];
+  function showEmailPreferences(preferences) {
+    const form = $('email-form');
+    for (const key of emailKeys) form.elements[key].checked = preferences[key];
+    $('email-categories').disabled = !preferences.enabled;
+  }
+  async function loadEmailPreferences(own) {
+    const {preferences} = await api('/email-preferences');
+    if (own !== epoch) return;
+    showEmailPreferences(preferences);
+    $('email-authors').replaceChildren();
+    for (const author of me.subscriptions || []) {
+      const row = node('div', undefined, 'd-flex flex-wrap justify-content-between align-items-center gap-2 py-2');
+      row.append(link(author.name, '/community/@' + author.handle));
+      const control = button(author.email ? 'Unsubscribe' : 'Subscribe', async () => {
+        control.disabled = true;
+        try {
+          const result = await api('/authors/' + author.handle + '/follow','PUT',{following:true,email:!author.email});
+          if (own !== epoch) return;
+          author.email = result.email;
+          control.textContent = author.email ? 'Unsubscribe' : 'Subscribe';
+          control.setAttribute('aria-label', (author.email ? 'Unsubscribe from ' : 'Subscribe to ') + author.name);
+          $('email-result').textContent = 'Author subscription updated.';
+        } catch (err) { if (own === epoch) $('email-result').textContent = err.message; }
+        finally { control.disabled = false; }
+      }, 'btn btn-sm btn-outline-secondary');
+      control.setAttribute('aria-label', (author.email ? 'Unsubscribe from ' : 'Subscribe to ') + author.name);
+      row.append(control); $('email-authors').append(row);
+    }
+    if (!me.subscriptions?.length) $('email-authors').append(node('p', 'Follow an author to subscribe to their articles.', 'small text-muted mb-0'));
+    $('email-form').hidden = false;
+  }
+  $('email-form')?.elements.enabled.addEventListener('change', () => {
+    $('email-categories').disabled = !$('email-form').elements.enabled.checked;
+  });
+  async function saveEmailPreferences(stopAll = false) {
+    const form = $('email-form'), own = epoch;
+    const preferences = Object.fromEntries(emailKeys.map(key => [key, form.elements[key].checked]));
+    if (stopAll) preferences.enabled = false;
+    const controls = [...form.querySelectorAll('button')]; controls.forEach(el => el.disabled = true);
+    $('email-result').textContent = 'Saving…';
+    try {
+      const result = await api('/email-preferences','PUT',{preferences});
+      if (own !== epoch) return;
+      showEmailPreferences(result.preferences);
+      $('email-result').textContent = result.preferences.enabled ? 'Email preferences saved.' : 'You’re unsubscribed from all email notifications.';
+    } catch (err) { if (own === epoch) $('email-result').textContent = err.message; }
+    finally { controls.forEach(el => el.disabled = false); }
+  }
+  $('email-form')?.addEventListener('submit', event => { event.preventDefault(); saveEmailPreferences(); });
+  $('email-stop')?.addEventListener('click', () => saveEmailPreferences(true));
   function updateBioCount() {
     if (!$('bio') || !window.CommunityBio) return;
     const Bio = window.CommunityBio;
@@ -1057,6 +1199,7 @@
       for (const key of ['author-name','author-bio','author-stats','author-avatar']) $(key).replaceChildren();
       $('feed')?.replaceChildren();
     }
+    if ($('email-form')) { $('email-form').hidden = true; $('email-form').reset(); $('email-authors').replaceChildren(); $('email-result').textContent = ''; }
     const own = ++epoch; ++feedEpoch; loadingFeed = false; feedHasMore = false; feedObserver?.disconnect(); me = null; status('');
     if($('moderation-link'))$('moderation-link').hidden = true;
     if($('blog-control'))$('blog-control').hidden=true;
@@ -1073,7 +1216,8 @@
       if($('moderation-link'))$('moderation-link').hidden = !me?.moderator;
       if ($('quick-name')) { $('quick-name').textContent = me?.author.publicName || me?.author.name.trim().split(/\s+/u)[0] || 'Share a post'; if (me) { avatarImage($('quick-avatar'), me.author); avatarImage($('prompt-avatar'), me.author); } }
       if (!me && view === 'author') { status('Please sign in using the account button to view this profile.'); return; }
-      if (!me && ['author', 'mine', 'following', 'write', 'moderation'].includes(view)) { status('Please sign in using the account button to open your ' + (view === 'write' ? 'publication editor.' : 'personal wall.')); return; }
+      if (!me && ['author', 'mine', 'following', 'write', 'moderation', 'email-preferences'].includes(view)) { status('Please sign in using the account button to open your ' + (view === 'write' ? 'publication editor.' : view === 'email-preferences' ? 'email preferences.' : 'personal wall.')); return; }
+      if (view === 'email-preferences') { await loadEmailPreferences(own); return; }
       if (view === 'author') {
         const {author} = await api('/authors/' + encodeURIComponent(handle));
         if (own !== epoch) return;

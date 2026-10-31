@@ -17,9 +17,9 @@ jest.setTimeout(30000);
 const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : describe.skip;
 suite('Community publication, privacy, subscriptions, discussion and moderation', () => {
   const prefix = `c_test_${process.pid}_${Date.now()}_`;
-  const tables = ['activity_state','activity','alert_reads','hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
+  const tables = ['hidden_activity','activity_state','activity','alert_reads','hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
   // Rewrite identifiers only: source names stored as SQL string values must stay canonical.
-  const rewrite = statement => statement.replace(/'(?:''|\.|[^'])*'|\b(user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b|\bcommunity_(activity_state|activity|alert_reads|hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (match, source, table) => match.startsWith("'") ? match : prefix + (source || table));
+  const rewrite = statement => statement.replace(/'(?:''|\.|[^'])*'|\b(email_preferences|user_profile_photos|hadiths_comments_votes|blog_comments_votes|hadiths_likes|hadiths_comments|blog_comments)\b|\bcommunity_(hidden_activity|activity_state|activity|alert_reads|hadith_posts|blog_media_imports|blog_imports|blog_posts|media|link_previews|dislikes|reposts|author_aliases|authors|posts|revisions|follows|comments|reports|email_outbox|likes)\b/g, (match, source, table) => match.startsWith("'") ? match : prefix + (source || table));
   let pool, server, base, q, firstId, adminSpy, blogDir, pendingQueries=0;
   const trackedQuery=(connection,s,v,cb)=>{pendingQueries++;return connection.query(rewrite(s),v,(err,result)=>{pendingQueries--;cb(err,result);});};
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
@@ -61,12 +61,26 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     if (server) await new Promise(resolve=>server.close(resolve));
     await new Promise(resolve=>setImmediate(resolve));
     while(pendingQueries) await new Promise(resolve=>setTimeout(resolve,20));
-    if (q) for (const source of ['user_profile_photos','hadiths_comments_votes','blog_comments_votes','hadiths_likes','hadiths_comments','blog_comments']) await q(`DROP TABLE IF EXISTS ${prefix}${source}`);
+    if (q) for (const source of ['email_preferences','user_profile_photos','hadiths_comments_votes','blog_comments_votes','hadiths_likes','hadiths_comments','blog_comments']) await q(`DROP TABLE IF EXISTS ${prefix}${source}`);
     if (q) for (const table of [...tables].reverse()) await q(`DROP TABLE IF EXISTS ${prefix}${table}`);
     if (pool) await promisify(pool.end).call(pool);
     if(blogDir)require('fs').rmSync(blogDir,{recursive:true,force:true});
     adminSpy?.mockRestore();
     delete process.env.COMMUNITY_MODERATOR_UIDS;
+  });
+  test('email preferences require sign-in and unsubscribe GET never changes delivery', async () => {
+    await json('/api/community/email-preferences','GET',null,undefined,401);
+    const current=await json('/api/community/email-preferences','GET','alice');
+    expect(current.preferences.enabled).toBe(true);
+    const saved=await json('/api/community/email-preferences','PUT','alice',{preferences:{...current.preferences,replies:false}});
+    expect(saved.preferences.replies).toBe(false);
+    expect((await json('/api/community/email-preferences','GET','bob')).preferences.replies).toBe(true);
+    const row=await require('../lib/NotificationPreferences').forEmail('alice@private.test');
+    const url='/community/email-unsubscribe/'+row.unsubscribe_token+'/likes';
+    expect((await request(url,'GET',null)).status).toBe(200);
+    expect((await json('/api/community/email-preferences','GET','alice')).preferences.likes).toBe(true);
+    expect((await request(url,'POST',null,{'List-Unsubscribe':'One-Click'})).status).toBe(200);
+    expect((await json('/api/community/email-preferences','GET','alice')).preferences.likes).toBe(false);
   });
   test('GUID sharing preserves identities, legacy links, blog pages, and publication privacy',async()=>{
     const Identity=require('../lib/CommunityPostIdentity'),user={uid:'moderator',name:'GUID author'};
@@ -1275,6 +1289,18 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     expect(result.items.every(item=>item.url==='/bukhari:1#comments')).toBe(true);
     await q(`UPDATE ${prefix}hadiths_comments SET deleted=1 WHERE id=? OR parentId=?`,[target,target]);
     expect((await Alerts.unread(owner)).count).toBe(0);
+  });
+
+  test('owners privately hide and restore published content without exposing it to other readers', async () => {
+    const {post} = await json('/posts','POST','moderator',postInput({action:'publish',title:'Private visibility fixture'}),201);
+    await json('/visibility/post/'+post.id,'PUT','bob',{hidden:true},404);
+    await json('/visibility/post/'+post.id,'PUT','moderator',{hidden:true});
+    await json('/posts/'+post.id,'GET','bob',undefined,404);
+    await json('/posts/'+post.id,'GET',null,undefined,404);
+    const own=await json('/feed?scope=mine','GET','moderator');
+    expect(own.items.find(item=>item.id===post.id)).toMatchObject({hiddenFromOthers:true,canHide:true});
+    await json('/visibility/post/'+post.id,'PUT','moderator',{hidden:false});
+    expect((await json('/posts/'+post.id,'GET','bob')).post.status).toBe('published');
   });
 
 });

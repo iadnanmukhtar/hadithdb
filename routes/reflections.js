@@ -28,73 +28,39 @@ function createReflectionRouter(config) {
 
   async function sendMail(message, failureLabel) {
     try {
-      await getMailer().sendMail(message);
+      await require('../lib/NotificationDelivery').send(getMailer(), message);
     } catch (err) {
       debug.error(`${failureLabel}: ${err.message}\n${err.stack || ''}`);
     }
   }
 
-  async function sendCommentEmail(comment) {
-    const description = await config.describe(comment);
-    const subject = description.subject;
-    await sendMail({
-      from: comment.user.email || global.settings.smtp.from,
-      to: global.settings.smtp.to,
-      subject: `New reflection on ${subject}`,
-      text: `
-New reflection posted
-${subject}
-${description.url}
-User: ${formatUser(comment.user)}
+  function notification(kind, actor, source, preview) {
+    return require('../lib/NotificationEmail').render({ kind, actor, source, preview,
+      noun: config.table === 'blog_comments' ? 'comment' : 'reflection' });
+  }
 
-${comment.text}
-`
+  async function sendCommentEmail(comment) {
+    const source = await config.describe(comment);
+    await sendMail({ from: global.settings.smtp.from, to: global.settings.smtp.to,
+      ...notification('reflection', comment.user, source, comment.text)
     }, 'Email notification failed');
   }
 
   async function sendReplyThreadEmails(reply, threadRows) {
     const recipients = getReplyThreadRecipients(threadRows, reply.user);
     if (!recipients.length) return;
-    const description = await config.describe(reply);
-    const subject = description.subject;
-    const url = description.url.includes('#') ? description.url : `${description.url}${config.replyAnchor}`;
-    const text = `
-${reply.user.name} replied in a reflection thread you are part of.
-${subject}
-${url}
-
-Reply:
-${reply.text}
-
-Conversation history:
-${formatThreadHistory(threadRows)}
-`;
+    const source = await config.describe(reply);
+    source.url = source.url.includes('#') ? source.url : `${source.url}${config.replyAnchor}`;
+    const message = notification('reply', reply.user, source, reply.text);
     await Promise.all(recipients.map(recipient => sendMail({
-      from: reply.user.email || global.settings.smtp.from,
-      to: recipient.email,
-      subject: `New reply in your reflection thread on ${subject}`,
-      text
+      from: global.settings.smtp.from, to: recipient.email, ...message
     }, 'Reply email notification failed')));
   }
 
   async function sendVoteEmail(payload) {
-    const description = await config.describe(payload);
-    const subject = description.subject;
-    await sendMail({
-      from: payload.voter.email || global.settings.smtp.from,
-      to: global.settings.smtp.to,
-      subject: `New ${payload.direction}vote on ${subject}`,
-      text: `
-New vote received
-${subject}
-${description.url}
-Reflection ID: ${payload.commentId}
-Direction: ${payload.direction}
-Voter: ${formatUser(payload.voter)}
-
-Comment snippet:
-${payload.text || '(no text found)'}
-`
+    const source = await config.describe(payload);
+    await sendMail({ from: global.settings.smtp.from, to: global.settings.smtp.to,
+      ...notification(payload.direction, payload.voter, source, payload.text)
     }, 'Vote email notification failed');
     const threadRows = await getVoteThreadRows(payload.row);
     await sendVoteThreadEmails(payload, threadRows);
@@ -194,25 +160,10 @@ ${payload.text || '(no text found)'}
     const recipients = getReplyThreadRecipients(threadRows, payload.voter);
     if (!recipients.length) return;
     const description = await config.describe(payload);
-    const subject = description.subject;
-    const url = description.url.includes('#') ? description.url : `${description.url}${config.replyAnchor}`;
-    const directionLabel = payload.direction === 'down' ? 'disliked' : 'liked';
-    const text = `
-${payload.voter.name} ${directionLabel} a reflection in a thread you are part of.
-${subject}
-${url}
-
-Voted reflection:
-${indentEmailText(payload.text || '(no text found)')}
-
-Conversation history:
-${formatThreadHistory(threadRows)}
-`;
+    description.url = description.url.includes('#') ? description.url : `${description.url}${config.replyAnchor}`;
+    const message = notification(payload.direction, payload.voter, description, payload.text);
     await Promise.all(recipients.map(recipient => sendMail({
-      from: payload.voter.email || global.settings.smtp.from,
-      to: recipient.email,
-      subject: `New ${directionLabel} reflection in your thread on ${subject}`,
-      text
+      from: global.settings.smtp.from, to: recipient.email, ...message
     }, 'Vote thread email notification failed')));
   }
 
@@ -228,16 +179,6 @@ ${formatThreadHistory(threadRows)}
   function sqlValue(value) {
     if (typeof value === 'number') return value;
     return `'${Utils.escSQL(Utils.trimToEmpty(value))}'`;
-  }
-
-  function formatThreadHistory(threadRows) {
-    if (!threadRows.length) return '(no previous comments found)';
-    return threadRows.map(row => {
-      const author = row.user_name || 'Community Member';
-      const date = formatEmailDate(row.createdAt);
-      const text = Utils.trimToEmpty(row.text) || '(empty reflection)';
-      return `[${date}] ${author}:\n${indentEmailText(text)}`;
-    }).join('\n\n');
   }
 
   async function verifyGoogle(req, res, next) {
@@ -562,21 +503,6 @@ function buildCommentUser(row, fallbackPhoto = null) {
     photo: row.avatarPhoto || row.user_photo || fallbackPhoto || getGravatarUrl(row.user_email),
     avatarFallback: row.avatarFallback || getGravatarUrl(row.user_email)
   };
-}
-
-function formatUser(user) {
-  return `${user.name} (${user.provider}${user.email ? `, ${user.email}` : ''})`;
-}
-
-function formatEmailDate(value) {
-  if (!value) return 'unknown time';
-  const date = value instanceof Date ? value : new Date(value);
-  if (Number.isNaN(date.getTime())) return Utils.trimToEmpty(value) || 'unknown time';
-  return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC');
-}
-
-function indentEmailText(text) {
-  return Utils.trimToEmpty(text).split(/\r?\n/).map(line => `  ${line}`).join('\n');
 }
 
 function formatVote(row, vote = {}, direction) {

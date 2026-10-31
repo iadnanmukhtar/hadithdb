@@ -16,6 +16,7 @@ suite('persistent activity index on local MySQL',()=>{
   const acquire=async()=>{const c=await promisify(pool.getConnection).call(pool);await promisify(c.changeUser).call(c,{database});return c;};
   q=async(sql,values=[])=>{const c=await acquire();try{return await promisify(c.query).call(c,sql,values);}finally{c.release();}};
   transaction=async work=>{const c=await acquire();try{await promisify(c.beginTransaction).call(c);const result=await work(promisify(c.query).bind(c));await promisify(c.commit).call(c);return result;}catch(e){await promisify(c.rollback).call(c);throw e;}finally{c.release();}};
+  await require('../lib/CommunityVisibility').migrate(q);
   await q("CREATE TABLE community_posts(id BIGINT PRIMARY KEY,author_uid VARCHAR(128),kind VARCHAR(12),status VARCHAR(16),published_at DATETIME(3),updated_at DATETIME(3)) ENGINE=InnoDB");
   await q("CREATE TABLE community_comments(id BIGINT PRIMARY KEY,post_id BIGINT,author_uid VARCHAR(128),deleted INT,created_at DATETIME(3)) ENGINE=InnoDB");
   for(const table of ['hadiths_comments','blog_comments']){

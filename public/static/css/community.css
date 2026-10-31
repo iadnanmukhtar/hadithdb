@@ -184,6 +184,20 @@ button.community-like:hover, .community-like[aria-pressed="true"] { color: var(-
 main.community #community-contributors-heading { font-size: .8rem !important; margin: 0 0 .3rem; }
 .community-rail-caption { color: var(--community-muted); font-size: .68rem; margin: 0 0 .7rem; }
 .community-contributors-section { margin-bottom: 1rem; }
+.community-user-search-open { width: 100%; padding: 0; font: inherit; text-align: start; }
+.community .community-user-search-open > .form-control { color: var(--bs-secondary-color); font-size: .75rem; text-align: start; }
+.community-user-search-open:hover { border-color: var(--community-accent); }
+.community-user-search-open:focus-visible { outline: 2px solid var(--community-accent); outline-offset: 2px; }
+.community-user-search-dialog { width: min(520px, calc(100vw - 2rem)); max-height: min(680px, calc(100dvh - 2rem)); padding: 1.25rem; border: 1px solid var(--community-line); border-radius: .85rem; background: var(--community-paper); color: var(--community-ink); box-shadow: 0 16px 60px #0003; }
+.community-user-search-dialog::backdrop { background: #0006; }
+.community-user-search-heading { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.community-user-search-heading h2 { margin: 0; font-size: 1.1rem; }
+.community-user-search-status { margin: 1rem 0 .5rem; color: var(--community-muted); font-size: .8rem; }
+.community-user-search-result { display: flex; align-items: center; gap: .75rem; padding: .75rem .5rem; border-radius: .4rem; color: var(--community-ink); text-decoration: none; }
+.community-user-search-result:hover, .community-user-search-result:focus-visible { background: var(--c-primary-soft-08); }
+.community-user-search-copy { display: grid; min-width: 0; overflow-wrap: anywhere; }
+.community-user-search-copy strong { font-size: .9rem; }
+.community-user-search-copy small { color: var(--community-muted); font-size: .75rem; }
 .community-contributor { display: flex; align-items: center; gap: .5rem; padding: .55rem 0; min-width: 0; }
 .community-contributor .community-avatar { width: 28px; height: 28px; flex-basis: 28px; }
 .community-contributor-copy { flex: 1; min-width: 0; }
@@ -837,3 +851,17 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .community-cover-destination::after { content: ''; position: absolute; inset: 0; }
 .community-cover-author { position: relative; z-index: 2; }
 @media (max-width: 575px) { .community-cover-author { flex-wrap: wrap; } .community-cover-identity { flex: 1; } }
+
+.community-secondary-menu { position: relative; flex: 0 0 auto; margin-inline-start: auto; }
+.community-secondary-menu > summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; border-radius: .35rem; }
+.community-secondary-menu > summary::-webkit-details-marker { display: none; }
+.community-secondary-menu > summary:hover { background: var(--c-primary-soft-08); }
+.community-secondary-panel { position: absolute; right: 0; top: 100%; z-index: 25; min-width: 185px; max-width: min(280px,80vw); padding: .35rem; border: 1px solid var(--community-line); border-radius: .5rem; background: var(--community-paper, #fff); box-shadow: 0 4px 16px #0002; }
+.community-secondary-panel :is(a,button) { display: flex; align-items: center; gap: .5rem; width: 100%; padding: .6rem; border: 0; background: transparent; color: var(--community-ink); text-align: start; text-decoration: none; font-size: var(--content-size-sm); border-radius: .3rem; }
+.community-secondary-panel :is(a,button):hover { background: var(--c-primary-soft-08); }
+.community-secondary-panel [hidden] { display: none; }
+.community-post-menu { float: right; }
+.community-reaction-copy { flex: 1; }
+
+.community-hidden-indicator { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; min-height: 36px; margin-inline-start: auto; color: var(--community-muted); font-size: .875rem; }
+.community-hidden-indicator + .community-secondary-menu { margin-inline-start: 0; }

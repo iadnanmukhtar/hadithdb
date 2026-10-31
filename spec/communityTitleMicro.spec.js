@@ -4,12 +4,12 @@ test('server feed renders safe title text and collapses only consecutive title r
  const title={id:1,kind:'note',activity:'post',microinteraction:'title',title:'Titled ahmad:11133',hadithTitle:'Acceptance of dua <script>',hadithRef:'ahmad:11133',hadithUrl:'/ahmad:11133',author:{handle:'editor',name:'Editor'},url:'/community/@editor/1',activityAt:'2026-01-01'};
  const items=[...Array(12).fill(title),{...title,microinteraction:undefined,kind:'like',activity:'hadith_like'},...Array(11).fill(title)];
  const $=load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_feed.ejs'),{items}));
- expect($('details').length).toBe(2);
- expect($('details').eq(0).find('article').length).toBe(2);
- expect($('details').eq(1).find('article').length).toBe(1);
+ expect($('details.community-reaction-overflow').length).toBe(2);
+ expect($('details.community-reaction-overflow').eq(0).find('article').length).toBe(2);
+ expect($('details.community-reaction-overflow').eq(1).find('article').length).toBe(1);
  expect($('[data-kind=title] h2,script').length).toBe(0);
  expect($('[data-kind=title]').first().text()).toContain('Acceptance of dua <script>');
- expect($('[data-kind=title] a[href="/ahmad:11133"]').length).toBe(23);
+ expect($('[data-kind=title] .community-reaction-copy a[href="/ahmad:11133"]').length).toBe(23);
 });
 test('edit pencils appear for owned ordinary posts but never microinteractions',async()=>{
  const base={id:12,activity:'post',kind:'article',title:'Article',excerpt:'Public text',author:{handle:'writer',name:'Writer'},url:'/community/@writer/12',activityAt:'2026-01-01'};
@@ -24,8 +24,8 @@ test('revision microinteractions collapse after ten without merging with title a
  const revision={id:2,activity:'post',kind:'note',microinteraction:'revision',hadithTitle:'Revised title',hadithRef:'bukhari:1',hadithUrl:'/bukhari:1',author:{handle:'writer',name:'Writer'},activityAt:'2026-01-01'};
  const items=[...Array(12).fill(revision),{...revision,microinteraction:'title'},revision];
  const $=load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_feed.ejs'),{items}));
- expect($('details').length).toBe(1);
- expect($('details article').length).toBe(2);
+ expect($('details.community-reaction-overflow').length).toBe(1);
+ expect($('details.community-reaction-overflow article').length).toBe(2);
  expect($('[data-kind=revision]').length).toBe(13);
  expect($('[data-kind=revision]').first().text()).toContain('revised Revised title');
  expect($('[data-kind=revision] h2, [data-kind=revision] button').length).toBe(0);
@@ -48,4 +48,10 @@ test('unpublished article cards clearly identify drafts and link to their editor
  expect($('article').text()).toContain('Only you can see this unpublished article.');
  expect($('h2 a').attr('href')).toBe('/community/write?post=1958');
  expect($('[data-community-share-url]').length).toBe(0);
+});
+
+test.each(['title','revision','like'])('server %s menu opens the underlying source',async kind=>{
+ const item={id:12,kind:kind==='like'?'like':'note',activity:kind==='like'?'hadith_like':'post',microinteraction:kind==='like'?undefined:kind,title:'Example',hadithTitle:'Source title',hadithUrl:kind==='like'?undefined:'/muslim:25b',url:kind==='like'?'/muslim:25b':'/community/p/activity',author:{handle:'writer',name:'Writer'},activityAt:'2026-10-31'};
+ const $=load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_card.ejs'),{item}));
+ expect($('.community-secondary-panel a[title="Open"]').attr('href')).toBe('/muslim:25b');
 });

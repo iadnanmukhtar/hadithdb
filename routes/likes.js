@@ -103,23 +103,12 @@ async function sendLikeEmail(payload) {
   if (!transport) return;
   const action = payload.action === 'unlike' ? 'unlike' : 'like';
   const source = await require('../lib/ActivityEmailSource').describe(payload);
-  const subject = `New ${action}: ${source.subject}`;
-  const url = source.url;
-  const body = `
-New ${action} received
-${source.subject}
-${url}
-
-Likes total: ${payload.likes}
-Visitor: IP ${payload.ip || 'unknown'} | UA ${payload.ua || 'unknown'}
-User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider || 'google.com'}${payload.user.email ? ', ' + payload.user.email : ''})` : 'Unknown'}
-`;
+  const message = require('../lib/NotificationEmail').render({ kind: action, actor: payload.user, source });
   try {
-    await transport.sendMail({
+    await require('../lib/NotificationDelivery').send(transport, {
       from: global.settings.smtp.from,
       to: global.settings.smtp.to,
-      subject,
-      text: body
+      ...message
     });
   } catch (e) {
     debug.error(`Like email notification failed: ${e.message}\n${e.stack || ''}`);
@@ -131,19 +120,11 @@ User: ${payload.user ? `${payload.user.name || 'User'} (${payload.user.provider 
 async function sendLikeParticipantEmails(payload, source) {
   const recipients = await getLikeRecipients(payload);
   if (!recipients.length) return;
-  const userLabel = payload.user ? `${payload.user.name || 'Someone'}` : 'Someone';
-  const body = `
-${userLabel} liked:
-${source.subject}
-${source.url}
-
-Likes total: ${payload.likes}
-`;
+  const message = require('../lib/NotificationEmail').render({ kind: 'like', actor: payload.user, source });
   await Promise.all(recipients.map(recipient => sendMail({
     from: global.settings.smtp.from,
     to: recipient.email,
-    subject: `New like: ${source.subject}`,
-    text: body
+    ...message
   }, 'Like participant email notification failed')));
 }
 
@@ -169,7 +150,7 @@ async function getLikeRecipients(payload) {
 
 async function sendMail(message, failureLabel) {
   try {
-    await getMailer().sendMail(message);
+    await require('../lib/NotificationDelivery').send(getMailer(), message);
   } catch (err) {
     debug.error(`${failureLabel}: ${err.message}\n${err.stack || ''}`);
   }

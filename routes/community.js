@@ -27,6 +27,9 @@ api.get('/me', wrap(async (req, res) => {
   const author = await Community.authorFor(signed(req));
   res.json({ author: await Community.profile(author.handle, req.user), moderator: Community.moderator(req.user), admin: await Community.admin(req.user), subscriptions: await Community.subscriptions(req.user) });
 }));
+const EmailPreferences = require('../lib/NotificationPreferences');
+api.get('/email-preferences', wrap(async (req,res) => res.json({preferences:await EmailPreferences.get(signed(req))})));
+api.put('/email-preferences', wrap(async (req,res) => res.json({preferences:await EmailPreferences.save(signed(req), req.body.preferences)})));
 const Alerts = require('../lib/CommunityAlerts');
 api.get('/alerts', wrap(async (req, res) => res.json(await Alerts.unread(signed(req)))));
 api.put('/alerts/read', wrap(async (req, res) => res.json(await Alerts.markRead(signed(req), req.body.through))));
@@ -55,11 +58,13 @@ api.put('/reposts/:source/:id', wrap(async (req,res)=>res.json(await Interaction
 api.get('/discussion/:source/:id', wrap(async (req,res)=>res.json(await Interactions.discussion(req.params.source,req.params.id,req.user,req.query.offset))));
 api.post('/discussion/:source/:id', wrap(async (req,res)=>res.status(201).json(await Interactions.reply(signed(req),req.params.source,req.params.id,req.body))));
 api.get('/contributors', wrap(async (req, res) => res.json({contributors:await Community.contributors(req.user)})));
+api.get('/authors', wrap(async (req, res) => res.json(await Community.searchAuthors(req.query.q || ''))));
 api.get('/blog-feed-state', wrap(async(req,res)=>{
   const ids=String(req.query.ids || '').split(',').map(Number);
   if(!ids.length || ids.length>50 || ids.some(id=>!Number.isSafeInteger(id)||id<1))throw require('http-errors')(400,'Invalid posts.');
   res.json({items:await require('../lib/BlogFeed').states([...new Set(ids)],req.user)});
 }));
+api.put('/visibility/:source/:id', wrap(async (req,res)=>res.json(await require('../lib/CommunityVisibility').set(signed(req),req.params.source,req.params.id,req.body.hidden))));
 api.get('/feed', wrap(async (req, res) => res.json(await Community.feed(req.query, req.user))));
 api.get('/authors/:handle', wrap(async (req, res) => res.json({author:await Community.profile(req.params.handle, signed(req))})));
 api.get('/authors/:handle/relationship', wrap(async (req, res) => res.json(await Community.relationship(signed(req), req.params.handle))));
@@ -94,14 +99,14 @@ api.use((err, req, res, next) => {
   res.status(err.status || 500).json({ error: err.status && err.status < 500 ? err.message : 'Community is temporarily unavailable. Please try again.' });
 });
 function page(res, req, view, extra = {}) {
-  const titles = { everyone: 'Community', following: 'Following', mine: 'My Profile', write: 'Write an article', moderation: 'Community moderation', unsubscribe: 'Email preferences' };
+  const titles = { everyone: 'Community', following: 'Following', mine: 'My Profile', write: 'Write an article', moderation: 'Community moderation', unsubscribe: 'Email preferences', 'email-preferences': 'Email preferences', 'email-unsubscribe': 'Email preferences' };
   const title = extra.post?.shareTitle || extra.post?.title || extra.author?.name || titles[view] || 'Community';
   res.locals.req = req; res.locals.res = res;
   res.set('Cache-Control', 'private, no-store');
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
-    page: { menu: 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
+    page: { menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
-      noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
+      noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe', 'email-preferences', 'email-unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
       ...require('../lib/CommunitySocialMetadata')(view,extra) } });
 }
 router.get('/profile-photo/:handle/:hash', wrap(async (req, res) => {
@@ -118,6 +123,18 @@ router.get('/media/:id',wrap(async(req,res)=>{
     if(req.fresh)return res.status(304).end();
   }
   res.send(image.data);
+}));
+router.get('/email-preferences', (req,res) => page(res,req,'email-preferences'));
+router.get('/email-unsubscribe/:token/:category', wrap(async (req,res) => {
+  await EmailPreferences.tokenRow(req.params.token,req.params.category);
+  res.set('Referrer-Policy','no-referrer');
+  page(res,req,'email-unsubscribe',{emailCategory:EmailPreferences.categories[req.params.category]});
+}));
+router.post('/email-unsubscribe/:token/:category', wrap(async (req,res) => {
+  await EmailPreferences.unsubscribe(req.params.token,req.params.category);
+  res.set('Referrer-Policy','no-referrer');
+  if (req.body['List-Unsubscribe'] === 'One-Click') return res.sendStatus(200);
+  page(res,req,'email-unsubscribe',{emailCategory:EmailPreferences.categories[req.params.category],unsubscribed:true});
 }));
 router.get('/unsubscribe/:token', (req, res) => {
   if (!/^[a-f0-9]{64}$/.test(req.params.token)) return res.status(400).send('Invalid unsubscribe link.');

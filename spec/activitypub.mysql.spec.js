@@ -17,6 +17,7 @@ const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : descri
 suite('isolated ActivityPub publication and federation',()=>{
   const prefix = `ap_test_${process.pid}_${Date.now()}_`;
   const schemas = {
+    community_hidden_activity:'source VARCHAR(32),source_id BIGINT,PRIMARY KEY(source,source_id)',
     community_authors:'uid VARCHAR(128) PRIMARY KEY,handle VARCHAR(40),name VARCHAR(120),custom_name INT DEFAULT 1,profile_visibility VARCHAR(7) DEFAULT \'public\'',
     community_posts:'id BIGINT PRIMARY KEY,author_uid VARCHAR(128),status VARCHAR(16),public_title TEXT,public_subtitle TEXT,public_markdown TEXT,public_cover_url TEXT,published_at DATETIME(3)',
     community_blog_imports:'post_id BIGINT,slug VARCHAR(255)',

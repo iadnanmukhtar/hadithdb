@@ -1,0 +1,6 @@
+<% if (item.hiddenFromOthers || item.status === 'private') { %><span class="community-hidden-indicator" role="img" title="Hidden from others" aria-label="Hidden from others"><i class="bi bi-eye-slash" aria-hidden="true"></i></span><% } %>
+<details class="community-secondary-menu"><summary class="community-like" title="More actions" aria-label="More actions"><i class="bi bi-three-dots" aria-hidden="true"></i></summary><div class="community-secondary-panel">
+<% const isMicro = ['title','revision'].includes(item.microinteraction) || item.kind === 'like'; const openLabel = 'Open'; %>
+<a href="<%= isMicro ? (item.hadithUrl || item.url) : entryHref %>" title="<%= openLabel %>" aria-label="<%= openLabel %>"><i class="bi bi-arrow-right" aria-hidden="true"></i><%= openLabel %></a>
+<% if (item.canEdit && !['title','revision'].includes(item.microinteraction)) { %><a class="community-edit-post" data-edit-kind="<%= item.kind %>" data-edit-id="<%= item.id %>" href="<%= item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=' %><%= item.id %>" title="Edit post" aria-label="Edit post"><i class="bi bi-pencil" aria-hidden="true"></i>Edit</a><% } %>
+</div></details>

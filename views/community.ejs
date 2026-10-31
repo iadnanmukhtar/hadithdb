@@ -5,10 +5,12 @@
 <style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 </head><body class="community-page">
 <%- include('sub-views/header.ejs', { site, page }); %>
-<main class="<%= view === 'post' ? 'container-fluid community-article-layout'  : 'container' %> py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
+<% if (view === 'email-preferences') { %><div class="container col-lg-8 mx-auto"><% } %>
+<main class="<%= view === 'email-preferences' ? 'search-results settings-page' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
   <% if (view !== 'post' || post.title?.trim()) { %>
-  <div class="community-heading">
-    <div><h1 id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
+  <div class="<%= view === 'email-preferences' ? 'settings-page-heading mb-3' : 'community-heading' %>">
+    <% if (view === 'email-preferences') { %><a href="/settings#settings-email-section" class="btn btn-link btn-sm p-0 mb-3"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to My Settings</a><% } %>
+    <div><h1 class="<%= view === 'email-preferences' ? 'fs-4 mb-1' : '' %>" id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
     <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your posts, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Posts, articles, and discussions from the community.' %></p><% } %>
     </div>
   </div>
@@ -69,7 +71,7 @@
     </section>
     <% } %>
     <div class="community-feed-toolbar"><h2><%= view === 'mine' ? 'Your activity' : view === 'following' ? 'From authors you follow' : view === 'author' ? 'Writing & conversations' : 'In the community' %></h2>
-    <label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><% if (view === 'mine') { %><option value="draft">Drafts</option><% } %><option value="article">Articles</option><option value="note">Posts</option><option value="comment">Comments</option><option value="like">Likes</option></select></div>
+    <label class="visually-hidden" for="community-filter">Filter activity</label><select class="form-select form-select-sm community-filter" id="community-filter"><option value="all">All activity</option><% if (view === 'mine') { %><option value="draft">Drafts</option><option value="hidden">Hidden</option><% } %><option value="article">Articles</option><option value="note">Posts</option><option value="comment">Comments</option><option value="like">Likes</option></select></div>
     <div id="community-feed" class="community-feed"><% if (initial) { %><%- include('sub-views/community_feed.ejs', { items: initial.items }); %><% if (!initial.items.length) { %><p class="community-empty">No public posts yet. Start a reflection or share an article.</p><% } } %></div>
     <div id="community-feed-sentinel" class="community-feed-sentinel" aria-hidden="true"></div>
     <p id="community-feed-status" class="small text-muted" role="status" aria-live="polite"></p>
@@ -160,9 +162,47 @@
   </div><%- include('sub-views/community_rail.ejs'); %></div>
   <% } %>
   <% if (view === 'moderation') { %><p class="text-muted">Review first publications and reported content. Approval allows the author’s future posts to publish immediately.</p><div id="community-moderation"></div><% } %>
-  <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
+  <% if (view === 'email-preferences') { %>
+  <p class="text-muted small mb-3">Choose which emails you receive and manage your author subscriptions.</p>
+  <form id="community-email-form" class="settings-page" hidden>
+    <section>
+      <div class="d-flex align-items-center justify-content-between gap-3 mb-3">
+        <div><h2 class="fs-5 fw-bold mb-1">Email notifications</h2><p class="text-muted small mb-0">Turn email notifications on or off.</p></div>
+        <div class="form-check form-switch m-0"><input id="community-email-enabled" class="form-check-input" type="checkbox" role="switch" name="enabled" aria-label="Receive email notifications"></div>
+      </div>
+      <fieldset id="community-email-categories" class="border-top pt-3">
+        <legend class="visually-hidden">Email me about</legend>
+        <% for (const [key,label] of Object.entries({likes:'Likes',reflections:'Reflections and comments',replies:'Replies',reactions:'Reactions',articles:'Articles from authors I follow'})) { %>
+        <div class="d-flex align-items-center justify-content-between gap-3 py-2">
+          <label class="form-check-label" for="community-email-<%= key %>"><%= label %></label>
+          <div class="form-check form-switch m-0"><input id="community-email-<%= key %>" class="form-check-input" type="checkbox" role="switch" name="<%= key %>"></div>
+        </div>
+        <% } %>
+      </fieldset>
+      <div class="d-flex flex-wrap align-items-center gap-2 border-top pt-3 mt-3">
+        <button type="submit" class="btn btn-primary btn-sm">Save preferences</button>
+        <button id="community-email-stop" type="button" class="btn btn-outline-secondary btn-sm">Unsubscribe from all emails</button>
+      </div>
+      <p id="community-email-result" class="small text-muted mt-2 mb-0" role="status" aria-live="polite"></p>
+    </section>
+    <section>
+      <div class="mb-3"><h2 class="fs-5 fw-bold mb-1">Author subscriptions</h2>
+      <p class="small text-muted mb-0">Choose whose articles arrive by email. Enable article notifications above to receive them.</p></div>
+      <div id="community-email-authors" class="d-flex flex-column gap-2"></div>
+    </section>
+  </form>
+  <% } %>
+  <% if (view === 'email-unsubscribe') { %>
+  <section class="community-card">
+    <% if (unsubscribed) { %><p>You’re unsubscribed from <%= emailCategory.toLowerCase() %> emails.</p>
+    <% } else { %><p>Stop receiving <%= emailCategory.toLowerCase() %> emails?</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe</button></form><% } %>
+    <p class="mt-3 mb-0"><a href="/community/email-preferences">Subscribe again or manage email preferences</a></p>
+  </section>
+  <% } %>
+  <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><p class="mt-3"><a href="/community/email-preferences">Subscribe again or manage email preferences</a></p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
   <dialog id="community-media-dialog" class="community-media-dialog" aria-labelledby="community-media-dialog-title"><form id="community-media-link-form"><h2 id="community-media-dialog-title">Add a link</h2><label for="community-media-url">Webpage or video URL</label><input id="community-media-url" class="form-control" type="url" required placeholder="https://…"><p class="small text-muted">YouTube, Vimeo, direct video links, and webpages.</p><div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" id="community-media-cancel">Cancel</button><button type="submit" class="btn btn-sm btn-primary">Add preview</button></div><p id="community-media-error" class="small text-muted" role="status"></p></form></dialog>
 </main>
+<% if (view === 'email-preferences') { %></div><% } %>
 <% if (view === 'write') { %>
 <div class="modal fade" id="community-markdown-help-modal" tabindex="-1" aria-labelledby="community-markdown-help-title" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
@@ -174,7 +214,7 @@
 <% } %>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
 <%- include('sub-views/footer.ejs', { site, page }); %>
-<% if (view !== 'unsubscribe') { %>
+<% if (!['unsubscribe','email-unsubscribe'].includes(view)) { %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>
 <script src="/static/js/community-bio.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-profile-photo.js?v=<%= utils.scriptAssetVersion() %>"></script>

@@ -1,4 +1,5 @@
 <div class="community-rail-slot"><aside class="community-aside" aria-label="Community contributors">
+    <button id="community-user-search-open" class="community-user-search-open page-content-filter input-group command-search-filter-find" type="button" aria-haspopup="dialog" aria-controls="community-user-search-dialog"><span class="input-group-text bi bi-search" aria-hidden="true"></span><span class="form-control">Search Contributors</span></button>
     <section class="community-contributors-section" aria-labelledby="community-contributors-heading">
       <h2 id="community-contributors-heading" class="hadith-heading-toc-title">Top contributors</h2>
       <p class="community-rail-caption">Public posts, reflections, and comments</p>
@@ -6,4 +7,11 @@
     </section>
     <a class="community-notebook-link" href="/notebook"><i class="bi bi-journal-text" aria-hidden="true"></i><span><strong>My Notebook</strong><small>Your private reading notes</small></span><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a>
     <p class="community-sidebar-footnote">Writing here reflects the author’s perspective. Community posts are not scholarly verification.</p>
-  </aside></div>
+  </aside>
+  <dialog id="community-user-search-dialog" class="community-user-search-dialog" aria-labelledby="community-user-search-title">
+    <div class="community-user-search-heading"><h2 id="community-user-search-title">Search Contributors</h2><button id="community-user-search-close" class="btn-close" type="button" aria-label="Close search"></button></div>
+    <form id="community-user-search-form" role="search"><label class="visually-hidden" for="community-user-search-input">Name or handle</label><input id="community-user-search-input" class="form-control" type="search" placeholder="Search by name or @handle" autocomplete="off" maxlength="120" dir="auto" autofocus></form>
+    <p id="community-user-search-status" class="community-user-search-status" role="status">Find people by their name or handle.</p>
+    <div id="community-user-search-results" aria-label="People"></div>
+  </dialog>
+</div>
