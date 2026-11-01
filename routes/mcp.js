@@ -13,7 +13,6 @@ const router = express.Router();
 const MAX_MCP_REQUEST_BYTES = 64 * 1024;
 const DEFAULT_MCP_RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const DEFAULT_MCP_RATE_LIMIT_PER_IP = 120;
-const DEFAULT_MCP_LOG_RETENTION_DAYS = 30;
 const DEFAULT_ALLOWED_ORIGINS = Object.freeze([
   'https://chatgpt.com',
   'https://chat.openai.com',
@@ -70,10 +69,6 @@ function allowedOrigins() {
   return new Set([...DEFAULT_ALLOWED_ORIGINS, ...configured, siteOrigin].filter(Boolean));
 }
 
-function logRetentionDays() {
-  return envPositiveInteger('MCP_LOG_RETENTION_DAYS', DEFAULT_MCP_LOG_RETENTION_DAYS);
-}
-
 function auditableRpcMethod(req) {
   const method = req.body && typeof req.body.method === 'string' ? req.body.method : 'http';
   return AUDITABLE_RPC_METHODS.has(method) ? method : 'unknown';
@@ -83,6 +78,26 @@ function auditableToolName(req) {
   if (auditableRpcMethod(req) !== 'tools/call' || !req.body.params || typeof req.body.params.name !== 'string')
     return '-';
   return HadithMcp.TOOLS.some(tool => tool.name === req.body.params.name) ? req.body.params.name : 'unknown';
+}
+
+// Keep the useful search/lookup inputs, without dumping payloads or credentials.
+function requestSearchTerm(req) {
+  if (auditableToolName(req) === '-' || auditableToolName(req) === 'unknown')
+    return '-';
+  const args = req.body.params.arguments || {};
+  const fields = ['query', 'queries', 'question', 'concepts', 'reference', 'hadith_references',
+    'surah', 'ayah', 'ayah_from', 'ayah_to', 'page', 'section', 'subsection',
+    'tafsir', 'source', 'identifier', 'id'];
+  const terms = fields.flatMap(key => {
+    const value = args[key];
+    if (typeof value === 'string' || typeof value === 'number')
+      return [`${key}=${value}`];
+    if (Array.isArray(value))
+      return [`${key}=${value.filter(item => typeof item === 'string' || typeof item === 'number').join(', ')}`];
+    return [];
+  });
+  // JSON quoting keeps arbitrary search text on a single log line.
+  return terms.join('; ').slice(0, 1000) || '-';
 }
 
 function protocolError(req, res, message) {
@@ -111,7 +126,16 @@ router.use(function identifyAndAuditMcpRequest(req, res, next) {
     const rpcMethod = auditableRpcMethod(req);
     const toolName = auditableToolName(req);
     const outcome = res.locals.mcpOutcome || (res.statusCode < 400 ? 'success' : 'http_error');
-    debug.info(`MCP request request_id=${req.mcpRequestId} method=${rpcMethod} tool=${toolName || '-'} status=${res.statusCode} latency_ms=${latencyMs.toFixed(1)} outcome=${outcome} retention_days=${logRetentionDays()}`);
+    const searchTerm = requestSearchTerm(req);
+    const details = [
+      `Request ${req.method} /mcp`,
+      rpcMethod === 'unknown' ? '' : rpcMethod,
+      toolName === '-' ? '' : `tool=${toolName}`,
+      searchTerm === '-' ? '' : `search=${JSON.stringify(searchTerm)}`,
+      `${latencyMs.toFixed(1)}ms`,
+      outcome === 'success' ? 'success' : `failed (${outcome})`
+    ].filter(Boolean);
+    debug.info(details.join(' | '));
   });
   next();
 });
@@ -179,11 +203,6 @@ router.post('/', mcpRequestLimiter, async function (req, res) {
     const messageText = err && err.message ? err.message : 'MCP request failed.';
     const invalidParams = ['tools/call', 'skills/list', 'skills/get', 'resources/read'].includes(message.method);
     res.locals.mcpOutcome = invalidParams ? 'invalid_params' : 'internal_error';
-    const logMethod = AUDITABLE_RPC_METHODS.has(message.method) ? message.method : 'unknown';
-    if (invalidParams)
-      debug(`MCP request rejected request_id=${req.mcpRequestId} method=${logMethod}`);
-    else
-      debug.error(`MCP request failed request_id=${req.mcpRequestId} method=${logMethod}`);
     return res.status(200).json(jsonRpcError(
       message.id,
       invalidParams ? JSON_RPC_ERRORS.INVALID_PARAMS : JSON_RPC_ERRORS.INTERNAL_ERROR,

@@ -275,7 +275,7 @@ describe('public MCP Streamable HTTP route', () => {
     expect(call).toHaveBeenCalledWith('lookup_quran_ayah', { surah: 2, ayah: 255 }, expect.objectContaining({ req: expect.any(Object) }));
   });
 
-  test('logs redacted request metadata with request IDs, status, latency, and retention', async () => {
+  test('logs a concise request summary with lookup terms and completion time', async () => {
     const originalLog = Debug.log;
     const log = jest.fn();
     Debug.log = log;
@@ -298,10 +298,41 @@ describe('public MCP Streamable HTTP route', () => {
       expect(response.status).toBe(200);
       expect(response.headers.get('x-request-id')).toBe('mcp-test-request-123');
       const logs = log.mock.calls.flat().join('\n');
-      expect(logs).toMatch(/request_id=mcp-test-request-123 method=tools\/call tool=lookup_tafsir status=200 latency_ms=[0-9.]+ outcome=success retention_days=30/);
+      expect(logs).toMatch(/Request POST \/mcp \| tools\/call \| tool=lookup_tafsir \| search="surah=5; ayah=47; tafsir=ibn-kathir" \| [0-9.]+ms \| success/);
+      expect(log.mock.calls).toHaveLength(1);
       expect(logs).not.toContain('203.0.113.27');
-      expect(logs).not.toContain('ibn-kathir');
+      expect(logs).not.toContain('retention_days');
+      expect(logs).not.toContain('request_id');
+      expect(logs).not.toContain('status=');
       expect(logs).not.toContain('arguments');
+    } finally {
+      Debug.log = originalLog;
+    }
+  });
+
+  test.each([false, true])('logs search text once on completion (tool failure: %s)', async failure => {
+    const originalLog = Debug.log;
+    const log = jest.fn();
+    Debug.log = log;
+    const call = jest.spyOn(HadithMcp, 'callTool');
+    if (failure)
+      call.mockRejectedValueOnce(new Error('Search unavailable'));
+    else
+      call.mockResolvedValueOnce({ content: [] });
+    const query = 'الصبر "patience"\nhope';
+    try {
+      const response = await request('POST', {
+        jsonrpc: '2.0', id: 'search-log', method: 'tools/call',
+        params: { name: 'search_hadith', arguments: { query } }
+      });
+      await response.json();
+      const logs = log.mock.calls.flat().join('');
+      expect(log.mock.calls).toHaveLength(1);
+      expect(logs).toContain('tool=search_hadith');
+      expect(logs).toContain(`search=${JSON.stringify(`query=${query}`)}`);
+      expect(logs).toMatch(/\| [0-9.]+ms \|/);
+      expect(logs).toContain(failure ? 'failed (tool_error)' : 'success');
+      expect(logs).not.toContain('\nhope');
     } finally {
       Debug.log = originalLog;
     }
