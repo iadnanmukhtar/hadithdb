@@ -52,10 +52,29 @@
   let previewSignature = null, dirty = false, replyId = null, loadingFeed = false, feedEpoch = 0, notebookOffset = 0, notebookRequest = 0, savingPost = false, changingRelation = false;
   const status = message => { $('status').textContent = message; };
   function activityDate(item) {
+    const elapsed = Date.now() - new Date(item.activityAt).getTime();
+    if (!item.publicationDate && elapsed >= 0 && elapsed < 86400000) {
+      return elapsed < 3600000 ? Math.max(1, Math.floor(elapsed / 60000)) + 'm ago' : Math.floor(elapsed / 3600000) + 'h ago';
+    }
     return item.publicationDate
       ? new Date(item.publicationDate+'T12:00:00Z').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'})
       : new Date(item.activityAt).toLocaleDateString(undefined,{month:'short',day:'numeric'});
   }
+  function refreshActivityTimes() {
+    root.querySelectorAll('time[data-community-time]').forEach(time => {
+      const value = time.dateTime;
+      if (!value || Number.isNaN(new Date(value).getTime())) return;
+      const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(value);
+      time.textContent = activityDate({ activityAt: value, publicationDate: dateOnly ? value : null });
+      if (!dateOnly) time.title = new Date(value).toLocaleString();
+    });
+  }
+  // Hydrate server-rendered labels using this viewer's system clock and timezone.
+  refreshActivityTimes();
+  window.setInterval(refreshActivityTimes, 60000);
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshActivityTimes();
+  });
   function node(tag, text, className) { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (className) el.className = className; return el; }
   function link(label, href, className) { const el = node('a', label, className); el.href = href; return el; }
   function button(label, work, className = 'btn btn-sm btn-outline-secondary') {
@@ -78,6 +97,15 @@
     if (!response.ok) throw Object.assign(new Error(result.error || 'Unable to complete this request.'), {status:response.status});
     return result;
   }
+  function configureEditorPreviews(){
+    for(const id of ['markdown','quick-text','comment-text']) {
+      const editor=$(id);
+      window.CommunityShortEditor?.setPreviewRenderer(editor,async markdown =>
+        (await api('/preview','POST',{markdown,kind:id==='markdown'?'article':'note'})).html);
+    }
+  }
+  if(window.CommunityShortEditor)configureEditorPreviews();
+  else document.addEventListener('DOMContentLoaded',configureEditorPreviews,{once:true});
   function installReferenceExpansion(editor, available) {
     if (!editor) return;
     let revision = 0, composing = false;
@@ -245,7 +273,7 @@
     return ()=>togglePanel(true);
   }
   function microType(item) { return ['title','revision'].includes(item.microinteraction) ? item.microinteraction : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
-  function editPostLink(item) { const edit = link('', (item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=') + item.id, 'community-entry-secondary community-edit-post'); edit.dataset.editKind=item.kind;edit.dataset.editId=item.id;edit.title = item.kind === 'article' ? 'Edit article' : 'Edit post'; edit.setAttribute('aria-label', edit.title); edit.append(icon('pencil')); return edit; }
+  function editPostLink(item) { const edit = link('', (item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=') + item.id, 'community-entry-secondary community-edit-post'); edit.dataset.editKind=item.kind;edit.dataset.editId=item.id;edit.title = 'Edit'; edit.setAttribute('aria-label', edit.title); edit.append(icon('pencil')); return edit; }
   function openItemLink(href) {
     const control=link('',href,'community-entry-secondary');
     control.title='Open';control.setAttribute('aria-label','Open');
@@ -312,7 +340,7 @@
       const target = link(kind !== 'like' ? item.hadithTitle : (item.title || 'a post').replace(/^Liked\s+/i, ''), kind !== 'like' ? item.hadithUrl : href); target.dir = 'auto';
       copy.append(author, document.createTextNode(kind === 'revision' ? ' revised ' : kind === 'title' ? ' titled ' : ' liked '), target);
       if (item.sourceRef || (kind !== 'like' && item.hadithRef)) copy.append(document.createTextNode(' · ' + (item.sourceRef || item.hadithRef)));
-      if (item.activityAt) { const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
+      if (item.activityAt) { const time = node('time', activityDate(item)); time.dataset.communityTime = ''; time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); copy.append(document.createTextNode(' · '), time); }
       article.append(avatar, copy);
       if (hiddenIndicator) article.append(hiddenIndicator);
       article.append(secondary.menu);
@@ -321,7 +349,7 @@
     const identity = node('div', undefined, 'community-entry-identity');
     const authorLink = link(item.author.name, '/community/@' + item.author.handle, 'community-author'); authorLink.dir = 'auto'; identity.append(authorLink);
     const subline = node('div', undefined, 'community-entry-subline'); subline.append(node('span', kind === 'like' ? 'Liked' : kind === 'comment' ? 'In conversation' : kind === 'article' ? 'Article' : 'Post'));
-    if (item.activityAt) { const dot = node('span', '·'); dot.setAttribute('aria-hidden', 'true'); const time = node('time', activityDate(item)); time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); subline.append(dot, time); }
+    if (item.activityAt) { const dot = node('span', '·'); dot.setAttribute('aria-hidden', 'true'); const time = node('time', activityDate(item)); time.dataset.communityTime = ''; time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); subline.append(dot, time); }
     identity.append(subline); meta.append(avatar, identity);
     if (privatePost && item.status !== 'private') meta.append(node('span', item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : item.status === 'private' ? 'Hidden from others' : 'Hidden · Not published', 'community-entry-state'));
     if(item.repostedBy) { const credit=node('div',undefined,'community-repost-credit');credit.append(icon('repeat'),document.createTextNode(' Reposted by '),link(item.repostedBy.name,'/community/@'+item.repostedBy.handle));article.append(credit); }

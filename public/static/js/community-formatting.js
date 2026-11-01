@@ -9,13 +9,9 @@
   function apply(action) {
     if (editor.disabled || editor.readOnly) return;
     const surface=window.CommunityShortEditor?.get(editor);
-    if(['divider','footnote','subscript','superscript','wiki'].includes(action) && surface){surface.format(action);return;}
-    if(action==='style' && surface){surface.format('style',style.value);return;}
-    if(surface?.mode==='rich') {
-      const native={bold:'bold',italic:'italic',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'formatBlock',link:'link',parallel:'parallel',highlight:'highlight',center:'center'};
-      if(native[action]) {surface.format(native[action],action==='quote'?'blockquote':action==='style'?(style.value==='0'?'p':'h'+style.value):undefined);return;}
-      // Preserve extended underline syntax through the existing source commands.
-      surface.toSource();
+    if(surface) {
+      const commands={bold:'bold',italic:'italic',underline:'underline',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'style',link:'link',parallel:'parallel',highlight:'highlight',center:'center',clear:'removeFormat',divider:'divider',footnote:'footnote',subscript:'subscript',superscript:'superscript',wiki:'wiki'};
+      if(commands[action]) {surface.format(commands[action],action==='quote'?'blockquote':action==='style'?style.value:undefined);return;}
     }
     let start=editor.selectionStart, end=editor.selectionEnd, value=editor.value;
     let selected=value.slice(start,end), edit;

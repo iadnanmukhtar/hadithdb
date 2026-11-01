@@ -23,7 +23,7 @@ afterAll(async()=>{await browser?.close();await new Promise(r=>server.close(r));
 function render(file,data){
  const filename=path.resolve('views',file);
  return ejs.render(fs.readFileSync(filename,'utf8'),{global:{settings:{site:{},blog:{}}},utils:{scriptAssetVersion:()=> 'test',staticAssetUrl:x=>x},page:{},...data,
- include:(name,locals)=>name.endsWith('blog_cover.ejs')||name.endsWith('community_post_actions.ejs')?ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),locals):''},{filename});
+ include:(name,locals)=>name.endsWith('blog_cover.ejs')||name.endsWith('community_post_actions.ejs')?ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),locals,{filename:path.resolve('views',name)}):''},{filename});
 }
 function content(kind){
  if(kind==='note')return `<article class="notebook-markdown">${Notebook.render(markdown)}</article>`;

@@ -5,6 +5,16 @@
   if (!dialog) return;
   const $ = id => document.getElementById('community-share-' + id);
   let source = null, revision = 0, authRevision = 0, busy = false, waitingForSignIn = false, owner = null;
+  window.CommunityShortEditor?.setPreviewRenderer($('text'),async markdown=>{
+    const own=authRevision,token=await window.hadithAuth?.getToken();
+    if(!token || own!==authRevision)throw Error('Sign in to preview advanced formatting.');
+    const response=await fetch(quranApiPath('/community/preview'),{method:'POST',credentials:'same-origin',
+      headers:{'Content-Type':'application/json',Authorization:'Bearer '+token},body:JSON.stringify({markdown,kind:'note'})});
+    if(!response.ok || own!==authRevision)throw Error('Preview unavailable.');
+    const result=await response.json();
+    if(own!==authRevision)throw Error('Account changed.');
+    return result.html;
+  });
   function element(tag, text, className) {
     const node = document.createElement(tag);
     if (text) node.textContent = text;

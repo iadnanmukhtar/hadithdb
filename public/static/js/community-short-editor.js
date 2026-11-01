@@ -3,6 +3,7 @@
   // Keep Markdown as the storage contract. Unsupported notebook constructs stay
   // in source mode; never round-trip them through a lossy rich-text conversion.
   const instances = new WeakMap();
+  let formattingMenuId=0;
   function safeLink(value) {
     try { const u = new URL(value, location.origin); return ['http:', 'https:', 'mailto:'].includes(u.protocol) ? value : null; } catch (_) { return null; }
   }
@@ -221,7 +222,7 @@
       if (el.nodeType === 3) return escape(el.nodeValue.replace(/\u00a0/g, ' '));
       if (el.nodeType !== 1) return '';
       if(el.dataset.wikiTarget !== undefined)return el.textContent===el.dataset.wikiLabel && el.dataset.wikiRaw ? el.dataset.wikiRaw : '[['+el.dataset.wikiTarget+'|'+el.textContent+']]';
-      if(el.dataset.notebookRaw !== undefined){const index=preserved.push(el.dataset.notebookRaw)-1;return rawPrefix+index+'END\n\n';}
+      if(el.dataset.notebookRaw !== undefined){const index=preserved.push(el.dataset.notebookRaw.trimEnd())-1;return rawPrefix+index+'END\n\n';}
       if(el.classList.contains('community-footnote-label'))return '';
       if(el.dataset.footnoteRef)return '[^'+el.dataset.footnoteRef+']';
       if(el.dataset.footnote){
@@ -269,10 +270,156 @@
     preserved.forEach((raw,index) => { result=result.replace(rawPrefix+index+'END', () => raw); });
     return result;
   }
+  const previewRenderers=new WeakMap(),previewCaches=new WeakMap();
+  function renderAdvanced(markdown, source) {
+    const root = document.createElement('div');
+    const cache=previewCaches.get(source) || new Map();previewCaches.set(source,cache);
+    // Reference definitions and footnotes depend on the full document context.
+    const dependent = /\[\^|^ {0,3}\[[^\]]+\]:/m.test(markdown);
+    const tokens = dependent ? [{raw: markdown}] : window.marked.lexer(markdown);
+    for (const token of tokens) {
+      if (token.type === 'space') continue;
+      const formatted = !dependent && render(token.raw);
+      if (formatted) { root.append(...formatted.childNodes); continue; }
+      const block = document.createElement('div');
+      block.dataset.notebookRaw = token.raw;
+      block.contentEditable = 'false';
+      block.title = 'Use Markdown to edit this advanced formatting';
+      block.className = 'notebook-advanced-block';
+      block.textContent = 'Loading formatted content…';
+      root.append(block);
+      if (previewRenderers.has(source)) {
+        let result = cache.get(token.raw);
+        if (!result) {
+          result = Promise.resolve().then(() => previewRenderers.get(source)(token.raw));
+          if (cache.size >= 100) cache.clear();
+          cache.set(token.raw, result);
+        }
+        result.then(html => { block.innerHTML = html; }).catch(() => {
+          cache.delete(token.raw);
+          block.textContent = 'Preview unavailable. Use Markdown to edit this block.';
+        });
+      } else block.textContent='Use Markdown to edit this advanced block.';
+    }
+    return root;
+  }
+  function caretOffset(editor, surface, event, sourceCaret, point) {
+    const locatingPreview = sourceCaret !== undefined;
+    let lastRange = null;
+    const renderedRange = (part, index) => {
+      const range = document.createRange();
+      range.setStart(part, index); range.collapse(true);
+      return range;
+    };
+    let node, offset = 0;
+    if (!locatingPreview) {
+      const caret = event ? document.caretPositionFromPoint?.(event.clientX, event.clientY) : null;
+      const range = caret ? null : event ? document.caretRangeFromPoint?.(event.clientX, event.clientY) : window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
+      node = point?.node || caret?.offsetNode || range?.startContainer;
+      offset = point ? point.offset : caret ? caret.offset : range?.startOffset;
+      if (!node || node.nodeType !== Node.TEXT_NODE || !surface.contains(node)) {
+        if (!event) return 0;
+        // Paragraph margins, blank space and some browser hit tests return an
+        // element (or nothing). Resolve the nearest rendered text, never note end.
+        const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
+        const probe = document.createRange();
+        let part, nearest = null, best = Infinity;
+        const distance = rect => {
+          const dy = Math.max(rect.top - event.clientY, event.clientY - rect.bottom, 0);
+          const dx = Math.max(rect.left - event.clientX, event.clientX - rect.right, 0);
+          return dy * 100000 + dx;
+        };
+        while ((part = walker.nextNode())) {
+          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref')) continue;
+          probe.selectNodeContents(part);
+          for (const rect of probe.getClientRects()) {
+            if (!rect.height) continue;
+            const score = distance(rect);
+            if (score < best) { best = score; nearest = part; }
+          }
+        }
+        if (!nearest) return 0;
+        node = nearest; offset = 0; best = Infinity;
+        // Collapsed ranges give visual caret positions even in right-to-left text.
+        for (let i = 0; i <= node.length; i++) {
+          if (i && i < node.length && /[\uDC00-\uDFFF]/.test(node.nodeValue[i])) continue;
+          probe.setStart(node, i); probe.collapse(true);
+          for (const rect of probe.getClientRects()) {
+            if (!rect.height) continue;
+            const score = distance(rect);
+            if (score < best) { best = score; offset = i; }
+          }
+        }
+      }
+    }
+
+    // Decode source escapes/entities while retaining UTF-16 textarea offsets.
+    const source = editor.value, positions = [], decoder = document.createElement('textarea');
+    let text = '';
+    for (let i = 0; i < source.length;) {
+      const start = i;
+      let value = source[i++];
+      if (value.charCodeAt(0) === 92 && /[!-/:-@[-`{-~]/.test(source[i] || '')) {
+        value = source[i++];
+      } else if (value === '&') {
+        const entity = source.slice(start).match(/^&(?:#[xX][\da-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]+);/);
+        if (entity) { decoder.innerHTML = entity[0]; value = decoder.value; i = start + entity[0].length; }
+      }
+      for (let j = 0; j < value.length; j++) positions.push(start);
+      text += value;
+    }
+    positions.push(source.length);
+    const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
+    let cursor = 0, part;
+    while ((part = walker.nextNode())) {
+      if (part.parentElement.closest('button, .footnote-backref')) continue;
+      // Arabic underline adds a display-only Unicode combining overline.
+      const overlined = part.parentElement.closest('[data-notebook-overline]');
+      const value = overlined ? part.nodeValue.replace(/\u0305/g, '') : part.nodeValue;
+      const sourceOffset = overlined ? part.nodeValue.slice(0, offset).replace(/\u0305/g, '').length : offset;
+      if (!value.trim()) {
+        if (part === node) return positions[cursor];
+        continue;
+      }
+      // Walking in document order disambiguates repeated words and paragraphs.
+      let start = text.indexOf(value, cursor);
+      if (start < 0) {
+        // Inline code and Markdown hard breaks can normalize whitespace.
+        let matched = cursor;
+        for (let j = 0; j < value.length; j++) {
+          const next = text.indexOf(value[j], matched);
+          if (next < 0) break;
+          if (part === node && j === sourceOffset) return positions[next];
+          matched = next + 1;
+        }
+        if (part === node) return positions[matched];
+        continue;
+      }
+      if (locatingPreview) {
+        if (sourceCaret <= positions[start + value.length]) {
+          let index = 0;
+          while (index < value.length && positions[start + index] < sourceCaret) index++;
+          if (overlined) {
+            let visible = 0, rendered = 0;
+            while (rendered < part.length && visible < index) {
+              if (part.nodeValue[rendered++] !== '\u0305') visible++;
+            }
+            index = rendered;
+          }
+          return renderedRange(part, index);
+        }
+        lastRange = renderedRange(part, part.length);
+      }
+      if (part === node) return positions[start + Math.min(sourceOffset, value.length)];
+      cursor = start + value.length;
+    }
+    // Whitespace outside text nodes uses the nearest preceding source position.
+    return locatingPreview ? lastRange : positions[cursor];
+  }
   function install(source) {
     if (!source || instances.has(source) || !window.marked) return;
     const isArticle=source.dataset.articleEditor!==undefined;
-    const renderContent = text => render(text) || (source.id==='notebook-editor' ? window.NotebookRichEditor?.renderAdvanced(text) : null);
+    const renderContent = text => render(text) || (previewRenderers.has(source) ? renderAdvanced(text,source) : null);
     function toFormatted() { mode='rich'; hydrate(); }
     const shell=document.createElement('div'); shell.className='community-short-editor'+(source.dataset.articleEditor!==undefined?' community-article-surface':'');
     const tools=document.createElement('div'); tools.className='community-short-tools';
@@ -335,9 +482,19 @@
     function toSource() {
       if(mode!=='rich')return;
       const clone=rich.cloneNode(true), range=savedRange;
+      // Async block previews may change HTML without changing authored text.
+      // Switching modes must not normalize that untouched Markdown.
+      if(range && range.startContainer.nodeType===3 && range.endContainer.nodeType===3 && serialize(rich)===lastMarkdown){
+        const start=caretOffset(source,rich,null,undefined,{node:range.startContainer,offset:range.startOffset});
+        const end=caretOffset(source,rich,null,undefined,{node:range.endContainer,offset:range.endOffset});
+        const selected=window.getSelection(),backward=selected?.focusNode===range.startContainer && selected.focusOffset===range.startOffset;
+        mode='source';hydrate();source.setSelectionRange(start,end,backward?'backward':'forward');return;
+      }
+
       const begin='COMMUNITYSTART'+Date.now()+'MARK',end='COMMUNITYEND'+Date.now()+'MARK';
       function map(node) {const path=[];while(node!==rich){path.unshift(Array.prototype.indexOf.call(node.parentNode.childNodes,node));node=node.parentNode;}let target=clone;for(const i of path)target=target.childNodes[i];return target;}
-      if(range && !rich.querySelector('[data-notebook-raw]') && rich.contains(range.startContainer) && rich.contains(range.endContainer)) {
+      const protectedPoint=node=>(node.nodeType===1?node:node.parentElement)?.closest('[data-notebook-raw]');
+      if(range && !protectedPoint(range.startContainer) && !protectedPoint(range.endContainer) && rich.contains(range.startContainer) && rich.contains(range.endContainer)) {
         const r=document.createRange();r.setStart(map(range.startContainer),range.startOffset);r.setEnd(map(range.endContainer),range.endOffset);
         const tail=r.cloneRange();tail.collapse(false);tail.insertNode(document.createTextNode(end));
         r.collapse(true);r.insertNode(document.createTextNode(begin));
@@ -353,7 +510,15 @@
       const rect=window.NotebookWiki?.caretRect(source,active);
       const viewportY=rect ? rect.top-source.getBoundingClientRect().top : source.clientHeight/2;
       mode='rich';hydrate();source.focus({preventScroll:true});
-      source.dispatchEvent(new CustomEvent('formattedEditorSelection',{detail:{start,end,direction,viewportY}}));
+      const first=caretOffset(source,rich,null,start),last=caretOffset(source,rich,null,end);
+      if(first && last){
+        const anchor=direction==='backward'?last:first,focus=direction==='backward'?first:last;
+        window.getSelection().setBaseAndExtent(anchor.startContainer,anchor.startOffset,focus.startContainer,focus.startOffset);
+        const rect=focus.getBoundingClientRect(),delta=rect.top-rich.getBoundingClientRect().top-Math.max(0,Math.min(viewportY,rich.clientHeight-rect.height));
+        if(getComputedStyle(rich).overflowY==='visible')window.scrollBy(0,delta);else rich.scrollTop+=delta;
+        selection();
+      }
+
     });
     function insertParallel() {
       if(source.disabled || source.readOnly || !window.CommunityParallelText)return;
@@ -436,6 +601,7 @@
         format.hidden=isArticle || !(source.ownerDocument.activeElement===source || format.contains(source.ownerDocument.activeElement)) || source.selectionStart===source.selectionEnd;
         return;
       }
+      if(format.contains(document.activeElement)){format.hidden=isArticle;return;}
       const s=window.getSelection();
       if(!s)return;
       if(document.activeElement!==removeColumns){
@@ -486,12 +652,33 @@
     undoColumns.addEventListener('mousedown',e=>e.preventDefault());
     undoColumns.addEventListener('click',undoColumnRemoval);
     format.addEventListener('mousedown',e=>{if(e.target.closest('button'))e.preventDefault();});
+    const secondaryCommands=new Set(['underline','strikeThrough','subscript','superscript']);
+    const more=document.createElement('button');more.type='button';more.className='community-format-more';
+    more.textContent='…';more.title='More formatting';more.setAttribute('aria-label','More formatting');more.setAttribute('aria-expanded','false');
+    const secondary=document.createElement('div');secondary.className='community-format-secondary';secondary.hidden=true;
+    secondary.id='community-format-secondary-'+(++formattingMenuId);secondary.setAttribute('role','group');secondary.setAttribute('aria-label','Additional formatting');more.setAttribute('aria-controls',secondary.id);
+    function closeMore(){secondary.hidden=true;more.setAttribute('aria-expanded','false');}
+    more.addEventListener('click',()=>{
+      secondary.hidden=!secondary.hidden;more.setAttribute('aria-expanded',String(!secondary.hidden));
+      if(!secondary.hidden){const anchor=more.getBoundingClientRect(),menu=secondary.getBoundingClientRect();
+        secondary.style.left=Math.max(8,Math.min(anchor.right-menu.width,window.innerWidth-menu.width-8))+'px';
+        secondary.style.top=(anchor.bottom+menu.height+8<=window.innerHeight?anchor.bottom+4:Math.max(8,anchor.top-menu.height-4))+'px';
+      }
+    });
+    format.addEventListener('keydown',event=>{if(event.key==='Escape' && !secondary.hidden){event.preventDefault();event.stopPropagation();closeMore();more.focus();}});
+    document.addEventListener('pointerdown',event=>{if(!format.contains(event.target))closeMore();});
+    document.addEventListener('scroll',event=>{if(!format.contains(event.target))closeMore();},true);
+    window.addEventListener('resize',closeMore);
+    new MutationObserver(()=>{if(format.hidden)closeMore();}).observe(format,{attributes:true,attributeFilter:['hidden']});
+
     for(const [label,glyph,command,arg] of commands){
       const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);
       b.dataset.command=command;
-      const i=document.createElement(glyph?'i':'span');i.className=glyph?'bi bi-'+glyph:'community-parallel-icon';if(!glyph){if(command==='subscript'||command==='superscript'){i.className='community-script-icon';i.append('x');const number=document.createElement(command==='subscript'?'sub':'sup');number.textContent='2';i.append(number);}else i.textContent='a|ج';i.dir='ltr';}i.setAttribute('aria-hidden','true');b.append(i);format.append(b);
-      b.addEventListener('click',()=>formatAction(command,arg));
+      const i=document.createElement(glyph?'i':'span');i.className=glyph?'bi bi-'+glyph:'community-parallel-icon';if(!glyph){if(command==='subscript'||command==='superscript'){i.className='community-script-icon';i.append('x');const number=document.createElement(command==='subscript'?'sub':'sup');number.textContent='2';i.append(number);}else i.textContent='a|ج';i.dir='ltr';}i.setAttribute('aria-hidden','true');b.append(i);
+      if(secondaryCommands.has(command)){b.append(document.createTextNode(label));secondary.append(b);}else format.append(b);
+      b.addEventListener('click',()=>{const restoreFocus=secondary.contains(document.activeElement);closeMore();formatAction(command,arg);if(restoreFocus)source.focus({preventScroll:true});});
     }
+    format.append(more,secondary);
     function parallelCell(node) {return (node?.nodeType===1?node:node?.parentElement)?.closest('.community-edit-parallel-cell');}
     function crossesColumns() {
       const s=window.getSelection();if(!s || s.isCollapsed)return false;
@@ -551,6 +738,10 @@
       if(command==='parallel'){insertParallel();selection();return true;}
       if(command==='style') {
         if(!/^(?:[0-6]|subtext)$/.test(String(arg)))return false;
+        if(mode==='rich' && arg!=='subtext' && document.execCommand){
+          rich.focus();if(savedRange){const selected=window.getSelection();selected.removeAllRanges();selected.addRange(savedRange);}
+          if(document.execCommand('formatBlock',false,String(arg)==='0'?'p':'h'+arg)){sync();selection();return true;}
+        }
         const wasRich=mode==='rich';if(wasRich)toSource();
         const value=source.value,start=source.selectionStart?value.lastIndexOf('\n',source.selectionStart-1)+1:0;
         const last=source.selectionEnd>source.selectionStart && value[source.selectionEnd-1]==='\n'?source.selectionEnd-1:source.selectionEnd;
@@ -572,9 +763,15 @@
       if(command==='underline' && mode==='rich')toSource();
       if(mode!=='rich') {
         const start=source.selectionStart,end=source.selectionEnd,value=source.value;
-        if(start===end)return false;
         const selected=value.slice(start,end),markers={bold:'**',italic:'*',strikeThrough:'~~',code:'`',underline:'__',highlight:'=='};
         let text;
+        if(markers[command] && window.NotebookShortcuts){
+          const marker=markers[command];
+          const edit=start===end?{start,end,text:marker+'text'+marker,selectStart:start+marker.length,selectEnd:start+marker.length+4}:window.NotebookShortcuts.replacement(value,start,end,marker);
+          if(!edit)return true;
+          source.setRangeText(edit.text,edit.start,edit.end,'end');source.setSelectionRange(edit.selectStart,edit.selectEnd);
+          source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
+        }
         if(command==='subscript'||command==='superscript'){const marker=command==='subscript'?'~':'^';text=marker+escape(selected).replace(/ /g,'\\ ')+marker;}
         else if(markers[command])text=markers[command]+selected+markers[command];
         else if(command==='removeFormat')text=selected.replace(/(\*\*|__|~~|==)(.+?)\1/g,'$2').replace(/([*`_])([^\n]+?)\1/g,'$2');
@@ -639,7 +836,7 @@
           if(!target){target=document.createElement('p');target.append(document.createElement('br'));event.shiftKey?row.before(target):row.after(target);}}
         const range=document.createRange();range.selectNodeContents(target);range.collapse(true);selected.removeAllRanges();selected.addRange(range);sync();selection();return;
       }
-      if(event.key==='Enter' && !event.shiftKey && !event.isComposing) {
+      if(event.key==='Enter' && !event.isComposing) {
         const active=window.getSelection();
         let block=active.anchorNode?.nodeType===1?active.anchorNode:active.anchorNode?.parentElement;
         const quote=block?.closest('blockquote'),listItem=block?.closest('li');
@@ -648,7 +845,7 @@
           // Use native editing transactions so Enter and quote exit participate
           // in browser undo. Keep the fallback for engines without these commands.
           event.preventDefault();
-          const empty=block && !block.textContent.trim();
+          const empty=!event.shiftKey && block && !block.textContent.trim();
           if(document.execCommand?.(empty?'outdent':'insertParagraph',false)) {
             const node=active.anchorNode?.nodeType===1?active.anchorNode:active.anchorNode?.parentElement;
             const next=node?.closest('p,div');
@@ -656,7 +853,7 @@
             sync();selection();return;
           }
           // Continue quote paragraphs normally; an empty paragraph exits the quote.
-          if(block && !block.textContent.trim()) {
+          if(!event.shiftKey && block && !block.textContent.trim()) {
             event.preventDefault();
             const next=document.createElement('p');next.dir='auto';next.append(document.createElement('br'));
             const tail=quote.cloneNode(false);
@@ -676,14 +873,26 @@
           block.after(next);
           const caret=document.createRange();caret.selectNodeContents(next);caret.collapse(true);active.removeAllRanges();active.addRange(caret);sync();selection();return;
         }
-        if(active.isCollapsed && !listItem && !quote && block && rich.contains(block) && /^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(block.textContent)) {
+        if(!event.shiftKey && active.isCollapsed && !listItem && !quote && block && rich.contains(block) && /^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(block.textContent)) {
           event.preventDefault();selection();toSource();source.focus();
           source.setRangeText('\n',source.selectionStart,source.selectionEnd,'end');
           source.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertParagraph',data:'\n'}));return;
         }
       }
-      if((event.metaKey||event.ctrlKey)&&['b','i'].includes(event.key.toLowerCase())){event.preventDefault();document.execCommand(event.key.toLowerCase()==='b'?'bold':'italic');sync();}
-      if(event.key==='Escape'){format.hidden=true;event.stopPropagation();}
+      if((event.metaKey||event.ctrlKey) && !event.altKey && !event.isComposing){
+        const key=/^[a-z]$/i.test(event.key)?event.key.toLowerCase():event.code.replace(/^Key/,'').toLowerCase();
+        const command=event.shiftKey?{h:'highlight',x:'strikeThrough'}[key]:{b:'bold',i:'italic',u:'underline'}[key];
+        if(command){event.preventDefault();selection();formatAction(command);}
+      }
+      if(event.key==='Escape'){closeMore();format.hidden=true;event.stopPropagation();}
+    });
+    source.addEventListener('keydown',event=>{
+      if(mode!=='source' || !['ArrowLeft','ArrowRight','Home','End'].includes(event.key))return;
+      const position=source.selectionDirection==='backward'?source.selectionStart:source.selectionEnd;
+      const start=position?source.value.lastIndexOf('\n',position-1)+1:0,end=source.value.indexOf('\n',position);
+      const probe=document.createElement('bdi');probe.dir='auto';probe.hidden=true;
+      probe.textContent=source.value.slice(start,end<0?source.value.length:end);document.body.append(probe);
+      source.dir=getComputedStyle(probe).direction;probe.remove();
     });
     source.addEventListener('keydown',event=>{
       if(mode!=='source' || event.defaultPrevented || source.disabled || source.readOnly || event.isComposing || event.shiftKey || event.altKey || event.metaKey || event.ctrlKey || event.key!=='Enter')return;
@@ -694,6 +903,12 @@
       source.setSelectionRange(edit.selectStart,edit.selectEnd);
       source.dispatchEvent(new Event('input',{bubbles:true}));
     });
+    // Full-bar surfaces install these with their toolbar/notebook adapter.
+    // Contextual post editors use the same Markdown keyboard commands.
+    if(!isArticle){
+      const installShortcuts=()=>window.NotebookShortcuts?.install(source,()=>mode==='source',()=>{});
+      if(window.NotebookShortcuts)installShortcuts();else document.addEventListener('DOMContentLoaded',installShortcuts,{once:true});
+    }
     source.addEventListener('input',()=>{if(!syncing)hydrate();updateTextStyle();});
     source.form?.addEventListener('reset',()=>queueMicrotask(()=>{mode='rich';hydrate();}));
     source.form?.addEventListener('submit',event=>{sync();if(required&&!source.value.trim() || source.maxLength>0&&source.value.length>source.maxLength){event.preventDefault();event.stopImmediatePropagation();rich.setAttribute('aria-invalid','true');source.focus();}},true);
@@ -704,6 +919,8 @@
   }
   document.addEventListener('selectionchange',()=>document.querySelectorAll('[data-short-editor]').forEach(el=>instances.get(el)?.selection()));
   function scan(root=document){root.querySelectorAll('textarea[data-short-editor]').forEach(install);}
-  window.CommunityShortEditor={install,render,serialize,styleContent,get:source=>instances.get(source)};
+  window.CommunityShortEditor={install,render,serialize,styleContent,renderAdvanced,caretOffset,
+    setPreviewRenderer(source,renderer){if(!source)return;previewRenderers.set(source,renderer);previewCaches.delete(source);if(instances.has(source) && !render(source.value))instances.get(source).toFormatted();},
+    get:source=>instances.get(source)};
   scan();new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.nodeType===1){if(n.matches('textarea[data-short-editor]'))install(n);scan(n);}}).observe(document.body,{childList:true,subtree:true});
 })();

@@ -1,0 +1,4 @@
+<%
+  const elapsed = Date.now() - new Date(timestamp).getTime();
+  const relative = !locals.dateOnly && elapsed >= 0 && elapsed < 86400000;
+%><%= relative ? (elapsed < 3600000 ? Math.max(1, Math.floor(elapsed / 60000)) + 'm ago' : Math.floor(elapsed / 3600000) + 'h ago') : dateLabel %>

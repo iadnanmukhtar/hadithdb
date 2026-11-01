@@ -13,7 +13,7 @@ test.each(['note', 'article'])('renders shared %s controls without a permalink',
     expect(document.querySelector('#community-report-post').getAttribute('aria-label')).toBe('Report');
     expect(document.querySelector('[data-community-share-url]').dataset.communityShareUrl).toBe('/community/p/example');
     expect(document.querySelector('#community-post-actions > .community-post-menu .community-secondary-panel #community-report-post')).not.toBeNull();
-    expect(document.querySelector('.community-post-menu #community-edit-post').title).toBe(kind === 'article' ? 'Edit article' : 'Edit post');
+    expect(document.querySelector('.community-post-menu #community-edit-post').title).toBe('Edit');
     expect(document.querySelector('#community-blog-control, #community-blog-toggle')).toBeNull();
     expect(document.querySelector('#community-edit-post').getAttribute('href')).toBe(kind === 'note' ? '/community/mine?editPost=44' : '/community/write?post=44');
     expect(document.querySelector('[title="Post permalink"], .bi-arrow-right')).toBeNull();

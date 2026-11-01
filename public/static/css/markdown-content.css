@@ -61,7 +61,7 @@
 /* Raw Markdown and newly typed text use the same Hafs glyphs and 1.2 scale
    through a script-specific font face. */
 @font-face { font-family: NotebookEditableArabic; src: url('/static/fonts/kd-hafs.woff2'); size-adjust: 120%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+1EE00-1EEFF; }
-.community-rich-input.notebook-markdown { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
+.community-short-editor textarea[data-short-editor], .community-rich-input.notebook-markdown { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
 .community-rich-input blockquote.notebook-edit-quote { border: 0; padding: 0; }
 .community-rich-input .notebook-quote-section { border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
 .community-rich-input .notebook-quote-section[dir="rtl"] { direction: rtl; text-align: right; }

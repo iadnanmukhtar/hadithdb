@@ -17,39 +17,7 @@
   viewport.append(gutter);
   const modeControl = document.getElementById('notebook-mode-control');
   modeControl.append(surface.shell.querySelector('.community-short-tools'));
-  let editing = false, frame, previewRenderer;
-  const previews = new Map();
-  function renderAdvanced(markdown) {
-    const root = document.createElement('div');
-    // Reference definitions and footnotes depend on the full document context.
-    const dependent = /\[\^|^ {0,3}\[[^\]]+\]:/m.test(markdown);
-    const tokens = dependent ? [{raw: markdown}] : window.marked.lexer(markdown);
-    for (const token of tokens) {
-      if (token.type === 'space') continue;
-      const formatted = !dependent && window.CommunityShortEditor.render(token.raw);
-      if (formatted) { root.append(...formatted.childNodes); continue; }
-      const block = document.createElement('div');
-      block.dataset.notebookRaw = token.raw;
-      block.contentEditable = 'false';
-      block.title = 'Use Markdown to edit this advanced formatting';
-      block.className = 'notebook-advanced-block';
-      block.textContent = 'Loading formatted content…';
-      root.append(block);
-      if (previewRenderer) {
-        let result = previews.get(token.raw);
-        if (!result) {
-          result = Promise.resolve().then(() => previewRenderer(token.raw));
-          if (previews.size >= 100) previews.clear();
-          previews.set(token.raw, result);
-        }
-        result.then(html => { block.innerHTML = html; }).catch(() => {
-          previews.delete(token.raw);
-          block.textContent = 'Preview unavailable. Use Markdown to edit this block.';
-        });
-      }
-    }
-    return root;
-  }
+  let editing = false, frame;
   function updateLines() {
     frame = null;
     const active = editing ? (surface.mode === 'rich' ? surface.rich : source) : preview;
@@ -107,8 +75,8 @@
   }
   function scheduleLines() { if (!frame) frame = requestAnimationFrame(updateLines); }
   window.NotebookRichEditor = {
-    renderAdvanced,
-    setPreviewRenderer(renderer) { previewRenderer = renderer; },
+    renderAdvanced: markdown => window.CommunityShortEditor.renderAdvanced(markdown,source),
+    setPreviewRenderer(renderer) { window.CommunityShortEditor.setPreviewRenderer(source,renderer); },
     setEditing(value) {
       editing = value; surface.shell.hidden = !value; toolbar.hidden = !value; modeControl.hidden = !value;
       if (value) surface.toFormatted();

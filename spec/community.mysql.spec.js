@@ -177,7 +177,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       expect(await page.locator('#community-feed [data-kind=title]:visible').count()).toBe(10);
       const first=page.locator('#community-feed [data-kind=title]').first();
       expect(await first.locator('h2').count()).toBe(0);
-      expect(await first.locator('[aria-label="Edit post"]').count()).toBe(0);
+      expect(await first.locator('[aria-label="Edit"]').count()).toBe(0);
       expect(await first.textContent()).toContain('Acceptance of dua');
       expect((await first.boundingBox()).height).toBeLessThan(90);
       await page.locator('#community-more').click();

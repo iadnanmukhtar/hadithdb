@@ -14,6 +14,6 @@
     <% if (detail) { %><h1 class="community-cover-title" dir="auto"><%= entry.title %></h1><% } else { %><h2 class="community-cover-title" dir="auto"><a class="community-cover-destination" href="<%= entry.url || ('/blog/' + entry.file) %>"><%= entry.title %></a></h2><% } %>
     <% if (entry.subtitle) { %><p class="community-cover-subtitle" dir="auto"><%= entry.subtitle %></p><% } %>
     <% if (entry.description && entry.description !== entry.subtitle) { %><p class="community-cover-excerpt" dir="auto"><%= entry.description %></p><% } %>
-    <time class="blog-cover-date" datetime="<%= entry.published.toISOString() %>"><%= entry.published.toDateString() %></time>
+    <time <% if (locals.relativeDate) { %>data-community-time <% } %>class="blog-cover-date" datetime="<%= entry.published.toISOString() %>"><% if (locals.relativeDate) { %><%- include('community_time_label.ejs', { timestamp: entry.published, dateLabel: entry.published.toDateString() }) %><% } else { %><%= entry.published.toDateString() %><% } %></time>
   </div>
 <% if (!detail) { %></div><% } else { %></header><% } %>

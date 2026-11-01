@@ -24,7 +24,7 @@ test('owner menus hide and restore posts, articles and microactivity, including 
   for(let index=0;index<5;index++){
    let card=d.querySelectorAll('#community-feed .community-entry')[index],menu=card.querySelector('.community-secondary-menu');
    const open=card.querySelector('.community-secondary-panel a');
-   expect([...menu.querySelector('.community-secondary-panel').children].map(el=>el.textContent)).toEqual(index<2?['Open','Print','Hide',index===1?'Edit article':'Edit post']:['Open','Hide']);
+   expect([...menu.querySelector('.community-secondary-panel').children].map(el=>el.textContent)).toEqual(index<2?['Open','Print','Hide','Edit']:['Open','Hide']);
    for(const control of menu.querySelectorAll('.community-secondary-panel > *')) {const label=control.hasAttribute('data-community-print')?'Print / Save as PDF':control.textContent;expect(control.title).toBe(label);expect(control.getAttribute('aria-label')).toBe(label);}
    expect(open.textContent).toBe('Open');expect(open.title).toBe('Open');expect(open.querySelector('.bi-arrow-right')).not.toBeNull();
    expect(index>=2?menu.parentElement===card:menu.parentElement.classList.contains('community-entry-meta')).toBe(true);

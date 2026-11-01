@@ -971,117 +971,7 @@
     preview.scrollTop += rect.top + rect.height / 2 - preview.getBoundingClientRect().top - preview.clientTop - preview.clientHeight / 2;
   }
   function previewCaretOffset(event, sourceCaret, surface = preview) {
-    const locatingPreview = sourceCaret !== undefined;
-    let lastRange = null;
-    const renderedRange = (part, index) => {
-      const range = document.createRange();
-      range.setStart(part, index); range.collapse(true);
-      return range;
-    };
-    let node, offset = 0;
-    if (!locatingPreview) {
-      const caret = event ? document.caretPositionFromPoint?.(event.clientX, event.clientY) : null;
-      const range = caret ? null : event ? document.caretRangeFromPoint?.(event.clientX, event.clientY) : window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
-      node = caret?.offsetNode || range?.startContainer;
-      offset = caret ? caret.offset : range?.startOffset;
-      if (!node || node.nodeType !== Node.TEXT_NODE || !surface.contains(node)) {
-        if (!event) return 0;
-        // Paragraph margins, blank space and some browser hit tests return an
-        // element (or nothing). Resolve the nearest rendered text, never note end.
-        const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
-        const probe = document.createRange();
-        let part, nearest = null, best = Infinity;
-        const distance = rect => {
-          const dy = Math.max(rect.top - event.clientY, event.clientY - rect.bottom, 0);
-          const dx = Math.max(rect.left - event.clientX, event.clientX - rect.right, 0);
-          return dy * 100000 + dx;
-        };
-        while ((part = walker.nextNode())) {
-          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref')) continue;
-          probe.selectNodeContents(part);
-          for (const rect of probe.getClientRects()) {
-            if (!rect.height) continue;
-            const score = distance(rect);
-            if (score < best) { best = score; nearest = part; }
-          }
-        }
-        if (!nearest) return 0;
-        node = nearest; offset = 0; best = Infinity;
-        // Collapsed ranges give visual caret positions even in right-to-left text.
-        for (let i = 0; i <= node.length; i++) {
-          if (i && i < node.length && /[\uDC00-\uDFFF]/.test(node.nodeValue[i])) continue;
-          probe.setStart(node, i); probe.collapse(true);
-          for (const rect of probe.getClientRects()) {
-            if (!rect.height) continue;
-            const score = distance(rect);
-            if (score < best) { best = score; offset = i; }
-          }
-        }
-      }
-    }
-
-    // Decode source escapes/entities while retaining UTF-16 textarea offsets.
-    const source = editor.value, positions = [], decoder = document.createElement('textarea');
-    let text = '';
-    for (let i = 0; i < source.length;) {
-      const start = i;
-      let value = source[i++];
-      if (value.charCodeAt(0) === 92 && /[!-/:-@[-`{-~]/.test(source[i] || '')) {
-        value = source[i++];
-      } else if (value === '&') {
-        const entity = source.slice(start).match(/^&(?:#[xX][\da-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]+);/);
-        if (entity) { decoder.innerHTML = entity[0]; value = decoder.value; i = start + entity[0].length; }
-      }
-      for (let j = 0; j < value.length; j++) positions.push(start);
-      text += value;
-    }
-    positions.push(source.length);
-    const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
-    let cursor = 0, part;
-    while ((part = walker.nextNode())) {
-      if (part.parentElement.closest('button, .footnote-backref')) continue;
-      // Arabic underline adds a display-only Unicode combining overline.
-      const overlined = part.parentElement.closest('[data-notebook-overline]');
-      const value = overlined ? part.nodeValue.replace(/\u0305/g, '') : part.nodeValue;
-      const sourceOffset = overlined ? part.nodeValue.slice(0, offset).replace(/\u0305/g, '').length : offset;
-      if (!value.trim()) {
-        if (part === node) return positions[cursor];
-        continue;
-      }
-      // Walking in document order disambiguates repeated words and paragraphs.
-      let start = text.indexOf(value, cursor);
-      if (start < 0) {
-        // Inline code and Markdown hard breaks can normalize whitespace.
-        let matched = cursor;
-        for (let j = 0; j < value.length; j++) {
-          const next = text.indexOf(value[j], matched);
-          if (next < 0) break;
-          if (part === node && j === sourceOffset) return positions[next];
-          matched = next + 1;
-        }
-        if (part === node) return positions[matched];
-        continue;
-      }
-      if (locatingPreview) {
-        if (sourceCaret <= positions[start + value.length]) {
-          let index = 0;
-          while (index < value.length && positions[start + index] < sourceCaret) index++;
-          if (overlined) {
-            let visible = 0, rendered = 0;
-            while (rendered < part.length && visible < index) {
-              if (part.nodeValue[rendered++] !== '\u0305') visible++;
-            }
-            index = rendered;
-          }
-          return renderedRange(part, index);
-        }
-        lastRange = renderedRange(part, part.length);
-      }
-      if (part === node) return positions[start + Math.min(sourceOffset, value.length)];
-      cursor = start + value.length;
-    }
-    // Whitespace outside text nodes uses the nearest preceding source position.
-    return locatingPreview ? lastRange : positions[cursor];
+    return window.CommunityShortEditor.caretOffset(editor,surface,event,sourceCaret);
   }
   function revealEditorCaret(offset, viewportY) {
     const richSurface = window.CommunityShortEditor?.get(editor);
@@ -1117,22 +1007,6 @@
     editor.scrollTop = Math.max(0, caretY - visibleY);
     mirror.remove();
   }
-  editor.addEventListener('formattedEditorSelection', event => {
-    const { start, end, direction, viewportY } = event.detail;
-    const surface = window.CommunityShortEditor?.get(editor);
-    if (surface?.mode !== 'rich') return;
-    revealEditorCaret(direction === 'backward' ? start : end, viewportY);
-    if (start !== end) {
-      const first = previewCaretOffset(null, start, surface.rich);
-      const last = previewCaretOffset(null, end, surface.rich);
-      if (first && last) {
-        const anchor = direction === 'backward' ? last : first;
-        const focus = direction === 'backward' ? first : last;
-        window.getSelection().setBaseAndExtent(anchor.startContainer, anchor.startOffset, focus.startContainer, focus.startOffset);
-        surface.selection();
-      }
-    }
-  });
   let previewPointerCaret = null;
   preview.addEventListener('pointerdown', event => {
     previewPointerCaret = !editing && current && !busy && event.button === 0

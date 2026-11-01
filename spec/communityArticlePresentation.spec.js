@@ -7,7 +7,7 @@ const Community = require('../lib/Community');
 const row = {id: 42, kind: 'article', public_title: 'An article', public_subtitle: 'A subtitle', public_markdown: '## Heading\n\nالعربية\n\n[Source](https://example.com/source)\n\n![Image](https://example.com/image.jpg)', published_at: new Date('2026-10-31T12:00:00Z'), name: 'Author', handle: 'author'};
 function render(post) {
   const file = path.resolve('views/community.ejs');
-  return ejs.render(fs.readFileSync(file, 'utf8'), {view:'post', post, author:post.author, page:{}, global:{settings:{site:{}}}, utils:{scriptAssetVersion:()=> 'test'}, include:(name, data)=>name.endsWith('blog_cover.ejs') ? ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),data) : ''}, {filename:file});
+  return ejs.render(fs.readFileSync(file, 'utf8'), {view:'post', post, author:post.author, page:{}, global:{settings:{site:{}}}, utils:{scriptAssetVersion:()=> 'test'}, include:(name, data)=>name.endsWith('blog_cover.ejs') ? ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),data,{filename:path.resolve('views',name)}) : ''}, {filename:file});
 }
 test('articles keep their cover and use post body rendering while preserving links and images', () => {
   const post=Community.postView(row), $=load(render(post));
