@@ -294,6 +294,7 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .blog-post [dir="rtl"] { text-align: right; }
 /* Each line in a bilingual quote follows its own language, including after <br>. */
 .blog-post blockquote p { unicode-bidi: plaintext; text-align: start; }
+.blog-post .notebook-subtext { font-size: .8em; opacity: .75; }
 .blog-post .footnotes :is(.blog-arabic, .notebook-arabic) { font-size: 1.22em; }
 
 .community-editor-cover { margin: 1rem 0; }
