@@ -4,23 +4,38 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 const template = fs.readFileSync(path.join(__dirname, '../views/sub-views/sirah_item.ejs'), 'utf8');
-function render(overrides = {}) {
+function render(overrides = {}, title = true) {
  return cheerio.load(ejs.render(template, {
   i: { id: 1, num: '813787', ref: 'ibnhisham:813787', book_shortName_en: 'Sirat Ibn Hisham', book_shortName: 'سيرة ابن هشام', body: 'النص العربي', title: 'العنوان', ...overrides },
-  utils: require('../lib/Utils'), arabic: require('../lib/Arabic'), title: true
+  utils: require('../lib/Utils'), arabic: require('../lib/Arabic'), title
  }, { filename: path.join(__dirname, '../views/sub-views/sirah_item.ejs') }));
 }
+test.each(['history', 'ibnhisham'])('%s shows passage titles and individual links in scrolling and detail views', alias => {
+ for (const title of [false, true]) {
+  const $ = render({ book_alias: alias, num: '12', ref: `${alias}:12`, title_en: 'English title', body_en: 'English text' }, title);
+  expect($('h1[lang=en].fs-5').text()).toBe('English title');
+  expect($('h1[lang=ar].fs-5').text()).toBe('العنوان');
+  expect($('article > header.col-12 > h1.fs-5')).toHaveLength(2);
+  expect($('article > section h1')).toHaveLength(0);
+  expect($('article > header').last().next().is('section')).toBe(true);
+  expect($(`b a[href="/${alias}:12"]`)).toHaveLength(2);
+ }
+});
+test('untitled passages omit empty title headings', () => {
+ const $ = render({ title: '', title_en: '' }, false);
+ expect($('h1')).toHaveLength(0);
+});
 test('untranslated Sirah occupies the full reader width without an empty English column', () => {
  const $ = render({ title_en: 'Translated heading only', text_en: 'النص العربي الاحتياطي' });
- expect($('[data-reader-language-column=english]')).toHaveLength(0);
- expect($('[data-reader-language-column=arabic]').hasClass('col-12')).toBe(true);
+ expect($('section[data-reader-language-column=english]')).toHaveLength(0);
+ expect($('section[data-reader-language-column=arabic]').hasClass('col-12')).toBe(true);
  expect($('header[lang=en]').text()).toContain('Translated heading only');
  expect($('#813787')).toHaveLength(1);
 });
 test('translated Sirah uses two language columns with its English text and notes', () => {
  const $ = render({ body_en: 'English text', footnote_en: 'English note' });
- expect($('[data-reader-language-column]')).toHaveLength(2);
- expect($('[data-reader-language-column=arabic]').hasClass('col-md-6')).toBe(true);
+ expect($('section[data-reader-language-column]')).toHaveLength(2);
+ expect($('section[data-reader-language-column=arabic]').hasClass('col-md-6')).toBe(true);
  expect($('[data-reader-language-column=english]').text()).toContain('English text');
  expect($('[data-reader-language-column=english] .footnote').text()).toContain('English note');
 });
@@ -37,10 +52,10 @@ test('Sirah passages expose bookmark, note source, like, reflection, and non-ima
  expect($('#sirah-comments-1-disclosure')).toHaveLength(1);
  expect($('#sirah-comments-1').attr('data-target-type')).toBe('hadith');
 });
-test('Sirah passage detail opts into the existing reader navigation, independently of search pagination', () => {
+test('Sirah passage detail stays on one item while search pagination remains available', () => {
  const search = fs.readFileSync(path.join(__dirname, '../views/search.ejs'), 'utf8');
- expect(search).toContain('data-reader-infinite="hadith-sirah"');
- expect(search).toContain('data-reader-next-url="<%= page.next %>"');
+ expect(search).not.toContain('data-reader-infinite="hadith-sirah"');
+ expect(search).toContain('data-search-next-url="<%= page.next %>"');
  expect(search).toContain("item.single && item.doctype === 'sirah'");
 });
 

@@ -37,6 +37,10 @@ const SearchHttp = require('../lib/SearchHttp');
 			books = await getBooks(options);
 			log(`retrieving data to index ${formatIndexNames(indexNames)} ${formatBookScope(options)} (${books.length} book(s))...`);
 		}
+		if (options.skipCommentaries) {
+			books = books.filter(book => !['sharh', 'tafsir'].includes(book.type));
+			log(`excluding shuruh and tafsirs; indexing ${books.length} book(s) without commentary synchronization`);
+		}
 		await reindexBooks(books, indexNames);
 	} finally {
 		global.dbPool.end();
@@ -143,7 +147,7 @@ async function reindexBooks(books, indexNames) {
 				continue;
 			}
 			var rows = await getData(indexName, books[i]);
-			await Index.updateBulk(indexName, rows, true);
+			await Index.updateBulk(indexName, rows, true, { skipCommentaries: options.skipCommentaries });
 		}
 	}
 }
@@ -291,12 +295,15 @@ function parseArgs(argv) {
 		all: false,
 		bookId: null,
 		fromBookId: false,
-		tocOnly: false
+		tocOnly: false,
+		skipCommentaries: false
 	};
 	for (var i = 0; i < argv.length; i++) {
 		var arg = argv[i];
 		if (arg === '--all') {
 			options.all = true;
+		} else if (arg === '--skip-commentaries') {
+			options.skipCommentaries = true;
 		} else if (arg === '--toc-only' || arg === '--toc') {
 			options.tocOnly = true;
 		} else if (arg === '--book-id' || arg === '--from-book-id' || arg === '-b') {
@@ -341,6 +348,7 @@ function printUsage() {
 		'--all rebuilds each book independently.\n' +
 		'--book-id rebuilds only the requested book id.\n' +
 		'--from-book-id rebuilds the requested book id and every later book id.\n' +
-		'--toc-only only rebuilds the toc index.'
+		'--toc-only only rebuilds the toc index.\n' +
+		'--skip-commentaries excludes shuruh and tafsirs and skips linked commentary synchronization.'
 	);
 }

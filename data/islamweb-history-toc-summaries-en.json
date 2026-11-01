@@ -1,0 +1,3307 @@
+{
+  "alias": "history",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "summaries": [
+    {
+      "id": 165746,
+      "intro_en": "✧ Covers the beginning of creation, the heavens, the Throne, angels, jinn, Satan, and the stories of the prophets from Adam to Jesus and earlier peoples, concluding with a compendium of past prophets."
+    },
+    {
+      "id": 165747,
+      "intro_en": "✧ Describes the creation of the earth as part of the creation of the heavens and the earth."
+    },
+    {
+      "id": 165749,
+      "intro_en": "✧ Presents accounts of the Throne, the Footstool, and the Preserved Tablet, including their descriptions, bearers, and scriptural evidences."
+    },
+    {
+      "id": 165750,
+      "intro_en": "✧ Discusses the creation of angels from light, their attributes, various categories, duties, and the debated question of their superiority over humans."
+    },
+    {
+      "id": 165751,
+      "intro_en": "✧ Relates the creation of the jinn from fire, their types, beliefs, and the story of Iblīs, his fall, enmity toward Adam's progeny, and the means to seek protection from him."
+    },
+    {
+      "id": 165752,
+      "intro_en": "✧ Narrates the creation of Adam from clay, the angels' prostration, Iblīs's refusal, Adam's dwelling in Paradise, his descent, progeny, the killing of Abel, and his death and burial."
+    },
+    {
+      "id": 165753,
+      "intro_en": "✧ Tells the story of Idrīs, identified with Enoch, the first to write and sew, his prophethood, and his being raised to a high station."
+    },
+    {
+      "id": 165754,
+      "intro_en": "✧ Covers the story of Noah, his call, the Flood, and his attributes and character with his Lord."
+    },
+    {
+      "id": 165756,
+      "intro_en": "✧ Covers Ḥūd’s lineage, his mission to the first ʿĀd and their idol worship, their denial of him, and their destruction by wind, his salvation and death, with Qurʾānic accounts and their interpretation."
+    },
+    {
+      "id": 165757,
+      "intro_en": "✧ Relates Ṣāliḥ’s lineage, his call to the idolatrous Thamūd, the sign of the she-camel, its hamstringing by Qudār b. Sālif, their destruction by the shout and earthquake, and Ṣāliḥ’s later life."
+    },
+    {
+      "id": 165758,
+      "intro_en": "✧ Deals with Abraham’s description and virtues, the story of Lot, and the story of Shuʿayb."
+    },
+    {
+      "id": 165762,
+      "intro_en": "✧ Covers the stories of Abraham’s offspring: Ishmael, Isaac, Joseph, Job, and Dhū al-Kifl."
+    },
+    {
+      "id": 165768,
+      "intro_en": "✧ Discusses nations destroyed en masse, including the People of al-Rass and the People of Yā Sīn, with their prophets and destruction."
+    },
+    {
+      "id": 165769,
+      "intro_en": "✧ Recounts Jonah’s mission to Nineveh, his departure and swallowing by the whale, his supplication and deliverance, and the belief of his people."
+    },
+    {
+      "id": 165770,
+      "intro_en": "✧ Details Moses’ story, including al-Khiḍr’s genealogy and meeting with Moses, and Yūshaʿ b. Nūn’s prophethood and leadership over the Israelites."
+    },
+    {
+      "id": 165773,
+      "intro_en": "✧ Discusses Ilyās’s lineage, his prophetic mission against the worship of Baʿl, his conflict with the king and people, and his departure from them."
+    },
+    {
+      "id": 165774,
+      "intro_en": "✧ A group of Israelite prophets after Mūsā includes Ḥizqīl, al-Yasaʿ, and Ashmūʾīl, whose stories are recounted in brief."
+    },
+    {
+      "id": 165778,
+      "intro_en": "✧ The story of Dāwūd covers his lineage, killing of Jālūt, kingship and prophethood, miracles, Psalms, worship, wisdom, litigants, wives, building of Bayt al-Maqdis, and death."
+    },
+    {
+      "id": 165779,
+      "intro_en": "✧ Sulaymān b. Dāwūd's genealogy and the miracles God granted him are presented."
+    },
+    {
+      "id": 165781,
+      "intro_en": "✧ Stories of Israelite prophets after Dāwūd and Sulaymān and before Zakariyyā and Yaḥyā, including Shaʿyā b. Amṣiyā, Armiyā b. Ḥalqiyā, Dāniyāl, the destruction of Jerusalem, the building of the Sacred House, and ʿUzayr."
+    },
+    {
+      "id": 165782,
+      "intro_en": "✧ The story of ʿUzayr, his lineage, whether he was a prophet, God causing him to die for a hundred years, his revival, and his renewal of the Torah for the Children of Israel."
+    },
+    {
+      "id": 165783,
+      "intro_en": "✧ The lives of the prophets Zakariyyā and his son Yaḥyā, including their prophethood and roles among the Israelites."
+    },
+    {
+      "id": 165786,
+      "intro_en": "✧ The story of ʿĪsā b. Maryam from Maryam's pregnancy and his birth through his qualities, virtues, miracles, and significant events in his time."
+    },
+    {
+      "id": 165791,
+      "intro_en": "✧ Accounts of past peoples from the Israelites and others encompass the stories of Dhū al-Qarnayn and Yaʾjūj and Maʾjūj, the Companions of the Cave, the owner of the two gardens, and Luqmān."
+    },
+    {
+      "id": 165796,
+      "intro_en": "✧ Reports of the number, crafts, tribulations, sacred laws, and common religion of earlier prophets are gathered, along with narrations about their years and those born circumcised."
+    },
+    {
+      "id": 165797,
+      "intro_en": "✧ The Prophetic biography covers the genealogy, birth, upbringing, call, emigration, expeditions, treaties, farewell pilgrimage, and death of Muḥammad ﷺ, followed by the accession of Abū Bakr."
+    },
+    {
+      "id": 165798,
+      "intro_en": "✧ This chapter surveys the origins and genealogies of the Arabs, the advent of idol worship, pre-Islamic accounts, the virtues of Zamzam, and notable figures of the Jāhiliyyah."
+    },
+    {
+      "id": 165815,
+      "intro_en": "✧ Accounts of Āminah's death and burial at al-Abwāʾ, the Prophet's ﷺ grief over her grave, and his grandfather ʿAbd al-Muṭṭalib's tender guardianship until his own death are related."
+    },
+    {
+      "id": 165816,
+      "intro_en": "✧ The birth of Muḥammad ﷺ, its remarkable signs, his naming, suckling by Thuwaybah and Ḥalīmah, the splitting of his chest, and his return to his mother are recounted."
+    },
+    {
+      "id": 165817,
+      "intro_en": "✧ Abū Ṭālib's guardianship of the Prophet ﷺ, his loving care, the monk Baḥīrā's recognition, divine protection from idolatry, and Abū Ṭālib's prayer for rain through him are narrated."
+    },
+    {
+      "id": 165818,
+      "intro_en": "✧ Khadījah's proposal to the Prophet ﷺ at age twenty-five, the circumstances of their marriage, dowry, children, and Waraqah's confirmation of his prophethood are detailed."
+    },
+    {
+      "id": 165819,
+      "intro_en": "✧ Quraysh's reconstruction of the Kaʿbah, the discovery of its foundations, the dispute over placing the Black Stone, and the Prophet's ﷺ arbitration are recounted."
+    },
+    {
+      "id": 165820,
+      "intro_en": "✧ Quraysh and allied tribes adopted the Ḥums, abandoning certain pilgrimage rites and imposing strict taboos on food, tents, and circumambulation garments until Islam abrogated these innovations."
+    },
+    {
+      "id": 165821,
+      "intro_en": "✧ Reports from Jewish rabbis, Christian monks, and Arab soothsayers announced the coming of the Prophet ﷺ, including accounts of Salmān al-Fārisī, Waraqah b. Nawfal, and the jinn being barred from hearing."
+    },
+    {
+      "id": 165822,
+      "intro_en": "✧ The section covers the beginning of the Prophet's ﷺ mission, including the virtues of Khadījah ؓ."
+    },
+    {
+      "id": 165824,
+      "intro_en": "✧ The earliest converts to Islam included Khadījah, ʿAlī b. Abī Ṭālib, Zayd b. Ḥārithah, and Abū Bakr, followed by many others whom Abū Bakr brought to the faith, and later Ḥamzah."
+    },
+    {
+      "id": 165825,
+      "intro_en": "✧ The Prophet ﷺ openly proclaimed Islam, and Quraysh repeatedly tried to restrain him through Abū Ṭālib, agreed to call him a sorcerer, and persecuted the believers while the Prophet ﷺ received divine protection."
+    },
+    {
+      "id": 165826,
+      "intro_en": "✧ Quraysh's leaders offered the Prophet ﷺ wealth, kingship, or healing, then questioned him about the Companions of the Cave, Dhū al-Qarnayn, and the Spirit, leading to the revelation of Sūrat al-Kahf."
+    },
+    {
+      "id": 165827,
+      "intro_en": "✧ The Prophet ﷺ endured harm from polytheists such as Abū Lahab, Umayyah b. Khalaf, al-ʿĀṣ b. Wāʾil, al-Naḍr b. al-Ḥārith, al-Akhnas b. Sharīq, al-Walīd b. al-Mughīrah, Ubayy b. Khalaf, and ʿUqbah b. Abī Muʿayṭ, with corresponding revelations."
+    },
+    {
+      "id": 165828,
+      "intro_en": "✧ Allah sufficed the Prophet ﷺ against the mockers by inflicting blindness, dropsy, and other afflictions on al-Aswad b. al-Muṭṭalib, al-Aswad b. ʿAbd Yaghūth, al-Walīd b. al-Mughīrah, al-ʿĀṣ b. Wāʾil, and al-Ḥārith b. al-Ṭulāṭilah."
+    },
+    {
+      "id": 165829,
+      "intro_en": "✧ It recounts Quraysh's torture of early Muslims, including ʿAbd Allāh b. Masʿūd's public recitation, Bilāl's endurance, Abū Bakr's freeing of slaves, and the martyrdom of Sumayyah and Yāsir."
+    },
+    {
+      "id": 165830,
+      "intro_en": "✧ It narrates the Muslim emigration to Abyssinia, the Negus's protection and conversion, Quraysh's failed envoys, the Najāshī's rise to power, and the emigrants' eventual return."
+    },
+    {
+      "id": 165831,
+      "intro_en": "✧ It details ʿUmar b. al-Khaṭṭāb's conversion through hearing the Qurʾān, his strength in Islam, and the story of the boycott document and its annulment."
+    },
+    {
+      "id": 165832,
+      "intro_en": "✧ It recounts how Abū Jahl withheld payment from a man of Irāsh, the Prophet ﷺ secured justice, and Abū Jahl feared a stallion of camels above the Prophet's head."
+    },
+    {
+      "id": 165833,
+      "intro_en": "✧ It covers the account of the pact among Quraysh to boycott Banū Hāshim and the believers, and its eventual annulment."
+    },
+    {
+      "id": 165835,
+      "intro_en": "✧ It concerns the Prophet ﷺ's frown at Ibn Umm Maktūm, the revelation of Sūrat ʿAbasa, and Ibn Umm Maktūm's subsequent honor and deputyships."
+    },
+    {
+      "id": 165836,
+      "intro_en": "✧ It narrates how al-Ṭufayl b. ʿAmr al-Dawsī ignored Quraysh's warnings, heard the Prophet ﷺ, received a light as a sign, and converted his family and tribe."
+    },
+    {
+      "id": 165837,
+      "intro_en": "✧ It recounts a Christian delegation from Abyssinia embracing Islam, Abū Jahl's mockery, and Qurʾānic verses revealed concerning them and the weak believers."
+    },
+    {
+      "id": 165838,
+      "intro_en": "✧ It covers the signs the Messenger of Allah ﷺ witnessed during the Night Journey and Ascension."
+    },
+    {
+      "id": 165840,
+      "intro_en": "✧ It recounts the increased harm by Quraysh after the deaths of Abū Ṭālib and Khadījah, including the Prophet's ﷺ journey to al-Ṭāʾif and his rejection by Thaqīf."
+    },
+    {
+      "id": 165841,
+      "intro_en": "✧ It describes the Messenger of Allah's ﷺ efforts to present himself to various Arab tribes at fairs, seeking support and protection."
+    },
+    {
+      "id": 165842,
+      "intro_en": "✧ It details the first pledge of al-ʿAqabah, the acceptance of Islam by six men from al-Khazraj, and Muṣʿab b. ʿUmayr's missionary work in Madinah."
+    },
+    {
+      "id": 165843,
+      "intro_en": "✧ It covers the second pledge of al-ʿAqabah, where seventy-three men and two women pledged to protect the Prophet ﷺ, including the appointment of twelve naqībs."
+    },
+    {
+      "id": 165844,
+      "intro_en": "✧ It narrates the Prophet's ﷺ emigration from Makkah to Madinah with Abū Bakr, their stay in the cave, encounters along the way, and initial settlement and mosque construction in Madinah."
+    },
+    {
+      "id": 165845,
+      "intro_en": "✧ It recounts interactions between the Prophet ﷺ and the Jews, Christians, and hypocrites of Madinah, including their questions, opposition, and selected conversions."
+    },
+    {
+      "id": 165846,
+      "intro_en": "✧ It details the fever that afflicted the Emigrants in Madinah and the Prophet's ﷺ supplication to transfer its pestilence to al-Juḥfah."
+    },
+    {
+      "id": 165847,
+      "intro_en": "✧ This section narrates the beginning of fighting after the Hijrah, including the revelation of permission to fight, the start of expeditions, and scholarly accounts of the Prophet’s ﷺ expeditions, detachments, and their numbers."
+    },
+    {
+      "id": 165848,
+      "intro_en": "✧ The first expedition of the Prophet ﷺ to al-Abwāʾ or Waddān in the second year AH, to intercept a Quraysh caravan, ending in a treaty with Banū Ḍamrah."
+    },
+    {
+      "id": 165849,
+      "intro_en": "✧ The detachment of ʿUbayda b. al-Ḥārith to Baṭn Rābigh, the first banner tied by the Prophet ﷺ, involving a skirmish with Abū Sufyān and the defection of two Muslims."
+    },
+    {
+      "id": 165850,
+      "intro_en": "✧ The detachment of Ḥamza b. ʿAbd al-Muṭṭalib to the seacoast, where he intercepted a Quraysh caravan led by Abū Jahl, but Majdī b. ʿAmr al-Juhanī intervened to prevent fighting."
+    },
+    {
+      "id": 165851,
+      "intro_en": "✧ The Prophet’s ﷺ expedition to Buwāṭ in the second year AH, to intercept a Quraysh caravan led by Umayyah b. Khalaf, which ended without battle."
+    },
+    {
+      "id": 165852,
+      "intro_en": "✧ The expedition to al-ʿUshayra, where the Prophet ﷺ attempted to intercept a Quraysh caravan bound for Syria, and ʿAlī b. Abī Ṭālib received the kunyah Abū Turāb."
+    },
+    {
+      "id": 165853,
+      "intro_en": "✧ A detachment led by Saʿd b. Abī Waqqāṣ to al-Khazzāz near Baṭn Rābigh, tasked with intercepting a Quraysh caravan that had already passed."
+    },
+    {
+      "id": 165854,
+      "intro_en": "✧ The Prophet’s ﷺ pursuit of Kurz b. Jābir al-Fihrī after his raid on Madinah’s camels, reaching Safawān but failing to catch him."
+    },
+    {
+      "id": 165855,
+      "intro_en": "✧ ʿAbd Allāh b. Jaḥsh led eight Emigrants in the second year to Nakhla, where they seized a Quraysh caravan, killed ʿAmr b. al-Ḥaḍramī, took captives and booty, and were justified by revealed verses."
+    },
+    {
+      "id": 165856,
+      "intro_en": "✧ The Great Battle of Badr on 17 Ramaḍān year 2 resulted in a decisive Muslim victory over Quraysh, with detailed accounts of its causes, participants, combats, captives, spoils, and aftermath."
+    },
+    {
+      "id": 165857,
+      "intro_en": "✧ The Prophet ﷺ marched against Banū Sulaym at al-Kudr, found their encampments empty, seized five hundred camels and a shepherd, then returned and distributed the spoils."
+    },
+    {
+      "id": 165858,
+      "intro_en": "✧ Abū Sufyān raided Madinah's outskirts, killed two men, and fled; the Prophet ﷺ pursued him but recovered only abandoned sawīq provisions."
+    },
+    {
+      "id": 165859,
+      "intro_en": "✧ The Prophet ﷺ led an expedition against Ghaṭafān at Dhū Amarr; his life was threatened by Duʿthūr, who then embraced Islam, and the enemy fled without battle."
+    },
+    {
+      "id": 165860,
+      "intro_en": "✧ The Prophet ﷺ marched to Buḥrān with three hundred men after learning of a Banū Sulaym gathering, but they dispersed, and he returned without hostilities."
+    },
+    {
+      "id": 165861,
+      "intro_en": "✧ Banū Qaynuqāʿ broke their pact with the Prophet ﷺ, were besieged and expelled from Madinah, and their wealth was distributed as spoils."
+    },
+    {
+      "id": 165862,
+      "intro_en": "✧ Zayd b. Ḥāritha led a detachment that intercepted a Quraysh caravan at al-Qarada, capturing booty and Furāt b. Ḥayyān, who converted to Islam."
+    },
+    {
+      "id": 165863,
+      "intro_en": "✧ Muḥammad b. Maslama and several Anṣārī companions kill the Jewish poet Kaʿb b. al-Ashraf for his insults and incitement after Badr."
+    },
+    {
+      "id": 165864,
+      "intro_en": "✧ Ḥuwayyiṣa b. Masʿūd embraces Islam after his brother Muḥayyiṣa kills a Jew on the Prophet's order."
+    },
+    {
+      "id": 165865,
+      "intro_en": "✧ The Meccan polytheists march out to avenge Badr, and the subsequent battle of Uḥud tests the believers with setback and loss."
+    },
+    {
+      "id": 165873,
+      "intro_en": "✧ A group of Muslims sent to ʿAḍal and al-Qārah is betrayed, leading to the martyrdom of ʿĀṣim, Khubayb, and Zayd."
+    },
+    {
+      "id": 165874,
+      "intro_en": "✧ Seventy Qurʾān reciters are treacherously slain at Biʾr Maʿūnah after being sent to Najd under Abū Barāʾ's protection."
+    },
+    {
+      "id": 165875,
+      "intro_en": "✧ Banū al-Naḍīr's plot to kill the Prophet leads to their siege, surrender, and expulsion to Khaybar, with their lands distributed."
+    },
+    {
+      "id": 165876,
+      "intro_en": "✧ The Prophet leads an expedition to Najd against Ghatafān, where the prayer of fear is instituted and a miraculous sign occurs."
+    },
+    {
+      "id": 165878,
+      "intro_en": "✧ The Muslims march to Badr to meet Abū Sufyān's promised battle, but the polytheists turn back, and the Muslims profit at the fair."
+    },
+    {
+      "id": 165879,
+      "intro_en": "✧ Describes the Expedition of Dūmat al-Jandal in year five, its cause, the raid on grazing livestock and herdsmen, the truce with ʿUyaynah b. Ḥiṣn, and the Prophet's ﷺ return to Madinah."
+    },
+    {
+      "id": 165880,
+      "intro_en": "✧ Focuses on the miracles that appeared during the Expedition of al-Khandaq (the Confederates)."
+    },
+    {
+      "id": 165882,
+      "intro_en": "✧ Covers the account of Abū Lubābah and the revelation concerning him, and the killing of Banū Qurayẓah, seizure of their property, and captivity of their women and children."
+    },
+    {
+      "id": 165885,
+      "intro_en": "✧ Relates the detachment of ʿAbd Allāh b. ʿAtīk against Abū Rāfiʿ Sallām b. Abī al-Ḥuqayq al-Naḍrī, including the killing and its aftermath."
+    },
+    {
+      "id": 165886,
+      "intro_en": "✧ Narrates the conversions of ʿAmr b. al-ʿĀṣ, Khālid b. al-Walīd, and ʿUthmān b. Ṭalḥah, including their journeys and pledges of allegiance to the Prophet ﷺ."
+    },
+    {
+      "id": 165887,
+      "intro_en": "✧ Details the Expedition of Banū Liḥyān in year six, including its cause, the Prophet's ﷺ route, the prayer of fear revelation, and his visit to his mother's grave."
+    },
+    {
+      "id": 165888,
+      "intro_en": "✧ Describes the Expedition of Dhū Qarad (al-Ghabah), including the raid on the Prophet's ﷺ milch-camels, the pursuit, recovery of spoils, and the return to Madinah."
+    },
+    {
+      "id": 165889,
+      "intro_en": "✧ Addresses Ibn Ubayy's stance on the quarrel between Jahjah and Sinan during the Expedition of Banū al-Muṣṭaliq (al-Muraysīʿ)."
+    },
+    {
+      "id": 165891,
+      "intro_en": "✧ It covers the Pledge of Riḍwān, the plight of the oppressed believers after the truce, and the case of emigrant women."
+    },
+    {
+      "id": 165895,
+      "intro_en": "✧ It recounts the conquest of Khaybar, including the fortresses taken, the killing of Marḥab, the marriage to Ṣafiyyah, the poisoned sheep, and the distribution of spoils."
+    },
+    {
+      "id": 165896,
+      "intro_en": "✧ It describes the return of Jaʿfar b. Abī Ṭālib and the Abyssinian emigrants, their reception by the Prophet ﷺ, and the names of those who came back aor died there."
+    },
+    {
+      "id": 165897,
+      "intro_en": "✧ It narrates the compensatory ʿUmrah in year seven, including the entry into Makkah, the ramal, the marriage to Maymūnah, and the custody of Ḥamzah's daughter."
+    },
+    {
+      "id": 165898,
+      "intro_en": "✧ It deals with the encounter with the Byzantines at Muʾtah."
+    },
+    {
+      "id": 165900,
+      "intro_en": "✧ It deals with the causes of the greatest conquest, the conquest of Makkah."
+    },
+    {
+      "id": 165902,
+      "intro_en": "✧ It recounts Khālid b. al-Walīd's detachment to Banū Jadhīmah, where he killed captives, the Prophet's disavowal, the compensation paid, and the poems exchanged."
+    },
+    {
+      "id": 165903,
+      "intro_en": "✧ It describes Khālid b. al-Walīd's demolition of al-ʿUzzā, his initial incomplete destruction, and his second return when he killed the black woman who represented the idol."
+    },
+    {
+      "id": 165904,
+      "intro_en": "✧ Covers the Prophet's ﷺ departure to fight Hawāzin, the battle events, divine protection, signs of prophethood, the fate of the polytheists, and poetry about the expedition."
+    },
+    {
+      "id": 165911,
+      "intro_en": "✧ Details the Prophet's ﷺ ʿumrah from al-Jiʿrānah in Dhū al-Qaʿdah year 8, his return to Madinah, delegation of authority over Makkah to ʿAttāb b. Usayd, and scholarly discussion of his four post-Hijrah ʿumrahs."
+    },
+    {
+      "id": 165912,
+      "intro_en": "✧ Narrates the events of the Tabūk expedition from the Prophet's ﷺ departure until his return."
+    },
+    {
+      "id": 165914,
+      "intro_en": "✧ Recounts the Thaqīf delegation's arrival in Ramaḍān year 9, their negotiation and conversion, the appointment of ʿUthmān b. Abī al-ʿĀṣ, and the demolition of the idol al-Lāt."
+    },
+    {
+      "id": 165915,
+      "intro_en": "✧ Describes Abū Bakr's leadership of the pilgrimage and the revelation of Sūrat Barāʾah."
+    },
+    {
+      "id": 165917,
+      "intro_en": "✧ Covers the delegations of Banū Tamīm, Banū ʿĀmir, and various Yemeni tribes that came to the Prophet ﷺ in year nine, including the revelation of Sūrat al-Ḥujurāt."
+    },
+    {
+      "id": 165925,
+      "intro_en": "✧ Relates the arrival of the Banū Ḥanīfah delegation with Musaylimah the liar, his false prophetic claims and rhymed sayings, the Prophet's ﷺ reply, and the appointment of agents over subdued lands."
+    },
+    {
+      "id": 165926,
+      "intro_en": "✧ Provides a detailed account of the Prophet's ﷺ sole post-Hijrah pilgrimage in year ten, covering his journey, rites, sermons, special rulings, and return to Madinah."
+    },
+    {
+      "id": 165927,
+      "intro_en": "✧ Covers the dispatch of Usāmah b. Zayd ؓ to al-Balqāʾ, the Prophet's ﷺ illness and death, and the subsequent mission of the army under Abū Bakr al-Ṣiddīq ؓ."
+    },
+    {
+      "id": 165928,
+      "intro_en": "✧ Details the Prophet's ﷺ messengers and letters to various rulers, including the Negus, Caesar, Chosroes, and al-Muqawqis, and the outcomes of these correspondences."
+    },
+    {
+      "id": 165929,
+      "intro_en": "✧ Summarizes the Prophet's ﷺ expeditions and raiding parties, their numbers, major battles, and selected accounts of specific missions led by his Companions."
+    },
+    {
+      "id": 165930,
+      "intro_en": "✧ Describes the final illness of the Prophet ﷺ, his death, the events surrounding his passing, the grief of the Companions, and Abū Bakr's ؓ address to the community."
+    },
+    {
+      "id": 165931,
+      "intro_en": "✧ Relates the gathering at the portico of Banū Sāʿidah where the Anṣār convened to choose a successor, leading to the pledge of allegiance to Abū Bakr al-Ṣiddīq ؓ as caliph."
+    },
+    {
+      "id": 165932,
+      "intro_en": "✧ Details the washing, shrouding, prayer, and burial of the Prophet ﷺ, including the Companions' disagreements and the selection of his burial place."
+    },
+    {
+      "id": 165933,
+      "intro_en": "✧ Lists the wives of the Prophet ﷺ and provides accounts of his marriages to each, along with their backgrounds and circumstances."
+    },
+    {
+      "id": 165934,
+      "intro_en": "✧ Presents the history of the Rightly Guided Caliphate under Abū Bakr al-Ṣiddīq, ʿUmar b. al-Khaṭṭāb, ʿUthmān b. ʿAffān, and ʿAlī b. Abī Ṭālib, ؓ, covering their reigns and major events."
+    },
+    {
+      "id": 165935,
+      "intro_en": "✧ Covers events in the caliphate of Abū Bakr al-Ṣiddīq from the pledge of allegiance through the Wars of Apostasy and conquests in Iraq until his death."
+    },
+    {
+      "id": 165944,
+      "intro_en": "✧ Covers the caliphate of ʿUmar b. al-Khaṭṭāb from year 13 AH, including the conquest of Damascus, the Battle of al-Qādisiyya, and administrative developments until his death in 23 AH."
+    },
+    {
+      "id": 165959,
+      "intro_en": "✧ Covers the caliphate of ʿUthmān b. ʿAffān from year 24 AH through the events of year 35 AH, including his merits and virtues."
+    },
+    {
+      "id": 165974,
+      "intro_en": "✧ Covers the caliphate of ʿAlī b. Abī Ṭālib from year 35 AH, including the battles of the Camel and Ṣiffīn, and the caliphate of al-Ḥasan b. ʿAlī."
+    },
+    {
+      "id": 165987,
+      "intro_en": "✧ Surveys the Umayyad caliphate from the reign of Muʿāwiyah b. Abī Sufyān through the caliphate of ʿUmar b. ʿAbd al-ʿAzīz up to the year 130 AH."
+    },
+    {
+      "id": 165988,
+      "intro_en": "✧ Covers the caliphate of Muʿāwiyah b. Abī Sufyān from year 41 AH until his death in 60 AH, including a biography and account of his rule."
+    },
+    {
+      "id": 166011,
+      "intro_en": "✧ Covers events of the year 61 AH, particularly the killing of al-Ḥusayn b. ʿAlī."
+    },
+    {
+      "id": 166013,
+      "intro_en": "✧ Covers events of the year 62 AH, including the delegation of the people of al-Madīnah to Yazīd, the second governorship of ʿUqbah b. Nāfiʿ over Ifrīqiyah, and the revolt of Kusaylah."
+    },
+    {
+      "id": 166014,
+      "intro_en": "✧ The Battle of al-Ḥarrah, notable deaths, and the controversial aftermath of Yazīd b. Muʿāwiyah's sack of Medina are surveyed."
+    },
+    {
+      "id": 166015,
+      "intro_en": "✧ The Syrian march on Mecca, Yazīd's death and biography, Ibn al-Zubayr's caliphate, Kharijite revolts, and notable deaths are treated."
+    },
+    {
+      "id": 166016,
+      "intro_en": "✧ The Tawwābūn's doomed expedition against Ibn Ziyād, Marwān's accession and death, ʿAbd al-Malik's caliphate, and other events are covered."
+    },
+    {
+      "id": 166017,
+      "intro_en": "✧ Al-Mukhtār's rise in Kufa, his vengeance against al-Ḥusayn's killers, and the military and political events of the year are detailed."
+    },
+    {
+      "id": 166018,
+      "intro_en": "✧ Ibn al-Ashtar's victory over Ibn Ziyād, Muṣʿab's conquest of Kufa, the killing of al-Mukhtār, and notable deaths are recounted."
+    },
+    {
+      "id": 166019,
+      "intro_en": "✧ The Kharijite wars, the death of Ibn ʿAbbās, and the romantic tragedy of Qays b. Dharīḥ and Lubnā are covered."
+    },
+    {
+      "id": 166020,
+      "intro_en": "✧ ʿAbd al-Malik's killing of ʿAmr b. Saʿīd, the Jarājima rebellion, and the lives of al-Aḥnaf and Abū al-Aswad are presented."
+    },
+    {
+      "id": 166021,
+      "intro_en": "✧ The Qays–Taghlib wars, the rebellion and killing of Khālid b. Usayd, the plague in Egypt, and the story of Majnūn Laylā are covered."
+    },
+    {
+      "id": 166022,
+      "intro_en": "✧ It recounts the killing of Muṣʿab b. al-Zubayr by ʿAbd al-Malik b. Marwān, his biography, the pledge of allegiance of Iraqis to ʿAbd al-Malik, and notable deaths."
+    },
+    {
+      "id": 166023,
+      "intro_en": "✧ It covers battles of al-Muhallab with the Azāriqah, the emergence of Abū Fudayk, al-Ḥajjāj's dispatch against Ibn al-Zubayr, the killing of ʿAbd Allāh b. Khāzim, and deaths of al-Aḥnaf b. Qays and others."
+    },
+    {
+      "id": 166024,
+      "intro_en": "✧ It provides a detailed biography of ʿAbd Allāh b. al-Zubayr and the circumstances of his killing."
+    },
+    {
+      "id": 166026,
+      "intro_en": "✧ It covers al-Ḥajjāj's governorship of Madinah, his branding of Companions, demolition of the Kaʿbah structure, al-Muhallab's appointment against the Azāriqah, and the devastation of Ifrīqiyah."
+    },
+    {
+      "id": 166027,
+      "intro_en": "✧ It relates al-Ḥajjāj's appointment over Iraq, his harsh sermon and killing of ʿUmayr b. Ḍābiʾ, the Basran uprising, battles with the Azāriqah, and the emergence of Ṣāliḥ b. Musarriḥ and Shabīb."
+    },
+    {
+      "id": 166028,
+      "intro_en": "✧ It describes the rise of Ṣāliḥ b. Musarriḥ and Shabīb b. Yazīd against Muḥammad b. Marwān, their battles, Shabīb's entry into al-Kūfah, and the first minting of dirhams and dinars by ʿAbd al-Malik."
+    },
+    {
+      "id": 166029,
+      "intro_en": "✧ It narrates Shabīb's battles against ʿAttāb b. Warqāʾ and Zuhrah b. Ḥawiyyah, his second entry into al-Kūfah, his eventual killing and drowning, and the wars of al-Muhallab with the Azāriqah."
+    },
+    {
+      "id": 166030,
+      "intro_en": "✧ It covers the conquest of Irqiliyya, Mūsā b. Nuṣayr's appointment to the Maghrib, the dismissal of Umayyah b. ʿAbd Allāh from Khurāsān, al-Ḥajjāj's completion of Wāsiṭ, and deaths of Jābir b. ʿAbd Allāh and Shurayḥ."
+    },
+    {
+      "id": 166031,
+      "intro_en": "✧ Covers the plague of Syria, ʿUbayd Allāh b. Abī Bakrah’s campaign against Ratbīl, and the killing of the false prophet al-Ḥārith b. Saʿīd."
+    },
+    {
+      "id": 166032,
+      "intro_en": "✧ Reports the sweeping flood at Makkah, al-Muhallab’s expedition across the Balkh river, and al-Ḥajjāj’s campaign against Ratbīl."
+    },
+    {
+      "id": 166033,
+      "intro_en": "✧ Relates the conquest of Qāliqalā, the killing of Baḥīr b. Warqāʾ, the Daylamite raid on Qazwīn, and Ibn al-Ashʿath’s rebellion."
+    },
+    {
+      "id": 166034,
+      "intro_en": "✧ Details the dismissal of Abān b. ʿUthmān, the battles of al-Zāwiyah and Dayr al-Jamājim, and the death of al-Muhallab b. Abī Ṣufrah."
+    },
+    {
+      "id": 166035,
+      "intro_en": "✧ Narrates the defeat of Ibn al-Ashʿath at Dayr al-Jamājim, al-Ḥajjāj’s execution of prisoners, and the building of Wāsiṭ."
+    },
+    {
+      "id": 166036,
+      "intro_en": "✧ Mentions the conquest of al-Maṣṣīṣah, the killing of Ibn al-Ashʿath’s companions, the death of Ibn al-Ashʿath himself, and the capture of the fortress of Nīzak."
+    },
+    {
+      "id": 166037,
+      "intro_en": "✧ Describes al-Ḥajjāj’s dismissal of Yazīd b. al-Muhallab, the killing of Mūsā b. ʿAbd Allāh b. Khāzim, and ʿAbd al-Malik’s attempt to remove his brother ʿAbd al-ʿAzīz."
+    },
+    {
+      "id": 166038,
+      "intro_en": "✧ Reports Qutaybah b. Muslim’s campaigns, the Plague of the Maidens, Maslamah’s raid on Byzantium, and the death of Caliph ʿAbd al-Malik."
+    },
+    {
+      "id": 166039,
+      "intro_en": "✧ Covers ʿUmar b. ʿAbd al-ʿAzīz's governorship of Madinah, Maslamah's Byzantine raid, Qutaybah's campaigns against the Turks including Baykand, and the deaths of several Companions and notables."
+    },
+    {
+      "id": 166040,
+      "intro_en": "✧ Describes the conquest of Tyana, the expansion of the Prophet's Mosque, Qutaybah's victory over Kūrmaghānūn, and the construction of the Mosque of Damascus along with deaths of notable Companions."
+    },
+    {
+      "id": 166041,
+      "intro_en": "✧ Includes Byzantine raids, Qutaybah's campaigns in Transoxiana, the conquest of Sind, Mūsā b. Nuṣayr's appointment over Ifrīqiyah, and the beginning of the Abbasid call."
+    },
+    {
+      "id": 166042,
+      "intro_en": "✧ Details Maslamah's Byzantine campaign, Qutaybah's conquest of Bukhārā and dealings with Ṭarkhūn, the flight of Yazīd b. al-Muhallab from al-Ḥajjāj's prison, and deaths of notables like Anas b. Mālik."
+    },
+    {
+      "id": 166043,
+      "intro_en": "✧ Records Maslamah's campaigns, Khālid al-Qasrī's governorship of Makkah, Mūsā b. Nuṣayr's Maghrib raids, Qutaybah's defeat of Nīzak, the conquest of Shūmān, Kishsh and Nasaf, and al-Walīd's pilgrimage."
+    },
+    {
+      "id": 166044,
+      "intro_en": "✧ Covers Maslamah's Byzantine raids, the conquest of al-Andalus by Ṭāriq b. Ziyād and Mūsā b. Nuṣayr, Qutaybah's foray into Sijistān, the expedition to Sardinia, and deaths including Anas b. Mālik."
+    },
+    {
+      "id": 166045,
+      "intro_en": "✧ Includes Byzantine campaigns by Maslamah and al-ʿAbbās, the flogging of Khubayb b. ʿAbd Allāh, Qutaybah's peace with Khwārizm Shāh, the conquest of Samarqand, and the dismissal of ʿUmar b. ʿAbd al-ʿAzīz."
+    },
+    {
+      "id": 166046,
+      "intro_en": "✧ Describes raids into Byzantine territory, Qutaybah's campaigns in al-Shāsh and Farghānah, the killing of Saʿīd b. Jubayr, the deaths of major jurists, and the life of ʿAlī b. al-Ḥusayn Zayn al-ʿĀbidīn."
+    },
+    {
+      "id": 166047,
+      "intro_en": "✧ Chronicles the campaigns of ʿAbbās b. al-Walīd, Maslamah, and Muḥammad b. al-Qāsim in 95 AH, alongside the lengthy biography and death of al-Ḥajjāj b. Yūsuf."
+    },
+    {
+      "id": 166048,
+      "intro_en": "✧ Records events of 96 AH, including Qutaybah b. Muslim's conquest of Kashgar, completion of the Umayyad Mosque of Damascus, and the death of al-Walīd b. ʿAbd al-Malik."
+    },
+    {
+      "id": 166049,
+      "intro_en": "✧ Covers the year 97 AH, including Sulaymān b. ʿAbd al-Malik's preparation of armies for Constantinople, the killing of ʿAbd al-ʿAzīz b. Mūsā b. Nuṣayr, and Yazīd b. al-Muhallab's raids on Jurjān and Ṭabaristān."
+    },
+    {
+      "id": 166050,
+      "intro_en": "✧ Describes in 98 AH the siege of Constantinople by Maslamah, Sulaymān's oath of allegiance to ʿUmar b. ʿAbd al-ʿAzīz, and the second conquest of Jurjān by Yazīd b. al-Muhallab."
+    },
+    {
+      "id": 166051,
+      "intro_en": "✧ Details the death of Sulaymān b. ʿAbd al-Malik in 99 AH, the accession and early reforms of ʿUmar b. ʿAbd al-ʿAzīz, and the abandonment of reviling ʿAlī."
+    },
+    {
+      "id": 166052,
+      "intro_en": "✧ Accounts for 100 AH include the Khārijī Shaudhab's rising, arrest of Yazīd b. al-Muhallab, beginnings of the ʿAbbāsid daʿwah, and deaths of several Successors."
+    },
+    {
+      "id": 166053,
+      "intro_en": "✧ The source material for The Year 101 is a heading only with no child headings or passage text to summarize."
+    },
+    {
+      "id": 166055,
+      "intro_en": "✧ Recounts the defeat and killing of Yazīd b. al-Muhallab by Maslamah, subsequent appointments over Iraq and Khurāsān, and the oath of allegiance to Hishām and al-Walīd."
+    },
+    {
+      "id": 166056,
+      "intro_en": "✧ In 103 AH, Saʿīd b. ʿAmr al-Ḥarashī governed Khurasan, subdued al-Ṣughd, and Yazīd b. ʿAbd al-Malik unified Madinah and Makkah under ʿAbd al-Raḥmān b. al-Ḍaḥḥāk, with various raids and deaths among notables."
+    },
+    {
+      "id": 166057,
+      "intro_en": "✧ In 104 AH, al-Ḥarashī fought the Ṣughd, al-Jarrāḥ conquered Balanjar from the Khazars, ʿAbd al-Raḥmān b. al-Ḍaḥḥāk was dismissed, Abū al-ʿAbbās al-Saffāḥ was born, and Muslim b. Saʿīd replaced al-Ḥarashī in Khurasan."
+    },
+    {
+      "id": 166058,
+      "intro_en": "✧ In 105 AH, Kharijite leaders ʿUqfān, Masʿūd al-ʿAbdī, and Muṣʿab b. Muḥammad arose and were suppressed, Yazīd b. ʿAbd al-Malik died, Hishām succeeded him, Khālid al-Qasrī governed Iraq, and ʿAbbasid propaganda strengthened in Iraq."
+    },
+    {
+      "id": 166059,
+      "intro_en": "✧ In 106 AH, the Battle of al-Burūqān occurred between Muḍar and al-Yaman in Khurasan, Muslim b. Saʿīd campaigned against the Turks, Asad b. ʿAbd Allāh was appointed over Khurasan, and Hishām performed the Hajj."
+    },
+    {
+      "id": 166060,
+      "intro_en": "✧ In 107 AH, al-Junayd b. ʿAbd al-Raḥmān conquered parts of al-Sind and killed Jayshabah, ʿAnbasah b. Suḥaym raided the Franks in al-Andalus, and ʿAbbasid propagandists were persecuted in Khurasan."
+    },
+    {
+      "id": 166061,
+      "intro_en": "✧ In 108 AH, Asad b. ʿAbd Allāh raided Khuttal and Ghūr, Maslama b. ʿAbd al-Malik conquered Qaysāriyya from the Byzantines, and Khinjara was conquered by al-Baṭṭāl."
+    },
+    {
+      "id": 166062,
+      "intro_en": "✧ In 109 AH, Asad b. ʿAbd Allāh was dismissed from Khurasan and replaced by Ashras al-Sulamī, several naval and land expeditions occurred, and ʿAbbasid propaganda continued with Ziyād Abū Muḥammad's execution."
+    },
+    {
+      "id": 166063,
+      "intro_en": "✧ In 110 AH, Maslama b. ʿAbd al-Malik fought the Khāqān in the Expedition of the Mud, Ashras attempted tax reform in Samarqand, the Battle of Kamarjah took place, and Jarīr and al-Farazdaq died."
+    },
+    {
+      "id": 166064,
+      "intro_en": "✧ Covers the dismissal of Ashras from Khurasan, al-Junayd's appointment and campaigns against the Turks, various events including raids, and deaths of notables like al-Ḥajjāj the Devout."
+    },
+    {
+      "id": 166065,
+      "intro_en": "✧ Describes the killing of al-Jarrāḥ al-Ḥakamī by the Khazar, al-Ḥarashī's counterattacks, al-Junayd's battle at the mountain pass, the death of Sawrah b. al-Ḥurr, and other events with notable deaths."
+    },
+    {
+      "id": 166066,
+      "intro_en": "✧ Relates the death of ʿAbd al-Wahhāb b. Bukht, Maslamah's campaign against the Khazar, the killing of ʿAbd al-Raḥmān al-Ghāfiqī in al-Andalus, and various events and deaths."
+    },
+    {
+      "id": 166067,
+      "intro_en": "✧ Details Marwān b. Muḥammad's governorship of Armenia and his campaigns against the Khazar and neighboring peoples, along with other events and deaths including Muḥammad al-Bāqir."
+    },
+    {
+      "id": 166068,
+      "intro_en": "✧ Mentions the raid of Muʿāwiyah b. Hishām, plague and drought, the pilgrimage, and deaths of notables like Khiyār b. Khālid and ʿAmr b. Marwān."
+    },
+    {
+      "id": 166069,
+      "intro_en": "✧ Covers the dismissal and death of al-Junayd, the deposition of al-Ḥārith b. Surayj, and various events and deaths in the year 116."
+    },
+    {
+      "id": 166070,
+      "intro_en": "✧ Describes the dismissal of ʿĀṣim and appointment of Asad in Khurasan, Abbasid propaganda, ʿUbayd Allāh b. al-Ḥabḥāb's governorship in Ifrīqiya, and numerous deaths including Sukayna bt. al-Ḥusayn."
+    },
+    {
+      "id": 166071,
+      "intro_en": "✧ Covers Khidāsh's heterodox propaganda among the Abbasid Shīʿa, Asad's campaigns against al-Ḥārith's followers, various events, and deaths of several ascetics and scholars."
+    },
+    {
+      "id": 166072,
+      "intro_en": "✧ Covers the killing of the Khāqān during Asad b. ʿAbd Allāh's campaign in Khuttal, interspersed with revolts by al-Mughīrah b. Saʿīd, Bayān, Khawārij leaders, and the expedition of Asad, alongside notable deaths that year."
+    },
+    {
+      "id": 166073,
+      "intro_en": "✧ Relates the death of Asad b. ʿAbd Allāh, the Abbasid Shīʿah in Khurāsān, the dismissal of Khālid al-Qasrī and appointment of Yūsuf b. ʿUmar, the appointment of Naṣr b. Sayyār, and deaths of notables."
+    },
+    {
+      "id": 166074,
+      "intro_en": "✧ Describes the emergence of Zayd b. ʿAlī and the causes of his opposition, along with Naṣr b. Sayyār's campaigns beyond the river and Marwān b. Muḥammad's expedition in Armenia."
+    },
+    {
+      "id": 166075,
+      "intro_en": "✧ Recounts the killing of Zayd b. ʿAlī b. al-Ḥusayn and the subsequent risings of his descendants and other rebels, in addition to the killing of al-Baṭṭāl and other events of the year."
+    },
+    {
+      "id": 166076,
+      "intro_en": "✧ Details Naṣr b. Sayyār's peace treaty with Sughd, the death of ʿUqbah and entry of Balj into al-Andalus, and the deaths of notables including Iyās al-Dhakī and al-Zuhrī."
+    },
+    {
+      "id": 166077,
+      "intro_en": "✧ Contains the beginning of the affair of Abū Muslim al-Khurāsānī, the war between Balj and the sons of ʿAbd al-Malik, and the deaths of notables including al-Zuhrī, Bilāl b. Saʿd, and al-Jaʿd b. Dirham."
+    },
+    {
+      "id": 166078,
+      "intro_en": "✧ Addresses the caliphate of al-Walīd b. Yazīd."
+    },
+    {
+      "id": 166080,
+      "intro_en": "✧ Describes the killing of Khālid b. ʿAbd Allāh al-Qasrī, the killing of al-Walīd b. Yazīd followed by the caliphate of Yazīd b. al-Walīd al-Nāqiṣ, and the turmoil among the Umayyads including the brief caliphate of Ibrāhīm b. al-Walīd."
+    },
+    {
+      "id": 166081,
+      "intro_en": "✧ This year covers Marwān b. Muḥammad's accession, the revolts of ʿAbd Allāh b. Muʿāwiyah, al-Ḥārith b. Surayj, the people of Ḥimṣ, al-Ghūṭah, Palestine, and Sulaymān b. Hishām, and the rise of al-Ḍaḥḥāk al-Khārijī."
+    },
+    {
+      "id": 166082,
+      "intro_en": "✧ This year covers the death of al-Ḥārith b. Surayj, the killing of al-Ḍaḥḥāk al-Khārijī, and the rise of Abū Ḥamzah al-Khārijī with Ṭālib al-Ḥaqq."
+    },
+    {
+      "id": 166083,
+      "intro_en": "✧ This year covers the rebellion and death of Shaybān al-Ḥarūrī, the manifestation of the Abbasid call under Abū Muslim, Khāzim's seizure of Marw al-Rūdh, the killing of al-Karmānī, and ʿAbd Allāh b. Muʿāwiyah's conquest of Fārs."
+    },
+    {
+      "id": 166084,
+      "intro_en": "✧ This year covers the deaths of Naṣr b. Sayyār and ʿĀmir b. Ḍubārah, Qaḥṭabah's advances through al-Rayy and Hamadhān, the siege of Nahāwand, the conquest of Shahrazūr, and the plague of Salm b. Qutaybah."
+    },
+    {
+      "id": 166085,
+      "intro_en": "✧ This year covers Abū Muslim's entry into Marw, the flight and death of Naṣr b. Sayyār, the killing of Shaybān al-Ḥarūrī and the sons of al-Kirmānī, and Qaḥṭabah's campaign into Iraq."
+    },
+    {
+      "id": 166086,
+      "intro_en": "✧ This section covers the Abbasid caliphate from its establishment in 132 AH through the year 768 AH, including the reigns of successive caliphs, major revolts, regional governors, and events in al-Andalus, Egypt, Syria, and the East."
+    },
+    {
+      "id": 166087,
+      "intro_en": "✧ This year covers the death of Qaḥṭabah, the defeat of Ibn Hubayrah at Wāsiṭ, the oath of allegiance to Abū al-ʿAbbās al-Saffāḥ, Marwān's defeat and death at Būṣīr, and the killing of leading Umayyads."
+    },
+    {
+      "id": 166088,
+      "intro_en": "✧ This year covers the Byzantine seizure of Malaṭyah, the appointment of governors, Dāwūd b. ʿAlī's killing of captured Umayyads in the Ḥijāz, the suppression of Sharīk b. Shaykh's revolt in Bukhārā, and the Muslim victory over the Chinese at Ṭirāz."
+    },
+    {
+      "id": 166089,
+      "intro_en": "✧ Covers the renunciation of Bassām b. Ibrāhīm, Khāzim's campaign against the Kharijites in Oman, Abū Dāwūd's raid on Kiss, and the dispatch of Mūsā b. Kaʿb against Manṣūr b. Jumhūr, along with administrative appointments and deaths."
+    },
+    {
+      "id": 166090,
+      "intro_en": "✧ Recounts Ziyād b. Ṣāliḥ's revolt and killing, the raid on Sicily, and biographies of figures including Ismāʿīl b. Sālim, Rābiʿah al-ʿAdawiyyah, ʿAbd Allāh b. al-Sāʾib, and ʿAṭāʾ al-Khurāsānī."
+    },
+    {
+      "id": 166091,
+      "intro_en": "✧ Describes Abū Muslim's visit to al-Saffāḥ, al-Saffāḥ's death and biography, the accession of al-Manṣūr, the sedition in al-Andalus, and deaths of scholars such as Rabīʿah al-Raʾy."
+    },
+    {
+      "id": 166092,
+      "intro_en": "✧ Discusses the role of Abū Muslim al-Khūlānī in the Abbasid caliphate."
+    },
+    {
+      "id": 166094,
+      "intro_en": "✧ Narrates the Byzantine attack on Malaṭya, the defection of Jumhūr b. Mirār, the killing of Mulabbad the Khārijite, the establishment of ʿAbd al-Raḥmān al-Dākhil in al-Andalus, and deaths of scholars."
+    },
+    {
+      "id": 166095,
+      "intro_en": "✧ Details the rebuilding of Malaṭya, the ransom with Byzantium, and the entry of ʿAbd al-Raḥmān b. Muʿāwiyah into al-Andalus, including a survey of its governors and his conquest."
+    },
+    {
+      "id": 166096,
+      "intro_en": "✧ Reports the death of Abū Dāwūd in Khurāsān, the killing of Yūsuf al-Fihrī by ʿAbd al-Raḥmān al-Umawī, al-Manṣūr's construction projects, and the deaths of several scholars."
+    },
+    {
+      "id": 166097,
+      "intro_en": "✧ Covers the revolt of the Rāwandiyyah, the defection and punishment of ʿAbd al-Jabbār in Khurāsān, the conquest of Ṭabaristān, and deaths of figures like Abū Ḥāzim Salamah b. Dīnār."
+    },
+    {
+      "id": 166098,
+      "intro_en": "✧ Covers the caliphate of al-Manṣūr in 142 AH, including the ruse against the Iṣbahbadh, rebellion of ʿUyaynah b. Mūsā in al-Sind, and deaths of several notables such as Sulaymān b. ʿAlī and ʿAmr b. ʿUbayd."
+    },
+    {
+      "id": 166099,
+      "intro_en": "✧ Covers events of 143 AH, including the Daylamite rising, the beginning of compiling ḥadīth, fiqh, and tafsīr, and biographies of death of figures such as Sulaymān al-Taymī and Yaḥyā b. Saʿīd al-Anṣārī."
+    },
+    {
+      "id": 166100,
+      "intro_en": "✧ Covers events of 144 AH, including al-Mahdī's marriage to Rayṭah, appointment of Riyāḥ b. ʿUthmān over Medina, imprisonment and transport of the Banū al-Ḥasan to Iraq, and deaths including Ibn al-Muqaffaʿ."
+    },
+    {
+      "id": 166101,
+      "intro_en": "✧ Covers events of 145 AH, primarily the uprisings of Muḥammad al-Nafs al-Zakiyya in Medina and his brother Ibrāhīm in Basra against al-Manṣūr, their defeats, and the beginning of construction of Baghdad."
+    },
+    {
+      "id": 166102,
+      "intro_en": "✧ Covers events of 146 AH, including al-Manṣūr's move to Baghdad and details of its construction, rebellion of al-ʿAlāʾ in al-Andalus, and obituaries of figures such as Hishām b. ʿUrwa."
+    },
+    {
+      "id": 166103,
+      "intro_en": "✧ Covers events of 147 AH, including the killing of Ḥarb b. ʿAbd Allāh by Turks, ʿĪsā b. Mūsā's abdication in favor of al-Mahdī, death of ʿAbd Allāh b. ʿAlī, and flogging of Mālik b. Anas."
+    },
+    {
+      "id": 166104,
+      "intro_en": "✧ Covers events of 148 AH, including the Kharijite rising of Ḥassān b. Mujālid, appointment of Khālid b. Barmak over Mosul, birth of al-Faḍl b. Yaḥyā, and governorship of al-Aghlab b. Sālim in Ifrīqiyah."
+    },
+    {
+      "id": 166105,
+      "intro_en": "✧ Covers events in al-Andalus during 149 AH."
+    },
+    {
+      "id": 166107,
+      "intro_en": "✧ Covers the defeat of Ustādh Sīs' Khurāsān revolt, the governorship of al-Ḥasan b. Zayd in Medina, a rebellion in al-Andalus, and the death of Abū Ḥanīfah."
+    },
+    {
+      "id": 166108,
+      "intro_en": "✧ Includes the Kurk raid on Jeddah, the building of al-Ruṣāfah, the transfer of ʿUmar b. Ḥafṣ from al-Sind and the governorship of Hishām b. ʿAmr, and biographies of several scholars."
+    },
+    {
+      "id": 166109,
+      "intro_en": "✧ Covers Ḥumayd b. Qaḥṭabah's raid on Kabul, al-Manṣūr's execution of Hāshim b. al-Asājīj, the killing of Maʿn b. Zāʾidah, and the deaths of Ibrāhīm b. Abī ʿAblah, Ibn Isḥāq, and Misʿar."
+    },
+    {
+      "id": 166110,
+      "intro_en": "✧ Includes al-Manṣūr's imprisonment of Abū Ayyūb al-Mūriyānī, the Khārijite revolt in Ifrīqiya, the compulsory tall caps, and deaths including Ḥaywah b. Shurayḥ and Maʿmar b. Rāshid."
+    },
+    {
+      "id": 166111,
+      "intro_en": "✧ Covers al-Manṣūr's dispatch of Yazīd b. Ḥātim to Ifrīqiya, the building of al-Rāfiqah, and deaths of Ibrāhīm b. Yazīd, Ashʿab the greedy, and Abū Ayyūb al-Mūriyānī."
+    },
+    {
+      "id": 166112,
+      "intro_en": "✧ Concerns the dismissal of some governors and the appointment of others in the year 155 AH."
+    },
+    {
+      "id": 166114,
+      "intro_en": "✧ Includes the suppression of Khārijite revolts in Ifrīqiya, the capture of ʿAmr b. Shaddād, the rebellion of Seville against ʿAbd al-Raḥmān al-Umawī, and deaths of Ruʾba, Ḥamza al-Zayyāt, and ʿAbd al-Raḥmān al-Ifrīqī."
+    },
+    {
+      "id": 166115,
+      "intro_en": "✧ Concerns the dismissal of some governors and the appointment of others in the year 157 AH."
+    },
+    {
+      "id": 166117,
+      "intro_en": "✧ Covers the death and testament of al-Manṣūr, his biography, sayings, children, the succession of al-Mahdī, and the tenure of governors, alongside notable figures and events of 158 AH."
+    },
+    {
+      "id": 166118,
+      "intro_en": "✧ Details the year 159 AH including al-Ḥasan b. Ibrāhīm's escape, Yaʿqūb b. Dāwūd's rise, the appearance of al-Muqannaʿ, and various administrative appointments."
+    },
+    {
+      "id": 166119,
+      "intro_en": "✧ Chronicles the year 160 AH covering the revolt of Yūsuf al-Barm, the deposition of ʿĪsā b. Mūsā, the conquest of Bārbād, and restorations of clientage."
+    },
+    {
+      "id": 166120,
+      "intro_en": "✧ Recounts the year 161 AH including the Muqannaʿ revolt in Khurāsān, ʿĪsā b. Mūsā's removal from succession, al-Mahdī's infrastructure projects, and the death of scholars such as Sufyān al-Thawrī."
+    },
+    {
+      "id": 166121,
+      "intro_en": "✧ Describes the year 162 AH with the killing of ʿAbd al-Salām al-Yashkurī, expeditions against Byzantium, al-Mahdī's imprisonment of Mūsā b. Jaʿfar, and obituaries of notable scholars."
+    },
+    {
+      "id": 166122,
+      "intro_en": "✧ Recounts the year 163 AH including the death of al-Muqannaʿ, Hārūn al-Rashīd's expedition against Byzantium, and the death of Ibrāhīm b. Ṭahmān."
+    },
+    {
+      "id": 166123,
+      "intro_en": "✧ Details the year 164 AH covering ʿAbd al-Karīm's failed expedition, al-Mahdī's construction at ʿĪsābādh, his Ḥajj preparations, and expeditions of ʿAbd al-Raḥmān al-Umawī in al-Andalus."
+    },
+    {
+      "id": 166124,
+      "intro_en": "✧ Covers the year 165 AH including Hārūn al-Rashīd's summer expedition against the Byzantines involving Empress Irene, his marriage to Zubaydah, and the pilgrimage led by Ṣāliḥ b. Abī Jaʿfar."
+    },
+    {
+      "id": 166125,
+      "intro_en": "✧ In 166 AH al-Mahdī secured the succession for Hārūn al-Rashīd, dismissed judges, and later arrested and imprisoned his vizier Yaʿqūb b. Dāwūd for alleged heresy and intrigue."
+    },
+    {
+      "id": 166126,
+      "intro_en": "✧ In 167 AH al-Mahdī dispatched Mūsā al-Hādī to Jurjān with a large army, expanded the Sacred Mosque, suppressed heretics, and contended with rebellious Arabs in al-Baḥrayn."
+    },
+    {
+      "id": 166127,
+      "intro_en": "✧ In 168 AH the Byzantines broke their truce with Hārūn al-Rashīd, prompting raids, while al-Mahdī suppressed heretics, dispatched Saʿīd al-Ḥarashī to Ṭabaristān, and faced Khārijite and Andalusi uprisings."
+    },
+    {
+      "id": 166128,
+      "intro_en": "✧ In 169 AH Mūsā al-Hādī assumed the caliphate."
+    },
+    {
+      "id": 166130,
+      "intro_en": "✧ In 170 AH al-Hādī died, and allegiance was pledged to Hārūn al-Rashīd, who entrusted the vizierate to Yaḥyā b. Khālid al-Barmakī; notable deaths included the devout worshipper Jawharah and vizier al-Rabīʿ b. Yūnus."
+    },
+    {
+      "id": 166131,
+      "intro_en": "✧ In 171 AH al-Rashīd added the seal to Yaḥyā al-Barmakī's vizierate, quelled the al-Ṣaḥṣaḥ Khārijite rebellion, and witnessed the death of ʿAbd al-Raḥmān al-Umawī, lord of al-Andalus."
+    },
+    {
+      "id": 166132,
+      "intro_en": "✧ In 172 AH the brothers Sulaymān and ʿAbd Allāh rebelled against their brother Hishām in al-Andalus, while al-Rashīd reshuffled governors and Muʿādh b. Muʿādh assumed the judgeship of al-Baṣrah."
+    },
+    {
+      "id": 166133,
+      "intro_en": "✧ In 173 AH Muḥammad b. Sulaymān died and his immense estate was seized, al-Khayzurān, mother of al-Hādī and al-Rashīd, died, and al-Rashīd led the pilgrimage from Baghdād."
+    },
+    {
+      "id": 166134,
+      "intro_en": "✧ It covers al-Rashīd's appointments of judges and governors, his pilgrimage route and construction work, factional discord in Syria, and the obituary notices of notable figures who died that year."
+    },
+    {
+      "id": 166135,
+      "intro_en": "✧ It records al-Rashīd's designation of his son Muḥammad as heir apparent, Hishām's campaigns in al-Andalus, the uprising of Ḥuṣayn al-Khārijī in Khurāsān, and deaths of several scholars and devout figures."
+    },
+    {
+      "id": 166136,
+      "intro_en": "✧ It treats the rise and settlement of Yaḥyā b. ʿAbd Allāh in al-Daylam, ʿUmar b. Mihrān's governorship of Egypt, the Muḍarī–Yamanī factional strife in Damascus, and deaths of notable scholars and poets."
+    },
+    {
+      "id": 166137,
+      "intro_en": "✧ It describes raids by Hishām against the Franks, the appointment and misrule of al-Faḍl b. Rawḥ in Ifrīqiya, Harthama b. Aʿyan's subsequent governorship there, the sedition of al-ʿAṭṭāf in al-Mawṣil, and deaths of prominent figures."
+    },
+    {
+      "id": 166138,
+      "intro_en": "✧ It details the Ḥūfī factional strife in Egypt, al-Faḍl b. Yaḥyā's actions in Khurāsān, the Khārijite uprising of al-Walīd b. Ṭarīf, Hishām's campaigns against the Franks and Galicians, and deaths of various scholars."
+    },
+    {
+      "id": 166139,
+      "intro_en": "✧ It reports Hishām's campaign in Jalīqiyya and a destructive Frankish counter-raid, al-Rashīd's return to Baghdad by way of al-Baṣrah, and obituaries including the poet al-Sayyid al-Ḥimyarī and Imam Mālik b. Anas."
+    },
+    {
+      "id": 166140,
+      "intro_en": "✧ It narrates the death of Hishām and succession of his son al-Ḥakam in al-Andalus, the latter's initial campaigns against the Franks, al-Rashīd's appointment of ʿAlī b. ʿĪsā over Khurāsān, and deaths of numerous scholars."
+    },
+    {
+      "id": 166141,
+      "intro_en": "✧ It describes Muḥammad b. Muqātil's governorship of Ifrīqiya and the rise of Ibrāhīm b. al-Aghlab, rebellions in al-Andalus, al-Rashīd's Byzantine campaign and ransom exchange, and obituaries including Ibn al-Mubārak."
+    },
+    {
+      "id": 166142,
+      "intro_en": "✧ Al-Rashīd secured the succession for al-Amīn, then al-Maʾmūn over Khurāsān, while the year saw a Khazar princess's death, Byzantine raids, Andalusian civil strife, and the passing of several scholars and poets."
+    },
+    {
+      "id": 166143,
+      "intro_en": "✧ The Khazar invasion of Armenia was repelled by Yazīd b. Mazyad and Khuzayma b. Khāzim, while rebellions in Khurāsān and al-Andalus occurred and numerous scholars and ascetics died."
+    },
+    {
+      "id": 166144,
+      "intro_en": "✧ Al-Rashīd returned to Baghdad, suppressed Abū al-Khaṣīb's revolt, and appointed governors, while floods occurred and prominent ascetics and officials such as his son Aḥmad al-Sabtī and ʿAbd Allāh b. Muṣʿab died."
+    },
+    {
+      "id": 166145,
+      "intro_en": "✧ Al-Rashīd marched to al-Rayy to address ʿAlī b. ʿĪsā's misrule, while Byzantine raids, the capture of Toledo by Franks, and the deaths of scholars like al-Kisāʾī and Muḥammad b. al-Ḥasan took place."
+    },
+    {
+      "id": 166146,
+      "intro_en": "✧ Al-Ḥakam of al-Andalus made peace with his uncle ʿAbd Allāh al-Balansī, and al-Rashīd's pilgrimage included the formal succession documents for his sons al-Amīn, al-Maʾmūn, and al-Muʾtaman."
+    },
+    {
+      "id": 166147,
+      "intro_en": "✧ The Barāmikah fell from power, with Jaʿfar b. Yaḥyā executed and his family imprisoned, while other events included Ibrāhīm b. ʿUthmān b. Nahīk's killing, ʿAbd al-Malik b. Ṣāliḥ's arrest, and Byzantine campaigns."
+    },
+    {
+      "id": 166148,
+      "intro_en": "✧ Ibrāhīm b. Jibrāʾīl's summer raid wounded the Byzantine emperor Nicephorus, al-Rashīd performed his final pilgrimage, and the year saw the deaths of notable scholars and poets including Ibrāhīm al-Mawṣilī."
+    },
+    {
+      "id": 166149,
+      "intro_en": "✧ Al-Rashīd marched to al-Rayy to confront ʿAlī b. ʿĪsā b. Māhān's misrule, ransomed Muslim captives, and oversaw the deaths of prominent scholars and poets such as al-Kisāʾī and Muḥammad b. al-Ḥasan."
+    },
+    {
+      "id": 166150,
+      "intro_en": "✧ Covers the 190 AH deposition of Rāfiʿ b. al-Layth, al-Rashīd's conquest of Hiraqlah and campaigns against Naqfur, and deaths of notables."
+    },
+    {
+      "id": 166151,
+      "intro_en": "✧ Records the revolt of Tharwan b. Sayf, al-Rashīd's summer raid, sedition in Toledo under al-Ḥakam, dismissal of ʿAlī b. ʿĪsā from Khurāsān, and deaths of notables."
+    },
+    {
+      "id": 166152,
+      "intro_en": "✧ Details al-Rashīd's march to Khurāsān, Harthama's siege of Rāfiʿ, Khurramiyya disturbances, and obituaries of notables including Ibn Idrīs and al-Faḍl b. Yaḥyā."
+    },
+    {
+      "id": 166153,
+      "intro_en": "✧ Begins the caliphate of Muḥammad al-Amīn b. Hārūn al-Rashīd as successor."
+    },
+    {
+      "id": 166155,
+      "intro_en": "✧ Chronicles the opposition of Ḥimṣ, outbreak of discord between al-Amīn and al-Maʾmūn, rebellions in Tunis and Mārida, and deaths including Shaqīq al-Balkhī."
+    },
+    {
+      "id": 166156,
+      "intro_en": "✧ Records al-Amīn's deposition of al-Maʾmūn, campaigns of ʿAlī b. ʿĪsā and ʿAbd al-Raḥmān b. Jabalah, emergence of the Sufyānī, and death of Abū Nuwās."
+    },
+    {
+      "id": 166157,
+      "intro_en": "✧ Covers al-Faḍl b. Sahl's elevation, death of ʿAbd al-Malik b. Ṣāliḥ, temporary deposition of al-Amīn, Ṭāhir's conquests, and Ṭāhir's siege of Baghdad."
+    },
+    {
+      "id": 166158,
+      "intro_en": "✧ Describes the intensifying siege of Baghdad against al-Amīn, defection of al-Qāsim and Manṣūr b. al-Mahdī, famine in al-Andalus, and deaths of Wakīʿ and ʿAbd Allāh b. Wahb."
+    },
+    {
+      "id": 166159,
+      "intro_en": "✧ Covers the year 198 AH, including al-Maʾmūn's accession, Ṭāhir's capture of Baghdādh, the killing of al-Amīn, the soldiers' revolt, and deaths of scholars."
+    },
+    {
+      "id": 166160,
+      "intro_en": "✧ Covers the year 199 AH, including the rising of Ibn Ṭabāṭabā and Abū al-Sarāyā in al-Kūfah, Naṣr b. Shabath's opposition, al-Ḥasan b. Sahl's governorship, and deaths of notables."
+    },
+    {
+      "id": 166161,
+      "intro_en": "✧ Covers events in al-Andalus during the year 200 AH, though the source material lacks further details."
+    },
+    {
+      "id": 166163,
+      "intro_en": "✧ Covers the year 201 AH, including al-Maʾmūn's designation of ʿAlī b. Mūsā al-Riḍā as heir apparent, Baghdādh's pledge to Ibrāhīm b. al-Mahdī, volunteers' enforcement of morality, conquests, and deaths of notables."
+    },
+    {
+      "id": 166164,
+      "intro_en": "✧ Covers the year 202 AH, including the bayʿah of Ibrāhīm b. al-Mahdī, capture of Sahl b. Salāmah, al-Maʾmūn's march to Iraq, the killing of al-Faḍl b. Sahl, and deaths of notables."
+    },
+    {
+      "id": 166165,
+      "intro_en": "✧ Covers the year 203 AH, including the death of ʿAlī b. Mūsā al-Riḍā, Ibrāhīm b. al-Mahdī's imprisonment of ʿĪsā b. Muḥammad and his own deposition and hiding, and deaths of notables."
+    },
+    {
+      "id": 166166,
+      "intro_en": "✧ Covers the year 204 AH, including al-Maʾmūn's entry into Baghdādh, the return to black clothing, Ibrāhīm b. al-Mahdī's pardon, and deaths of notables including al-Shāfiʿī."
+    },
+    {
+      "id": 166167,
+      "intro_en": "✧ Covers the year 205 AH, including Ṭāhir b. al-Ḥusayn's appointment over Khurāsān, flooding of the Tigris, and deaths of notables."
+    },
+    {
+      "id": 166168,
+      "intro_en": "✧ Covers ʿAbd Allāh b. Ṭāhir's appointment over al-Raqqah and his father's advisory letter, the death of al-Ḥakam b. Hishām and succession of ʿAbd al-Raḥmān in al-Andalus, floods, raids, Bābak's victory, and obituaries of scholars and ascetics."
+    },
+    {
+      "id": 166169,
+      "intro_en": "✧ Al-Andalus witnessed notable events during this year, though no further details are provided in the source."
+    },
+    {
+      "id": 166171,
+      "intro_en": "✧ Events in al-Andalus during this year are mentioned, but the source offers no further elaboration."
+    },
+    {
+      "id": 166173,
+      "intro_en": "✧ Records the victory over Naṣr b. Shabath, appointments against Bābak, the Byzantine emperor's death, the secret allegiance to Ibn ʿĀʾisha, and obituaries of notable figures including poets and traditionists."
+    },
+    {
+      "id": 166174,
+      "intro_en": "✧ Describes al-Maʾmūn's capture and execution of Ibn ʿĀʾishah, the arrest and pardon of Ibrāhīm b. al-Mahdī, al-Maʾmūn's marriage to Būrān, and ʿAbd Allāh b. Ṭāhir's conquest of Egypt and expulsion of Andalusians from Alexandria."
+    },
+    {
+      "id": 166175,
+      "intro_en": "✧ Covers ʿAbd Allāh b. Ṭāhir's loyalty to al-Maʾmūn, the killing of al-Sayyid b. Anas, conflict between ʿĀmir and Manṣūr in Ifrīqiya, the cursing of Muʿāwiyah, and obituaries of Abu al-ʿAtāhiyah and other notables."
+    },
+    {
+      "id": 166176,
+      "intro_en": "✧ Relates Muḥammad b. Ḥumayd's seizure of al-Mawṣil, the proclamation of the createdness of the Qurʾān and preference of ʿAlī, a severe earthquake in Yemen, Andalusian raids, and obituaries of jurists."
+    },
+    {
+      "id": 166177,
+      "intro_en": "✧ Reports appointments by al-Maʾmūn, rebellion in Egypt, the Mārida conflict in al-Andalus, and obituaries of notable figures including Thumāma b. Ashras and the poet ʿAlī b. Jabala."
+    },
+    {
+      "id": 166178,
+      "intro_en": "✧ Covers the death of Muḥammad b. Ḥumayd al-Ṭūsī at Bābak's hands, ʿAbd Allāh b. Ṭāhir's appointment over Khurāsān, Abū Dulaf's reconciliation with al-Maʾmūn, campaigns in Egypt, various rebellions and appointments, Andalusian affairs, and obituaries of notables."
+    },
+    {
+      "id": 166179,
+      "intro_en": "✧ Describes al-Maʾmūn's Byzantine campaign, the Zuṭṭ insurgency in the marshes, and obituaries of scholars and transmitters."
+    },
+    {
+      "id": 166180,
+      "intro_en": "✧ Relates al-Maʾmūn's conquest of Heraclea, the introduction of takbīr after prayers, the death of Zubaydah, and obituaries including Bishr al-Marīsī."
+    },
+    {
+      "id": 166181,
+      "intro_en": "✧ Chronicles al-Maʾmūn's Egyptian expedition, the execution of ʿAbdūs, the killing of ʿAlī b. Hishām, further Byzantine operations, a fire in al-Baṣrah, and obituaries of notables."
+    },
+    {
+      "id": 166182,
+      "intro_en": "✧ Details the construction of Ṭuwānah, al-Maʾmūn's miḥnah letters to Isḥāq b. Ibrāhīm, his illness and testament, and his death, along with obituaries."
+    },
+    {
+      "id": 166183,
+      "intro_en": "✧ Covers the ʿAlid revolt of Muḥammad b. al-Qāsim, ʿUjayf's campaign against the Zuṭṭ, the siege of Toledo, the trial and flogging of Aḥmad b. Ḥanbal, and obituaries including Abū Nuʿaym."
+    },
+    {
+      "id": 166184,
+      "intro_en": "✧ Reports ʿUjayf's victory over the Zuṭṭ, al-Afshīn's campaign against Bābak, the founding of Sāmarrā, the fall of al-Faḍl b. Marwān, and obituaries of notable figures."
+    },
+    {
+      "id": 166185,
+      "intro_en": "✧ Describes Bughā al-Kabīr's defeat and al-Afshīn's victory over Bābak, the killing of Ṭarkhān, Andalusian and other events, and obituaries of prominent individuals."
+    },
+    {
+      "id": 166186,
+      "intro_en": "✧ Reports al-Afshīn’s campaigns against Bābak, the conquest of al-Badhdh, ʿAbd al-Raḥmān’s capture of Toledo, and various events and obituaries of the year 222 AH."
+    },
+    {
+      "id": 166187,
+      "intro_en": "✧ Narrates al-Afshīn’s arrival with Bābak, the Byzantine attack on Zibaṭra, the conquest of ʿAmmūriyya, the imprisonment of al-ʿAbbās b. al-Maʾmūn, Aghlabid succession, and obituaries of the year 223 AH."
+    },
+    {
+      "id": 166188,
+      "intro_en": "✧ Covers Māzyār’s rebellion in Ṭabaristān, Mankajūr’s uprising, the Kurdish revolt of Jaʿfar b. Fahrajas, Andalusian raids, and obituaries of the year 224 AH."
+    },
+    {
+      "id": 166189,
+      "intro_en": "✧ Relates Māziyār’s arrival and confession, al-Afshīn’s imprisonment, the fire of al-Karkh, al-Muʿtaṣim’s burning of the apostate Ghannām, and obituaries of the year 225 AH."
+    },
+    {
+      "id": 166190,
+      "intro_en": "✧ Mentions Mankajūr’s rebellion, the death of al-Afshīn, the Aghlabid succession of Abū al-ʿAbbās Muḥammad, an earthquake in al-Ahwāz, and obituaries of the year 226 AH."
+    },
+    {
+      "id": 166191,
+      "intro_en": "✧ Begins with the death and biography of al-Muʿtaṣim, then recounts al-Mubarqaʿ’s uprising, the death of Theophilus, the sedition in Damascus, and the accession of al-Wāthiq."
+    },
+    {
+      "id": 166192,
+      "intro_en": "✧ Describes Muslim expeditions in Sicily, the war between Mūsā b. Mūsā and al-Ḥārith b. Yazīgh, the honouring of Ashnās, and the high prices during the pilgrimage."
+    },
+    {
+      "id": 166193,
+      "intro_en": "✧ Relates al-Wāthiq’s imprisonment and fining of the secretaries to the tune of millions of dinars, appointments of governors, and a major Andalusian victory over Mūsā."
+    },
+    {
+      "id": 166194,
+      "intro_en": "✧ Covers Bughā al-Kabīr's campaigns against Banū Sulaym, Banū Hilāl, and other Bedouin tribes in the Hijaz; the miraculous case of Raḥmah bt. Ibrāhīm in Khwārizm; a Viking raid on al-Andalus; and obituaries of notables including ʿAbd Allāh b. Ṭāhir."
+    },
+    {
+      "id": 166195,
+      "intro_en": "✧ Details Bughā's punitive actions against Arab tribes, a ransom exchange with Byzantium, the rise and execution of Aḥmad b. Naṣr in the miḥnah, and obituaries of scholars such as Yaḥyā b. Maʿīn."
+    },
+    {
+      "id": 166196,
+      "intro_en": "✧ Describes Bughā's war with Banū Numayr, al-Mutawakkil's accession, his persecution of Ibn al-Zayyāt, the death of al-Wāthiq, and obituaries of prominent figures including al-Shāfiʿī's disciple al-Buwayṭī."
+    },
+    {
+      "id": 166197,
+      "intro_en": "✧ Covers the arrest and death of the vizier Ibn al-Zayyāt, al-Mutawakkil's restoration of Sunnism, earthquakes in Syria and Iraq, and the death of Yaḥyā b. Maʿīn."
+    },
+    {
+      "id": 166198,
+      "intro_en": "✧ Discusses the rebellion of Ibn al-Buʿayth in Azerbaijan, the suppression of Ītākh, the revolt of al-Quwayʿ in Ifrīqiya, al-Mutawakkil's proclamation of the Sunnah, and the death of scholars including Ibn al-Madīnī."
+    },
+    {
+      "id": 166199,
+      "intro_en": "✧ Covers the liquidation of Ītākh, the capture and death of Ibn al-Buʿayth, the execution of a false prophet, al-Mutawakkil's oath of allegiance for his three sons, and his discriminatory measures against the People of the Covenant."
+    },
+    {
+      "id": 166200,
+      "intro_en": "✧ Describes the killing of Muḥammad b. Ibrāhīm, the destruction of al-Ḥusayn's shrine, al-Mutawakkil's victories over Byzantium, and obituaries of ʿAbd al-Ṣalt al-Harawī, Naṣr b. Ziyād, and others."
+    },
+    {
+      "id": 166201,
+      "intro_en": "✧ Covers the Armenian uprising and Bughā's punitive expedition, the fall of Ibn Abī Duʾād, Yaʿqūb b. al-Layth's rise in Sijistān, the completion of the Great Mosque of Sāmarrā, and the death of Ḥātim al-Aṣamm."
+    },
+    {
+      "id": 166202,
+      "intro_en": "✧ Covers Bughā's capture of Tiflīs and execution of Isḥāq b. Ismāʿīl, a Byzantine naval raid on Dimyāṭ, and the death of ʿAbd al-Raḥmān b. al-Ḥakam followed by the accession of Muḥammad in al-Andalus."
+    },
+    {
+      "id": 166203,
+      "intro_en": "✧ Records al-Mutawakkil's restrictions on dhimmīs, earthquakes in Syria and Persia, dismissal of Yaḥyā b. Aktham, and deaths of several ḥadīth scholars."
+    },
+    {
+      "id": 166204,
+      "intro_en": "✧ Describes the revolt of Ḥimṣ, a major battle between Muslims and Franks near Toledo, portents including a celestial cry at Khilāṭ, and the death of jurist Abū Thawr."
+    },
+    {
+      "id": 166205,
+      "intro_en": "✧ Reports the second revolt of Ḥimṣ, a Muslim–Byzantine prisoner exchange, the campaign against the Beja, and the death of Imam Aḥmad b. Ḥanbal."
+    },
+    {
+      "id": 166206,
+      "intro_en": "✧ Mentions earthquakes at Qūmis, a Byzantine raid from Shimshāṭ, the stoning of al-Suwaydāʾ, and obituaries for notable scholars and qāḍīs including Yaḥyā b. Aktham's death."
+    },
+    {
+      "id": 166207,
+      "intro_en": "✧ Relates al-Mutawakkil's journey to Damascus, the defeat of Toledo's people at Talavera, and deaths of figures such as al-Muḥāsibī and Yaḥyā b. Aktham."
+    },
+    {
+      "id": 166208,
+      "intro_en": "✧ Describes al-Mutawakkil's brief stay in Damascus, the conquest of Qasryana in Sicily, and deaths of notable ḥadīth transmitters and scholars."
+    },
+    {
+      "id": 166209,
+      "intro_en": "✧ Documents construction of al-Jaʿfariyya, widespread earthquakes, Norse raids in al-Andalus, Berber conflict with the Aghlabids, and deaths of several scholars."
+    },
+    {
+      "id": 166210,
+      "intro_en": "✧ Covers the raids of ʿAmr al-Aqṭaʿ, al-Faḍl b. Qārin, and ʿAlī al-Armanī, al-Mutawakkil's move to al-Jaʿfariyyah, a ransom, the Banbalūnah campaign of Muḥammad b. ʿAbd al-Raḥmān, Sicilian conflicts, and obituaries of notables including Diʿbil and Dhū al-Nūn."
+    },
+    {
+      "id": 166211,
+      "intro_en": "✧ Details the murder of Caliph al-Mutawakkil by Turkish commanders, the accession of al-Muntaṣir, the governorship of Khafājah b. Sufyān in Sicily, and obituaries for several scholars and dignitaries."
+    },
+    {
+      "id": 166212,
+      "intro_en": "✧ Records Waṣīf's raid against the Byzantines, the deposition of al-Muʿtazz and al-Muʾayyad, the death of al-Muntaṣir, the accession of al-Mustaʿīn, and obituaries of notable figures."
+    },
+    {
+      "id": 166213,
+      "intro_en": "✧ Relates the deaths of ʿAlī b. Yaḥyā al-Armanī and ʿUmar b. ʿUbayd Allāh in Byzantine raids, disturbances in Baghdad and Sāmarrāʾ, the killing of Ūtāmish, and deaths of scholars including al-Fallās."
+    },
+    {
+      "id": 166214,
+      "intro_en": "✧ Describes the revolt and killing of Yaḥyā b. ʿUmar, the rise of al-Ḥasan b. Zayd in Ṭabaristān, various uprisings, and obituaries of figures such as al-Jāḥiẓ and al-Māzinī."
+    },
+    {
+      "id": 166215,
+      "intro_en": "✧ Covers the killing of Bāghir al-Turkī, al-Mustaʿīn's flight to Baghdad, the pledge to al-Muʿtazz, the ensuing siege of Baghdad and deposition of al-Mustaʿīn, and deaths of scholars including al-Kawsaj."
+    },
+    {
+      "id": 166216,
+      "intro_en": "✧ Narrates al-Muʿtazz's full assumption of the caliphate, the killing of al-Mustaʿīn, conflicts between Baghdad troops and Ibn Ṭāhir, strife between Turks and Maghāribah, the rising of Musāwir, and obituaries."
+    },
+    {
+      "id": 166217,
+      "intro_en": "✧ Records the capture of Karaj from Abū Dulaf, the killing of Waṣīf, the death of Bundār al-Ṭabarī, the death of Muḥammad b. ʿAbd Allāh b. Ṭāhir, Yaʿqūb al-Ṣaffār's conquest of Herat, and several obituaries."
+    },
+    {
+      "id": 166218,
+      "intro_en": "✧ This section covers the killing of Bughā al-Sharābī, the rise of Aḥmad b. Ṭūlūn in Egypt, clashes with Musāwir al-Khārijī, and other events and notable deaths of 254 AH."
+    },
+    {
+      "id": 166219,
+      "intro_en": "✧ This section covers the deposition and death of al-Muʿtazz, the caliphate of al-Muhtadī, the rise of Yaʿqūb b. al-Layth, disturbances in Baghdad, and other events and notable deaths of 255 AH."
+    },
+    {
+      "id": 166220,
+      "intro_en": "✧ This section covers the arrival of Mūsā b. Bughā, the killing of Ṣāliḥ b. Waṣīf, the deposition and death of al-Muhtadī, the accession of al-Muʿtamid, and other events and notable deaths of 256 AH."
+    },
+    {
+      "id": 166221,
+      "intro_en": "✧ This section covers the return of Abū Aḥmad al-Muwaffaq, battles against the Zanj, the destruction of Basra, Yaʿqūb al-Ṣaffār's campaigns, and other events and notable deaths of 257 AH."
+    },
+    {
+      "id": 166222,
+      "intro_en": "✧ This section covers the killing of Manṣūr b. Jaʿfar al-Khayyāṭ, Abū Aḥmad's campaign against the Zanj, the death of Mufliḥ, the capture and execution of Yaḥyā b. Muḥammad al-Baḥrānī, and other events and notable deaths of 258 AH."
+    },
+    {
+      "id": 166223,
+      "intro_en": "✧ This section covers the Zanj's entry into al-Ahwāz, Mūsā b. Bughā's campaign, Yaʿqūb b. al-Layth's seizure of Naysābūr, the rebellions of Ibn al-Ṣūfī and Abū ʿAbd al-Raḥmān al-ʿUmarī in Egypt, and other events and notable deaths of 259 AH."
+    },
+    {
+      "id": 166224,
+      "intro_en": "✧ This section covers Yaʿqūb b. al-Layth's defeat of al-Ḥasan b. Zayd and entry into Ṭabaristān, a sedition in al-Mawṣil, warfare in al-Andalus, and other events and notable deaths of 260 AH."
+    },
+    {
+      "id": 166225,
+      "intro_en": "✧ This section covers the war between Muḥammad b. Wāṣil and Ibn Mufliḥ, al-Ṣaffār's campaign against Ibn Wāṣil, the appointment of al-Muwaffaq and al-Mufawwiḍ, the governorship of Naṣr b. Aḥmad al-Sāmānī, and other events and notable deaths of 261 AH."
+    },
+    {
+      "id": 166226,
+      "intro_en": "✧ Covers al-Muwaffaq's defeat of Yaʿqūb al-Ṣaffār at Dayr al-ʿĀqūl, Zanj raids in al-Baṭīḥah and defeats, Aḥmad al-Khujustānī's rise and killing, and notable deaths."
+    },
+    {
+      "id": 166227,
+      "intro_en": "✧ Describes Zanj defeats in al-Ahwāz, Yaʿqūb's seizure of al-Ahwāz, the surrender of Luʾluʾah to the Byzantines, Khārijite conflicts, and notable deaths."
+    },
+    {
+      "id": 166228,
+      "intro_en": "✧ Relates the Byzantine capture of ʿAbd Allāh b. Kāwas, Zanj operations and entry into Wāsiṭ, vizierate changes, Ibn Ṭūlūn's conquest of Syria, and the fall of Syracuse."
+    },
+    {
+      "id": 166229,
+      "intro_en": "✧ Covers Zanj defeats by Aḥmad b. Laythawayh and Masrūr, al-ʿAbbās b. Aḥmad b. Ṭūlūn's rebellion, Yaʿqūb al-Ṣaffār's death, and lists prominent deaths."
+    },
+    {
+      "id": 166230,
+      "intro_en": "✧ Details Zanj fighting with Aghartamish and entry into Rāmahurmuz, several political and military events, and deaths of notable figures in 266 AH."
+    },
+    {
+      "id": 166231,
+      "intro_en": "✧ Focuses on Abū al-ʿAbbās's campaigns against the Zanj, al-Muwaffaq's arrival and capture of Ṭahthā, his march to al-Ahwāz, siege of the Zanj capital, and Khārijite war in al-Mawṣil."
+    },
+    {
+      "id": 166232,
+      "intro_en": "✧ Continues the siege of the Zanj leader's city, the desertion of commanders, al-Muʿtaḍid's raids on Arab provisioners, Rāfiʿ b. Harthama's succession, and events in al-Andalus and Ifrīqiyah."
+    },
+    {
+      "id": 166233,
+      "intro_en": "✧ Covers al-Muwaffaq's wounding, the burning of the Zanj leader's palace, Nuṣayr's drowning, the capture of both western and eastern Zanj cities, Luʾluʾ's rebellion, and al-Muʿtamid's aborted journey."
+    },
+    {
+      "id": 166234,
+      "intro_en": "✧ Covers the decisive campaigns against the Zanj, culminating in the killing of their leader, al-Muwaffaq's victories, deaths of al-Ḥasan b. Zayd and Aḥmad b. Ṭūlūn, Khumārawayh's accession, Isḥāq b. Kundājīq's Syrian campaign, other events, and notable deaths."
+    },
+    {
+      "id": 166235,
+      "intro_en": "✧ Details the dismissal of ʿAmr b. al-Layth from Khurāsān, the Battle of the Mills between al-Muʿtaḍid and Khumārawayh, the ʿAlawī dispute in Medina, wars in al-Andalus and Ifrīqiya, other events, and notable deaths."
+    },
+    {
+      "id": 166236,
+      "intro_en": "✧ Describes the war between Adhkūtakīn and Muḥammad b. Zayd al-ʿAlawī and various other events, along with biographies of notable figures who died that year."
+    },
+    {
+      "id": 166237,
+      "intro_en": "✧ Describes the split between Ibn Abī al-Sāj and Ibn Kundāj, Khumārawayh's involvement, an engagement with Kharijites, the death of Muḥammad b. ʿAbd al-Raḥmān and accession of al-Mundhir in al-Andalus, other events, and notable deaths."
+    },
+    {
+      "id": 166238,
+      "intro_en": "✧ Describes the war between ʿAmr b. al-Layth's army and al-Muwaffaq's forces, other events including Yāzmān's raid and Khumārawayh's campaigns, and notable deaths."
+    },
+    {
+      "id": 166239,
+      "intro_en": "✧ Describes the dispute between Khumārawayh and Ibn Abī al-Sāj, subsequent wars, al-Muwaffaq's seizure of al-Muʿtaḍid, Rāfiʿ b. Harthama's capture of Jurjān, the death of al-Mundhir of al-Andalus, and several notable deaths."
+    },
+    {
+      "id": 166240,
+      "intro_en": "✧ Describes administrative and military events in Iraq, al-Muwaffaq's campaign to al-Jabal, Ibn Abī al-Sāj's governorship, Kharijite affairs, and the deaths of several scholars and notables."
+    },
+    {
+      "id": 166241,
+      "intro_en": "✧ Describes Yāzamān's alignment with Khumārawayh, disturbances in Baghdad, the appointment of a maẓālim official, the arrival of a Ṭūlūnid commander, and the deaths of many notable figures."
+    },
+    {
+      "id": 166242,
+      "intro_en": "✧ Covers Baghdad factional strife, the death and eulogy of al-Muwaffaq, the succession oath to al-Muʿtaḍid, the Qarāmiṭah’s origins and doctrines, Byzantine campaigns, Tarsus turmoil, and notable deaths in 278 AH."
+    },
+    {
+      "id": 166243,
+      "intro_en": "✧ Covers the deposition of al-Mufawwiḍ, the death of al-Muʿtamid and accession of al-Muʿtaḍid, wars with Kharijites and Bedouin, Sāmānid and Rāfiʿ b. Harthama affairs, and deaths of scholars in 279 AH."
+    },
+    {
+      "id": 166244,
+      "intro_en": "✧ Covers the imprisonment of ʿAbd Allāh b. al-Muhtadī, al-Muʿtaḍid’s campaign against Banū Shaybān, Kharijite conflicts, the building of the Abode of the Caliphate, and deaths of ḥadīth scholars in 280 AH."
+    },
+    {
+      "id": 166245,
+      "intro_en": "✧ Covers al-Muʿtaḍid’s capture of Mārdīn, the death of Ḥamdān’s son, Khumārawayh’s daughter Qaṭr al-Nadā’s arrival in Baghdad, and deaths including the historian al-Balādhurī and al-Tirmidhī in 281 AH."
+    },
+    {
+      "id": 166246,
+      "intro_en": "✧ Covers the introduction of al-Nayrūz al-Muʿtaḍidī, the pursuit and submission of Ḥamdān b. Ḥamdūn, the defeat of Hārūn al-Shārī, the killing of Khumārawayh, and deaths of Ibn Abī al-Dunyā and others in 282 AH."
+    },
+    {
+      "id": 166247,
+      "intro_en": "✧ Covers al-Ḥusayn b. Ḥamdān’s capture of Hārūn al-Shārī, the rebellion and killing of Jaysh b. Khumārawayh, the Slavs’ siege of Constantinople, a Muslim-Byzantine prisoner exchange, and deaths of Sahl al-Tustarī and Ibn al-Rūmī in 283 AH."
+    },
+    {
+      "id": 166248,
+      "intro_en": "✧ Covers Tarsus discord between Rāghib and Dumyānah, al-Nūsharī’s defeat of Bakr b. ʿAbd al-ʿAzīz, al-Muʿtaḍid’s abandoned plan to curse Muʿāwiyah, and deaths of ascetic Aḥmad al-Mustamlī and Ibn al-Waḍḍāḥ in 284 AH."
+    },
+    {
+      "id": 166249,
+      "intro_en": "✧ Covers Ṣāliḥ b. Mudrik’s raid on pilgrims, ʿAmr b. al-Layth’s appointment over Transoxiana, al-Muʿtaḍid’s capture of Āmid, and deaths of al-Mubarrad, al-Buḥturī, and Ibrāhīm al-Ḥarbī in 285 AH."
+    },
+    {
+      "id": 166250,
+      "intro_en": "✧ Covers the emergence of the Qarmatians in Bahrayn under Abū Saʿīd al-Jannābī, his victories over al-ʿAbbās al-Ghanawī, and other political-military events including campaigns, dynastic struggles, and notable deaths in 286 AH."
+    },
+    {
+      "id": 166251,
+      "intro_en": "✧ Covers the killing of Abū Thābit, amir of Tarsus, the appointment of Ibn al-Aʿrābī, al-Muʿtaḍid's victories, the Qarāmiṭa's rout of al-ʿAbbās al-Ghanawī, the capture of ʿAmr al-Ṣaffār, and other events and deaths in 287 AH."
+    },
+    {
+      "id": 166252,
+      "intro_en": "✧ Covers events of 288 AH including the plague in Adharbayjān, Muḥammad b. Abī al-Sāj's death, al-Muʿtaḍid's campaigns, the appearance of Abū ʿAbd Allāh al-Shīʿī in the Maghrib, and notable deaths."
+    },
+    {
+      "id": 166253,
+      "intro_en": "✧ Covers Qarmatian activities in Syria and Iraq under Zikrawayh's sons, the death of al-Muʿtaḍid and succession of al-Muktafī, the killing of ʿAmr b. al-Layth, and other events and deaths in 289 AH."
+    },
+    {
+      "id": 166254,
+      "intro_en": "✧ Covers Qarmatian campaigns in Syria and the killing of their leaders, al-Muktafī's military response, the capture of Muḥammad b. Hārūn, and other events and deaths in 290 AH."
+    },
+    {
+      "id": 166255,
+      "intro_en": "✧ Covers the defeat and execution of the Qarmatian 'Man of the Mole,' his brother al-Shaykh's earlier death, and other events including Turkish raids and notable deaths in 291 AH."
+    },
+    {
+      "id": 166256,
+      "intro_en": "✧ Covers al-Muktafī's conquest of Egypt and Syria, ending the Ṭūlūnid dynasty, the rebellion of al-Khalanjī, and other events and deaths in 292 AH."
+    },
+    {
+      "id": 166257,
+      "intro_en": "✧ Covers the establishment of Ḥamdānid rule in Mosul and their campaign against the Kurds, the capture of the rebel al-Khalanjī, Zakrawayh's Qarmatian uprising, and other events and deaths in 293 AH."
+    },
+    {
+      "id": 166258,
+      "intro_en": "✧ Covers Qarāmiṭa attacks on pilgrim caravans and the killing of Zakrawayh, alongside campaigns against Byzantines, Bedouin conflicts, and obituaries of notable scholars."
+    },
+    {
+      "id": 166259,
+      "intro_en": "✧ Relates the death of Ismāʿīl b. Aḥmad al-Sāmānī and succession of his son Aḥmad, the death of caliph al-Muktafī, and the accession and early vizierate of al-Muqtadir bi-llāh."
+    },
+    {
+      "id": 166260,
+      "intro_en": "✧ Describes the deposition of al-Muqtadir and brief allegiance to Ibn al-Muʿtazz, followed by looting in Baghdād, restoration of al-Muqtadir, and deaths of notables including Ibn al-Muʿtazz."
+    },
+    {
+      "id": 166261,
+      "intro_en": "✧ Recounts al-Layth b. ʿAlī's seizure of Fārs, his defeat and capture, the taking of Fārs from Subkarī, miscellaneous events, and obituaries of scholars."
+    },
+    {
+      "id": 166262,
+      "intro_en": "✧ Describes Aḥmad b. Ismāʿīl al-Sāmānī's conquest of Sijistān, the capture of Subkarī, miscellaneous events, and obituaries including the heretic Ibn al-Rāwandī and Sufi al-Junayd."
+    },
+    {
+      "id": 166263,
+      "intro_en": "✧ Relates the arrest of Ibn al-Furāt, the vizierate of al-Khāqānī, comets and other events, and obituaries of eminent figures."
+    },
+    {
+      "id": 166264,
+      "intro_en": "✧ Covers the dismissal of al-Khāqānī and vizierate of ʿAlī b. ʿĪsā, revolt in Sijistān, Sicily's return to al-Mahdī, death of the Andalusian ruler, and obituaries."
+    },
+    {
+      "id": 166265,
+      "intro_en": "✧ Relates the killing of Aḥmad b. Ismāʿīl al-Sāmānī and accession of his son Naṣr, revolts in Sijistān and by Isḥāq b. Aḥmad, al-Uṭrūsh's control of Ṭabaristān, Qarmaṭī affairs, and deaths of notables."
+    },
+    {
+      "id": 166266,
+      "intro_en": "✧ Covers al-Ḥasan al-Uṭrūsh's withdrawal to Āmul, Manṣūr b. Isḥāq's rebellion against the Sāmānids, the Fāṭimid campaign against Egypt, various events, and notable deaths."
+    },
+    {
+      "id": 166267,
+      "intro_en": "✧ Describes al-Ḥusayn b. Ḥamdān's rebellion against al-Muqtadir, the construction of al-Mahdiyya, several events of the year, and the deaths of al-Nasāʾī and others."
+    },
+    {
+      "id": 166268,
+      "intro_en": "✧ Relates the dismissal of Ibn Wahsūdhān from Iṣbahān, Abū al-Ḥasan b. al-Furāt's restoration to the vizierate, the revolt of Yūsuf b. Abī al-Sāj, and other events and deaths."
+    },
+    {
+      "id": 166269,
+      "intro_en": "✧ Details a Byzantine envoy's reception in Baghdad, the release of Ḥamdānid prisoners, disturbances in al-Baṣra, and the deaths of several notables."
+    },
+    {
+      "id": 166270,
+      "intro_en": "✧ Describes Ibn al-Furāt's second dismissal and the vizierate of Ḥāmid b. al-ʿAbbās, the Fāṭimid army's second campaign in Egypt, and deaths of scholars and others."
+    },
+    {
+      "id": 166271,
+      "intro_en": "✧ Covers Ḥāmid b. al-ʿAbbās's tax-farming and its consequences, the rebellion and capture of Aḥmad b. Sahl by the Sāmānids, and other events and deaths."
+    },
+    {
+      "id": 166272,
+      "intro_en": "✧ Mentions Abū al-Hayjāʾ b. Ḥamdān's appointment, the rise in prices and riot over Ḥāmid's tax-farming, severe weather, and the deaths of notable figures."
+    },
+    {
+      "id": 166273,
+      "intro_en": "✧ Deals with the fitnah of al-Ḥallāj in the year 309 AH."
+    },
+    {
+      "id": 166275,
+      "intro_en": "✧ Covers Sīmjūr's war with Abū al-Ḥusayn b. al-ʿAlawī in Jurjān, the emergence of Ilyās b. Isḥāq al-Sāmānī, various caliphal events including Yūsuf b. Abī al-Sāj's release and campaign, and deaths of notable scholars such as al-Ṭabarī."
+    },
+    {
+      "id": 166276,
+      "intro_en": "✧ Details the dismissal of Ḥāmid and ʿAlī b. ʿĪsā with Ibn al-Furāt's third vizierate, Abū Ṭāhir al-Qarmaṭī's sack of Basra, Ibn Abī al-Sāj's seizure of al-Rayy, and obituaries including Aḥmad al-Khallāl and Ibn Khuzayma."
+    },
+    {
+      "id": 166277,
+      "intro_en": "✧ Recounts Abū Ṭāhir's capture of the pilgrim caravan at al-Habīr, the arrest and killing of Ibn al-Furāt and his son, al-Khāqānī's vizierate, the Qarāmiṭa's entry into Kūfa, and deaths of scholars like Ibn Abī Dāwūd."
+    },
+    {
+      "id": 166278,
+      "intro_en": "✧ Describes al-Khaṣībī's vizierate and dismissal of al-Khāqānī, Sicilian conquests against Byzantines, Qarmaṭī interception of pilgrims and demolition of Barāthā mosque, and obituaries including al-Sarrāj."
+    },
+    {
+      "id": 166279,
+      "intro_en": "✧ Covers Ibn Abī al-Sāj's march to Wāsiṭ, ʿAbd Allāh b. Ḥamdān's campaign against Kurds and Arabs, dismissal of al-Khaṣībī and ʿAlī b. ʿĪsā's vizierate, Sāmānid takeover of al-Rayy, and deaths such as al-Zajjāj."
+    },
+    {
+      "id": 166280,
+      "intro_en": "✧ Narrates the estrangement between al-Muqtadir and Muʾnis, the Qarāmiṭa's arrival in Iraq and killing of Yūsuf b. Abī al-Sāj, Asfār's seizure of Jurjān and his oppression, Byzantine wars, and deaths of notables."
+    },
+    {
+      "id": 166281,
+      "intro_en": "✧ Records the Qarāmiṭa's incursions across al-Jazīra and the Sawād, dismissal of ʿAlī b. ʿĪsā for Ibn Muqla, the rise of the Barīdīs, killing of al-Dāʿī al-Ḥasan, Asfār's death, and Mardāwīj's conquests."
+    },
+    {
+      "id": 166282,
+      "intro_en": "✧ Describes the deposition and restoration of al-Muqtadir, the killing of Nāzūk and Abū al-Hayjāʾ, the Qarāmiṭa's sack of Makkah and seizure of the Black Stone, the Sāmānid rebellion, and deaths of scholars."
+    },
+    {
+      "id": 166283,
+      "intro_en": "✧ Covers the destruction of the infantrymen in Baghdad, dismissal of Nāṣir al-Dawlah from Mosul, arrest of Ibn Muqlah, rebellion of Ṣāliḥ and al-Agharr, return of Jaʿfar b. Abī Jaʿfar, and deaths of notables."
+    },
+    {
+      "id": 166284,
+      "intro_en": "✧ Details renewed estrangement between Muʾnis and al-Muqtadir, arrest of vizier Sulaymān, Mardāwīj's seizure of Isfahan, wars with the Byzantines, and deaths of notables."
+    },
+    {
+      "id": 166285,
+      "intro_en": "✧ Narrates Muʾnis's march to Mosul, dismissal of al-Ḥusayn, killing of al-Muqtadir, biography of al-Muqtadir, caliphate of al-Qāhir, and arrivals of Washmakīr and Abū Ṭāhir's agent."
+    },
+    {
+      "id": 166286,
+      "intro_en": "✧ Describes the situation of ʿAbd al-Wāḥid b. al-Muqtadir after his father's killing, alienation and arrest of Muʾnis and Bulayq, their killings, vizierate of Abū Jaʿfar, arrest of Ṭarīf, news of Khurasan, and beginnings of the Buwayhid dynasty."
+    },
+    {
+      "id": 166287,
+      "intro_en": "✧ Relates Ibn Būyah's capture of Shīrāz, seizure of Kirmān by Naṣr b. Aḥmad, deposition and blinding of al-Qāhir, caliphate of al-Rāḍī, death of the Fāṭimid al-Mahdī, Mardāwīj's seizure of al-Ahwāz, killing of Hārūn b. Gharīb, and execution of al-Shalmaghānī."
+    },
+    {
+      "id": 166288,
+      "intro_en": "✧ Covers the killing of Mardāwīj and its aftermath, Washmagīr's consolidation, arrest of the sons of Yāqūt, rise of the Barīdīs, Ḥanbalī fitnah in Baghdad, killing of Abū al-ʿAlāʾ b. Ḥamdān, Ibn Muqlah's march to Mosul, and deaths of notables."
+    },
+    {
+      "id": 166289,
+      "intro_en": "✧ Describes the arrest of Ibn Muqlah, killing of Yāqūt, Ibn Rāʾiq's seizure of affairs and fragmentation of the provinces, Muʿizz al-Dawlah's campaign in Kirmān, Mākān's seizure of Jurjān, and deaths of notables."
+    },
+    {
+      "id": 166290,
+      "intro_en": "✧ Narrates estrangement and war between Ibn Rāʾiq and al-Barīdī, Bujkam's seizure of al-Ahwāz, the fragmentation of provinces, Sicilian revolt against the Fāṭimids, ʿAbd al-Raḥmān al-Nāṣir's assumption of the caliphal title, and deaths of notables."
+    },
+    {
+      "id": 166291,
+      "intro_en": "✧ Covers Muʿizz al-Dawlah's seizure of al-Ahwāz, the mutilation of Ibn Muqlah, Bujkam's takeover of Baghdad, war and peace with al-Barīdī, and other events of 326 AH."
+    },
+    {
+      "id": 166292,
+      "intro_en": "✧ Relates al-Rāḍī and Bujkam's campaign to Mosul, the vizierates of al-Barīdī and Ibn Shīrzād, Bālubā's rebellion, and Abū ʿAlī's appointment in Khurasan."
+    },
+    {
+      "id": 166293,
+      "intro_en": "✧ Describes Abū ʿAlī's conquest of Jurjān, Rukn al-Dawlah's campaigns, Bujkam's seizure of Wāsiṭ, Ibn Rāʾiq's acquisition of Syria, and other events of 328 AH."
+    },
+    {
+      "id": 166294,
+      "intro_en": "✧ Narrates the death of al-Rāḍī, the accession of al-Muttaqī, the killing of Mākān b. Kālī, Bujkam's death, and the Barīdīs' brief control of Baghdad."
+    },
+    {
+      "id": 166295,
+      "intro_en": "✧ Describes al-Barīdī's vizierate, Ibn Rāʾiq's killing, al-Muttaqī's refuge in Mosul, and the Barīdīs' oppressive rule in Baghdad."
+    },
+    {
+      "id": 166296,
+      "intro_en": "✧ Recounts Nāṣir al-Dawlah's capture of ʿAdl al-Bujkamī, Sayf al-Dawlah's conflicts in Iraq, the accession of Nūḥ b. Naṣr, and other events of 331 AH."
+    },
+    {
+      "id": 166297,
+      "intro_en": "✧ Covers al-Muttaqī's journey to Mosul, Muʿizz al-Dawlah's advance, the Barīdīs' fratricide, the Rūs' sack of Bardhaʿa, and other events of 332 AH."
+    },
+    {
+      "id": 166298,
+      "intro_en": "✧ Relates al-Muttaqī's blinding and deposition, the accession of al-Mustakfī, and the rise and fall of the Khārijite rebel Abū Yazīd in Ifrīqiya."
+    },
+    {
+      "id": 166299,
+      "intro_en": "✧ Covers Tūzūn's death, Ibn Shīrzād's command, Muʿizz al-Dawlah's seizure of Baghdād, the deposition of al-Mustakfī, accession of al-Muṭīʿ, war between Nāṣir al-Dawlah and Muʿizz al-Dawlah, deaths of al-Qāʾim and al-Ikhshīd, and other events of 334 AH."
+    },
+    {
+      "id": 166300,
+      "intro_en": "✧ Events of 335 AH: peace between Muʿizz al-Dawlah and Nāṣir al-Dawlah, war involving Tikīn, Rukn al-Dawlah's seizure of al-Rayy, dispute with al-Barīdī, a prisoner exchange with Byzantium, and obituaries of notables."
+    },
+    {
+      "id": 166301,
+      "intro_en": "✧ Events of 336 AH: Muʿizz al-Dawlah's seizure of al-Baṣrah, opposition of Muḥammad b. ʿAbd al-Razzāq in Ṭūs, governorship of al-Ḥasan b. ʿAlī in Sicily, rebellion of Jumān at al-Raḥbah, Rukn al-Dawlah's taking of Ṭabaristān and Jurjān, and notable deaths."
+    },
+    {
+      "id": 166302,
+      "intro_en": "✧ Events of 337 AH: Muʿizz al-Dawlah's taking of Mosul, the Khurāsān army's march to Jurjān, al-Marzubān's march to al-Rayy, Sayf al-Dawlah's raid into Byzantine lands, arrest of Asfahdūst, and obituaries."
+    },
+    {
+      "id": 166303,
+      "intro_en": "✧ Events of 338 AH: the affair of ʿImrān b. Shāhīn, death of al-Mustakfī, sectarian conflict in Baghdād, death of ʿImād al-Dawlah b. Buwayh, and obituaries of notables."
+    },
+    {
+      "id": 166304,
+      "intro_en": "✧ Events of 339 AH: death of al-Ṣaymarī and vizierate of al-Muhallabī, Sayf al-Dawlah's Byzantine raid, Qarmaṭī return of the Black Stone, Khurāsānī march to al-Rayy, rout of Muʿizz al-Dawlah's armies by ʿImrān b. Shāhīn, and obituaries."
+    },
+    {
+      "id": 166305,
+      "intro_en": "✧ Events of 340 AH: deaths of Manṣūr b. Qarātakīn and Abū al-Muẓaffar b. Muḥtāj, Abū ʿAlī's return to Khurāsān, war in Sicily between Muslims and Byzantines, sectarian fitnah in Ramaḍān, and obituaries."
+    },
+    {
+      "id": 166306,
+      "intro_en": "✧ Events of 341 AH: siege of al-Baṣrah by Yūsuf b. Wajīh, Byzantine capture of Surūj, death of al-Manṣūr al-ʿAlawī and reign of al-Muʿizz, Rukn al-Dawlah's campaign in Ṭabaristān and Jurjān, birth of Fakhr al-Dawlah, and obituaries."
+    },
+    {
+      "id": 166307,
+      "intro_en": "✧ Daysam b. Ibrahim's flight from Adharbayjan to Baghdad and his later blinding are recounted, together with al-Marzuban's escape from Sumayram and his restoration of his territories."
+    },
+    {
+      "id": 166308,
+      "intro_en": "✧ Abu ʿAli b. Muhtaj seeks refuge with Rukn al-Dawla, aids in defeating Bakr b. Malik, but flees Khurasan after Nuh's death; Sayf al-Dawla raids Byzantium, and notable deaths are recorded."
+    },
+    {
+      "id": 166309,
+      "intro_en": "✧ Muʿizz al-Dawla's severe illness and Ibn Shahin's revolt, the Khurasani campaign against al-Rayy and Isbahan, epidemics, and deaths of prominent scholars and officials are detailed."
+    },
+    {
+      "id": 166310,
+      "intro_en": "✧ Ruzbahan's rebellion against Muʿizz al-Dawla is crushed despite initial success, Sayf al-Dawla raids Byzantine lands, and notable deaths including Abu ʿUmar Ghulam Thaʿlab are recorded."
+    },
+    {
+      "id": 166311,
+      "intro_en": "✧ Al-Marzuban dies and his brother Wahsudhan contends with his nephews; Muʿizz al-Dawla marches against Nasir al-Dawla but turns back; earthquakes, plagues, and deaths of scholars occur."
+    },
+    {
+      "id": 166312,
+      "intro_en": "✧ Muʿizz al-Dawla captures Mosul but withdraws after supplies are cut, Jawhar's Maghrib campaign reaches the Atlantic and captures Sijilmasa and Fas, and notable deaths are listed."
+    },
+    {
+      "id": 166313,
+      "intro_en": "✧ Peace between Sayf al-Dawla and Muʿizz al-Dawla is concluded, Byzantines raid Tarsus and al-Ruha, famine and sectarian strife occur, and many notable deaths including scholars and Sufis are recorded."
+    },
+    {
+      "id": 166314,
+      "intro_en": "✧ Al-Mustajir billah's abortive bid for power in Adharbayjan is suppressed, Wahsudhan treacherously kills his nephews, Sayf al-Dawla suffers losses in his Byzantine raid, and many deaths are noted."
+    },
+    {
+      "id": 166315,
+      "intro_en": "✧ Events of 350 AH include Muʿizz al-Dawla's construction of his Baghdād residence, Byzantine raids, the deaths of several rulers, and biographies of notable scholars."
+    },
+    {
+      "id": 166316,
+      "intro_en": "✧ Events of 351 AH include the Byzantine capture of ʿAyn Zarbah and Aleppo, Rukn al-Dawla's seizure of Ṭabaristān and Jurjān, sectarian inscriptions in Baghdād, and the conquest of Ṭabarmīn in Sicily."
+    },
+    {
+      "id": 166317,
+      "intro_en": "✧ Events of 352 AH include the rebellion of Ḥarrān, the death of the vizier al-Muhallabī, raids against Byzantium, and ʿĀshūrāʾ commemorations in Baghdād."
+    },
+    {
+      "id": 166318,
+      "intro_en": "✧ Events of 353 AH include the rebellion of Najā, Byzantine sieges of al-Maṣṣīṣah and Ṭarsūs, Muʿizz al-Dawla's campaign in al-Mawṣil, and the Battle of the Strait in Sicily."
+    },
+    {
+      "id": 166319,
+      "intro_en": "✧ Events of 354 AH include the Byzantine conquest of al-Maṣṣīṣah and Ṭarsūs, the revolt of Antioch against Sayf al-Dawlah, the rebellion in Sijistān, and the death of al-Mutanabbī."
+    },
+    {
+      "id": 166320,
+      "intro_en": "✧ Events of 355 AH include Muʿizz al-Dawla's campaign in ʿUmān, conflicts in Adharbayjān, Khurāsānī ghāzīs at al-Rayy, Byzantine incursions, and the death of Ibn al-Jiʿābī."
+    },
+    {
+      "id": 166321,
+      "intro_en": "✧ Events of 356 AH include the death of Muʿizz al-Dawla, the misrule of his successor Bakhtiyār, the Khurāsānī expedition against al-Rayy, and the arrest of Nāṣir al-Dawlah."
+    },
+    {
+      "id": 166322,
+      "intro_en": "✧ Events of 357 AH include the revolt of Ḥubshī against Bakhtiyār, the affair of Muḥammad b. al-Mustakfī, ʿAḍud al-Dawla's conquest of Kirmān, and the killing of Abū Firās."
+    },
+    {
+      "id": 166323,
+      "intro_en": "✧ Jawhar's Fāṭimid conquest of Egypt, capture of Damascus, Ḥamdānid family strife, Byzantine raids, Qarghawayh's seizure of Aleppo, and notable obituaries."
+    },
+    {
+      "id": 166324,
+      "intro_en": "✧ Byzantine captures of Antioch, Aleppo, and Malazkard, Ibn al-ʿAmīd's campaign against Ḥasanūyah, the murder of Emperor Nikephoros, and Abū Taghlib's takeover of Ḥarrān."
+    },
+    {
+      "id": 166325,
+      "intro_en": "✧ Qarmaṭī seizure of Damascus and defeat of Jaʿfar b. Falāḥ, killing of Muḥammad b. al-Ḥusayn al-Zanātī, ʿAḍud al-Dawlah's suppression of Kirmān rebels, and prominent deaths including al-Ṭabarānī."
+    },
+    {
+      "id": 166326,
+      "intro_en": "✧ Byzantine devastation of al-Jazīrah, Baghdad sectarian strife, al-Muʿizz's departure from Ifrīqiya to Egypt, Yūsuf Bulukkīn's background, and Sāmānid–Būyid peace."
+    },
+    {
+      "id": 166327,
+      "intro_en": "✧ Byzantine incursions and their defeat at Mayyāfāriqīn, the burning of al-Karkh, the vizierate of Ibn Baqiyya, and al-Muʿizz's entry into Egypt."
+    },
+    {
+      "id": 166328,
+      "intro_en": "✧ Bakhtiyār's failed campaign against Abū Taghlib, the Turk–Daylam discord and Subuktikīn's coup, the deposition of al-Muṭīʿ and accession of al-Ṭāʾiʿ, and al-Muʿizz's defeats of the Qarmaṭīs."
+    },
+    {
+      "id": 166329,
+      "intro_en": "✧ ʿAḍud al-Dawlah's seizure of Iraq and arrest of Bakhtiyār, Kirmān rebellion suppressed, al-Fatikīn's governorship of Damascus and eventual capture, and various Baghdad events."
+    },
+    {
+      "id": 166330,
+      "intro_en": "✧ Death of al-Muʿizz and accession of al-ʿAzīz, Yūsuf Bulukkīn's western campaigns, Sicilian raids, Rukn al-Dawlah's division of kingdoms, and prominent obituaries including Ibn ʿAdī."
+    },
+    {
+      "id": 166331,
+      "intro_en": "✧ Covers the death of Rukn al-Dawlah and succession of ʿAḍud al-Dawlah, including his campaign against Bakhtiyār in Iraq, the Samanid succession, deaths of scholars and rulers, the rise of Subuktigīn in Ghaznah, and events in al-Andalus."
+    },
+    {
+      "id": 166332,
+      "intro_en": "✧ Describes ʿAḍud al-Dawlah’s seizure of Iraq, the killing of Bakhtiyār, conquest of the Ḥamdānid lands, and various events including floods, earthquakes, and the death of notables."
+    },
+    {
+      "id": 166333,
+      "intro_en": "✧ Narrates the conquest of Mayyāfāriqīn and Diyār Bakr by ʿAḍud al-Dawlah, Qassām’s governorship of Damascus, earthquakes, the khuṭbah for ʿAḍud al-Dawlah, and obituaries of scholars."
+    },
+    {
+      "id": 166334,
+      "intro_en": "✧ Relates the killing of Abū Taghlib b. Ḥamdān, wars with the Baṭīḥah and Banū Shaybān, the Byzantine rebel Ward’s arrival, ʿAḍud al-Dawlah’s reconstruction of Baghdādh, and his seizure of Fakhr al-Dawlah’s lands."
+    },
+    {
+      "id": 166335,
+      "intro_en": "✧ Includes Muʾayyid al-Dawlah’s grant of Hamadhān, the killing of Ḥasanūyah’s sons except Badr, ʿAḍud al-Dawlah’s capture of Sandah, the defeat of Ibn Jarrāḥ by Egyptian forces, and various events including the wedding of ʿAḍud al-Dawlah’s daughter to the caliph."
+    },
+    {
+      "id": 166336,
+      "intro_en": "✧ Records the dismissal of Ibn Sīmjūr from Khurāsān, ʿAḍud al-Dawlah’s seizure of Jurjān, the attempted reconquest by Ḥusām al-Dawlah and Qābūs, the death of the Sicilian amīr Abū al-Qāsim in battle, and several fires and arrests in Baghdādh."
+    },
+    {
+      "id": 166337,
+      "intro_en": "✧ Describes Bakjūr’s governorship of Damascus, the death of ʿAḍud al-Dawlah and accession of Ṣamṣām al-Dawlah, the killing of al-Ḥusayn b. ʿImrān b. Shāhīn, Ibn Sīmjūr’s return to Khurāsān, and obituaries."
+    },
+    {
+      "id": 166338,
+      "intro_en": "✧ Reports the death of Muʾayyid al-Dawlah and restoration of Fakhr al-Dawlah, the dismissal of Abū al-ʿAbbās from Khurāsān, the killing of Abū al-Faraj in al-Baṭīḥah, the rise of Muḥammad b. Ghānim, and Ṣinhāja military actions in al-Andalus."
+    },
+    {
+      "id": 166339,
+      "intro_en": "✧ Covers the defeat of Bādh the Kurd by Zayyār and the Daylamites, the peace settlement over Diyār Bakr, various political appointments and events, and obituaries of notable scholars and figures."
+    },
+    {
+      "id": 166340,
+      "intro_en": "✧ Describes the strife in Baghdad over Ṣamṣām al-Dawlah, Qarāmiṭa actions in al-Kūfah, the release of Ward the Byzantine and Rus conversion, Sharaf al-Dawlah taking al-Ahwāz, al-Manṣūr's defeat in Fās, and obituaries of scholars."
+    },
+    {
+      "id": 166341,
+      "intro_en": "✧ Narrates Sharaf al-Dawlah's seizure of Iraq, the Turkish-Daylamite conflict, the governorship of Muhadhdhab al-Dawlah over al-Baṭīḥah, and deaths of numerous scholars."
+    },
+    {
+      "id": 166342,
+      "intro_en": "✧ Details the war between Badr b. Ḥasanūyah and Sharaf al-Dawlah's army, al-Manṣūr's campaign against Kutāmah, Bādh's renewed fighting in al-Mawṣil, and obituaries of notables."
+    },
+    {
+      "id": 166343,
+      "intro_en": "✧ Covers the arrests of Shukr and Bakjūr, al-Aṣfar's victory over the Qarāmiṭa, various events in Iraq and Iran, and obituaries of prominent scholars."
+    },
+    {
+      "id": 166344,
+      "intro_en": "✧ Narrates the blinding of Ṣamṣām al-Dawlah, the death of Sharaf al-Dawlah, the journey of his son to Fārs, strife between Turks and Daylamites, Fakhr al-Dawlah's march to Iraq, and the return of the Banū Ḥamdān to al-Mawṣil."
+    },
+    {
+      "id": 166345,
+      "intro_en": "✧ Covers the killing of Bādh and the rise of the Banū Marwān, the rule of al-Musayyab's family over al-Mawṣil, Bahāʾ al-Dawlah's campaign to al-Ahwāz, riots in Baghdad, and obituaries of notables."
+    },
+    {
+      "id": 166346,
+      "intro_en": "✧ Details the arrest and deposition of al-Ṭāʾiʿ, the accession of al-Qādir bi-Allāh, events in Egypt and Syria, and obituaries of notables."
+    },
+    {
+      "id": 166347,
+      "intro_en": "✧ In 382 AH the Daylam's return to al-Mawṣil, al-Ṭāʾiʿ's handover to al-Qādir, several events in Baghdad and elsewhere, and deaths of notable scholars are recounted."
+    },
+    {
+      "id": 166348,
+      "intro_en": "✧ In 383 AH the emergence of Bakhtiyār's sons, Ṣamṣām al-Dawlah's seizure of Khūzistān, the Turk's possession of Bukhārā, Nūḥ's return, and various events and deaths are covered."
+    },
+    {
+      "id": 166349,
+      "intro_en": "✧ In 384 AH Maḥmūd b. Subuktikīn's appointment over Khurāsān, Bahāʾ al-Dawlah's taking of al-Ahwāz, several events, and deaths of notables are recounted."
+    },
+    {
+      "id": 166350,
+      "intro_en": "✧ In 385 AH Abū ʿAlī's return to Khurāsān, his capture and death, al-Ṣāḥib b. ʿAbbād's death, Ṣamṣām al-Dawlah's slaughter of Turks, and deaths of several notables are covered."
+    },
+    {
+      "id": 166351,
+      "intro_en": "✧ In 386 AH al-ʿAzīz's death and al-Ḥākim's succession, Ṣamṣām al-Dawlah's seizure of al-Baṣrah, al-Muqallid's governorship of al-Mawṣil, and Bādīs's succession in Ifrīqiya are recounted."
+    },
+    {
+      "id": 166352,
+      "intro_en": "✧ In 387 AH Nūḥ b. Manṣūr's death, Subuktikīn's death and Ismāʿīl's brief reign, Maḥmūd's seizure of power, and deaths of prominent scholars are covered."
+    },
+    {
+      "id": 166353,
+      "intro_en": "✧ In 388 AH Abū al-Qāsim al-Sīmjūrī's return to Naysābūr, Maḥmūd b. Subuktikīn's seizure of Naysābūr, Qābūs's return to Jurjān, and Ṣamṣām al-Dawlah's killing are recounted."
+    },
+    {
+      "id": 166354,
+      "intro_en": "✧ In 389 AH Manṣūr b. Nūḥ's seizure and blinding, Maḥmūd's seizure of Khurāsān, the extinction of the Sāmānid dynasty, and Bahāʾ al-Dawlah's possession of Fāris and Khūzistān are covered."
+    },
+    {
+      "id": 166355,
+      "intro_en": "✧ It covers the escape and campaigns of the Sāmānid al-Muntaṣir, Maḥmūd of Ghazna's siege of Sijistān, the killing of Ibn Bakhtiyār, the arrest of al-Muwaffaq, and obituaries of notable scholars and officials."
+    },
+    {
+      "id": 166356,
+      "intro_en": "✧ It recounts the killing of al-Muqallid al-ʿUqaylī, the accession of his son Qirwāsh, al-Qādir's pledge of allegiance to his son al-Ghālib bi-llāh, and deaths of notable figures."
+    },
+    {
+      "id": 166357,
+      "intro_en": "✧ It describes Maḥmūd of Ghazna's campaigns in India, wars between Qirwāsh and the Būyid army in Iraq, civil strife and fiscal disturbances in Baghdad, and obituaries of scholars and poets."
+    },
+    {
+      "id": 166358,
+      "intro_en": "✧ It covers Maḥmūd of Ghazna's conquest of Sijistān, the death of al-Manṣūr b. Abī ʿĀmir in al-Andalus, Fulfūl's siege of Qābis, and deaths of scholars and poets."
+    },
+    {
+      "id": 166359,
+      "intro_en": "✧ It narrates Abū al-ʿAbbās b. Wāṣil's seizure of al-Baṭīḥah, appointments of the sharīf al-Raḍī and others in Iraq, and obituaries of notable figures."
+    },
+    {
+      "id": 166360,
+      "intro_en": "✧ It recounts the restoration of Muhadhdhab al-Dawla to al-Baṭīḥa, Maḥmūd's raid on Bahāṭiyah in India, famine in Ifrīqiyah, and deaths of ḥadīth scholars and lexicographers."
+    },
+    {
+      "id": 166361,
+      "intro_en": "✧ It describes Maḥmūd of Ghazna's campaigns against Multan and the fortress of Kawākīr, Īlak Khān's invasion of Khurāsān, and a defeat of the Būyid army by Kurds."
+    },
+    {
+      "id": 166362,
+      "intro_en": "✧ It recounts Maḥmūd's defeat of Īlak Khān and his Indian raid, the siege of Baghdad, the killing of Abū al-ʿAbbās b. Wāṣil, and the revolt of Abū Rakwah against al-Ḥākim."
+    },
+    {
+      "id": 166363,
+      "intro_en": "✧ Yamīn al-Dawla's expedition against Bahīm Nughur, the seizure of its idol treasures, and Abū Jaʿfar b. Kākawayh's restoration in Iṣfahān."
+    },
+    {
+      "id": 166364,
+      "intro_en": "✧ The rise of Ṣāliḥ b. Mirdās at al-Raḥbah through betraying Ibn Maḥkān, and various events including a meteor fall and the weakening of Umayyad authority in al-Andalus."
+    },
+    {
+      "id": 166365,
+      "intro_en": "✧ Yamīn al-Dawla's campaign ending in a peace treaty, the conflict between Badr b. Ḥasanawayh and his son Hilāl, al-Muʾayyad's restoration in al-Andalus, and al-Ḥākim's opening of Jaʿfar al-Ṣādiq's house."
+    },
+    {
+      "id": 166366,
+      "intro_en": "✧ Yamīn al-Dawla's campaigns against the Ghūrīs and infidels, Aylak Khān's aborted war with his brother, and Qirwāsh's establishment of the Egyptian daʿwah."
+    },
+    {
+      "id": 166367,
+      "intro_en": "✧ Yamīn al-Dawla's seizure of Quṣdār, Ṣāliḥ b. Mirdās's capture and later possession of Aleppo, and the killing of a group from Khafājah."
+    },
+    {
+      "id": 166368,
+      "intro_en": "✧ The killing of Qābūs b. Washmakīr, the accession of Tughān Khān after Aylak Khān's death, Sulṭān al-Dawlah's succession to Bahāʾ al-Dawlah, and Sulaymān b. ʿAbd al-Raḥmān's rule in al-Andalus."
+    },
+    {
+      "id": 166369,
+      "intro_en": "✧ Yamīn al-Dawlah's conquest of Nārdīn, Khafājah's plundering of the sawād of al-Kūfah, and Ṭāhir b. Hilāl's seizure of Shahrazūr."
+    },
+    {
+      "id": 166370,
+      "intro_en": "✧ Yamīn al-Dawlah's raid on Tānīshar, the killing of Badr b. Ḥasanawayh and subsequent death of his son Hilāl, ʿAlī b. Mazyad's war with Banū Dubays, and Shams al-Dawla's occupation of al-Rayy."
+    },
+    {
+      "id": 166371,
+      "intro_en": "✧ It covers the civil war in Ifrīqiya between Bādīs and his uncle Ḥammād, Bādīs's death and the accession of his young son al-Muʿizz, Maḥmūd's Indian expeditions, and the killing of Fakhr al-Mulk."
+    },
+    {
+      "id": 166372,
+      "intro_en": "✧ It reports Mahmud of Ghazna's conquests of Khwarazm, Qishmir, and Qannuj, the rise of Ibn Fuladh, the Alid dynasty in al-Andalus, and lists notable deaths such as Abu Hamid al-Isfarayini and al-Sharif al-Radi."
+    },
+    {
+      "id": 166373,
+      "intro_en": "✧ It details the Turkish incursions from China, the succession of the Qarakhanid khans, the deaths of Muhadhdhib al-Dawla and Ali b. Mazyad, and conflicts between Sunnis and Shi'ites in Baghdad."
+    },
+    {
+      "id": 166374,
+      "intro_en": "✧ It covers Ibn Sahlan's governorship of Iraq, Mahmud of Ghazni's campaigns in India, and the deaths of scholars such as the hadith master Abd al-Ghani al-Azdi."
+    },
+    {
+      "id": 166375,
+      "intro_en": "✧ It narrates Mahmud of Ghazni's conquest of fortresses in India and the submission of thousands of idolaters, along with the deaths of several prominent hadith transmitters."
+    },
+    {
+      "id": 166376,
+      "intro_en": "✧ It focuses on the disappearance and presumed murder of the Fatimid caliph al-Hakim, the accession of his son al-Zahir, and the power struggles among the Buyids in Iraq."
+    },
+    {
+      "id": 166377,
+      "intro_en": "✧ It describes the transfer of power in Iraq to Musharrif al-Dawla, the death of the vizier Abu Ghalib, and the deaths of notable calligrapher Ibn al-Bawwab and several scholars."
+    },
+    {
+      "id": 166378,
+      "intro_en": "✧ It relates the peace between Buyid rivals Sultan al-Dawla and Musharrif al-Dawla, the killing of the Ifriqiyan vizier, and the breaking of the Black Stone by an Egyptian pilgrim."
+    },
+    {
+      "id": 166379,
+      "intro_en": "✧ Covers ʿAlāʾ al-Dawlah's seizure of Hamadhān, the vizierate of Abū al-Qāsim al-Maghribī, a fortress conquest in India, caliphal events, and deaths of notables."
+    },
+    {
+      "id": 166380,
+      "intro_en": "✧ Covers the breach between Musharrif al-Dawla and the Turks, strife in Kufa, the death of Sulṭān al-Dawlah and succession of Abū Kālījār, Kharijite revolt, and deaths of notables."
+    },
+    {
+      "id": 166381,
+      "intro_en": "✧ Covers Maḥmūd's conquest of Sūmanāt, the death of Musharrif al-Dawla and accession of Jalāl al-Dawla, Naṣr al-Dawla's seizure of al-Ruhā, Sicilian fleet disaster, and deaths of notables."
+    },
+    {
+      "id": 166382,
+      "intro_en": "✧ Covers wars involving ʿAlāʾ al-Dawlah, Qirwāsh, and Khafāja, peace in Ifrīqiya, natural phenomena, and deaths of notables."
+    },
+    {
+      "id": 166383,
+      "intro_en": "✧ Covers ʿAlāʾ al-Dawlah's war with Isbahbadh, rebellion in al-Baṭīḥah, reconciliation between Abū Kālījār and his uncle, Jalāl al-Dawla's entry into Baghdad, and deaths of notables."
+    },
+    {
+      "id": 166384,
+      "intro_en": "✧ Covers Badrān's war with Naṣr al-Dawlah, Turkish disturbance in Baghdad, Abū Kālījār's seizure of al-Baṣrah, and deaths of notables."
+    },
+    {
+      "id": 166385,
+      "intro_en": "✧ Covers Maḥmūd's seizure of al-Rayy and al-Jabal, Ibrāhīm b. al-Marzubān's actions, Abū Kālījār's seizure of Wāsiṭ, Ghuzz affairs, and deaths of notables."
+    },
+    {
+      "id": 166386,
+      "intro_en": "✧ Covers Masʿūd's seizure of Hamadhān, Maḥmūd's death and succession, wars between various rulers, the Byzantine campaign, and deaths of notables."
+    },
+    {
+      "id": 166387,
+      "intro_en": "✧ Events of 422 AH include Masʿūd b. Maḥmūd's seizures of Tīz, Mukrān, and Kirmān, the Byzantine capture of al-Ruhāʾ, the death of al-Qādir and succession of al-Qāʾim, and strife in Baghdad."
+    },
+    {
+      "id": 166388,
+      "intro_en": "✧ In 423 AH the troops expelled Jalāl al-Dawlah from Baghdad, ʿAlāʾ al-Dawla was defeated by Masʿūd's army, plague and famine struck many lands, and notable figures died."
+    },
+    {
+      "id": 166389,
+      "intro_en": "✧ In 424 AH Masʿūd returned to Ghazna, subdued the lord of Sāwah, Jalāl al-Dawlah took and lost al-Baṣrah, and the ʿayyārūn spread disorder in Baghdad."
+    },
+    {
+      "id": 166390,
+      "intro_en": "✧ In 425 AH Masʿūd conquered Sarastī and other Indian fortresses, strife broke out in Naysābūr and between the Mazyadid brothers, and the Byzantines seized Birkawī."
+    },
+    {
+      "id": 166391,
+      "intro_en": "✧ In 426 AH the caliphate and sultanate in Baghdad fell into disorder, Aḥmad Yanāltikīn rebelled and was killed, Masʿūd took Jurjān and Ṭabaristān, and Ibn Waththāb raided Ibn Marwān's land."
+    },
+    {
+      "id": 166392,
+      "intro_en": "✧ In 427 AH troops rose against Jalāl al-Dawlah, ʿAlāʾ al-Dawla was defeated by Abū Sahl al-Ḥamdūnī, al-Ẓāhir died and al-Mustanṣir succeeded as Fatimid caliph, and several notables died."
+    },
+    {
+      "id": 166393,
+      "intro_en": "✧ In 428 AH Bārasṭughān rebelled and was killed by Jalāl al-Dawlah, peace and marriage alliance was made with Abū Kālījār, Ibn Sīnā died, and the ʿayyārūn rose in Baghdad."
+    },
+    {
+      "id": 166394,
+      "intro_en": "✧ In 429 AH the Abkhazians besieged Tiflis and retreated before the Ghuzz, Tughrulbak entered Naysābūr, and Jalāl al-Dawlah was addressed as King of Kings."
+    },
+    {
+      "id": 166395,
+      "intro_en": "✧ Covers King Masʿūd's campaign expelling the Saljūq Turks from Khurasan, Abū al-Shawk's conquest of Khūlanjān, the Abbasid khuṭbah in Ḥarrān and al-Raqqah, natural phenomena and administrative changes in Baghdad, and deaths of notables."
+    },
+    {
+      "id": 166396,
+      "intro_en": "✧ Records Masʿūd's capture of a fortress from the Ghuzz, Abū Kālījār's seizure of al-Baṣrah, upheaval in ʿUmān, war between Abū al-Shawk and his uncle Muhalhil, Turkish riots in Baghdad, and obituaries of prominent figures."
+    },
+    {
+      "id": 166397,
+      "intro_en": "✧ Describes the rise of the Seljuq state under Ṭughrul-Bek and Dāwūd, the arrest and killing of Sultan Masʿūd, Mawdūd's succession, discord between Jalāl al-Dawlah and Qirwāsh, Abū al-Shawk's conquest of Daqūqā, and a Muslim victory over the Byzantines."
+    },
+    {
+      "id": 166398,
+      "intro_en": "✧ Reports the death of ʿAlāʾ al-Dawlah, Ṭughrul-Bek's conquest of Jurjān and Ṭabaristān, Byzantine court intrigues, the downfall of al-Dizbarī in Syria, and the promulgation of the Qādirī creed."
+    },
+    {
+      "id": 166399,
+      "intro_en": "✧ Relates Ṭughrul-Bek's capture of Khwārazm and al-Rayy, Ibrāhīm Yināl's operations in al-Jabal, fighting over Kirmān, al-Qāʾim's estrangement from Jalāl al-Dawlah, and Sukayn's uprising in Egypt."
+    },
+    {
+      "id": 166400,
+      "intro_en": "✧ Records the Byzantine expulsion of foreigners from Constantinople, the death of Jalāl al-Dawlah and recognition of Abū Kālījār, Mawdūd's victories in India and Khurasan, and the conversion of infidel Turks."
+    },
+    {
+      "id": 166401,
+      "intro_en": "✧ Details Bughrākhān's massacre of Ismāʿīlīs, Abū Kālījār's khuṭbah in Baghdad, the death of al-Jarjarāʾī, and the obituary of al-Murtaḍā with extensive theological discussion."
+    },
+    {
+      "id": 166402,
+      "intro_en": "✧ Narrates Ibrāhīm Yināl's conquest of Hamadhān and Qirmīsīn, peace among Kurdish lords, the appointment of Raʾīs al-Ruʾasāʾ as caliphal vizier, and obituaries including the poet al-Manāzī."
+    },
+    {
+      "id": 166403,
+      "intro_en": "✧ It covers the rule of Muhalhil in Qirmisīn and al-Dīnawar, the conflict between Saʿdī b. Abī al-Shawk and his uncle, Tughrulbak's siege of Isfahan, and the deaths of several notables."
+    },
+    {
+      "id": 166404,
+      "intro_en": "✧ It details the peace between Abū Kālījār and Tughrul Beg, the arrest of Surkhāb, Ibrāhīm Yināl's capture of Kurdish fortresses, and the deaths of several notables."
+    },
+    {
+      "id": 166405,
+      "intro_en": "✧ It recounts Yināl's withdrawal from Tīrānshāh, his raid into Byzantine territory, the death of Abū Kālījār and accession of al-Malik al-Raḥīm, and the deaths of several notables."
+    },
+    {
+      "id": 166406,
+      "intro_en": "✧ It deals with the discord and reconciliation between Qirwāsh and Abū Kāmil, the estrangement between Tughrulbak and Ibrāhīm Yinal, and the deaths of several notables."
+    },
+    {
+      "id": 166407,
+      "intro_en": "✧ It covers Tughrulbak's capture of Isfahan, the return of Fārs armies, Zaʿīm al-Dawlah's seizure of Mosul, the Ghuzz raid on Fasā, and the deaths of several notables."
+    },
+    {
+      "id": 166408,
+      "intro_en": "✧ It recounts al-Malik al-Raḥīm's victories in Khūzistān and Fārs, the burning of the Kāẓimayn shrine in Baghdad, and the deaths of several notables."
+    },
+    {
+      "id": 166409,
+      "intro_en": "✧ It covers the killing of ʿAbd al-Rashīd of Ghazna and accession of Farrukh Zād, the Ghuzz defeat in Fārs, and the deaths of several notables."
+    },
+    {
+      "id": 166410,
+      "intro_en": "✧ It includes the Sunni-Shiite strife in Baghdad, al-Malik al-Raḥīm's seizure of Arrajān, and the deaths of several notables."
+    },
+    {
+      "id": 166411,
+      "intro_en": "✧ Covers events of the year 446 AH, including Turkish unrest in Baghdad, Tughrul Beg's campaigns, tribal conflicts in Iraq, and deaths of notable scholars."
+    },
+    {
+      "id": 166412,
+      "intro_en": "✧ Covers events of 447 AH, including upheavals in Shiraz, the killing of Abū Ḥarb, Turkish uprisings against al-Basāsīrī, Tughrul Beg's entry into Baghdad, and the seizure of al-Malik al-Raḥīm."
+    },
+    {
+      "id": 166413,
+      "intro_en": "✧ Covers events of 448 AH, including the caliph's marriage, the rise of the Veiled Ones, battles involving al-Basāsīrī and Quraysh, Tughrul Beg's campaigns, and the deaths of numerous scholars."
+    },
+    {
+      "id": 166414,
+      "intro_en": "✧ Covers events of 449 AH, including the formal meeting between Sultan Tughrul Beg and Caliph al-Qāʾim, warfare involving Hazārasb and Fūlādh, the arrest of al-Yāzūrī in Egypt, and widespread mortality."
+    },
+    {
+      "id": 166415,
+      "intro_en": "✧ Covers events of 450 AH, including Ibrāhīm Yināl's rebellion, al-Basāsīrī's capture of Baghdad and execution of the vizier, the caliph's imprisonment and return, and the killing of al-Basāsīrī."
+    },
+    {
+      "id": 166416,
+      "intro_en": "✧ Covers events of 451 AH, including the death of Farrakhzād of Ghazna, the peace between Ibrāhīm and Chaghrī Beg, the death of Chaghrī Beg, the burning of Baghdad, and Sultan Tughrul Beg's activities."
+    },
+    {
+      "id": 166417,
+      "intro_en": "✧ Covers events of 452 AH, including Sultan Tughrul Beg's entry into Baghdad, the return of the heir apparent, Maḥmūd b. Shibl al-Dawla's seizure of Aleppo, and the deaths of notable individuals."
+    },
+    {
+      "id": 166418,
+      "intro_en": "✧ Covers events of 453 AH, including Tughrul Beg's marriage proposal to the caliph's daughter, the vizierate of Ibn Dārast, the deaths of al-Muʿizz b. Bādīs and Quraysh, and unrest involving ʿAmīd al-Mulk."
+    },
+    {
+      "id": 166419,
+      "intro_en": "✧ Covers the marriage of Sultan Ṭughril Beg to the Caliph's daughter, his political pressure on Baghdad, the dismissal of Ibn Dārast, and the deaths of several notables."
+    },
+    {
+      "id": 166420,
+      "intro_en": "✧ Covers Ṭughril Beg's arrival in Baghdad and marriage to the Caliph's daughter, his death and the succession of Alp Arslān, and various regional events and deaths."
+    },
+    {
+      "id": 166421,
+      "intro_en": "✧ Covers the arrest and killing of ʿAmīd al-Mulk al-Kundurī, Alp Arslān's campaigns against rebels and Byzantine lands, and notable deaths including Ibn Ḥazm."
+    },
+    {
+      "id": 166422,
+      "intro_en": "✧ Covers the war between the Banū Ḥammād and the Arabs, the founding of Bijāya, Alp Arslān's campaign against Jund, and notable deaths."
+    },
+    {
+      "id": 166423,
+      "intro_en": "✧ Covers Alp Arslān's designation of Malikshāh as heir, Tamīm's seizure of Tunis, Sharaf al-Dawlah's territorial grants, and notable deaths."
+    },
+    {
+      "id": 166424,
+      "intro_en": "✧ Covers the rebellion of the King of Kirmān against Alp Arslān, the construction of the Niẓāmiyyah school and the shrine of Abū Ḥanīfah, and several notable deaths."
+    },
+    {
+      "id": 166425,
+      "intro_en": "✧ Covers the war between Sharaf al-Dawlah and the Banū Kilāb, earthquakes, the dismissal and restoration of Fakhr al-Dawlah, and the death of Abū Manṣūr b. Yūsuf among others."
+    },
+    {
+      "id": 166426,
+      "intro_en": "✧ Covers events including the restoration of Fakhr al-Dawlah, the burning of the Damascus Mosque, the Ḥanbalī dispute with Ibn ʿAqīl, and several notable deaths."
+    },
+    {
+      "id": 166427,
+      "intro_en": "✧ Covers the Roman campaign against Manbij, Badr's siege of Tyre, Alp Arslan's dealings with the caliphate, and the severe Egyptian famine and its effects."
+    },
+    {
+      "id": 166428,
+      "intro_en": "✧ Relates the Abbasid khuṭbah in Aleppo, Alp Arslan's seizure of Aleppo and victory over the Romans at Malāzkard, and Atsiz's conquests in Palestine."
+    },
+    {
+      "id": 166429,
+      "intro_en": "✧ Includes the appointment of Saʿd al-Dawla Gawharāʾīn as shiḥnah of Baghdad, the heir apparent's marriage, and events such as earthquakes, floods, and social disturbances."
+    },
+    {
+      "id": 166430,
+      "intro_en": "✧ Describes the killing of Sultan Alp Arslan, Malikshāh's accession and struggle with his uncle Qāwart, and Nāṣir al-Dawla b. Ḥamdān's rise and death in Egypt."
+    },
+    {
+      "id": 166431,
+      "intro_en": "✧ Details Malikshāh's investiture, the catastrophic Tigris flood in Baghdad, his recapture of Tirmidh, and the deaths of scholars including al-Khaṭīb al-Baghdādī."
+    },
+    {
+      "id": 166432,
+      "intro_en": "✧ Recounts the death of Caliph al-Qāʾim, succession of al-Muqtadī, the temporary loss of the Abbasid khuṭbah in Mecca, rebellion in North Africa, and foundation of Malikshāh's observatory."
+    },
+    {
+      "id": 166433,
+      "intro_en": "✧ Narrates Atsiz's conquest of Damascus, suppression of the Shiʿi call there, and the deaths of numerous scholars such as Abū al-Ḥasan al-Dāwūdī."
+    },
+    {
+      "id": 166434,
+      "intro_en": "✧ Relates Atsiz's failed expedition against Egypt, sectarian strife between Ḥanbalīs and Ashʿarīs in Baghdad, and the deaths of scholars including Ibn Sukaynah."
+    },
+    {
+      "id": 166435,
+      "intro_en": "✧ Covers events of 470 AH: Muʾayyid al-Mulk's birth, Tamīm's marriage alliance and Tripoli appointment, Saljūq-Abbasid politics, Tutush's Syrian campaigns, and the pulpit sent to Makkah, along with deaths of numerous scholars."
+    },
+    {
+      "id": 166436,
+      "intro_en": "✧ Details the dismissal of Ibn Jahīr from the caliphal vizierate, Tutush's seizure of Damascus, the birth of Barkiyāruq, and obituaries of several prominent ḥadīth transmitters and jurists in 471 AH."
+    },
+    {
+      "id": 166437,
+      "intro_en": "✧ Includes Ibrāhīm of Ghaznah's Indian conquests, Sharaf al-Dawlah Muslim's seizure of Aleppo, Malikshāh's expedition to Kirmān, river floods, and deaths of notable scholars and rulers in 472 AH."
+    },
+    {
+      "id": 166438,
+      "intro_en": "✧ Relates Tekish's revolt against Malikshāh in Khurasan, arrests of futuwwa leaders involved with Egyptian agents, and obituaries of several traditionists, including the poet Ibn al-Shibl, in 473 AH."
+    },
+    {
+      "id": 166439,
+      "intro_en": "✧ Mentions the marriage negotiations between the caliph and Sultan Malikshāh's daughter, the death of Nūr al-Dawlah Dubays and accession of his son, Tamīm's siege of Qābis, and obituaries including al-Qāḍī Abū al-Walīd al-Bājī in 474 AH."
+    },
+    {
+      "id": 166440,
+      "intro_en": "✧ Relates the poisoning of Jamāl al-Mulk b. Niẓām al-Mulk, Ashʿarī–Ḥanbalī riots in Baghdad, Shaykh Abū Isḥāq al-Shīrāzī's embassy to the sultan, Sharaf al-Dawlah's siege of Damascus, and deaths of Ibn Mākūlā and other scholars in 475 AH."
+    },
+    {
+      "id": 166441,
+      "intro_en": "✧ Includes the dismissal and departure of the Banū Jahīr from Baghdad, Sharaf al-Dawlah's conquest of Ḥarrān, the vizierate of Abū Shujāʿ, the blinding of Ibn Abī al-Riḍā, and obituaries such as Abū Isḥāq al-Shīrāzī in 476 AH."
+    },
+    {
+      "id": 166442,
+      "intro_en": "✧ Covers Fakhr al-Dawlah b. Jahīr's wars with the Banū Marwān and his conquest of Mosul, Tekish's second revolt and blinding, Sulaymān b. Qutlumush's capture of Antioch, the killing of Sharaf al-Dawlah, and notable deaths in 477 AH."
+    },
+    {
+      "id": 166443,
+      "intro_en": "✧ Covers the Frankish capture of Toledo, Ibn Jahīr's seizure of Āmid, Mayyāfāriqīn, and Jazīrat Ibn ʿUmar, various events in Iraq and Syria, and obituaries of notable scholars and officials."
+    },
+    {
+      "id": 166444,
+      "intro_en": "✧ Narrates Sulaymān b. Qutulmish's death, Sultan Malikshāh's conquests in Syria, the succession of Ṣadaqa b. Mazyad, the Battle of al-Zallāqah, the sultan's visit to Baghdad, other events, and obituaries."
+    },
+    {
+      "id": 166445,
+      "intro_en": "✧ Details the bridal procession of the sultan's daughter to the caliph, various events of 480 AH including the designation of the sultan's heir, and obituaries of notable figures."
+    },
+    {
+      "id": 166446,
+      "intro_en": "✧ Describes civil strife in Baghdad, the expulsion of Turks from the caliphal harem, the Byzantine seizure of Zawīla, the death of al-Nāṣir b. ʿAlnās and Ibrāhīm of Ghazna, other events, and obituaries."
+    },
+    {
+      "id": 166447,
+      "intro_en": "✧ Relates the civil strife in Baghdad, Sultan Malikshāh's conquest of Transoxiana, the rebellion of Samarqand and its reconquest, the return of the caliph's wife to her father, Egyptian conquests in Syria, the Arabs' seizure of Sūsah, other events, and obituaries."
+    },
+    {
+      "id": 166448,
+      "intro_en": "✧ Covers the death of Fakhr al-Dawlah b. Jahīr, the Arabs' plundering of al-Baṣrah, and other events and obituaries of 483 AH."
+    },
+    {
+      "id": 166449,
+      "intro_en": "✧ Describes the dismissal of Vizier Abū Shujāʿ and appointment of Ibn Jahīr, Yūsuf b. Tāshfīn's conquest of Muslim al-Andalus, the Frankish takeover of Sicily, the sultan's arrival in Baghdad, other events, and obituaries."
+    },
+    {
+      "id": 166450,
+      "intro_en": "✧ Narrates the Battle of Jayyān, Tutush's seizure of Syrian coastal towns, the sultan's possession of Yemen, the killing of Niẓām al-Mulk, the death of Sultan Malikshāh and succession struggles, the Arabs' attack on pilgrims, other events, and obituaries."
+    },
+    {
+      "id": 166451,
+      "intro_en": "✧ Covers events of 486 AH including the vizierate of ʿIzz al-Mulk, Tutush's bid for the sultanate, battles, the siege of Tyre, killings, and deaths of notables."
+    },
+    {
+      "id": 166452,
+      "intro_en": "✧ Describes the khuṭbah for Barkiyāruq, the death of Caliph al-Muqtadī and accession of al-Mustaẓhir, Tutush's campaigns, and the death of Amīr al-Juyūsh in Egypt."
+    },
+    {
+      "id": 166453,
+      "intro_en": "✧ Narrates events of 488 AH: Turks in Ifrīqiyah, the killing of Aḥmad Khān of Samarqand, Yūsuf b. Ābiq in Baghdad, and the war killing Tutush."
+    },
+    {
+      "id": 166454,
+      "intro_en": "✧ Details the killing of Yūsuf b. Ābiq, Manṣūr b. Marwān's death, Tamīm's capture of Qābis, Karbūqā's taking of Mosul, and other events."
+    },
+    {
+      "id": 166455,
+      "intro_en": "✧ Covers the killing of Arslān Arghūn, Egyptian seizure of Tyre, Barkiyāruq's possession of Khurāsān, revolts, and the war between Riḍwān and Duqāq."
+    },
+    {
+      "id": 166456,
+      "intro_en": "✧ Describes the Frankish capture of Antioch, the Muslims' failed counterattack, the fall of Maʿarrat al-Nuʿmān, and Sanjar's war with Dawlatshāh."
+    },
+    {
+      "id": 166457,
+      "intro_en": "✧ Narrates the rebellion and killing of Amīr Unar, the Frankish capture of Jerusalem, the Egyptian-Frankish battle, and the rise of Sultan Muḥammad."
+    },
+    {
+      "id": 166458,
+      "intro_en": "✧ Covers the restoration of Barkiyāruq's khuṭbah in Baghdad, his battle with Muḥammad, the killing of Gawharāʾīn, and Tamīm's conquest of Sfax."
+    },
+    {
+      "id": 166459,
+      "intro_en": "✧ Covers the 494 AH war between Sultan Barkiyāruq and Sultan Muḥammad, including battles, the killing of Muʾayyad al-Mulk, the siege of Iṣfahān, and the Ismāʿīlī (Bāṭinī) crisis, alongside Frankish conquests in Syria."
+    },
+    {
+      "id": 166460,
+      "intro_en": "✧ Details the 495 AH war and peace between Sultan Barkiyāruq and Sultan Muḥammad, the death of the Fatimid caliph al-Mustaʿlī, the siege of Iṣfahān, and Frankish conflicts in Syria."
+    },
+    {
+      "id": 166461,
+      "intro_en": "✧ Describes the 496 AH seizure of al-Rayy by Yannāl, his oppression in Iraq, the strife over Baghdād, the fifth battle between Barkiyāruq and Muḥammad, and Frankish victories over Egyptian forces."
+    },
+    {
+      "id": 166462,
+      "intro_en": "✧ Recounts the 497 AH peace between Barkiyāruq and Muḥammad, the Frankish raids on al-Raqqah and Jaʿbar, the Muslim victory over the Franks at Ḥarrān, and the death of Duqāq of Damascus."
+    },
+    {
+      "id": 166463,
+      "intro_en": "✧ Covers the death of Sultan Barkiyāruq, the accession of his son Malikshāh, Sultan Muḥammad's siege of Mosul, the killing of Emir Ayāz, and the Bāṭinī threat in Khurasan."
+    },
+    {
+      "id": 166464,
+      "intro_en": "✧ Details the rebellion of Mankubars against Sultan Muḥammad, Ṣadaqah's seizure of al-Baṣrah, the siege of Naṣībīn, and the Frankish capture of Apamea."
+    },
+    {
+      "id": 166465,
+      "intro_en": "✧ Describes the death of Yūsuf b. Tāshfīn and his son ʿAlī's succession, the killing of Fakhr al-Mulk b. Niẓām al-Mulk, Ṣadaqah's conquest of Tikrīt, and the battle between Jāwlī and Jakarmish."
+    },
+    {
+      "id": 166466,
+      "intro_en": "✧ Recounts the killing of Ṣadaqah b. Mazyad, the death of Tamīm b. al-Muʿizz, the arrival of Ibn ʿAmmār in Baghdād seeking aid, and the abolition of taxes by Sultan Muḥammad."
+    },
+    {
+      "id": 166467,
+      "intro_en": "✧ Covers Mawdūd's seizure of Mosul from Jawlī, Jawlī's subsequent defeat and resubmission, Frankish campaigns against Tripoli and Tyre, the Sunni-Shīʿa reconciliation, and notable deaths and events of 502 AH."
+    },
+    {
+      "id": 166468,
+      "intro_en": "✧ Covers the Frankish conquests of Tripoli, Beirut, Jabala, and Bāniyās, the war between Muḥammad Khān and Sāgharbik, and other events and notable deaths of 503 AH."
+    },
+    {
+      "id": 166469,
+      "intro_en": "✧ Covers the Frankish capture of Sidon, the Egyptians' seizure of Ascalon, Frankish conquests near Aleppo, and other events and deaths of 504 AH."
+    },
+    {
+      "id": 166470,
+      "intro_en": "✧ Covers the dispatch of Seljuk armies against the Franks, the Frankish siege of Tyre, the Muslim victory over Alfonso in al-Andalus, and other events and deaths of 505 AH."
+    },
+    {
+      "id": 166471,
+      "intro_en": "✧ Covers Mawdūd's raid on al-Ruhā, the arrest of Zayn al-Mulk, the deaths of Tancred and Qarāja, and other events and notable deaths of 506 AH."
+    },
+    {
+      "id": 166472,
+      "intro_en": "✧ Covers the Muslim victory over the Franks at Tiberias, the assassination of Mawdūd, Sanjar's reconciliation with Muḥammad Khān, and other events and deaths of 507 AH."
+    },
+    {
+      "id": 166473,
+      "intro_en": "✧ Covers Āqsunqur al-Bursuqī's campaign in Syria, Sanjar's intervention in Ghazna, the rule of Marʿash under a Frankish widow, and other events and deaths of 508 AH."
+    },
+    {
+      "id": 166474,
+      "intro_en": "✧ Covers the flight of the Sultan's army from the Franks, Tughtikīn's recapture of Rafaniyya, the death of Yaḥyā b. Tamīm and accession of his son ʿAlī, and other events and deaths of 509 AH."
+    },
+    {
+      "id": 166475,
+      "intro_en": "✧ Covers events of 510 AH, including the assassination of Aḥmadīl b. Wahsūdhān, the death of Jāwlī Saqqāwū and his campaigns in Fārs, the conquests of Jabal Waslāt and Tunis, the strife at Ṭūs, and deaths of prominent figures."
+    },
+    {
+      "id": 166476,
+      "intro_en": "✧ Covers events of 511 AH, including the death of Sultan Muḥammad and accession of his son Maḥmūd, the siege of Qābis and al-Mahdiyyah, the killing of the lord of Aleppo, and deaths of notables."
+    },
+    {
+      "id": 166477,
+      "intro_en": "✧ Covers events of 512 AH, including Sultan Maḥmūd's actions in Iraq, the death of al-Mustazhir and accession of al-Mustarshid, the flight of his brother Abū al-Ḥasan, and military conflicts involving al-Bursuqī, Dubays, and King Masʿūd."
+    },
+    {
+      "id": 166478,
+      "intro_en": "✧ Covers events of 513 AH, including the rebellion of King Ṭughril, the war between Sanjar and Sultan Maḥmūd, raids against the Franks, the killing of Mankūbars, strife in Cordoba, and deaths of notables."
+    },
+    {
+      "id": 166479,
+      "intro_en": "✧ Covers events of 514 AH, including the rebellion of King Masʿūd, the misconduct of Dubays, the Georgian attack on Tiflīs, Ilghāzī's expeditions, and the rise of Ibn Tūmart and ʿAbd al-Muʾmin."
+    },
+    {
+      "id": 166480,
+      "intro_en": "✧ Covers events of 515 AH, including the granting of Mosul to al-Bursuqī, the death of the amīr ʿAlī in Ifrīqiyah, the killing of al-Afḍal in Egypt, the rebellion of Sulaymān b. Īlghāzī, and the capture of Joscelin by Balak."
+    },
+    {
+      "id": 166481,
+      "intro_en": "✧ Covers events of 516 AH, including King Ṭughril's obedience to his brother, the situation of Dubays and his battles, the killing of Jūyush Bik, the death of Ilghāzī, and several notable deaths."
+    },
+    {
+      "id": 166482,
+      "intro_en": "✧ Covers events of 517 AH, including al-Mustarshid's war against Dubays, Frankish capture of al-Athārib, Balak's seizure of Ḥarrān and Aleppo, the war in Ifrīqiya, and the deaths of several notables."
+    },
+    {
+      "id": 166483,
+      "intro_en": "✧ Events of 518 AH include the killing of Balak b. Bahrām and Tamartāsh's taking of Aleppo, the Frankish conquest of Tyre, al-Bursuqī's dismissal and appointment of Yaranqash, al-Bursuqī's seizure of Aleppo, and several deaths and Ismāʿīlī incidents."
+    },
+    {
+      "id": 166484,
+      "intro_en": "✧ In 519 AH, Ṭughril and Dubays invaded Iraq but retreated, al-Bursuqī took Kafartāb from the Franks, al-Maʾmūn b. al-Baṭāʾiḥī was killed in Egypt, and several scholars and notables died."
+    },
+    {
+      "id": 166485,
+      "intro_en": "✧ In 520 AH, Ibn Rudmīr raided al-Andalus, Sanjar's vizier campaigned against Ismāʿīlīs in Khurāsān, the Ismāʿīlīs took Bāniyās, al-Bursuqī was assassinated and succeeded by his son, and conflict arose between al-Mustarshid and Sultan Maḥmūd."
+    },
+    {
+      "id": 166486,
+      "intro_en": "✧ In 521 AH, Zankī became shiḥnah of Iraq, Sultan Maḥmūd left Baghdad and changed viziers, Zankī took Mosul after ʿIzz al-Dīn's death, and Baghdad suffered sack and strife during the caliph-sultan confrontation."
+    },
+    {
+      "id": 166487,
+      "intro_en": "✧ In 522 AH, Zankī took Aleppo, Sanjar met Maḥmūd at Rayy, and Ṭughtikīn died; Damascus remained under Būrī, while various appointments, conflicts, and deaths were recorded."
+    },
+    {
+      "id": 166488,
+      "intro_en": "✧ In 523 AH, Sultan Maḥmūd visited Baghdad, Ismāʿīlīs were massacred in Damascus, the Franks besieged Damascus but were defeated, Zankī treacherously seized Ḥamāh, and several notables died."
+    },
+    {
+      "id": 166489,
+      "intro_en": "✧ In 524 AH, Sanjar conquered Samarqand, Zankī defeated the Franks and took al-Athārib, Sarjī, and Dārā, al-Āmir was assassinated and al-Ḥāfiẓ succeeded, and various natural phenomena and deaths occurred."
+    },
+    {
+      "id": 166490,
+      "intro_en": "✧ In 525 AH, Dubays b. Ṣadaqah was captured and handed to Zankī, Sultan Maḥmūd died and was succeeded by his son Dāwūd, the Bāṭiniyya wounded Būrī of Damascus, and numerous scholars and officials died."
+    },
+    {
+      "id": 166491,
+      "intro_en": "✧ Covers the killing of vizier Abū ʿAlī, the vizierates of Yānis and Ḥasan under al-Ḥāfiẓ, the struggles of Sultan Masʿūd with Dāwūd and Sanjar, Zankī's defeat at Baghdad, Shams al-Mulūk's campaigns and death, and notable deaths."
+    },
+    {
+      "id": 166492,
+      "intro_en": "✧ Relates Shams al-Mulūk's capture of Bāniyās, Masʿūd's defeat of Ṭughril, al-Mustarshid's siege of Mosul, the fall of Ḥamāh, Frankish conflicts, and obituaries of scholars."
+    },
+    {
+      "id": 166493,
+      "intro_en": "✧ Details Shams al-Mulūk's seizure of Shaqīf Tīrūn, Ṭughril's victory over Masʿūd, Zankī's campaigns in Diyār Bakr and Kurdish fortresses, and deaths of numerous scholars."
+    },
+    {
+      "id": 166494,
+      "intro_en": "✧ Describes Ṭughril's death and Masʿūd's accession, the killing of Shams al-Mulūk, Zankī's siege of Damascus, al-Ḥāfiẓ's poisoning of his son Ḥasan, al-Mustarshid's defeat and murder, al-Rāshid's succession, Sanjar's Ghazna expedition, and other events."
+    },
+    {
+      "id": 166495,
+      "intro_en": "✧ Narrates the conflict between al-Rāshid and Masʿūd's forces, the gathering of provincial commanders, Shihāb al-Dīn's takeover of Ḥimṣ, sedition in Damascus, Zankī's raid on Frankish lands, al-Rāshid's deposition, and al-Muqtafī's accession."
+    },
+    {
+      "id": 166496,
+      "intro_en": "✧ Relates the dispersal of Masʿūd's armies, al-Rāshid's conflicts, Bahrām's flight and Riḍwān's vizierate in Egypt, the conquest of Wādī Ibn al-Aḥmar, Zankī's siege of Baʿrīn, the Byzantine emperor's advance, and various events and deaths."
+    },
+    {
+      "id": 166497,
+      "intro_en": "✧ Covers Zankī's acquisition of Ḥimṣ, the Byzantine siege of Shayzar, the war between Masʿūd and Dāwūd, the killing of al-Rāshid, Ibn Bakrān's suppression, vizieral changes, and obituaries."
+    },
+    {
+      "id": 166498,
+      "intro_en": "✧ Describes Sanjar's war with Khwārizm Shāh, the killing of Maḥmūd of Damascus, Zankī's capture of Baʿlabakk, Qarāsunqur's seizure of Fārs, earthquakes in Syria, and deaths of notable figures."
+    },
+    {
+      "id": 166499,
+      "intro_en": "✧ Covers Atabeg Zangī's two sieges of Damascus, his taking of Shahrazūr, estrangement between the caliph al-Muqtafī and vizier al-Zaynabī, and various events including earthquakes and notable deaths."
+    },
+    {
+      "id": 166500,
+      "intro_en": "✧ Reports the revolt of Jahārdānkī in Iraq, return of the Prophet's ﷺ mantle and staff, death of Atābak Qarāsunqur, Ismāʿīlī capture of Maṣyāt, and the affair of a false ascetic in Baghdad."
+    },
+    {
+      "id": 166501,
+      "intro_en": "✧ Describes Sultan Sanjar's defeat by the infidel Khita Turks at Qatwan, Khwārazm Shāh's depredations in Khurāsān, Atabeg Zangī's territorial acquisitions, and deaths of many notables."
+    },
+    {
+      "id": 166502,
+      "intro_en": "✧ Details Atābak Zankī's capture of the fortress of Āshib, the Franks' failed siege of Tripoli of the West, and various political events including the rise of the ʿayyārūn in Baghdad."
+    },
+    {
+      "id": 166503,
+      "intro_en": "✧ Accounts the reconciliation between the Martyr Atabeg Zangī and Sultan Masʿūd, Zangī's conquests in Diyār Bakr, suppression of the ʿayyārūn, Sanjar's siege of Khwārazm, and notable deaths."
+    },
+    {
+      "id": 166504,
+      "intro_en": "✧ Narrates Atābak Zankī's conquest of al-Ruhā from the Franks, the killing of his deputy Naṣīr al-Dīn Jaqr in Mosul, and other events including the death of Būzābah's vizier."
+    },
+    {
+      "id": 166505,
+      "intro_en": "✧ Covering Būzābah and ʿAbbās's defiance of Sultan Masʿūd, ʿAlī b. Dubays's seizure of al-Ḥillah, Frankish conquests in al-Andalus, and deaths of notables including Bahrūz."
+    },
+    {
+      "id": 166506,
+      "intro_en": "✧ Includes the Frankish conquest of Tripoli of the West, Atabeg Zangī's siege of Jaʿbar and Fanak, his assassination, the succession of his sons, and ʿAbd al-Muʾmin's expedition to al-Andalus."
+    },
+    {
+      "id": 166507,
+      "intro_en": "✧ Covers the killing of Būzābah, Qābis's shift to Frankish obedience, Franks taking Almería and Baeza, Nūr al-Dīn's captures, al-Ḥillah's seizure, al-Mustanjid's heir-apparent oath, and notable deaths."
+    },
+    {
+      "id": 166508,
+      "intro_en": "✧ Includes the Frankish conquest of al-Mahdiyya, Sfax, and Sousse, the Franks' unsuccessful siege of Damascus, Nūr al-Dīn's taking al-ʿUrayma, emirs' rift with Sultan Masʿūd, Ghūrid conquest of Ghaznah, and notables' deaths."
+    },
+    {
+      "id": 166509,
+      "intro_en": "✧ Covers Sayf al-Dīn Ghāzī's death and Quṭb al-Dīn's accession, Nūr al-Dīn's seizure of Sinjār, al-Ẓāfir's accession and Ibn al-Sallār's vizierate, emirs' return, the killing of the Lord of Antioch, and notable deaths."
+    },
+    {
+      "id": 166510,
+      "intro_en": "✧ Covers Arabs seizing pilgrims, Nūr al-Dīn's conquest of Fāmiya, the Franks' siege and departure from Cordoba, Ghūrids taking Herat, and the deaths of Ibn Hubayrah's appointment as vizier and various notables."
+    },
+    {
+      "id": 166511,
+      "intro_en": "✧ Includes Nūr al-Dīn's defeat and capture of Joscelin, ʿAbd al-Muʾmin's Andalusian campaign, the Nahrawan breach, Quchuq's raid on Ismāʿīlīs, and deaths of Ibn Abī Ṭāhir, al-Rādhānī, ʿAlī b. Dubays, and al-Ḥulwānī."
+    },
+    {
+      "id": 166512,
+      "intro_en": "✧ Covers ʿAbd al-Muʾmin's conquest of Bijāyah, victory over Ṣinhājah, Sultan Masʿūd's death and Malikshāh's accession, Nūr al-Dīn's wars with Franks, Sanjar's war with Ghūrids, Ghūrid sovereignty under Ghiyāth al-Dīn and Shihāb al-Dīn, and their conquests in India."
+    },
+    {
+      "id": 166513,
+      "intro_en": "✧ Covers Sultan Sanjar's defeat by the Ghuzz and their plundering of Khurāsān, al-Muʾayyad's possession of Naysābūr, Īnānj's taking al-Rayy, the killing of Ibn al-Sallār, the war between Arabs and ʿAbd al-Muʾmin's troops, and the Franks taking Būnah and Ascalon."
+    },
+    {
+      "id": 166514,
+      "intro_en": "✧ Includes the killing of al-Ẓāfir, al-Ṣāliḥ Ṭalāʾiʿ's vizierate, the siege of Tikrīt, Nūr al-Dīn's taking of Damascus and Tall Bāshir, the Ismāʿīlī advance on Khurāsān, and various deaths."
+    },
+    {
+      "id": 166515,
+      "intro_en": "✧ Covers Caliph al-Muqtafī's campaign to Daqūqā, Nūr al-Dīn's conquest of Baʿlabakk, political upheavals, and obituaries of many notables."
+    },
+    {
+      "id": 166516,
+      "intro_en": "✧ Describes rebellions against the Franks in Ifrīqiyya, Sulaymān Shāh's arrest, Sanjar's escape from the Ghuzz, and the passing of numerous scholars."
+    },
+    {
+      "id": 166517,
+      "intro_en": "✧ Relates Muḥammad Shāh's abortive siege of Baghdad, earthquakes in Syria, the fall of Shayzar, and the deaths of Sanjar and other rulers."
+    },
+    {
+      "id": 166518,
+      "intro_en": "✧ Narrates wars involving Sunqur, Qāymāz, and the Ghuzz, the capture of al-Muʾayyad, and the death of Sultan Sanjar."
+    },
+    {
+      "id": 166519,
+      "intro_en": "✧ Chronicles ʿAbd al-Muʾmin's campaigns against the Franks in Ifrīqiyya, the flooding of Baghdad, and the deaths of Sultan Muḥammad and other figures."
+    },
+    {
+      "id": 166520,
+      "intro_en": "✧ Describes Sulaymān Shāh's march to Hamadhān, the deaths of al-Fāʾiz and al-Muqtafī, and the accession of al-Mustanjid."
+    },
+    {
+      "id": 166521,
+      "intro_en": "✧ Covers the killing of Sulaymān Shāh, the proclamation of Arslān Shāh, conflicts in Khurāsān, and obituaries of notable scholars."
+    },
+    {
+      "id": 166522,
+      "intro_en": "✧ Relates al-Muʾayyad's conquests in Khurāsān, Ibn Mardanīsh's seizure of Granada, Nūr al-Dīn's siege of Ḥārim, and wars with the Georgians."
+    },
+    {
+      "id": 166523,
+      "intro_en": "✧ Covers the year 558 AH, including the vizierates of Shāwar and al-Ḍirghām in Egypt, the death of ʿAbd al-Muʾmin and succession of Yūsuf, Nūr al-Dīn's defeat at al-Buqayʿa, the expulsion of Banū Asad from Iraq, and deaths of notables."
+    },
+    {
+      "id": 166524,
+      "intro_en": "✧ Relates the events of 559 AH, chiefly Shīrkūh's first expedition to Egypt and his return, Nūr al-Dīn's conquests of Ḥārim and Bāniyās, the death of the vizier Jamāl al-Dīn, and various regional conflicts and obituaries."
+    },
+    {
+      "id": 166525,
+      "intro_en": "✧ Describes the year 560 AH, including the death of the Shāh of Māzandarān, al-Muʾayyad's seizure of Herat, the war between Qalj Arsilān and Ibn Dānishmand, and the death and virtues of the vizier Ibn Hubayra."
+    },
+    {
+      "id": 166526,
+      "intro_en": "✧ Covers 561 AH, including Nūr al-Dīn's conquest of al-Munayṭira, the killing of Khaṭalbers, the death of ʿAbd al-Qādir al-Jīlī, and other obituaries and miscellaneous events."
+    },
+    {
+      "id": 166527,
+      "intro_en": "✧ Relates the year 562 AH, chiefly Shīrkūh's return to Egypt and victory at al-Bābayn, his taking of Alexandria, Nūr al-Dīn's raids in Frankish territory, and conflicts in Iraq and elsewhere."
+    },
+    {
+      "id": 166528,
+      "intro_en": "✧ Describes 563 AH, including Zayn al-Dīn's departure from Mosul, the war between al-Bahlawān and the lord of Marāgha, the appointment of Ibn al-Baladī as vizier, and the deaths of al-Samʿānī and others."
+    },
+    {
+      "id": 166529,
+      "intro_en": "✧ Covers the year 564 AH, highlighting Nūr al-Dīn's taking of Qalʿat Jaʿbar, Shīrkūh's conquest of Egypt and killing of Shāwar, the death of Shīrkūh, and Ṣalāḥ al-Dīn's accession to power."
+    },
+    {
+      "id": 166530,
+      "intro_en": "✧ Relates the events of 565 AH, including the Frankish siege of Damietta, Nūr al-Dīn's siege of al-Karak, the great earthquake in Syria, the death of Quṭb al-Dīn Mawdūd, and various obituaries and occurrences."
+    },
+    {
+      "id": 166531,
+      "intro_en": "✧ Covers the death of Caliph al-Mustanjid bi-Allāh, the accession of al-Mustaḍīʾ bi-Amr Allāh, Nūr al-Dīn's taking of Mosul, Ṣalāḥ al-Dīn's conquest of Aylah, and obituaries of notables in 566 AH."
+    },
+    {
+      "id": 166532,
+      "intro_en": "✧ Covers the establishment of the Abbasid khuṭbah in Egypt ending the Fāṭimid dynasty, the death of al-ʿĀḍid, estrangement between Nūr al-Dīn and Ṣalāḥ al-Dīn, and other events of 567 AH."
+    },
+    {
+      "id": 166533,
+      "intro_en": "✧ Covers the death of Khwārazmshāh Arslān and the succession struggles of Sulṭān Shāh and Tekish, the death of al-Muʾayyad and his son's accession, and other events in Khurāsān up to 568 AH."
+    },
+    {
+      "id": 166534,
+      "intro_en": "✧ Covers Shams al-Dawla Tūrānshāh's conquest of Yemen including Zabīd and Aden, the killing of Egyptian conspirators against Ṣalāḥ al-Dīn, and the death and eulogies of Nūr al-Dīn Maḥmūd b. Zankī in 569 AH."
+    },
+    {
+      "id": 166535,
+      "intro_en": "✧ Covers the defeat of the Sicilian fleet at Alexandria, the rebellion of al-Kanz in Upper Egypt, Ṣalāḥ al-Dīn's acquisition of Damascus, Ḥimṣ, and Ḥamāh, and the flight of Quṭb al-Dīn Qāymāz from Baghdad in 569 AH."
+    },
+    {
+      "id": 166536,
+      "intro_en": "✧ Covers the defeat of Sayf al-Dīn's army by Ṣalāḥ al-Dīn near Ḥamāh, Ṣalāḥ al-Dīn's subsequent siege of Aleppo and peace agreement, the sedition in Makkah, and deaths of notables in 571 AH."
+    },
+    {
+      "id": 166537,
+      "intro_en": "✧ Covers Ṣalāḥ al-Dīn's plundering of Ismāʿīlī territory, the siege of Masyāf, Muslim-Frankish engagements, the rebellion of the lord of Shahrazūr, and the plundering of al-Bandanījīn in 572 AH."
+    },
+    {
+      "id": 166538,
+      "intro_en": "✧ Covers the defeat of Ṣalāḥ al-Dīn at al-Ramla, the Frankish siege of Ḥamāh, the killing of Kumushtakīn and siege of Ḥārim, and the assassination of the vizier Ibn Raʾīs al-Ruʾasāʾ in 573 AH."
+    },
+    {
+      "id": 166539,
+      "intro_en": "✧ Franks raid and devastate villages around Ḥamāh, but the city's garrison routs them; Ibn al-Muqaddam rebels at Baʿlabakk, which Ṣalāḥ al-Dīn besieges and gives to his brother Shams al-Dawla after compensation."
+    },
+    {
+      "id": 166540,
+      "intro_en": "✧ Ṣalāḥ al-Dīn's forces defeat Qilij Arslān's army after the latter besieges Raʿbān; the Franks' fortress at Bayt al-Aḥzān is destroyed; al-Mustaḍīʾ dies and al-Nāṣir succeeds him."
+    },
+    {
+      "id": 166541,
+      "intro_en": "✧ Sayf al-Dīn Ghāzī of Mosul dies and is succeeded by his brother ʿIzz al-Dīn Masʿūd; Ṣalāḥ al-Dīn marches against Qilij Arslān and raids Ibn Līyūn's Armenian territory."
+    },
+    {
+      "id": 166542,
+      "intro_en": "✧ Farrukhshāh raids Karak to thwart Prince Arnāṭ's planned attack on Medina; Ṣalāḥ al-Dīn sends armies to Yemen; al-Malik al-Ṣāliḥ dies and Aleppo passes to ʿIzz al-Dīn Masʿūd."
+    },
+    {
+      "id": 166543,
+      "intro_en": "✧ Ṣalāḥ al-Dīn marches from Egypt to Syria, raids Frankish lands, captures a cave fortress, sends his brother Ṭughtikīn to Yemen, crosses the Euphrates to conquer Jazīrah territory, besieges Mosul, takes Sinjār, and defeats Franks at sea."
+    },
+    {
+      "id": 166544,
+      "intro_en": "✧ Ṣalāḥ al-Dīn takes Āmid and gives it to Nūr al-Dīn Muḥammad, captures Tall Khālid and ʿAyn Tāb, wins engagements at sea and in Syria, acquires Aleppo, and takes Ḥārim."
+    },
+    {
+      "id": 166545,
+      "intro_en": "✧ Mujāhid al-Dīn is released and the Persians defeated; Yūsuf b. ʿAbd al-Muʾmin dies and Yaʿqūb succeeds; Ṣalāḥ al-Dīn raids al-Karak; the veiled Ibn Ghāniya seizes Bijāya; the lord of Māridīn dies."
+    },
+    {
+      "id": 166546,
+      "intro_en": "✧ Ṣalāḥ al-Dīn besieges Mosul again but departs after Shāh Arman's death; Nūr al-Dīn of Ḥiṣn dies; Ṣalāḥ al-Dīn captures Mayyāfāriqīn; peace is made with Mosul; Turkmen-Kurdish strife; Almohads defeat the veiled ones in Ifrīqiyah."
+    },
+    {
+      "id": 166547,
+      "intro_en": "✧ The year 582 AH witnessed Ṣalāḥ al-Dīn's redistribution of provinces among his kin, internal Muslim and Frankish conflicts, Prince Arnāṭ's treacherous caravan raid, and predictions about a planetary conjunction."
+    },
+    {
+      "id": 166548,
+      "intro_en": "✧ This year saw Ṣalāḥ al-Dīn's devastating defeat of the Franks at Ḥiṭṭīn, the conquest of Jerusalem, and the subjugation of most coastal and inland Frankish territories, along with notable deaths and eastern affairs."
+    },
+    {
+      "id": 166549,
+      "intro_en": "✧ The year 584 AH chronicles Ṣalāḥ al-Dīn's final campaigns against remaining Frankish strongholds in Syria, including Ṣahyūn, al-Shughr, Barzayh, Darb Sāk, Baghrās, al-Karak, Ṣafad, and Kawkab, plus events in Egypt and the East."
+    },
+    {
+      "id": 166550,
+      "intro_en": "✧ This year covers the prolonged Frankish siege of Acre, the arrival of Frankish reinforcements by sea, the death of Taqī al-Dīn, and various battles and minor engagements between Muslim and Frankish forces."
+    },
+    {
+      "id": 166551,
+      "intro_en": "✧ In 586 AH the Franks' siege of Acre continued with the burning of their siege towers, the disastrous German crusade, and the fall of Acre, followed by the Franks' southward march and destructive engagements at Arsūf and elsewhere."
+    },
+    {
+      "id": 166552,
+      "intro_en": "✧ The year 588 AH recounts the death of Saladin, the subsequent disputes among his heirs, and the campaigns of other regional rulers such as Atabeg ʿIzz al-Dīn and the lord of Khilāṭ."
+    },
+    {
+      "id": 166553,
+      "intro_en": "✧ This year details the truce between Ṣalāḥ al-Dīn and the Franks, the king of England's activities, the return to Damascus, and the deaths of Qilij Arslān and other notables."
+    },
+    {
+      "id": 166554,
+      "intro_en": "✧ The year 589 AH describes the death and burial of Saladin, his character and family, and the subsequent movements of al-ʿĀdil and other contemporary rulers such as Atabeg ʿIzz al-Dīn."
+    },
+    {
+      "id": 166555,
+      "intro_en": "✧ Covers Shihāb al-Dīn al-Ghūrī's victory over the king of Banāras, the killing of Sultan Tughrul and Khwārizm Shāh's consolidation, the caliphal vizier's conquest of Khūzistān, al-ʿAzīz's siege of Damascus, and various deaths and events."
+    },
+    {
+      "id": 166556,
+      "intro_en": "✧ Describes the caliphal vizier's campaigns in Persian lands, the Almohad victory at al-Zallāqah, the uprising of ʿAlī al-Mulaththam in Ifrīqiya, al-ʿAzīz's second failed siege of Damascus, and other events and obituaries."
+    },
+    {
+      "id": 166557,
+      "intro_en": "✧ Relates Shihāb al-Dīn al-Ghūrī's Indian campaigns, al-ʿĀdil's seizure of Damascus from al-Afḍal, natural phenomena in Iraq and Arabia, and obituaries of scholars."
+    },
+    {
+      "id": 166558,
+      "intro_en": "✧ Includes the failed mission of Abū al-Hayjāʾ al-Samīn in Hamadhān, Frankish capture of Beirut and siege of Tibnīn, the death of Sayf al-Islām in Yemen, and various events and obituaries."
+    },
+    {
+      "id": 166559,
+      "intro_en": "✧ Chronicles the death of ʿImād al-Dīn Zangī and succession in Sinjār, Nūr al-Dīn's seizure of Naṣībīn, Ghūrid victories over the Khiṭā and conquest of Balkh, and other events and obituaries."
+    },
+    {
+      "id": 166560,
+      "intro_en": "✧ Details the death of al-ʿAzīz and al-Afḍal's accession in Egypt, his failed siege of Damascus, the Almohad succession after Yaʿqūb, and various internal affairs and obituaries."
+    },
+    {
+      "id": 166561,
+      "intro_en": "✧ Recounts al-ʿĀdil's takeover of Egypt, the death of Khwārizm Shāh Tukush and his son's accession, a severe famine in Egypt, and the deaths of notable scholars."
+    },
+    {
+      "id": 166562,
+      "intro_en": "✧ Describes al-Ẓāhir's and al-Afḍal's unsuccessful siege of Damascus, Ghūrid advances in Khurāsān against Khwārizm Shāh, Rukn al-Dīn's conquests, and devastating earthquakes and famine."
+    },
+    {
+      "id": 166563,
+      "intro_en": "✧ Covers Khwārazm Shāh Muḥammad's campaigns to recover Khurāsān and Herat from the Ghūrids, his peace negotiations, and the deaths of prominent scholars and officials."
+    },
+    {
+      "id": 166564,
+      "intro_en": "✧ Describes al-ʿĀdil's siege of Mārdīn, the death of Ghiyāth al-Dīn al-Ghūrī, al-Ẓāhir's seizure of Qalʿat Najm, the Georgian capture of Duwīn, and other events."
+    },
+    {
+      "id": 166565,
+      "intro_en": "✧ Details Khwārazm Shāh's second siege of Herat, Shihāb al-Dīn's defeat by the Khiṭā, the Frankish conquest of Constantinople, and notable deaths including ʿAbd al-Ghanī al-Maqdisī."
+    },
+    {
+      "id": 166566,
+      "intro_en": "✧ Relates Kaykhusraw's restoration in Rūm, the siege of Khart Birt, seditions in Baghdad, Georgian raids, the Makkah-Madīnah war, and deaths of several scholars and poets."
+    },
+    {
+      "id": 166567,
+      "intro_en": "✧ Covers the sedition in Herat, Shihāb al-Dīn's war against the Banū Kawkar and his assassination, Aldiz's seizure of Ghazna, and other regional conflicts."
+    },
+    {
+      "id": 166568,
+      "intro_en": "✧ Describes the struggle for Ghazna among Aldiz, ʿAlāʾ al-Dīn, and Ghiyāth al-Dīn after Shihāb al-Dīn's death, along with ʿAbbās's seizure of Bāmiyān."
+    },
+    {
+      "id": 166569,
+      "intro_en": "✧ Narrates Khwārazm Shāh's campaigns against the Khiṭā, his captivity and escape, and his eventual conquest of Herat and the Ghūrid territories."
+    },
+    {
+      "id": 166570,
+      "intro_en": "✧ Records the Georgian sack of Arjīsh, the murder of Sanjar Shāh, and other events including an earthquake in Naysābūr."
+    },
+    {
+      "id": 166571,
+      "intro_en": "✧ Al-ʿĀdil's seizure of al-Khābūr and Naṣībīn, his siege of Sinjār and peace settlement, followed by miscellaneous events and obituaries of prominent figures."
+    },
+    {
+      "id": 166572,
+      "intro_en": "✧ The caliphal campaign against the rebellious mamlūk Sanjar in Khūzistān, the death and succession of Nūr al-Dīn Araslān Shāh, and other events and notable deaths."
+    },
+    {
+      "id": 166573,
+      "intro_en": "✧ Mankilī's seizure of lands and Īdghamish's flight to Baghdad, along with earthquakes, the Ismāʿīlī conversion, pilgrim plunder at Minā, and obituaries of scholars."
+    },
+    {
+      "id": 166574,
+      "intro_en": "✧ The arrival of Mankilī's son in Baghdad, followed by the suppression of Sāma al-Jabalī's revolt, the exile of Ibn Shukr, and obituaries of several scholars."
+    },
+    {
+      "id": 166575,
+      "intro_en": "✧ The killing of Īdghamish by Mankalī's partisans, various events including the pilgrimage and Khwārazm Shāh's espionage, and obituaries of prominent figures."
+    },
+    {
+      "id": 166576,
+      "intro_en": "✧ Khwārazm Shāh's conquest of Kirmān, Makrān, and al-Sind, along with the killing of Muʾayyad al-Mulk and other events of the year and notable deaths."
+    },
+    {
+      "id": 166577,
+      "intro_en": "✧ The defeat and killing of Mankalī, the caliph's son's death, Khwārazm Shāh's acquisition of Ghaznah, Alduz's seizure of Lahore and subsequent death, and other events with obituaries."
+    },
+    {
+      "id": 166578,
+      "intro_en": "✧ The death of al-Malik al-Ẓāhir of Aleppo and succession arrangements, various natural and urban events, and detailed obituaries of numerous scholars and poets."
+    },
+    {
+      "id": 166579,
+      "intro_en": "✧ Covers Khwārazm Shāh ʿAlāʾ al-Dīn Muḥammad's conquest of al-Jabal, Atabeg Saʿd's conflict with his sons, and the Frankish siege and eventual Muslim recovery of Damietta."
+    },
+    {
+      "id": 166580,
+      "intro_en": "✧ Recounts the death of al-Malik al-Qāhir, the ensuing succession struggles in Mosul, Kaykāʾūs's failed campaign against Aleppo, and the death of al-Malik al-ʿĀdil."
+    },
+    {
+      "id": 166581,
+      "intro_en": "✧ Describes the accession of Kayqubād in Rūm, the murder of the lord of Sinjār, the defeat of the Banū Maʿrūf, and the first appearance of the Tatars under Chingiz Khan."
+    },
+    {
+      "id": 166582,
+      "intro_en": "✧ Chronicles the devastation wrought by the Tatars as they overran Transoxiana, Khurāsān, Azerbaijan, and the Qipchaq steppe, including the fall of Bukhārā and Samarqand."
+    },
+    {
+      "id": 166583,
+      "intro_en": "✧ Details the death of Qatāda, amir of Makkah, the murderous usurpation by his son al-Ḥasan, and the peace agreement that restored Damietta to the Muslims."
+    },
+    {
+      "id": 166584,
+      "intro_en": "✧ Relates the Qifjāq migration into Azerbaijan, their betrayals of Shirwān Shāh and the Georgians, the Karaj plunder of Baylaqān, and Badr al-Dīn's capture of Shūsh."
+    },
+    {
+      "id": 166585,
+      "intro_en": "✧ Tells of al-Malik al-Masʿūd Aqsīs's seizure of Makkah, the war between the lord of Surmārī and the Georgians, and the rebellion of Ghiyāth al-Dīn's maternal uncle."
+    },
+    {
+      "id": 166586,
+      "intro_en": "✧ Describes a fresh Tatar raid on al-Rayy and Hamadhān, Ghiyāth al-Dīn's conquest of Fārs, Shihāb al-Dīn's revolt against al-Ashraf, and the failed siege of Mosul."
+    },
+    {
+      "id": 166587,
+      "intro_en": "✧ In the year 622 AH, the Georgians besiege Ganjah but are repelled, Jalāl al-Dīn Khwārazm Shāh moves through Khūzistān and Iraq, and internal conflicts in Shirwān lead to a change of ruler."
+    },
+    {
+      "id": 166588,
+      "intro_en": "✧ In the year 623 AH, the Caliph al-Ẓāhir dies and is succeeded by al-Mustanṣir bi'llāh, Jalāl al-Dīn defeats the Georgians and captures Tiflis, and various internal conflicts and natural phenomena are recorded."
+    },
+    {
+      "id": 166589,
+      "intro_en": "✧ In the year 624 AH, the Georgians burn Tiflis, Jalāl al-Dīn campaigns against the Ismāʿīlīs and Tatars, and the death of Genghis Khān is recorded among other notable events."
+    },
+    {
+      "id": 166590,
+      "intro_en": "✧ In the year 625 AH, internal discord among the Khwārazmians, wars with the Tatars, Frankish advances in Syria, and the death of al-Malik al-Muʿaẓẓam are described."
+    },
+    {
+      "id": 166591,
+      "intro_en": "✧ In the year 626 AH, Jerusalem is surrendered to the Franks, Damascus changes hands among the Ayyubids, and Jalāl al-Dīn captures Khilāṭ."
+    },
+    {
+      "id": 166592,
+      "intro_en": "✧ In the year 627 AH, Jalāl al-Dīn is defeated by Kayqubādh and al-Ashraf, and various territorial changes and rebellions occur."
+    },
+    {
+      "id": 166593,
+      "intro_en": "✧ In the year 628 AH, the Tatars invade Azerbaijan and Diyār Bakr, Jalāl al-Dīn's power collapses, and notable deaths include Ibn Muʿṭī and al-Dakhwār."
+    },
+    {
+      "id": 166594,
+      "intro_en": "✧ In the year 629 AH, administrative changes occur in Baghdad and Damascus, and a Tatar incursion into Shahrazūr is repelled by Muẓaffar al-Dīn of Irbil."
+    },
+    {
+      "id": 166595,
+      "intro_en": "✧ Covers the investiture of Majd al-Dīn al-Manṣūrī, Ibn al-Jawzī's embassy to al-Kāmil, the conquest of Irbil, the building of the Ashrafiyya Dār al-Ḥadīth, and obituaries of prominent figures."
+    },
+    {
+      "id": 166596,
+      "intro_en": "✧ Records the completion of the Mustanṣiriyya school and its endowments, diplomatic gifts to al-Ashraf, construction projects in Baghdad and Damascus, and obituaries of scholars and rulers."
+    },
+    {
+      "id": 166597,
+      "intro_en": "✧ Mentions al-Mustanṣir's minting of silver dirhams, al-Ashraf's destruction of a sinful khān and building of the Mosque of Repentance, and deaths of Bahāʾ al-Dīn b. Shaddād and Ibn al-Fāriḍ."
+    },
+    {
+      "id": 166598,
+      "intro_en": "✧ Relates al-Kāmil and al-Ashraf's repair of Byzantine damage, the Tatar threat, and obituaries including Ibn ʿUnayn, Ibn Diḥyah, and al-Ḥājirī with critical assessments of Ibn Diḥyah."
+    },
+    {
+      "id": 166599,
+      "intro_en": "✧ Describes the Tatar siege of Irbil, al-Ṣāliḥ Ayyūb's employment of Khwarazmian troops, the rift between al-Ashraf and al-Kāmil, and obituaries of al-Malik al-ʿAzīz, Kayqubādh, and others."
+    },
+    {
+      "id": 166600,
+      "intro_en": "✧ Narrates the deaths of al-Ashraf and al-Kāmil, the brief rule and surrender of al-Ṣāliḥ Ismāʿīl, the rise of al-Jawād in Damascus, and obituaries of al-Khaṭīb al-Dawlaʿī and others."
+    },
+    {
+      "id": 166601,
+      "intro_en": "✧ Tells of al-Jawād's confiscations and exchange of Damascus for Ḥiṣn Kayfā with al-Ṣāliḥ Ayyūb, and obituaries of Jamāl al-Dīn al-Ḥaṣīrī and ʿImād al-Dīn b. Shaykh al-Shuyūkh."
+    },
+    {
+      "id": 166602,
+      "intro_en": "✧ Details al-Ṣāliḥ Ismāʿīl's seizure of Damascus, the imprisonment and release of al-Ṣāliḥ Ayyūb, his accession in Egypt, and obituaries of Asad al-Dīn Shīrkūh and al-Qāḍī al-Khuwayyī."
+    },
+    {
+      "id": 166603,
+      "intro_en": "✧ In 638 AH, al-Ṣāliḥ Ismāʿīl surrendered Shaqīf Arnūn to the Franks, provoking the imprisonment of two shaykhs, a Tatar envoy delivered a summons, and Muḥyī al-Dīn ibn ʿArabī died."
+    },
+    {
+      "id": 166604,
+      "intro_en": "✧ In 639 AH, al-Malik al-Jawād fled toward Egypt but was arrested, al-Ṣāliḥ Ayyūb began building schools and a citadel in Egypt, and the ruler of Homs defeated the Khwarazmians at Ḥarrān."
+    },
+    {
+      "id": 166605,
+      "intro_en": "✧ In 640 AH, the caliph al-Mustanṣir died and was succeeded by his son al-Mustaʿṣim, while the shrine at Samarra burned and a severe plague struck Iraq."
+    },
+    {
+      "id": 166606,
+      "intro_en": "✧ In 641 AH, peace negotiations between al-Ṣāliḥ Ayyūb and his uncle al-Ṣāliḥ Ismāʿīl broke down, the Khwarazmians seized Rūm, and al-Qāḍī al-Rafīʿ al-Jīlī was killed."
+    },
+    {
+      "id": 166607,
+      "intro_en": "✧ In 642 AH, al-Mustaʿṣim appointed Ibn al-ʿAlqamī as vizier, and the Khwarazmians, allied with al-Ṣāliḥ Ayyūb, inflicted a massive defeat on the coalition of Syrian Ayyubids and Franks near Gaza."
+    },
+    {
+      "id": 166608,
+      "intro_en": "✧ In 643 AH, the Khwarazmians besieged Damascus, causing severe famine and death, before being defeated at the lake of Homs, and several prominent scholars died."
+    },
+    {
+      "id": 166609,
+      "intro_en": "✧ In 644 AH, al-Manṣūr broke the Khwarazmians at the lake of Ḥimṣ, al-Ṣāliḥ Ayyūb entered Damascus and ordered the rebuilding of Jerusalem's walls, and a storm bared the Kaʿbah."
+    },
+    {
+      "id": 166610,
+      "intro_en": "✧ In 645 AH, al-Ṣāliḥ Ayyūb returned to Egypt after conquering Tiberias and Ascalon, and notable deaths included the grammarian al-Shalūbīn and the controversial Shaykh ʿAlī al-Ḥarīrī."
+    },
+    {
+      "id": 166611,
+      "intro_en": "✧ Covers Sultan al-Ṣāliḥ Ayyūb's return to Damascus, his illness and killing of his brother al-ʿĀdil, events in Damascus, deaths of Afḍal al-Dīn al-Khūnajī and Abū ʿAmr b. al-Ḥājib, and an account of Abū al-Ḥasan al-Mukharrimī."
+    },
+    {
+      "id": 166612,
+      "intro_en": "✧ Records the death of Sultan al-Ṣāliḥ Ayyūb, the brief rule and killing of his son Tūrānshāh, the Frankish seizure of Damietta, and the rise of al-Muʿizz Aybak with the death of Fakhr al-Dīn b. al-Shaykh."
+    },
+    {
+      "id": 166613,
+      "intro_en": "✧ Describes the recovery of Damietta from the Franks, the investiture of al-Muʿizz Aybak, the acquisition of Damascus by al-Nāṣir b. al-ʿAzīz, and biographies of al-Ṣāliḥ Ismāʿīl and Tūrānshāh."
+    },
+    {
+      "id": 166614,
+      "intro_en": "✧ Details al-Nāṣir's return to Damascus, the marriage of Shajar al-Durr to Aybak, the transfer of al-Ṣāliḥ Ayyūb's coffin, destruction of Damietta, and deaths of Bahāʾ al-Dīn al-Jummayzī and ʿAbd al-Raḥmān al-Lamghānī."
+    },
+    {
+      "id": 166615,
+      "intro_en": "✧ Reports the Tatar raids on al-Jazira, the hajj from Baghdad, a fire in Aleppo, restoration of the Tājiyya Madrasa, and deaths of Jamāl al-Dīn b. Maṭrūḥ, ʿAbd al-ʿAzīz al-Maghribī, and others."
+    },
+    {
+      "id": 166616,
+      "intro_en": "✧ Mentions the Aden fire, the killing of Aqṭāy, Shaykh ʿIzz al-Dīn b. ʿAbd al-Salām's teaching post, the marriage of the Roman king's daughter, and obituaries for al-Khusrūshāhī, Majd al-Dīn Ibn Taymiyya, and Kamāl al-Dīn b. Ṭalḥa."
+    },
+    {
+      "id": 166617,
+      "intro_en": "✧ Describes the Hijaz earthquake and fire, the burning of the Prophet's Mosque, the completion of the Nāṣiriyya al-Juwāniyya school, and deaths including Sibṭ b. al-Jawzī and Sayf al-Dīn b. Abī al-Fawāris."
+    },
+    {
+      "id": 166618,
+      "intro_en": "✧ Relates the deaths of ʿIzz al-Dīn Aybak and Shajar al-Durr, the accession of al-Manṣūr ʿAlī, sectarian strife in Baghdad, the Ḥaydarī fuqarāʾ entering Syria, and obituaries for al-Nāṣir Dāwūd, Ibn Abī al-Ḥadīd, and others."
+    },
+    {
+      "id": 166619,
+      "intro_en": "✧ The Mongols under Hūlākū Qān captured Baghdad, massacred its inhabitants, and killed the last ʿAbbāsid caliph al-Mustaʿṣim, ending the dynasty in Iraq."
+    },
+    {
+      "id": 166620,
+      "intro_en": "✧ Following the fall of Baghdad, Hūlākū advanced into Syria, capturing Mayyāfāriqīn and other strongholds while Quṭuz usurped the sultanate in Egypt."
+    },
+    {
+      "id": 166621,
+      "intro_en": "✧ The Mongols seized Aleppo and Damascus, but Quṭuz defeated them at ʿAyn Jālūt; he was then assassinated and succeeded by Baybars al-Bunduqdārī."
+    },
+    {
+      "id": 166622,
+      "intro_en": "✧ Baybars restored an ʿAbbāsid caliph with the brief investiture of al-Mustanṣir II and initially campaigned toward Iraq before the caliph was lost."
+    },
+    {
+      "id": 166623,
+      "intro_en": "✧ Al-Mustanṣir II was killed, and al-Ḥākim bi-Amr Allāh was installed as caliph while Baybars consolidated control over Egypt and Syria."
+    },
+    {
+      "id": 166624,
+      "intro_en": "✧ Baybars received oaths for al-Ḥākim, seized al-Karak, and dealt with the Tatar conflicts while appointing governors and judges across his realm."
+    },
+    {
+      "id": 166625,
+      "intro_en": "✧ Building projects and appointments were carried out in Cairo and Damascus, and numerous scholars and officials died during this year."
+    },
+    {
+      "id": 166626,
+      "intro_en": "✧ Baybars campaigned against the Franks, capturing Caesarea and Arsuf, while the Mamluk system of judges from all four legal schools was established in Egypt."
+    },
+    {
+      "id": 166627,
+      "intro_en": "✧ Covers the appointment of four chief judges in Damascus, the conquest of Safad, and the raid on Sīs under Sultan al-Malik al-Ẓāhir."
+    },
+    {
+      "id": 166628,
+      "intro_en": "✧ Details Sultan al-Ẓāhir's movements, restoration of the Azhar mosque, and deaths of Barakah Khān and al-Shaykh Abū Shāmah."
+    },
+    {
+      "id": 166629,
+      "intro_en": "✧ Narrates the conquest of Antioch and Jaffa, conflicts with the Franks and Tatars, and notable deaths including Ibn Sabʿīn."
+    },
+    {
+      "id": 166630,
+      "intro_en": "✧ Records Sultan al-Ẓāhir's renewed oath for his son, prohibition of wine, his Hajj, and deaths of amirs and scholars."
+    },
+    {
+      "id": 166631,
+      "intro_en": "✧ Tells of the end of the Almohad dynasty, the capture of Misyāf, and the deaths of Ibn Abī Uṣaybiʿa and Ibn al-Zakī."
+    },
+    {
+      "id": 166632,
+      "intro_en": "✧ Describes the campaigns against Ḥiṣn al-Akrād and Acre, the appointment of Ibn al-Ṣāʾigh, and deaths including Ibn Sabʿīn."
+    },
+    {
+      "id": 166633,
+      "intro_en": "✧ Relates the sultan's campaigns, arrest of the Hanbali judge, and the deaths of al-Nawawī's teacher and others."
+    },
+    {
+      "id": 166634,
+      "intro_en": "✧ Mentions the Nubian raid on ʿAydhāb, the handing over of Ismāʿīlī fortresses, and the deaths of notables."
+    },
+    {
+      "id": 166635,
+      "intro_en": "✧ Reports the movements of al-Ẓāhir in Damascus in 672 AH, the completion of the Dayr al-Ṭīn mosque, and the obituaries of notables including Muʾayyid al-Dīn b. al-Qalānisī, Fāris al-Dīn Aqtāy, Ibn Mālik, and Naṣīr al-Dīn al-Ṭūsī."
+    },
+    {
+      "id": 166636,
+      "intro_en": "✧ Chronicles al-Ẓāhir's campaign into Sīs against the Armenians in 673 AH and the obituaries of Ibn ʿAṭāʾ al-Ḥanafī and the Frankish count Baymūnd of Tripoli."
+    },
+    {
+      "id": 166637,
+      "intro_en": "✧ Covers the Tatar siege of al-Bīrah, al-Ẓāhir's campaign against Dunqulah, disturbances at al-Karak, and the deaths of Tāj al-Dīn al-Ṣarkhadī, Ibn al-Ṣāʾigh, and Ibn al-Sāʿī."
+    },
+    {
+      "id": 166638,
+      "intro_en": "✧ Describes the Battle of al-Bulustayn in 675 AH, al-Ẓāhir's conquest of Qaysariyyah, the wedding of al-Saʿīd, and the deaths of Ibn al-Fuwayrih and Shams al-Dīn al-Ḥarrānī."
+    },
+    {
+      "id": 166639,
+      "intro_en": "✧ Narrates the deaths of al-Nawawī, al-Malik al-Qāhir, and al-Malik al-Ẓāhir in 676 AH, the succession of al-Saʿīd, and the obituaries of al-Barwānah, Bīlīk al-Khazindār, and others."
+    },
+    {
+      "id": 166640,
+      "intro_en": "✧ Records the reinstatement of Ibn Khallikān as judge of Damascus in 677 AH, al-Saʿīd's entry into Damascus, and the obituaries of Āqūsh al-Najībī, Ṣadr al-Dīn Sulaymān, Ibn al-Ḥinnā, and Ibn Isrāʾīl al-Ḥarīrī."
+    },
+    {
+      "id": 166641,
+      "intro_en": "✧ Describes the discord among the Ẓāhirī amirs in 678 AH, the deposition of al-Saʿīd, the accession of Qalāwūn as al-Manṣūr, Sunqur al-Ashqar's revolt in Damascus, and the deaths of Ibn Ghānim and al-Saʿīd."
+    },
+    {
+      "id": 166642,
+      "intro_en": "✧ Relates the defeat of Sunqur al-Ashqar by al-Manṣūr's forces in 679 AH, the Tatar incursion into Syria, and the obituaries of Āqūsh al-Shamsī, Dāwūd al-Ḥabbāl, and the poet al-Jazzār."
+    },
+    {
+      "id": 166643,
+      "intro_en": "✧ Covers the truce between the Sultan and ʿAkkā/al-Marqab, peace with Sunqur al-Ashqar, the Battle of Ḥimṣ against the Tatars, and the deaths of Abaqā and several scholars."
+    },
+    {
+      "id": 166644,
+      "intro_en": "✧ Records the Tatar king Aḥmad's peace overture to al-Manṣūr, arrests of emirs, a fire in al-Labbādīn, and obituaries including Ibn Khallikān."
+    },
+    {
+      "id": 166645,
+      "intro_en": "✧ Relates al-Manṣūr's visit to Damascus, the change in khaṭābah, the detention and release of Ibn al-Ṣāʾigh, and deaths of prominent scholars and the Arab king Aḥmad b. Ḥajjī."
+    },
+    {
+      "id": 166646,
+      "intro_en": "✧ Describes the Sultan's arrival in Damascus, the Tatar deposition of Aḥmad in favor of Arghūn, Ibn Taymiyya's early teaching, and deaths of scholars and the king of Ḥamāh."
+    },
+    {
+      "id": 166647,
+      "intro_en": "✧ Reports al-Manṣūr's conquest of al-Marqab and nearby fortresses, the birth of his son al-Nāṣir Muḥammad, administrative changes, and obituaries of notable figures."
+    },
+    {
+      "id": 166648,
+      "intro_en": "✧ Details the siege and surrender of al-Karak, a destructive whirlwind in Ḥomṣ, Mālikī judgeship changes, and deaths including the Maghribī sultan Yaʿqūb al-Marīnī and al-Bayḍāwī."
+    },
+    {
+      "id": 166649,
+      "intro_en": "✧ Narrates the surrender of Sunqur al-Ashqar and his fortresses, the arrival of a new chief judge, financial exactions on Damascenes, and deaths of several scholars and poets."
+    },
+    {
+      "id": 166650,
+      "intro_en": "✧ Covers Nāṣir al-Dīn al-Maqdisī's oppressive treasury authority, the death of al-Manṣūr's son and succession of al-Ashraf Khalīl, a Christian's execution, and obituaries of scholars."
+    },
+    {
+      "id": 166651,
+      "intro_en": "✧ Covers the conquest and rebuilding of Tripoli by Sultan Qalāwūn, financial measures under ʿAlam al-Dīn al-Shujāʿī, victories near Aleppo, appointments, and obituaries including scholars and poets."
+    },
+    {
+      "id": 166652,
+      "intro_en": "✧ Records the death of Sultan Qalāwūn, administrative changes under his successors, preparations for the siege of Acre, appointments in Damascus, and obituaries of rulers and scholars."
+    },
+    {
+      "id": 166653,
+      "intro_en": "✧ Describes the Mamluk conquest of Acre and remaining coastal towns under al-Ashraf Khalīl, the conquest poem, provincial appointments, and obituaries including Tatar ruler Arghūn and scholars."
+    },
+    {
+      "id": 166654,
+      "intro_en": "✧ Covers the conquest of Qalʿat al-Rūm, political events in Damascus including appointments and arrests, and obituaries of scholars and amirs."
+    },
+    {
+      "id": 166655,
+      "intro_en": "✧ Records events of 692 AH such as fires, raids, political arrangements, appointments, harsh weather, and obituaries of scholars and rulers."
+    },
+    {
+      "id": 166656,
+      "intro_en": "✧ Describes the incident of ʿAssāf the Christian and the killing of al-Ashraf Khalīl, followed by the accession of al-Nāṣir Muḥammad, administrative changes, and obituaries of leading figures."
+    },
+    {
+      "id": 166657,
+      "intro_en": "✧ Records a revolt by former Mamlūks, the accession of Kitbughā as sultan, severe famine in Egypt and Syria, appointments, and obituaries including Sharaf al-Dīn al-Maqdisī."
+    },
+    {
+      "id": 166658,
+      "intro_en": "✧ Covers famine, appointment of Taqī al-Dīn b. Daqīq al-ʿĪd as chief judge, Sultan Kitbughā's visit to Damascus, administrative changes, and obituaries including Zayn al-Dīn b. al-Munajjā."
+    },
+    {
+      "id": 166659,
+      "intro_en": "✧ It covers Sultan Kitbughā's entry into Damascus, the rebellion of Lājīn and his accession as al-Manṣūr, administrative changes, and deaths of notables."
+    },
+    {
+      "id": 166660,
+      "intro_en": "✧ It covers Sultan al-Manṣūr Lājīn's reign, his recovery from a horse fall, campaigns against Sis, and deaths of notables."
+    },
+    {
+      "id": 166661,
+      "intro_en": "✧ It covers the killing of Sultan Lājīn, restoration of al-Nāṣir Muḥammad b. Qalāwūn, Ibn Taymiyya's trial, and deaths of notables."
+    },
+    {
+      "id": 166662,
+      "intro_en": "✧ It covers the Battle of Qāzān, the Tatar occupation of Damascus, Ibn Taymiyya's negotiations, and the restoration of Egyptian rule."
+    },
+    {
+      "id": 166663,
+      "intro_en": "✧ It covers renewed Tatar threats, Ibn Taymiyya's efforts to mobilize resistance, internal appointments, and deaths of notables."
+    },
+    {
+      "id": 166664,
+      "intro_en": "✧ It covers administrative changes, the trial of al-Baqaqī, the forged Khaybar document, the death of Caliph al-Ḥākim and accession of al-Mustakfī."
+    },
+    {
+      "id": 166665,
+      "intro_en": "✧ It covers the beginnings of the Battle of Shaqḥab, detailing the confrontation between the Egyptian army and the Tatars."
+    },
+    {
+      "id": 166667,
+      "intro_en": "✧ It covers the conquest of Tall Ḥamdūn, the death of Qāzān and accession of Kharbanda, the pilgrimage of Salār, and deaths of notables."
+    },
+    {
+      "id": 166668,
+      "intro_en": "✧ Covers the events of 704 AH, including the restoration of the Mosque of al-Ḥākim, Ibn Taymiyya's actions, and the deaths of Tāj al-Dīn b. al-Rifāʿī and Najm al-Dīn ʿUmar."
+    },
+    {
+      "id": 166669,
+      "intro_en": "✧ Covers the events of 705 AH, focusing on the ordeal of Ibn Taymiyya."
+    },
+    {
+      "id": 166671,
+      "intro_en": "✧ Covers the events of 706 AH, including Ibn Taymiyya's imprisonment, appointments, and deaths of notables such as Ḍiyāʾ al-Dīn al-Ṭūsī and Shams al-Dīn al-Khilāṭī."
+    },
+    {
+      "id": 166672,
+      "intro_en": "✧ Covers the events of 707 AH, including conflicts with the people of Kīlān, Ibn Taymiyya's release from prison, and the deaths of Rukn al-Dīn Baybars al-ʿAjamī and Ṣāliḥ al-Aḥmadī al-Rifāʿī."
+    },
+    {
+      "id": 166673,
+      "intro_en": "✧ Covers the sultanate of al-Malik al-Muẓaffar Baybars al-Jāshnakīr and the events of 708 AH, including Ibn Taymiyya's continued imprisonment and the deaths of several notables."
+    },
+    {
+      "id": 166674,
+      "intro_en": "✧ Covers the events of 709 AH, focusing on the return of al-Malik al-Nāṣir Muḥammad b. Qalāwūn to the throne."
+    },
+    {
+      "id": 166676,
+      "intro_en": "✧ Covers the events of 710 AH, including appointments, dismissals, the killing of Salār, and the deaths of several notables such as Shams al-Dīn al-Surūjī and Ibn al-Rifʿah."
+    },
+    {
+      "id": 166677,
+      "intro_en": "✧ Covers the events of 711 AH, including the arrest of several viceroys, the arrival of Jamāl al-Dīn Āqūsh as viceroy of Damascus, and the deaths of notables such as Badr al-Dīn al-Suwaydī and Saʿd al-Dīn al-Ḥārithī."
+    },
+    {
+      "id": 166678,
+      "intro_en": "✧ The year 712 AH covers the flight of amirs to the Tatars, appointments and arrests, Tatar raids on al-Raḥba, Ibn Taymiyya's return to Damascus, and obituaries of notables including Ṭuqṭāy Khān."
+    },
+    {
+      "id": 166679,
+      "intro_en": "✧ The year 713 AH records the Sultan's return from the Ḥijāz, administrative appointments, canal construction, and obituaries of scholars such as Fakhr al-Dīn al-Tūzarī."
+    },
+    {
+      "id": 166680,
+      "intro_en": "✧ The year 714 AH records decrees, official appointments, the death of Aleppo's governor Sawdī, and obituaries of notables including Rashīd al-Dīn al-Qurashī and Umm Zaynab al-Baghdādiyya."
+    },
+    {
+      "id": 166681,
+      "intro_en": "✧ The year 715 AH describes the conquest of Malaṭya, arrests of amirs, military raids, and obituaries of scholars including Ṣafī al-Dīn al-Hindī and Taqī al-Dīn Sulaymān al-Maqdisī."
+    },
+    {
+      "id": 166682,
+      "intro_en": "✧ The year 716 AH covers administrative appointments, the death of Tatar ruler Kharbandā and succession of Bū Saʿīd, and obituaries of numerous scholars and officials including Ibn al-Wakīl."
+    },
+    {
+      "id": 166683,
+      "intro_en": "✧ The year 717 AH begins with a Nuṣayrī revolt led by a false Mahdī in Jabala, then describes construction, appointments, natural disasters, and obituaries of notables including al-Zawāwī."
+    },
+    {
+      "id": 166684,
+      "intro_en": "✧ The year 718 AH relates the killing of Rashīd al-Dawla, natural disasters and famine, appointments, and obituaries of figures such as Ibn Qawām and Ibn al-Sharīshī."
+    },
+    {
+      "id": 166685,
+      "intro_en": "✧ The year 719 AH records administrative changes, a rain prayer, the Sultan's pilgrimage, Tatar internal conflict, and obituaries of notables including Ghurlū and Jamāl al-Dīn al-Raḥbī."
+    },
+    {
+      "id": 166686,
+      "intro_en": "✧ Covers the sultan's return from Hajj, appointment of al-Malik al-Muʾayyad, building of the mosque of al-Khayf, military campaigns in Sīs, expulsion of Muhannā's family, a Maghrib victory over Franks, Ibn Taymiyya's imprisonment, and various official appointments and deaths of scholars."
+    },
+    {
+      "id": 166687,
+      "intro_en": "✧ Describes the gift from Abū Saʿīd, Ibn Taymiyya's release, church demolitions, appointments of Qāḍī Karīm al-Dīn, Mongol raids into Sīs, the Ḥajj caravan, and numerous deaths of notable scholars and officials."
+    },
+    {
+      "id": 166688,
+      "intro_en": "✧ Records the conquest of Āyās, Tatars' incursion into Syria and ensuing earthquake, along with appointments, marriages, and obituaries of scholars and officials including Shams al-Dīn b. al-ʿIzz al-Ḥanafī."
+    },
+    {
+      "id": 166689,
+      "intro_en": "✧ Details the arrest of Qāḍī Karīm al-Dīn, the arrival of a Mongol princess, sedition in Isfahan, and obituaries of figures such as Kamāl al-Dīn b. al-Fuwaṭī and Najm al-Dīn b. Ṣaṣrā."
+    },
+    {
+      "id": 166690,
+      "intro_en": "✧ Chronicles the dismissal of al-Zuraʿī, arrival of King Mūsā of Takrūr, Nile flooding, the suicide of Karīm al-Dīn, and deaths including Badr al-Dīn al-Ḥanafī and Quṭb al-Dīn Aḥmad."
+    },
+    {
+      "id": 166691,
+      "intro_en": "✧ Recounts expeditions to Yemen, flooding in Baghdad, opening of the khānqāh of Siryāqūs, teaching appointments, and obituaries of notable scholars including al-Shihāb Maḥmūd and Ibn al-Ṣāʾigh."
+    },
+    {
+      "id": 166692,
+      "intro_en": "✧ Describes the execution of Nāṣir ibn al-Hītī, Ibn Taymiyya's imprisonment, the water spring in Makkah, and deaths including Ibn al-Muṭahhar al-Ḥillī and Quṭb al-Dīn al-Yūnīnī."
+    },
+    {
+      "id": 166693,
+      "intro_en": "✧ Details the arrest of Arghūn, disturbances in Alexandria, the appointment of al-Qūnawī as judge of Syria, and deaths such as Kamāl al-Dīn b. al-Zamlakānī and Ḍiyāʾ al-Dīn Ismāʿīl."
+    },
+    {
+      "id": 166694,
+      "intro_en": "✧ Chronicles the political, religious, and urban developments in Damascus, Makkah, and Jerusalem, including Ibn Taymiyya's death and funeral."
+    },
+    {
+      "id": 166695,
+      "intro_en": "✧ Records administrative appointments, the completion of mosque revetment, pilgrim caravan movements, and obituaries of scholars and officials."
+    },
+    {
+      "id": 166696,
+      "intro_en": "✧ Describes the start of 730 AH, appointment of judges, establishment of Friday prayers, events in Makkah during pilgrimage, and notable deaths."
+    },
+    {
+      "id": 166697,
+      "intro_en": "✧ Covers the punitive expedition to Makkah, the arrival of the Sājūr River in Aleppo, urban works, pilgrim caravans, and obituaries."
+    },
+    {
+      "id": 166698,
+      "intro_en": "✧ Details floods, al-Malik al-Muʾayyad's death, the sultan's pilgrimage, a lavish wedding, and obituaries of officials and scholars."
+    },
+    {
+      "id": 166699,
+      "intro_en": "✧ Reports the sultan's return from pilgrimage, judicial changes, prohibitions, Kaʿba door replacement, and deaths of several notables."
+    },
+    {
+      "id": 166700,
+      "intro_en": "✧ Describes the case of Qāḍī Ibn Jumla, the pilgrimage caravan, appointments, and deaths of prominent scholars and emirs."
+    },
+    {
+      "id": 166701,
+      "intro_en": "✧ Mentions the sultan's constructions, the Aleppo army's return, fires in Ḥamāh and Antioch, and obituaries including amir Muhannā b. ʿĪsā."
+    },
+    {
+      "id": 166702,
+      "intro_en": "✧ The year 736 AH records the Mamluk Sultanate's administrative appointments, military campaigns, the arrest and exile of Caliph al-Mustakfī, Tatar wars, pilgrimage, and obituaries of scholars and amirs."
+    },
+    {
+      "id": 166703,
+      "intro_en": "✧ The year 737 AH covers the detention and release of Caliph al-Mustakfī, military expeditions against Sīs and the Tatars, administrative changes, and obituaries of distinguished scholars and notables."
+    },
+    {
+      "id": 166704,
+      "intro_en": "✧ The year 738 AH chronicles the exile of Caliph al-Mustakfī to Qūṣ, the dismissal and appointment of judges, natural disasters, and obituaries of prominent jurists and officials."
+    },
+    {
+      "id": 166705,
+      "intro_en": "✧ The year 739 AH records the inauguration of the Sukkariyyah House of Hadith, the arrival of Taqī al-Dīn al-Subkī as chief judge in Damascus, and obituaries of Jalāl al-Dīn al-Qazwīnī, al-Birzālī, and others."
+    },
+    {
+      "id": 166706,
+      "intro_en": "✧ The year 740 AH covers the burning of the Umayyad Mosque's eastern minaret by Christians, the arrest and execution of viceroy Tankiz, the death of Caliph al-Mustakfī, and the succession of al-Wāthiq."
+    },
+    {
+      "id": 166707,
+      "intro_en": "✧ The year 741 AH records the arrest and execution of Tankiz, the trial and execution of ʿUthmān al-Dūkālī, the completion of the eastern minaret of the Umayyad Mosque, and the death of Sultan al-Nāṣir Muḥammad."
+    },
+    {
+      "id": 166708,
+      "intro_en": "✧ The year 742 AH covers the accession of Caliph al-Ḥākim bi-Amr Allāh, the arrest of Bashtak, the death of al-Ḥāfiẓ al-Mizzī, the rebellion of al-Fakhrī, and the deposition of Sultan al-Manṣūr Abū Bakr."
+    },
+    {
+      "id": 166709,
+      "intro_en": "✧ The year 743 AH records the siege of al-Karak, the deposition of Sultan al-Nāṣir Aḥmad, the accession of al-Ṣāliḥ Ismāʿīl, deaths of notables, and administrative changes in Damascus."
+    },
+    {
+      "id": 166710,
+      "intro_en": "✧ Covers the political and social events of 744 AH in Damascus, including the siege of al-Karak, deaths of notable scholars, a major fire, an earthquake, and legal disturbances."
+    },
+    {
+      "id": 166711,
+      "intro_en": "✧ Details the fall of al-Karak and execution of Sultan Aḥmad, deaths of scholars, building projects, unusual snowfalls, and legal rulings concerning dogs during 745 AH."
+    },
+    {
+      "id": 166712,
+      "intro_en": "✧ Chronicles events of 746 AH, including completion of a congregational mosque, disputes over legal opinions, changes in the deputy of Damascus, and the death of Sultan al-Ṣāliḥ Ismāʿīl."
+    },
+    {
+      "id": 166713,
+      "intro_en": "✧ Describes the reign of al-Malik al-Kāmil Shaʿbān and the revolt led by the deputy of Damascus, culminating in the accession of al-Malik al-Muẓaffar Ḥājjī in 747 AH."
+    },
+    {
+      "id": 166714,
+      "intro_en": "✧ Narrates the deposition and pursuit of the deputy Yalbughā, the seizure of Amīr Arghūn Shāh, and the killing of Sultan al-Muẓaffar, leading to al-Nāṣir Ḥasan's accession in 748 AH."
+    },
+    {
+      "id": 166715,
+      "intro_en": "✧ Focuses on the devastating plague of 749 AH, including its spread, public supplications, high death tolls, and the deaths of numerous scholars and officials."
+    },
+    {
+      "id": 166716,
+      "intro_en": "✧ Relates the aftermath of the plague and the arrest and killing of the deputy Arghūn Shāh by Uljaybughā, along with other administrative and scholarly events in 750 AH."
+    },
+    {
+      "id": 166717,
+      "intro_en": "✧ Covers events of 751 AH, including the abolition of mid-Shaʿbān lamp lighting, arrest of deputies, conflict at Minā, and the biography and death of Ibn Qayyim al-Jawziyya."
+    },
+    {
+      "id": 166718,
+      "intro_en": "✧ Annual chronicle covering Mamluk sultanate affairs, the pilgrimage clash in the Hijaz, the Safad rebellion, amir appointments, and a mass conversion of Jews in Damascus."
+    },
+    {
+      "id": 166719,
+      "intro_en": "✧ Account of Bāb Jayrūn in Damascus."
+    },
+    {
+      "id": 166721,
+      "intro_en": "✧ Chronicle of Mamluk politics, rebellions, urban fires, legal disputes, a sex-change case, and a communal response to anti-Islamic mockery."
+    },
+    {
+      "id": 166722,
+      "intro_en": "✧ Annual record of the restoration of al-Malik al-Nāṣir Ḥasan, enforcement of the ʿUmarī Conditions on dhimmis, and an execution for reviling the Companions."
+    },
+    {
+      "id": 166723,
+      "intro_en": "✧ Yearly events including the arrest of Arghūn al-Kāmilī, the death of Taqī al-Dīn al-Subkī, Frankish capture of Tripoli, and a major fire in the cotton market."
+    },
+    {
+      "id": 166724,
+      "intro_en": "✧ Chronicle of governance under Sultan Ḥasan, Frankish raids on Sidon and Ayās, several large fires, a Ḥanbalī dispute over waqf exchange, and a public anti-vice campaign."
+    },
+    {
+      "id": 166725,
+      "intro_en": "✧ Events of 758 AH including the attack on Amir Shaykhūn, his death, popular anti-vice demonstrations, and a report of a slave girl bearing multiple children."
+    },
+    {
+      "id": 166726,
+      "intro_en": "✧ Account of the dismissal of the three judges in Damascus."
+    },
+    {
+      "id": 166728,
+      "intro_en": "✧ Covers events of 760 AH under Sultan al-Malik al-Nāṣir Ḥasan, including the governorship of Amīr ʿAlī al-Māridānī in Damascus, arrests, the Maḥmal, Hawrān punishments, and the arrival of Amīr Sayf al-Dīn Asandamur al-Yaḥyāwī."
+    },
+    {
+      "id": 166729,
+      "intro_en": "✧ Details 761 AH under Sultan al-Malik al-Nāṣir Ḥasan, including the deputyship of Amīr Sayf al-Dīn Asandamur, a Qalandariyyah decree, the arrest of the viceroy, and Amīr Sayf al-Dīn Baydamur entering Damascus as deputy."
+    },
+    {
+      "id": 166730,
+      "intro_en": "✧ Narrates 762 AH, including the Sultanate of al-Malik al-Manṣūr Ṣalāḥ al-Dīn Muḥammad b. Ḥājjī, the deposition of al-Nāṣir Ḥasan, Baydamur's rebellion, and the arrival of Sultan Muḥammad in Damascus."
+    },
+    {
+      "id": 166731,
+      "intro_en": "✧ Describes 763 AH under Sultan al-Malik al-Manṣūr Muḥammad b. Ḥājjī with Amīr Yalbughā as administrator, including the deputyship of Amīr ʿAlāʾ al-Dīn al-Māridānī, judicial changes, and the arrival of Amīr Sayf al-Dīn Qushtumur as vice-sultan."
+    },
+    {
+      "id": 166732,
+      "intro_en": "✧ Relates 764 AH, including the Sultanate of al-Malik al-Ashraf Nāṣir al-Dīn Shaʿbān after deposing al-Manṣūr, the death of khaṭīb Jamāl al-Dīn b. Jumla, and the entry of Viceroy Mankalī Bughā into Damascus."
+    },
+    {
+      "id": 166733,
+      "intro_en": "✧ Covers 765 AH under Sultan al-Ashraf Shaʿbān b. Ḥusayn, including the opening of Bāb Kaysān, a new Friday sermon inside Damascus, plague, locusts, and the death of Sharīf Shams al-Dīn al-Ḥusaynī."
+    },
+    {
+      "id": 166734,
+      "intro_en": "✧ Describes 766 AH under Sultan al-Ashraf Shaʿbān, including the destruction of two rebellious villages in Wādī al-Taym, the killing of a Rāfiḍī, appointments of judges, and the abolition of the cotton tax."
+    },
+    {
+      "id": 166735,
+      "intro_en": "✧ Covers 767 AH, including a council convened regarding Chief Judge Tāj al-Dīn al-Subkī."
+    },
+    {
+      "id": 166737,
+      "intro_en": "✧ The year 768 AH opened with appointments and deaths of judges, mobilizations and alarms over Franks at Beirut and Alexandria, prison escapes, trade bans, and the killing of the great amir Yalbughā."
+    }
+  ]
+}

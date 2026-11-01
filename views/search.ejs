@@ -111,7 +111,7 @@
     <% if (detailHadithItem) { %><div class="container col-lg-8 mx-auto hadith-heading-content"><% } %>
     
     <% if (sirahDetailItem) { %><%- include('sub-views/bookNav.ejs'); %><% } %>
-    <main class="search-results"<% if (sirahDetailItem) { %> data-reader-infinite="hadith-sirah" data-reader-context-key="<%= sirahDetailItem.ref %>" data-reader-current-url="<%= (req.originalUrl || req.url).replace(/^\/api(?=\/)/, '') %>"<% if (page.prev) { %> data-reader-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-reader-next-url="<%= page.next %>"<% } %><% } %><% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
+    <main class="search-results"<% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
       <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
       <% if (isSearchResultsPage) { %>
       <div class="search-results-summary">

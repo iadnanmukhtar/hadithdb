@@ -1,0 +1,10 @@
+'use strict';
+const {parse,reference,protectedRecord,proposal}=require('../bin/utils/download-abuamina-hadiths');
+const body='هذا نص عربي طويل للاختبار يطابق الرواية بالكامل ولا يطابق مجرد رقم متشابه في كتاب مختلف ويجب الحفاظ عليه دون تغيير';
+const post={id:1,url:'https://www.abuaminaelias.com/dailyhadithonline/example/',title:'A title',arabic:body,translation:'Translation',reference:{bookId:1,number:'20'},singleReport:true,grades:['Grade: Sahih according to a scholar']};
+const row={id:9,bookId:1,num:'20',body};
+test('exact supported references only',()=>{expect(reference('Source: Ṣaḥīḥ al-Bukhārī 20')).toEqual({bookId:1,number:'20'});expect(reference('Source: Sahih al-Bukhari 1/20')).toBeNull();});
+test.each([{title:'عنوان'},{title_en:'Existing'},{lastfixed:'2026-01-01'},{lastmod_user:'user'},{arabic_revised:1},{temp_trans:1},{verified:1}])('protect entire record %p',marker=>{expect(protectedRecord({...row,...marker})).toBe(true);expect(proposal(post,[{...row,...marker}]).reason).toBe('existing-title-or-revision');});
+test('preserve existing translation and grade',()=>{const result=proposal(post,[{...row,body_en:'Existing',gradeId:500}]);expect(result.missing).toEqual({title_en:'A title'});expect(result.gradeForReview).toEqual([]);});
+test('reject ambiguous, mismatched, and multi-report articles',()=>{expect(proposal(post,[row,{...row,id:10}]).reason).toBe('ambiguous');expect(proposal(post,[{...row,body:'مختلف'}]).reason).toBe('no-full-text-match');expect(proposal({...post,singleReport:false},[row]).reason).toBe('multiple-source-blocks');});
+test('extract first translation separately from source and commentary',()=>{const p=parse({id:1,link:post.url,title:{rendered:'Title &amp; text'},content:{rendered:'<p>Report</p><p>Source: Sahih al-Bukhari 20</p><p>Grade: Sahih</p><p>'+body+'</p>'}});expect(p.translation).toBe('Report');expect(p.title).toBe('Title & text');expect(p.singleReport).toBe(true);});

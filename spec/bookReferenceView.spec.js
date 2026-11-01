@@ -15,11 +15,17 @@ describe('book reference view property', () => {
 		expect(Books.referenceView({ properties: { reader: { referenceView: 'unsupported' } } })).toBe('item');
 	});
 
-	test('configures Ibn Hisham imports and existing data for section-oriented references', () => {
-		expect(source('bin/utils/import-hdith-sirah.js')).toContain("reader:{referenceView:'section'}");
-		const migration = source('data/add_book_reference_view.sql');
-		expect(migration).toContain("'$.reader.referenceView'");
-		expect(migration).toContain("WHERE alias='ibnhisham'");
+	test.each(['history', 'ibnhisham'])('%s keeps individual references despite legacy section preferences', alias => {
+		for (const properties of [{ reader: { referenceView: 'section' } }, '{"reader":{"referenceView":"section"}}'])
+			expect(Books.referenceView({ alias, properties })).toBe('item');
+	});
+
+	test('configures new Ibn Hisham imports for individual references', () => {
+		expect(source('bin/utils/import-hdith-sirah.js')).toContain("reader:{referenceView:'item'}");
+	});
+
+	test.each(['history', 'sirah'])('%s books retain individual references after an alias change', type => {
+		expect(Books.referenceView({ alias: 'another-history-book', type, properties: { reader: { referenceView: 'section' } } })).toBe('item');
 	});
 
 	test('redirects HTML item references to the configured heading while preserving data formats', () => {

@@ -1,22 +1,27 @@
 <%
   const sirahHasEnglish = Boolean(utils.emptyIfNull(i.body_en).replace(/<[^>]*>/g, '').trim());
   const sirahColumns = sirahHasEnglish ? 'col-md-6 col-sm-12' : 'col-12';
-  const sirahShowTitle = typeof title === 'undefined' || title;
 %>
 <a id="<%= String(i.num || i.id).replace(/:/g, '-') %>"></a>
 <article class="row mt-3 sirah-item hadith-language-item" data-content-type="sirah" data-reader-language-item="hadith" data-sirah-translated="<%= sirahHasEnglish ? '1' : '0' %>">
+  <% if (i.title_en) { %>
+  <header class="col-12" lang="en" data-reader-language-column="english">
+    <h1 lang="en" class="fs-5"><%- i.title_en %></h1>
+  </header>
+  <% } %>
+  <% if (i.title) { %>
+  <header class="col-12" lang="ar" data-reader-language-column="arabic">
+    <h1 lang="ar" class="fs-5"><%- i.title %></h1>
+  </header>
+  <% } %>
   <% if (sirahHasEnglish) { %>
   <section class="col-md-6 col-sm-12 h" lang="en" dir="ltr" data-reader-language-column="english">
-    <% if (sirahShowTitle && i.title_en) { %><h2 class="fs-5 title"><%- i.title_en %></h2><% } %>
     <b><a href="/<%= i.ref %>"><%= i.book_alias || i.book_shortName_en %>:<%= i.num %></a></b>
     <section class="body l5"><div><%- utils.markdownToHtml(i.body_en || '') %></div></section>
     <% if (i.footnote_en) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
   </section>
-  <% } else if (sirahShowTitle && i.title_en) { %>
-  <header class="col-12" lang="en"><h2 class="fs-5 title"><%- i.title_en %></h2></header>
   <% } %>
   <section class="<%= sirahColumns %> h" lang="ar" dir="rtl" data-reader-language-column="arabic">
-    <% if (sirahShowTitle && i.title) { %><h2 class="fs-5 title"><%- i.title %></h2><% } %>
     <b><a href="/<%= i.ref %>"><%= i.book_shortName || i.book_shortName_en %>:<%= arabic.toArabicDigits(String(i.num || '')) %></a></b>
     <section class="body l5"><div><%- utils.markdownToHtml(i.body || i.text || '') %></div></section>
     <% if (i.footnote) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
