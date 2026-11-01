@@ -89,7 +89,7 @@
       list.replaceChildren();const text=editor.value;
       const matches=[...text.matchAll(/!\[[^\]\n]*\]\([^\s)]+(?:\s+"[^"]*")?\)/g)].map(match=>({index:match.index,raw:match[0],image:true}));
       let offset=0;for(const line of text.split('\n')){
-        const trimmed=line.trim();if(/^(https?:\/\/\S+|<https?:\/\/[^>]+>|\[[^\]]*\]\(https?:\/\/[^)]+\))$/.test(trimmed))matches.push({index:offset+line.indexOf(trimmed),raw:trimmed,image:false});offset+=line.length+1;
+        const trimmed=line.trim();if(editorId==='quick-text' && /^(https?:\/\/\S+|<https?:\/\/[^>]+>|\[[^\]]*\]\(https?:\/\/[^)]+\))$/.test(trimmed))matches.push({index:offset+line.indexOf(trimmed),raw:trimmed,image:false});offset+=line.length+1;
       }
       for(const match of matches){
         const row=element('div',null,'community-attachment-row'),label=element('span',match.image?'Attached image':match.raw),remove=element('button',match.image?'Remove image':'Remove preview (keep link)');

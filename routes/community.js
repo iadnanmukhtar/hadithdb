@@ -72,7 +72,7 @@ api.put('/authors/:handle/follow', wrap(async (req, res) => {
   if (typeof req.body.following !== 'boolean' || typeof req.body.email !== 'boolean') return res.status(400).json({ error: 'Choose following and email preferences.' });
   res.json(await Community.follow(req.user, req.params.handle, req.body.following, req.body.email));
 }));
-api.post('/preview', wrap(async (req, res) => res.json({...await Media.prepare(req.body.markdown), title: Community.displayTitle('', Community.content(req.body.markdown).html, 'article')})));
+api.post('/preview', wrap(async (req, res) => res.json({...await Media.prepare(req.body.markdown, req.body.kind), title: Community.displayTitle('', Community.content(req.body.markdown).html, 'article')})));
 api.get('/notebook-copy', wrap(async (req, res) => {
   const user = signed(req);
   const note = await require('../lib/NotebookDrive').get(user.uid, req.query.source);

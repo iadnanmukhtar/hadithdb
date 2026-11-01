@@ -754,7 +754,7 @@
     $('preview-button').addEventListener('click', () => run(async () => {
       if(window.communityMediaPending) throw new Error('Wait for the image upload to finish.');
       if (!$('editor-form').reportValidity()) return;
-      const own = signature(), result = await api('/preview', 'POST', { markdown: $('markdown').value });
+      const own = signature(), result = await api('/preview', 'POST', { markdown: $('markdown').value, kind: $('kind').value });
       if (signature() !== own) return;
       if(window.communityRenderPostPreview) window.communityRenderPostPreview($('preview'),result.html,$('cover-url').value); else $('preview').innerHTML=result.html; $('preview-title').textContent = $('title').value.trim(); $('preview-title').hidden = !$('title').value.trim(); $('preview-subtitle').textContent = $('subtitle').value;
 

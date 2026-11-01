@@ -1,13 +1,14 @@
 <!doctype html>
 <html lang="en"><head>
-<% var site = Object.assign({}, global.settings.site, { admin: false, editMode: false }); %>
+<% const readingArticle = view === 'post' && post?.kind === 'article'; var site = Object.assign({}, global.settings.site, { admin: false, editMode: false }); %>
 <%- include('sub-views/head.ejs', { site, page: view === 'everyone' ? { ...page, title_en: 'Hadith Unlocked Community' } : page }); %>
 <style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 </head><body class="community-page">
 <%- include('sub-views/header.ejs', { site, page }); %>
 <% if (view === 'email-preferences') { %><div class="container col-lg-8 mx-auto"><% } %>
-<main class="<%= view === 'email-preferences' ? 'search-results settings-page' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> py-4 community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
-  <% if (view !== 'post' || post.title?.trim()) { %>
+<% if (readingArticle) { %><div class="container-fluid community-article-layout"><% } %>
+<main class="<%= readingArticle ? '' : view === 'email-preferences' ? 'search-results settings-page' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> <%= readingArticle ? 'blog-post' : 'py-4' %> community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
+  <% if (!readingArticle && (view !== 'post' || post.title?.trim())) { %>
   <div class="<%= view === 'email-preferences' ? 'settings-page-heading mb-3' : 'community-heading' %>">
     <% if (view === 'email-preferences') { %><a href="/settings#settings-email-section" class="btn btn-link btn-sm p-0 mb-3"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to My Settings</a><% } %>
     <div><h1 class="<%= view === 'email-preferences' ? 'fs-4 mb-1' : '' %>" id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
@@ -29,7 +30,7 @@
     <div class="community-profile-actions"><button id="community-edit-profile" type="button" class="btn btn-sm btn-outline-secondary" aria-haspopup="dialog" aria-controls="community-profile-dialog">Edit profile</button></div>
   </section>
   <% } %>
-  <% if (author && ['author','post'].includes(view)) { %>
+  <% if (author && !readingArticle && ['author','post'].includes(view)) { %>
   <section id="community-author-profile" class="community-profile mb-4" aria-label="About the author"<% if (view === 'author') { %> hidden<% } %>>
     <span id="community-author-avatar" class="community-avatar community-avatar-large" aria-hidden="true"><%- include('sub-views/community_avatar.ejs', { avatar: author }) %></span>
     <div class="community-profile-copy"><div class="community-profile-identity"><a id="community-author-name" class="fw-semibold" href="/community/@<%= author.handle %>" dir="auto"><%= author.name %></a><span class="small text-muted">@<%= author.handle %></span></div>
@@ -152,10 +153,14 @@
   <% } %>
   <% if (view === 'post') { %>
   <div class="community-columns <%= post.kind === 'article' ? 'community-article-columns' : 'community-short-post-columns' %>"><%- include('sub-views/community_author_rail.ejs', { railAuthor: post.author }); %><div class="community-wall">
-  <article class="community-card community-reading"><p class="small text-muted"><%= post.kind === 'article' ? 'Article' : 'Post' %> · Community contribution · <time datetime="<%= new Date(post.publishedAt).toISOString() %>"><%= new Date(post.publishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) %></time></p>
+  <article class="<%= readingArticle ? '' : 'community-card community-reading' %>">
+    <% if (readingArticle) { %>
+      <%- include('sub-views/blog_cover.ejs', { detail: true, entry: { title: post.title, subtitle: post.subtitle, cover: post.coverUrl || '/static/img/pearls_of_the_deep.jpg', authorName: post.author.name, authorHandle: post.author.handle, authorPhoto: post.author.photo, authorAvatarFallback: post.author.avatarFallback, published: new Date(post.publishedAt) } }); %>
+    <% } else { %><p class="small text-muted"><%= post.kind === 'article' ? 'Article' : 'Post' %> · Community contribution · <time datetime="<%= new Date(post.publishedAt).toISOString() %>"><%= new Date(post.publishedAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' }) %></time></p>
     <% if (post.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= post.subtitle %></p><% } %>
     <% if (post.coverUrl) { %><figure class="community-editor-cover"><img src="<%= post.coverUrl %>" alt="Article cover"></figure><% } %>
-    <div class="notebook-markdown community-reflection-body" dir="auto"<% if (post.kind === 'article') { %> data-article-body<% } %>><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
+    <% } %>
+    <div class="<%= readingArticle ? 'body' : 'notebook-markdown community-reflection-body' %>" dir="auto"<% if (post.kind === 'article') { %> data-article-body<% } %>><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
     <%- include('sub-views/community_post_actions.ejs', { post }); %>
   </article>
   <%- include('sub-views/community_reflections.ejs', { post }); %>
@@ -202,6 +207,7 @@
   <% if (view === 'unsubscribe') { %><section class="community-card"><% if (unsubscribed) { %><p class="mb-0">You have unsubscribed from this author’s emails. You still follow their posts in your feed.</p><p class="mt-3"><a href="/community/email-preferences">Subscribe again or manage email preferences</a></p><% } else { %><p>Stop email updates from this author? You will still follow their posts.</p><form method="post"><button class="btn btn-primary" type="submit">Unsubscribe from emails</button></form><% } %></section><% } %>
   <dialog id="community-media-dialog" class="community-media-dialog" aria-labelledby="community-media-dialog-title"><form id="community-media-link-form"><h2 id="community-media-dialog-title">Add a link</h2><label for="community-media-url">Webpage or video URL</label><input id="community-media-url" class="form-control" type="url" required placeholder="https://…"><p class="small text-muted">YouTube, Vimeo, direct video links, and webpages.</p><div class="d-flex justify-content-end gap-2"><button type="button" class="btn btn-sm btn-outline-secondary" id="community-media-cancel">Cancel</button><button type="submit" class="btn btn-sm btn-primary">Add preview</button></div><p id="community-media-error" class="small text-muted" role="status"></p></form></dialog>
 </main>
+<% if (readingArticle) { %></div><% } %>
 <% if (view === 'email-preferences') { %></div><% } %>
 <% if (view === 'write') { %>
 <div class="modal fade" id="community-markdown-help-modal" tabindex="-1" aria-labelledby="community-markdown-help-title" aria-hidden="true">

@@ -289,10 +289,10 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-blog-preview > img { width: 100%; max-height: 320px; aspect-ratio: 16 / 9; object-fit: cover; }
 
 /* Blog Arabic is detected by the Markdown renderer, without ~~ font markers. */
-.blog-post .blog-arabic { font-family: Hafs, Serif; font-size: 1.42em; }
-.blog-post .blog-arabic .blog-arabic { font-size: inherit; }
+.blog-post :is(.blog-arabic, .notebook-arabic) { font-family: Hafs, Serif; font-size: 1.42em; }
+.blog-post :is(.blog-arabic, .notebook-arabic) :is(.blog-arabic, .notebook-arabic) { font-size: inherit; }
 .blog-post [dir="rtl"] { text-align: right; }
-.blog-post .footnotes .blog-arabic { font-size: 1.22em; }
+.blog-post .footnotes :is(.blog-arabic, .notebook-arabic) { font-size: 1.22em; }
 
 .community-editor-cover { margin: 1rem 0; }
 .community-editor-cover img { display: block; width: 100%; max-height: 320px; object-fit: contain; border-radius: .5rem; }
@@ -460,7 +460,21 @@ main.community #community-contributors-heading { font-size: .8rem !important; ma
 .community-editor #community-markdown { height: clamp(18rem, 45vh, 32rem); min-height: 18rem; }
 .community-editor .btn-close { min-width: 44px; min-height: 44px; padding: 0; background-size: .85rem; }
 .community-editor-top { padding-inline-end: 2.5rem; }
-.community-profile-actions > button { min-height: 44px; }
+/* Keep profile actions compact across headers, author rails, and cover cards. */
+.btn:is(#community-edit-profile, [data-author-follow], .community-cover-follow) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  flex: 0 0 auto;
+  width: auto;
+  min-height: 30px;
+  padding: .25rem .65rem;
+  font-size: .8rem;
+  line-height: 1.25;
+  border-radius: .375rem;
+  white-space: nowrap;
+}
 
 /* Quiet short-form writing, with the site's existing color tokens. */
 .community-short-editor, .community-share-card, .comment-feed {
@@ -846,7 +860,7 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .community-cover-identity a, .community-cover-destination { color: inherit; text-decoration: none; }
 .community-cover-identity a:hover { text-decoration: underline; }
 .community-cover-handle { font-weight: 400; letter-spacing: normal; color: #dde7f0; }
-.community-cover-follow { margin-inline-start: auto; flex-shrink: 0; min-height: 44px; }
+.community-cover-follow { margin-inline-start: auto; flex-shrink: 0; }
 .community-cover-follow[hidden] { display: none !important; }
 .community-cover-destination::after { content: ''; position: absolute; inset: 0; }
 .community-cover-author { position: relative; z-index: 2; }
