@@ -7929,12 +7929,17 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 	var audioRef = quranAudioRefParts(ref);
 	var selectedAyahId = parseInt(ayah && ayah.id, 10);
 	var modalIndex = quranAyahModalIndex(ref, 'tafsirs');
-	var $toolbar = $('<aside>').addClass('tags quran-ayah-hero-toolbar col-12');
+	var $toolbar = $('<aside>').addClass('tags reader-social-actions quran-ayah-hero-toolbar col-12');
 
 	if (Number.isInteger(selectedAyahId)) {
 		$('<button>').attr({
 			type: 'button',
 			'data-hadith-id': selectedAyahId,
+			'data-bookmark-type': 'quran',
+			'data-bookmark-ref': `quran:${ref}`,
+			'data-bookmark-title': `Quran ${ref}`,
+			'data-bookmark-url': quranUrl(`/quran:${ref}`),
+			'aria-label': 'Bookmark this ayah',
 			title: 'Bookmark this ayah'
 		}).addClass('hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center')
 			.append($('<span>').addClass('hadith-bookmark-icon bi bi-bookmark text-accent').attr('data-hadith-id', selectedAyahId))
@@ -7945,11 +7950,11 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 			type: 'button',
 			'data-hadith-id': selectedAyahId,
 			'data-like-type': 'hadith',
-			title: 'Like this ayah'
+			'aria-label': 'Like this ayah', title: 'Like this ayah'
 		}).addClass('hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center')
 			.append($('<span>').addClass('hadith-like-icon bi bi-heart text-danger').attr({ 'data-hadith-id': selectedAyahId, 'data-like-type': 'hadith' }))
 			.appendTo($like);
-		$('<span>').addClass('hadith-like-count fw-semibold text-danger').attr({ 'data-hadith-id': selectedAyahId, 'data-like-type': 'hadith' }).text('0').appendTo($like);
+		$('<span>').addClass('hadith-like-count fw-semibold text-danger').attr({ 'data-hadith-id': selectedAyahId, 'data-like-type': 'hadith' }).text('0').appendTo($like.find('button'));
 	}
 
 	if (Number.isInteger(audioRef.surah) && Number.isInteger(audioRef.ayah)) {
@@ -7971,7 +7976,7 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 			type: 'button',
 			'data-quran-ayah-modal-index': modalIndex,
 			'data-quran-ayah-modal-type': 'reflections',
-			title: 'View reflections'
+			'aria-label': 'View reflections', title: 'View reflections'
 		};
 		var $reflections = $('<button>').attr(reflectionAttrs).addClass('quran-ayah-modal-trigger reflection-count-link text-accent').appendTo($toolbar);
 		$reflections.append($('<span>').addClass('bi bi-chat-right-text'));
@@ -8011,7 +8016,7 @@ function quranAyahHeroToolbarHtml(ayah, shareId) {
 		'data-bs-toggle': 'modal',
 		'data-bs-target': `#${shareId}`
 	}).addClass('btn btn-sm icon content-translate-button hadith-share-action-link')
-		.append($('<span>').addClass('bi bi-box-arrow-up content-translate-button-icon').attr('aria-hidden', 'true'))
+		.append($('<span>').addClass('bi bi-share content-translate-button-icon').attr('aria-hidden', 'true'))
 		.append($('<span>').addClass('content-translate-button-label').text('Share'))
 		.appendTo($toolbar);
 

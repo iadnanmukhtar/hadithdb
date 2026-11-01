@@ -26,9 +26,9 @@
     <% if (!sirahArabicHeadingOnly) { %>
     <h3 class="<%= headingEnglishOnly ? 'col-12' : 'col-md-6 col-sm-12' %> fs-5 title<%= showQuranHeadingModalActions ? ' quran-section-heading-title' : '' %>" lang="en">
       <span class="quran-section-heading-text">
-		<button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= heading.id %>" data-bookmark-type="<%= heading.level === 3 ? 'subsection' : 'section' %>" data-bookmark-ref="<%= `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` %>" data-bookmark-title="<%= heading.title_en || headingKindEn %>" data-bookmark-title-ar="<%= heading.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${heading.path}`) %>" title="Bookmark this <%= headingKindEn.toLowerCase() %>">
+		<span class="reader-social-actions reader-heading-actions" lang="en" dir="ltr"><button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= heading.id %>" data-bookmark-type="<%= heading.level === 3 ? 'subsection' : 'section' %>" data-bookmark-ref="<%= `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` %>" data-bookmark-title="<%= heading.title_en || headingKindEn %>" data-bookmark-title-ar="<%= heading.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${heading.path}`) %>" title="Bookmark this <%= headingKindEn.toLowerCase() %>" aria-label="Bookmark this <%= headingKindEn.toLowerCase() %>">
           <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= heading.id %>"></span>
-        </button>
+        </button></span>
         <% if (site.editMode) { %>
         (<span class="_e" title="Start Num" data-id="<%= heading.id %>" data-prop="toc.start">
           <%- heading.start || '&hellip;' %>
@@ -75,6 +75,9 @@
           <%- heading.title || (heading.level === 3 ? 'مقطع' : 'مقطع') %>
         </span>
       <% } %>
+    <% if (sirahArabicHeadingOnly) { %><span class="reader-social-actions reader-heading-actions" lang="en" dir="ltr"><button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= heading.id %>" data-bookmark-type="<%= heading.level === 3 ? 'subsection' : 'section' %>" data-bookmark-ref="<%= `${book.alias}:${heading.h1}.${heading.h2}${heading.h3 ? `.${heading.h3}` : ''}` %>" data-bookmark-title="<%= heading.title_en || headingKindEn %>" data-bookmark-title-ar="<%= heading.title || '' %>" data-bookmark-url="<%= utils.urlFor(req, `/${heading.path}`) %>" title="Bookmark this <%= headingKindEn.toLowerCase() %>" aria-label="Bookmark this <%= headingKindEn.toLowerCase() %>">
+          <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= heading.id %>"></span>
+        </button></span><% } %>
     </h3>
     <% } %>
 

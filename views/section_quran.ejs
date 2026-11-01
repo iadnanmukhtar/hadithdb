@@ -314,21 +314,20 @@
         <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: quranAyahModalItems, activeIndex: selectedAyahs.length > 0 ? selectedAyahModalIndex : 0, usePassagePageModalLayout: true }); %>
         <% var passageLikeId = section && section.id; %>
         <% if (results.length > 0 && results[0].id && passageLikeId) { %>
-          <aside class="tags quran-passage-actions mt-2">
-            <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" data-bookmark-type="quran" data-bookmark-ref="quran:<%= quranPassageCanonicalRef %>" data-bookmark-title="Quran <%= quranPassageCanonicalRef %>" data-bookmark-body="<%= results.map(item => utils.emptyIfNull(item.en && item.en.body)).filter(Boolean).join(' ') %>" data-bookmark-body-ar="<%= results.map(item => utils.emptyIfNull(item.ar && item.ar.body)).filter(Boolean).join(' ') %>" data-bookmark-url="<%= utils.quranUrl(req, `/quran:${quranPassageCanonicalRef}`) %>" title="Bookmark this Quran passage">
+          <aside class="tags reader-social-actions quran-passage-actions mt-2">
+            <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= results[0].id %>" data-bookmark-type="quran" data-bookmark-ref="quran:<%= quranPassageCanonicalRef %>" data-bookmark-title="Quran <%= quranPassageCanonicalRef %>" data-bookmark-body="<%= results.map(item => utils.emptyIfNull(item.en && item.en.body)).filter(Boolean).join(' ') %>" data-bookmark-body-ar="<%= results.map(item => utils.emptyIfNull(item.ar && item.ar.body)).filter(Boolean).join(' ') %>" data-bookmark-url="<%= utils.quranUrl(req, `/quran:${quranPassageCanonicalRef}`) %>" title="Bookmark this Quran passage" aria-label="Bookmark this Quran passage">
               <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= results[0].id %>"></span>
             </button>
-            &nbsp;
-            <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= passageLikeId %>" data-like-type="toc" title="Like this Quran passage">
+
+            <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= passageLikeId %>" data-like-type="toc" title="Like this Quran passage" aria-label="Like this Quran passage">
               <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc"></span>
-            </button>
-            <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc">0</span>
-            &nbsp;
-            <a href="#quran-passage-comments-<%= passageLikeId %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="quran-passage-comments-<%= passageLikeId %>-disclosure" title="View reflections">
+            <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= passageLikeId %>" data-like-type="toc">0</span></button>
+
+            <a href="#quran-passage-comments-<%= passageLikeId %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="quran-passage-comments-<%= passageLikeId %>-disclosure" title="View reflections" aria-label="View reflections">
               <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= passageLikeId %>" data-comment-type="toc" title="0 reflections">0</span>
             </a>
-            &nbsp;
-            <button type="button" class="btn btn-sm icon content-translate-button hadith-share-action-link" title="Share this Quran passage" data-bs-toggle="modal" data-bs-target="#Qpassage-<%= passageLikeId %>"><span class="bi bi-box-arrow-up content-translate-button-icon" aria-hidden="true"></span><span class="content-translate-button-label">Share</span></button>
+
+            <button type="button" class="btn btn-sm icon content-translate-button hadith-share-action-link" title="Share this Quran passage" data-bs-toggle="modal" data-bs-target="#Qpassage-<%= passageLikeId %>" aria-label="Share this Quran passage"><span class="bi bi-share content-translate-button-icon" aria-hidden="true"></span><span class="content-translate-button-label">Share</span></button>
           </aside>
           <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: results, quranShareId: `Qpassage-${passageLikeId}` }); %>
         <% } %>

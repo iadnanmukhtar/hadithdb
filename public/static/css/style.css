@@ -9219,7 +9219,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	font-size: var(--content-size-body);
 }
 
-.quran-ayah-modal .quran-tafsir-text *,
+.quran-ayah-modal .quran-tafsir-text :not(.content-item-footer, .content-item-footer *),
 .quran-ayah-modal .quran-translation-text *,
 .quran-ayah-modal .quran-tafsir-footnotes * {
 	font-size: inherit;

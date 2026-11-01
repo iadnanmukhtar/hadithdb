@@ -33,6 +33,8 @@ test('installs actions once below dynamic commentary text, shares without Image,
     w.eval(fs.readFileSync(path.join(base,'public/static/js/content-item-actions.js'),'utf8'));await settle();
     const d=w.document,footer=d.querySelector('.content-item-footer');
     expect(footer.previousElementSibling.className).toBe('body');
+    expect(footer.lang).toBe('en');
+    expect(footer.dir).toBe('ltr');
     expect(d.querySelector('header .notebook-anchor')).toBeNull();
     expect(d.querySelector('[data-note-key]').dataset.noteKey).toBe('sharh:42');
     expect(d.querySelectorAll('.content-item-actions')).toHaveLength(1);
@@ -115,4 +117,33 @@ test.each([
     global.query.mockResolvedValue([]);
     await expect(require('../lib/ContentItems').source('intro:161496')).rejects.toMatchObject({status:404});
   }finally{global.query=previous;}
+});
+
+test.each(['heading-intro', 'chapter-intro'])('%s places one combined bar after the introduction and preserves heading controls', async kind => {
+  const html = await actions('intro:42');
+  const dom = new JSDOM(`<main><article><h2>Heading <span class="reader-heading-actions"><span class="personal-note-actions"><button class="heading-bookmark-btn" data-heading-id="42">Bookmark</button><button class="personal-note-btn">Note</button></span></span></h2><section class="${kind}"><div id="note-intro-42"><span class="notebook-anchor" data-note-key="intro:42"></span></div><section class="intro">Introduction text</section></section></article></main>`, {url:'https://hadithunlocked.com/history/1/1',runScripts:'outside-only'});
+  try {
+    const w = dom.window, d = w.document;
+    const note = d.querySelector('.personal-note-btn'), openNote = jest.fn();
+    note.addEventListener('click', openNote);
+    w.quranApiPath = p => '/api'+p;
+    w.hadithAuth = {getToken: async () => null};
+    w.refreshHadithActions = jest.fn();
+    w.jQuery = host => ({append: markup => host.insertAdjacentHTML('beforeend', markup)});
+    w.fetch = jest.fn(async () => ({ok:true,json:async()=>({html,item:{id:9}})}));
+    w.eval(fs.readFileSync(path.join(base,'public/static/js/content-item-actions.js'),'utf8'));
+    await settle();
+    const footer = d.querySelector('.content-item-footer');
+    expect(footer.parentElement.className).toBe(kind);
+    expect(footer.previousElementSibling.className).toBe('intro');
+    expect(d.querySelector('h2 button')).toBeNull();
+    expect(d.querySelectorAll('.heading-bookmark-btn, .content-item-bookmark')).toHaveLength(1);
+    expect(d.querySelectorAll('.personal-note-btn')).toHaveLength(1);
+    expect(footer.querySelector('.heading-bookmark-btn').dataset.headingId).toBe('42');
+    expect(footer.querySelector('.personal-note-btn')).toBe(note);
+    note.click(); expect(openNote).toHaveBeenCalledTimes(1);
+    expect(footer.querySelector('.hadith-like-btn').dataset.likeType).toBe('content');
+    expect(footer.querySelector('.content-item-share')).not.toBeNull();
+    expect(d.querySelector('#note-intro-42 .content-item-footer')).toBeNull();
+  } finally { dom.window.close(); }
 });

@@ -23,17 +23,16 @@
     <% } %>
     <aside class="col-12 tags random-sirah-heading-footer">
       <div class="random-sirah-heading-context">§ <a href="<%= utils.urlFor(req, `/${random.path}`) %>"><%= randomHeadingContext %></a></div>
-      <div class="random-sirah-heading-actions">
-        <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= random.id %>" data-bookmark-type="<%= randomHeadingKind.toLowerCase() %>" data-bookmark-ref="<%= randomHeadingRef %>" data-bookmark-title="<%= randomHeadingTitle %>" data-bookmark-title-ar="<%= randomHeadingTitleAr %>" data-bookmark-url="<%= utils.urlFor(req, `/${random.path}`) %>" title="Bookmark this <%= randomHeadingKind.toLowerCase() %>">
+      <div class="random-sirah-heading-actions reader-social-actions">
+        <span class="reader-social-actions reader-heading-actions" lang="en" dir="ltr"><button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= random.id %>" data-bookmark-type="<%= randomHeadingKind.toLowerCase() %>" data-bookmark-ref="<%= randomHeadingRef %>" data-bookmark-title="<%= randomHeadingTitle %>" data-bookmark-title-ar="<%= randomHeadingTitleAr %>" data-bookmark-url="<%= utils.urlFor(req, `/${random.path}`) %>" title="Bookmark this <%= randomHeadingKind.toLowerCase() %>" aria-label="Bookmark this <%= randomHeadingKind.toLowerCase() %>">
           <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= random.id %>"></span>
-        </button>
-        &nbsp;
-        <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= random.id %>" data-like-type="toc" title="Like this <%= randomHeadingKind.toLowerCase() %>">
+        </button></span>
+
+        <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= random.id %>" data-like-type="toc" title="Like this <%= randomHeadingKind.toLowerCase() %>" aria-label="Like this <%= randomHeadingKind.toLowerCase() %>">
           <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= random.id %>" data-like-type="toc"></span>
-        </button>
-        <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= random.id %>" data-like-type="toc">0</span>
-        &nbsp;
-        <a href="#sirah-heading-comments-<%= random.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-heading-comments-<%= random.id %>-disclosure" title="View reflections">
+        <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= random.id %>" data-like-type="toc">0</span></button>
+
+        <a href="#sirah-heading-comments-<%= random.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-heading-comments-<%= random.id %>-disclosure" title="View reflections" aria-label="View reflections">
           <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= random.id %>" data-comment-type="toc" title="0 reflections">0</span>
         </a>
       </div>

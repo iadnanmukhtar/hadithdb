@@ -1,0 +1,5 @@
+<% if (quranChapter) { %>
+<span class="reader-social-actions reader-heading-actions" lang="en" dir="ltr"><button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-heading-id="<%= quranChapter.id %>" data-bookmark-type="surah" data-bookmark-ref="quran:<%= surah.num %>" data-bookmark-title="<%= quranChapterTitleEn %>" data-bookmark-title-ar="<%= quranChapterTitleAr %>" data-bookmark-url="<%= quranChapterHref %>" title="Bookmark this Surah" aria-label="Bookmark this Surah">
+	            <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranChapter.id %>"></span>
+	          </button></span>
+<% } %>

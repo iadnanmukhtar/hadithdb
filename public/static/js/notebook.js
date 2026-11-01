@@ -333,7 +333,10 @@
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'personal-note-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center';
       button.innerHTML = '<span class="bi bi-sticky" aria-hidden="true"></span>';
-      button.addEventListener('click', event => { event.preventDefault(); event.stopPropagation(); open(sourceFor(source)); });
+      button.addEventListener('click', event => {
+        event.preventDefault(); event.stopPropagation();
+        open(sourceFor(source));
+      });
       buttons.set(button, source);
       const group = document.createElement('span');
       group.className = 'personal-note-actions' + (source.classList.contains('notebook-anchor') ? ' me-2' : '');

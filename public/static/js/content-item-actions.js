@@ -63,18 +63,34 @@
   async function install(anchor) {
     if(pending.has(anchor)||anchor.closest('.content-item-actions')||! /^(?:sharh|heading-sharh|tafsir|tafsir-heading|intro):/.test(anchor.dataset.noteKey||''))return;
     let host=anchor.closest('.quran-tafsir-entry,.hadith-sharh-entry,.commentary-search-result,.quran-commentary-introduction-article,[id^="note-intro-"],.quran-commentary-surah-intro,.quran-commentary-heading-intro');
-    const targetHost=host?.matches('[id^="note-intro-"]')?host.closest('.chapter-intro')||host:host;
+    const targetHost=host?.matches('[id^="note-intro-"]')?host.closest('.chapter-intro,.heading-intro')||host:host;
     host=targetHost;
     if(!host||host.dataset.contentActions==='loading'||host.dataset.contentActions==='ready')return;
     pending.add(anchor);host.dataset.contentActions='loading';
     try {
       const {html,item}=await api('/actions?key='+encodeURIComponent(anchor.dataset.noteKey));
       if(!host.isConnected)return;
-      const footer=document.createElement('footer');footer.className='content-item-footer col-12';
+      const footer=document.createElement('footer');footer.className='content-item-footer col-12';footer.lang='en';footer.dir='ltr';
       footer.id='content-item-'+item.id;host.append(footer);
       const passageFeed = host.closest('main.tafsir-only-page')?.querySelector(':scope > .reflection-section .comment-feed');
       window.jQuery(footer).append(reusePassageReflections(html, passageFeed));
-      // The new bookmark carries the same notebook identity at the bottom of the item.
+      // A heading and its introduction share one visible action row. Keep the
+      // heading's existing bookmark/note bindings while retaining intro reactions.
+      if (anchor.dataset.noteKey?.startsWith('intro:')) {
+        const headingId = anchor.dataset.noteKey.slice(6);
+        const scope = host.closest('article') || host.closest('main') || document;
+        const headingButton = [...scope.querySelectorAll('.reader-heading-actions .heading-bookmark-btn')]
+          .find(button => button.dataset.headingId === headingId);
+        const headingActions = headingButton?.closest('.reader-heading-actions');
+        const bar = footer.querySelector('.content-item-actions');
+        if (headingActions && bar) {
+          const introSource = bar.querySelector('[data-note-key]');
+          (introSource?.closest('.personal-note-actions') || introSource)?.remove();
+          bar.prepend(...headingActions.childNodes);
+          headingActions.remove();
+        }
+      }
+      // Remove the introduction's temporary note anchor after installing its footer.
       const group=anchor.closest('.personal-note-actions');(group||anchor).remove();
       host.dataset.contentActions='ready';
       window.refreshHadithActions?.();paintBookmarks();

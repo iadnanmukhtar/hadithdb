@@ -373,31 +373,30 @@
 
 		<%# Actions  ........................................................... %>
 		<% if (!isSimilarSection) { %>
-		<aside class="tags">
+		<aside class="tags reader-social-actions">
 	<% if (lang === 'en') { %>
-		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-bookmark-type="<%= isQuranItem ? 'quran' : 'hadith' %>" data-bookmark-ref="<%= isQuranItem ? (i.ref || bookmarkRef) : bookmarkRef %>" data-bookmark-title="<%= bookmarkTitle %>" data-bookmark-body="<%= isQuranItem ? utils.emptyIfNull(langData.body) : '' %>" data-bookmark-body-ar="<%= isQuranItem ? utils.emptyIfNull(i.ar && i.ar.body) : '' %>" data-bookmark-url="<%= itemHref %>" title="Bookmark this hadith">
+		<button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-bookmark-type="<%= isQuranItem ? 'quran' : 'hadith' %>" data-bookmark-ref="<%= isQuranItem ? (i.ref || bookmarkRef) : bookmarkRef %>" data-bookmark-title="<%= bookmarkTitle %>" data-bookmark-body="<%= isQuranItem ? utils.emptyIfNull(langData.body) : '' %>" data-bookmark-body-ar="<%= isQuranItem ? utils.emptyIfNull(i.ar && i.ar.body) : '' %>" data-bookmark-url="<%= itemHref %>" title="Bookmark this hadith" aria-label="Bookmark this hadith">
 			<span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>"></span>
 		</button>
-		&nbsp;
-		<button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-like-type="hadith" title="Like this hadith">
+
+		<button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-like-type="hadith" title="Like this hadith" aria-label="Like this hadith">
 			<span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-like-type="hadith"></span>
-		</button>
-		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-like-type="hadith">0</span>
-		&nbsp;
-		<a href="<%= isQuranItem ? utils.quranUrl(req, `/${i.ref}#comments`) : utils.urlFor(req, `/${i.ref}#comments`) %>" class="reflection-count-link text-decoration-none" title="View reflections">
+		<span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-like-type="hadith">0</span></button>
+
+		<a href="<%= isQuranItem ? utils.quranUrl(req, `/${i.ref}#comments`) : utils.urlFor(req, `/${i.ref}#comments`) %>" class="reflection-count-link text-decoration-none" title="View reflections" aria-label="View reflections">
 			<span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span>
 		</a>
-		&nbsp;
+
 		<% if (quranTafsirHref && searchResult) { %>
-			<span class="bi bi-book-half"></span>&nbsp;<a href="<%= quranTafsirHref %>" title="Tafsir of this ayah" class="icon" data-open-quran-tafsir="1">Tafsir</a>
-			&nbsp;
+			<a href="<%= quranTafsirHref %>" title="Tafsir of this ayah" class="icon" data-open-quran-tafsir="1" aria-label="Tafsir of this ayah"><span class="bi bi-book-half" aria-hidden="true"></span></a>
+
 		<% } %>
 		<% if (sharhBody) { %>
 			<a href="#" title="Search the web for this hadith’s explanation" aria-label="Search the web for this hadith’s explanation" class="icon hadith-sharh-link" data-hadith-sharh-body="<%= sharhBody %>"><span class="bi bi-globe2" aria-hidden="true"></span></a>
-			&nbsp;
+
 		<% } %>
-		<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(itemLinkTitleSource) %>" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>">
-			<span class="bi bi-box-arrow-up content-translate-button-icon" aria-hidden="true"></span>
+		<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(itemLinkTitleSource) %>" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>" aria-label="<%= linkTitle(itemLinkTitleSource) %>">
+			<span class="bi bi-share content-translate-button-icon" aria-hidden="true"></span>
 			<span class="content-translate-button-label">Share</span>
 		</a>
 		<% } %>

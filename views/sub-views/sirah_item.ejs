@@ -26,20 +26,19 @@
     <section class="body l5"><div><%- utils.markdownToHtml(i.body || i.text || '') %></div></section>
     <% if (i.footnote) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
   </section>
-  <footer class="col-12 h"><aside class="tags sirah-item-actions">
-    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_alias || i.book_shortName_en || 'sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage">
+  <footer class="col-12 h"><aside class="tags reader-social-actions sirah-item-actions">
+    <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_alias || i.book_shortName_en || 'sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage" aria-label="Bookmark this passage">
       <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.id %>"></span>
     </button>
-    &nbsp;
-    <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-like-type="hadith" title="Like this passage">
+
+    <button type="button" class="hadith-like-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-like-type="hadith" title="Like this passage" aria-label="Like this passage">
       <span class="hadith-like-icon bi bi-heart text-danger" data-hadith-id="<%= i.id %>" data-like-type="hadith"></span>
-    </button>
-    <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.id %>" data-like-type="hadith">0</span>
-    &nbsp;
-    <a href="#sirah-comments-<%= i.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-comments-<%= i.id %>-disclosure" title="View reflections">
+    <span class="hadith-like-count fw-semibold text-danger" data-hadith-id="<%= i.id %>" data-like-type="hadith">0</span></button>
+
+    <a href="#sirah-comments-<%= i.id %>-disclosure" class="reflection-count-link text-decoration-none" data-reflection-disclosure-trigger="sirah-comments-<%= i.id %>-disclosure" title="View reflections" aria-label="View reflections">
       <span class="bi bi-chat-right-text text-accent"></span><span class="hadith-comment-count fw-semibold text-accent" data-hadith-id="<%= i.id %>" data-comment-type="hadith" title="0 reflections">0</span>
     </a>
-    <button type="button" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-content-share-trigger data-share-url="/<%= i.ref %>" data-share-title="<%= i.title_en || i.title || i.ref %>" title="Share this passage"><span class="bi bi-box-arrow-up content-translate-button-icon" aria-hidden="true"></span><span class="content-translate-button-label">Share</span></button>
+    <button type="button" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-content-share-trigger data-share-url="/<%= i.ref %>" data-share-title="<%= i.title_en || i.title || i.ref %>" title="Share this passage" aria-label="Share this passage"><span class="bi bi-share content-translate-button-icon" aria-hidden="true"></span><span class="content-translate-button-label">Share</span></button>
   </aside></footer>
 </article>
 <section class="mt-4 reflection-section col-12" data-reflection-section>

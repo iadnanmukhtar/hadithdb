@@ -416,6 +416,7 @@
 
 		const setState = (id, type, liked, likes) => {
 			getIcons(id, type).forEach(icon => {
+				icon.closest('button')?.setAttribute('aria-pressed', String(liked));
 				icon.className = liked ? 'hadith-like-icon bi bi-heart-fill text-danger' : 'hadith-like-icon bi bi-heart text-danger';
 			});
 			if (typeof likes === 'number') {
@@ -425,18 +426,21 @@
 
 		const setBookmarkState = (id, bookmarked) => {
 			getBookmarkIcons(id).forEach(icon => {
+				icon.closest('button')?.setAttribute('aria-pressed', String(bookmarked));
 				icon.className = bookmarked ? 'hadith-bookmark-icon bi bi-bookmark-fill text-accent' : 'hadith-bookmark-icon bi bi-bookmark text-accent';
 			});
 		};
 
 		const setHeadingBookmarkState = (id, bookmarked) => {
 			getHeadingBookmarkIcons(id).forEach(icon => {
+				icon.closest('button')?.setAttribute('aria-pressed', String(bookmarked));
 				icon.className = bookmarked ? 'heading-bookmark-icon bi bi-bookmark-fill text-accent' : 'heading-bookmark-icon bi bi-bookmark text-accent';
 			});
 		};
 
 		const setTafsirBookmarkState = (key, bookmarked) => {
 			getTafsirBookmarkIcons(key).forEach(icon => {
+				icon.closest('button')?.setAttribute('aria-pressed', String(bookmarked));
 				icon.className = bookmarked ? 'tafsir-bookmark-icon bi bi-bookmark-fill text-accent' : 'tafsir-bookmark-icon bi bi-bookmark text-accent';
 			});
 		};

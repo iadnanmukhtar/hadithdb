@@ -907,3 +907,94 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .community-image-viewer-close:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .community-image-viewer-stage { position: absolute; inset: 64px 24px; display: flex; align-items: center; justify-content: center; }
 .community-image-viewer-stage img { display: block; flex: none; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+/* Reader actions use the same compact, muted controls as the Community feed. */
+.reader-social-actions {
+  --community-muted: var(--c-muted);
+  --community-accent: var(--c-accent);
+}
+.reader-social-actions,
+.community-entry-actions {
+  direction: ltr;
+  justify-content: flex-start;
+  text-align: left;
+}
+.reader-social-actions {
+  font-family: var(--bs-font-sans-serif);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .15rem;
+  width: 100%;
+  margin-inline: 0;
+  float: none;
+}
+.reader-social-actions .personal-note-actions,
+.reader-social-actions .quran-ayah-action {
+  display: inline-flex;
+  align-items: center;
+  gap: .15rem;
+}
+.reader-social-actions :is(button, a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: .4rem .5rem !important;
+  border: 0;
+  border-radius: .5rem;
+  background: transparent !important;
+  color: var(--community-muted) !important;
+  font: inherit;
+  font-size: .8rem;
+  line-height: 1;
+  text-decoration: none;
+  box-shadow: none;
+}
+.reader-social-actions :is(.bi, .hadith-like-count, .hadith-comment-count) { color: inherit !important; }
+.reader-social-actions .bi { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 1rem; width: 1rem; height: 1rem; font-size: 1rem; line-height: 1; }
+.reader-social-actions .bi::before { vertical-align: 0; line-height: 1; }
+.reader-social-actions :is(button, a):hover {
+  background: var(--c-primary-soft-08) !important;
+  color: var(--community-accent) !important;
+}
+.reader-social-actions a.hadith-sharh-link:is(:hover, :focus, :active) { text-decoration: none; }
+.reader-social-actions :is(button, a):focus-visible {
+  outline: 2px solid var(--community-accent);
+  outline-offset: 2px;
+}
+.reader-social-actions :is([aria-pressed="true"], [data-has-note="true"]) { color: var(--community-accent) !important; }
+.reader-social-actions button:disabled { opacity: .5; cursor: wait; }
+.reader-social-actions :is(.content-translate-button-label, .quran-ayah-action-label) { display: none !important; }
+.community-entry-actions > :is(.community-entry-secondary, .community-post-menu, .community-secondary-menu) { margin-inline-start: 0; }
+.community-entry-actions .community-secondary-panel { left: 0; right: auto; }
+@media (max-width: 575.98px) {
+  .reader-social-actions :is(button, a) { min-width: 44px; min-height: 44px; padding: .4rem .5rem !important; font-size: .8rem; }
+  .reader-social-actions .bi { font-size: 1rem; }
+  .reader-social-actions { gap: .15rem; white-space: normal; overflow: visible; }
+  .quran-ayah-hero-with-nav > .reader-social-actions { width: 100%; margin-inline: 0; }
+}
+
+.reader-social-actions.reader-heading-actions { display: inline-flex; width: auto; vertical-align: middle; }
+
+/* Compact spacing across reader, heading, Community, and reflection actions. */
+.reader-social-actions,
+.reader-social-actions .personal-note-actions,
+.reader-social-actions .quran-ayah-action,
+.community-entry-actions,
+.comment-feed .comment-actions { gap: .1rem; }
+.reader-social-actions :is(button, a),
+.community-entry-actions > :is(a, button, .community-like),
+.comment-feed .comment-actions .comment-action {
+  min-width: 36px;
+  min-height: 36px;
+  padding: .25rem !important;
+  gap: .2rem;
+}
+@media (pointer: coarse) {
+  .reader-social-actions :is(button, a),
+  .community-entry-actions > :is(a, button, .community-like),
+  .comment-feed .comment-actions .comment-action { min-height: 44px; }
+}

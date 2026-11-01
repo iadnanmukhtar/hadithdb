@@ -75,11 +75,7 @@
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>
 	        </a>
 	          <span class="quran-revelation-icon quran-revelation-icon-<%= quranSurahRevelation %>" role="img" aria-label="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= quranSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span>
-	        <% if (quranChapter) { %>
-	          <button type="button" class="heading-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center ms-2" data-heading-id="<%= quranChapter.id %>" data-bookmark-type="surah" data-bookmark-ref="quran:<%= surah.num %>" data-bookmark-title="<%= quranChapterTitleEn %>" data-bookmark-title-ar="<%= quranChapterTitleAr %>" data-bookmark-url="<%= quranChapterHref %>" title="Bookmark this chapter">
-	            <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= quranChapter.id %>"></span>
-	          </button>
-	        <% } %>
+	        <%- include('sub-views/quran_surah_actions.ejs', { quranChapter, surah, quranChapterTitleEn, quranChapterTitleAr, quranChapterHref }); %>
 	        </h2>
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= quranChapterHref %>"<% if (!site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= surah.num %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
 	          <%= arabic.toArabicDigits(surah.num + '') %>۔
