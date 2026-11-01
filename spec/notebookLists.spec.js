@@ -9,7 +9,7 @@ afterAll(async () => { await browser?.close(); });
 test.each([390, 1280])('Arabic and mixed list markers stay inside the preview at %ipx', async width => {
   const page = await browser.newPage({ viewport: { width, height: 844 } });
   try {
-    const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+    const css = fs.readFileSync(require.resolve('../public/static/css/markdown-content.css'), 'utf8');
     const html = Notebook.render('1. **الأُمُورُ بِمَقاصِدِهَا**\n2. اليَقِينُ لَا يَزُولُ بِالشَّكِّ\n3. المَشَقَّةُ تَجْلِبُ ٱلتَّيْسِيرَ\n4. الضَّرَرُ يُزَالُ\n5. العَادَةُ مُحَكَّمَةٌ\n6. English item\n   - عنصر فرعي\n   - Nested English');
     await page.setContent(`<style>${css}</style><div class="notebook-markdown" style="overflow:auto;font-size:20px">${html}</div>`);
     expect(await page.locator('ol > li').count()).toBe(6);
@@ -30,13 +30,13 @@ test.each([390, 1280])('Arabic and mixed list markers stay inside the preview at
 test.each(['English quote', 'اقتباس عربي'])('quoted blocks contain nested bullets: %s', async heading => {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   try {
-    const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+    const css = fs.readFileSync(require.resolve('../public/static/css/markdown-content.css'), 'utf8');
     const html = Notebook.render(`> ${heading}\n>\n> - نقطة أولى\n>   - نقطة فرعية\n>     - Deeper bullet\n> - Second item\n>\n> 1. عنصر مرقم\n>    - Nested numbered item`);
     await page.setContent(`<style>${css}</style><article class="notebook-markdown">${html}</article>`);
     expect(await page.locator('blockquote > ul > li').count()).toBe(2);
     expect(await page.locator('blockquote > ul > li > ul > li > ul > li').count()).toBe(1);
     expect(await page.locator('blockquote > ol > li > ul > li').count()).toBe(1);
-    const geometry = await page.locator('blockquote').evaluate(el => {
+    const geometry = await page.locator('blockquote').first().evaluate(el => {
       const box = el.getBoundingClientRect();
       return { border: getComputedStyle(el).borderInlineStartWidth, direction: getComputedStyle(el).direction,
         contained: [...el.querySelectorAll('li')].every(li => { const b = li.getBoundingClientRect(); return b.left >= box.left && b.right <= box.right && b.bottom <= box.bottom; }) };
@@ -49,7 +49,7 @@ test.each(['English quote', 'اقتباس عربي'])('quoted blocks contain nes
 test.each([390, 1280])('Arabic-only blocks and bullet markers use RTL inside an English page at %ipx', async width => {
   const page = await browser.newPage({ viewport: { width, height: 844 } });
   try {
-    const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+    const css = fs.readFileSync(require.resolve('../public/static/css/markdown-content.css'), 'utf8');
     const html = Notebook.render('# عنوان عربي\n\n(123) **نص عربي** [رابط](https://example.com)\n\n- **نقطة أولى**\n- 2026: نقطة ثانية\n  - نقطة متداخلة\n\n> اقتباس عربي\n>\n> - نقطة مقتبسة\n\nEnglish paragraph\n\n- English bullet');
     await page.setContent(`<style>${css}</style><article dir="ltr" class="notebook-markdown">${html}</article>`);
     const blocks = await page.locator('h1, p, li, blockquote').evaluateAll(elements => elements.map(el => {
@@ -67,7 +67,7 @@ test.each([390, 1280])('Arabic-only blocks and bullet markers use RTL inside an 
 test('parallel headings share their size and create one private outline entry', async () => {
   const page = await browser.newPage();
   try {
-    const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+    const css = fs.readFileSync(require.resolve('../public/static/css/markdown-content.css'), 'utf8');
     const source = fs.readFileSync(require.resolve('../public/static/js/notebook.js'), 'utf8');
     const rebuild = source.slice(source.indexOf('  function rebuildOutline()'), source.indexOf('  new MutationObserver(rebuildOutline)'));
     await page.setContent(`<style>${css}</style><article id="preview" class="notebook-markdown">${Notebook.render('## Heading || Translation')}</article><ol id="items"></ol>`);

@@ -620,7 +620,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       fs.unlinkSync(filename);
       const after=await (await fetch(base+article.url)).text();
       const parse=require('cheerio').load;
-      for(const selector of ['title','link[rel=canonical]','meta[name=description]','.blog-post article','#blog-comments']) expect(parse(after)(selector).toString()).toBe(parse(before)(selector).toString());
+      for(const selector of ['title','link[rel=canonical]','meta[name=description]','.community-article article','#blog-comments']) expect(parse(after)(selector).toString()).toBe(parse(before)(selector).toString());
       const browser=await require('playwright').chromium.launch({channel:'chrome',headless:true});
       try {
         const page=await browser.newPage({viewport:{width:390,height:844}});

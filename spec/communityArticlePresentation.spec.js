@@ -9,15 +9,15 @@ function render(post) {
   const file = path.resolve('views/community.ejs');
   return ejs.render(fs.readFileSync(file, 'utf8'), {view:'post', post, author:post.author, page:{}, global:{settings:{site:{}}}, utils:{scriptAssetVersion:()=> 'test'}, include:(name, data)=>name.endsWith('blog_cover.ejs') ? ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),data) : ''}, {filename:file});
 }
-test('articles share the blog cover and body while preserving links and images', () => {
+test('articles keep their cover and use post body rendering while preserving links and images', () => {
   const post=Community.postView(row), $=load(render(post));
-  expect($('.community-article-layout > main.blog-post')).toHaveLength(1);
+  expect($('.community-article-layout > main.community-article')).toHaveLength(1);
   expect($('h1')).toHaveLength(1);
   expect($('.blog-cover-hero h1').text()).toBe(row.public_title);
   expect($('.blog-cover-hero .community-cover-subtitle').text()).toBe(row.public_subtitle);
-  expect($('.body[data-article-body] a').attr('href')).toBe('https://example.com/source');
-  expect($('.body img').attr('src')).toBe('https://example.com/image.jpg');
-  expect($('.body').text()).toContain('العربية');
+  expect($('[data-article-body].notebook-markdown.community-reflection-body a').attr('href')).toBe('https://example.com/source');
+  expect($('[data-article-body] img').attr('src')).toBe('https://example.com/image.jpg');
+  expect($('[data-article-body]').text()).toContain('العربية');
   expect($('.community-link-preview, article.community-card, #community-author-profile')).toHaveLength(0);
 });
 test('short posts retain their layout and standalone link previews', () => {

@@ -8,9 +8,11 @@ let browser, context, page, server, origin;
 jest.setTimeout(30000);
 beforeAll(async () => {
   server = require('http').createServer((req, res) => {
-    if (/^\/static\/fonts\/kitab-base(?:-b)?\.woff2$/.test(req.url)) {
+    if (/^\/static\/fonts\/[^/]+\.(woff2|otf)$/.test(req.url)) {
       res.setHeader('Content-Type', 'font/woff2');
       res.end(fs.readFileSync(require('path').join(__dirname, '../public', req.url)));
+    } else if (req.url.startsWith('/static/css/markdown-content.css')) {
+      res.setHeader('Content-Type', 'text/css'); res.end(fs.readFileSync(require.resolve('../public/static/css/markdown-content.css')));
     } else { res.setHeader('Content-Type', 'text/html'); res.end('<button id="print">Print</button>'); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -56,7 +58,7 @@ test('prints the current draft with safe metadata, Arabic, links and complete pa
   expect(await popup.locator('article').textContent()).toContain('END OF NOTE');
   expect(await popup.locator('article').textContent()).not.toContain('Old saved body');
   expect(await popup.locator('.notebook-expand-reference').count()).toBe(0);
-  expect(await popup.evaluate(() => document.fonts.check('16px Kitab'))).toBe(true);
+  expect(await popup.evaluate(() => document.fonts.check('16px Hafs'))).toBe(true);
   expect(await popup.locator('article p[dir="rtl"]').nth(0).evaluate(el => getComputedStyle(el).direction)).toBe('rtl');
   await popup.emulateMedia({ media: 'print' });
   expect(await popup.locator('aside').isVisible()).toBe(false);
@@ -96,9 +98,9 @@ test('render failures close the empty window and preserve the error', async () =
   expect(popup.isClosed()).toBe(true);
 });
 
-test('bilingual quote fonts and opening-language borders agree in preview and PDF', async () => {
+test('bilingual quote fonts and per-language borders agree in preview and PDF', async () => {
   const html = Notebook.render('> **نص عربي** [رابط](https://example.com)\n> English translation\n\n> English opening\n> نص عربي\n\n> نص عربي\n>\n> English separate paragraph\n\n-# Small __underlined__ text\n\n- [x] Complete\n\nH~2~O X^2^ :joy:\n\n```json\n{"x":true}\n```\n\n<div><p style="color:red">Native HTML العربية</p><details open><summary>More</summary>Details</details><script>window.htmlExecuted=true</script></div>');
-  const css = fs.readFileSync(require.resolve('../views/sub-views/notebook_content_styles.ejs'), 'utf8');
+  const css = fs.readFileSync(require.resolve('../public/static/css/markdown-content.css'), 'utf8');
   await page.setContent(`<style>body { font-family: Georgia, serif; }${css}</style><article class="notebook-markdown">${html}</article>`);
   const check = async target => {
     expect(await target.locator('.notebook-subtext').evaluate(el => parseFloat(getComputedStyle(el).fontSize) < parseFloat(getComputedStyle(el.parentElement).fontSize))).toBe(true);
@@ -114,16 +116,16 @@ test('bilingual quote fonts and opening-language borders agree in preview and PD
       const style = getComputedStyle(el);
       const p = el.querySelector('p');
       return { left: style.borderLeftWidth, right: style.borderRightWidth,
-        font: getComputedStyle(p).fontFamily, arabicFont: getComputedStyle(p.querySelector('.notebook-arabic') || el.querySelector('.notebook-arabic')).fontFamily };
+        font: getComputedStyle(p).fontFamily, arabicFont: el.querySelector('.notebook-arabic') ? getComputedStyle(el.querySelector('.notebook-arabic')).fontFamily : null };
     }));
     expect(quotes.map(({ left, right }) => ({ left, right }))).toEqual([
-      { left: '0px', right: '3px' }, { left: '3px', right: '0px' }, { left: '0px', right: '3px' }
+      { left: '0px', right: '3px' }, { left: '3px', right: '0px' }, { left: '3px', right: '0px' }, { left: '0px', right: '3px' }, { left: '0px', right: '3px' }, { left: '3px', right: '0px' }
     ]);
     for (const quote of quotes) {
       expect(quote.font).toContain('Georgia');
-      expect(quote.arabicFont).toContain('Kitab');
+      if (quote.arabicFont) expect(quote.arabicFont).toContain('Hafs');
     }
-    expect(await target.locator('blockquote').nth(2).locator('p').nth(1).evaluate(el => getComputedStyle(el).fontFamily)).toContain('Georgia');
+    expect(await target.locator('blockquote').nth(5).locator('p').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Georgia');
   };
   await check(page);
   const popupPromise = page.waitForEvent('popup');

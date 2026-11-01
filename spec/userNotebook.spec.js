@@ -44,7 +44,7 @@ test('new notes do not overwrite an existing note', async () => {
 test('Markdown supports independent block direction and escapes executable HTML', () => {
   const html = Notebook.render('# العربية\n\nEnglish **note**\n\n<script>alert(1)</script>\n\n[x](javascript:alert(1))');
   expect(html).toContain('<h1 dir="rtl"><span class="notebook-arabic">العربية</span></h1>');
-  expect(html).toContain('<p dir="auto">English <strong>note</strong></p>');
+  expect(html).toContain('<p dir="ltr">English <strong>note</strong></p>');
   expect(html).not.toContain('<script>');
   expect(html).not.toContain('href="javascript:');
 });
@@ -478,14 +478,14 @@ test('reference expansion preserves source punctuation instead of storing HTML e
   expect(result).not.toMatch(/&#\d+;|&amp;|&lt;|&gt;/);
 });
 
-test.each(['quran:1:1', 'quran:1:1-2'])('Quran expansion %s uses canonical Arabic script from the current database record', async ref => {
+test.each(['quran:1:1', 'quran:1:1-2'])('Quran expansion %s uses non-script alt text from the current database record', async ref => {
   Item.itemFromRef.mockImplementation(async reference => ({ ref: reference, id: Number(reference.split(':')[2]), book_id: 0, ar: { body: 'Cached Uthmani', body_alt: 'Cached ordinary' } }));
   global.query.mockResolvedValue([{ body: 'ٱلْحَمْدُ لِلَّهِ', body_ar_alt: 'الْحَمْدُ لِلَّهِ', body_en: 'Praise be to Allah.' }]);
   const result = await References.snapshot(ref);
-  expect(result).toContain("ٱلْحَمْدُ لِلَّهِ");
-  expect(result).not.toContain("الْحَمْدُ لِلَّهِ");
+  expect(result).toContain("الْحَمْدُ لِلَّهِ");
+  expect(result).not.toContain("ٱلْحَمْدُ لِلَّهِ");
   expect(result).not.toContain('Cached');
-  expect(result.match(/ٱلْحَمْدُ/g)).toHaveLength(ref.endsWith('-2') ? 2 : 1);
+  expect(result.match(/الْحَمْدُ/g)).toHaveLength(ref.endsWith('-2') ? 2 : 1);
   expect(result).toContain('﴿');
   expect(result).toContain('﴾');
 });
@@ -511,7 +511,7 @@ test('parallel bilingual rows support independent headings, text and bullets', (
   expect((html.match(/class="notebook-parallel"/g) || []).length).toBe(3);
   expect((html.match(/class="notebook-parallel-cell"/g) || []).length).toBe(6);
   expect(html).toContain('<h2 dir="rtl">');
-  expect(html).toContain('<h2 dir="auto">English</h2>');
+  expect(html).toContain('<h2 dir="ltr">English</h2>');
   expect(html).toContain('<em>text</em>');
   expect((html.match(/<ul(?: |>)/g) || []).length).toBe(2);
   expect(html).toContain('<li dir="rtl">');

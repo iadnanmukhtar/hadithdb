@@ -157,7 +157,7 @@
     };
     const up=button('',vote('up'),'community-like');
     const down=button('',vote('down'),'community-dislike');
-    const reply=button('',openReplies,'community-reply'); reply.title=replying?'Reply':'View comments';reply.setAttribute('aria-label',reply.title);if(!replying)reply.setAttribute('aria-expanded','false');
+    const reply=button('',openReplies,'community-reply'); reply.title='Reply';reply.setAttribute('aria-label',reply.title);if(!replying)reply.setAttribute('aria-expanded','false');
     const repost=button('',async()=>{
       const own=epoch;
       const result=await api('/reposts/'+source+'/'+target,'PUT',{reposted:repost.getAttribute('aria-pressed')!=='true'});
@@ -245,7 +245,7 @@
     return ()=>togglePanel(true);
   }
   function microType(item) { return ['title','revision'].includes(item.microinteraction) ? item.microinteraction : item.kind === 'like' ? item.activity + ':' + (item.likeSource || '') : null; }
-  function editPostLink(item) { const edit = link('', (item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=') + item.id, 'community-entry-secondary community-edit-post'); edit.dataset.editKind=item.kind;edit.dataset.editId=item.id;edit.title = 'Edit post'; edit.setAttribute('aria-label', 'Edit post'); edit.append(icon('pencil')); return edit; }
+  function editPostLink(item) { const edit = link('', (item.kind === 'note' ? '/community/mine?editPost=' : '/community/write?post=') + item.id, 'community-entry-secondary community-edit-post'); edit.dataset.editKind=item.kind;edit.dataset.editId=item.id;edit.title = item.kind === 'article' ? 'Edit article' : 'Edit post'; edit.setAttribute('aria-label', edit.title); edit.append(icon('pencil')); return edit; }
   function openItemLink(href) {
     const control=link('',href,'community-entry-secondary');
     control.title='Open';control.setAttribute('aria-label','Open');
@@ -261,6 +261,26 @@
     return {menu,panel};
   }
   document.addEventListener('click',event=>{for(const menu of root.querySelectorAll('.community-secondary-menu[open]'))if(!menu.contains(event.target))menu.open=false;});
+  function printControl(id) {
+    const control = node('button', undefined, 'community-entry-secondary');
+    control.type = 'button'; control.dataset.communityPrint = id;
+    control.title = 'Print / Save as PDF'; control.setAttribute('aria-label', control.title);
+    control.append(icon('printer'), document.createTextNode('Print'));
+    return control;
+  }
+  root.addEventListener('click', event => {
+    const control = event.target.closest('[data-community-print]');
+    if (!control || control.disabled) return;
+    event.preventDefault();
+    const menu = control.closest('details'); if (menu) menu.open = false;
+    const own = epoch;
+    run(() => window.NotebookPrint.open({}, async () => {
+      // Fetch the full authorized body; feed excerpts may be truncated.
+      const { post } = await api('/posts/' + encodeURIComponent(control.dataset.communityPrint));
+      return { html: post.html, note: { title: post.title || (post.kind === 'article' ? 'Article' : 'Post'),
+        source_title: post.author?.name || '', source_url: post.shareUrl || post.url, tags: post.tags } };
+    }, () => own === epoch), control);
+  });
   function visibilityControl(item, panel) {
     if (!item.canHide) return;
     const label=item.hiddenFromOthers?'Unhide':'Hide';
@@ -270,6 +290,7 @@
       else { window.location.assign('/community/mine'); return; }
       status(item.hiddenFromOthers?'Visible to others again.':'Hidden from others. You can unhide it on your wall.');
     },'community-visibility');
+    control.title=label;control.setAttribute('aria-label',label);
     control.prepend(icon(item.hiddenFromOthers?'eye':'eye-slash'));panel.append(control);
   }
   function card(item) {
@@ -282,6 +303,7 @@
     const hiddenIndicator = item.hiddenFromOthers || item.status === 'private' ? node('span', undefined, 'community-hidden-indicator') : null;
     if (hiddenIndicator) { hiddenIndicator.title='Hidden from others'; hiddenIndicator.setAttribute('role','img'); hiddenIndicator.setAttribute('aria-label','Hidden from others'); hiddenIndicator.append(icon('eye-slash')); }
     secondary.panel.append(openItemLink(['like','title','revision'].includes(kind) ? item.hadithUrl || item.url : href));
+    if (['note','article'].includes(kind) && (!item.activity || item.activity === 'post')) secondary.panel.append(printControl(item.id));
     visibilityControl(item,secondary.panel);
     const avatar = link(Array.from(item.author.name.trim())[0] || '?', '/community/@' + item.author.handle, 'community-avatar'); avatar.tabIndex = -1; avatar.setAttribute('aria-hidden', 'true'); avatarImage(avatar, item.author);
     if (['like','title','revision'].includes(kind)) {
@@ -318,19 +340,19 @@
     const actions = item.likeSource && !privatePost ? interactionControls(item,()=>toggleDiscussion()) : node('div',undefined,'community-entry-actions');
     if(privatePost) actions.append(openItemLink(href));
     if (!privatePost && ['article','note'].includes(kind)) {
-      const share = node('button', undefined, 'community-like'); share.type = 'button'; share.title = 'Share'; share.setAttribute('aria-label', 'Share post');
+      const share = node('button', undefined, 'community-like'); share.type = 'button'; share.title = 'Share'; share.setAttribute('aria-label', 'Share');
       share.dataset.communityShareHandle=item.author.handle;share.dataset.communityShareAuthor=item.author.name;share.dataset.communitySharePhoto=item.author.photo || item.author.avatarFallback || '';share.dataset.communityShareCover=item.coverUrl || '';share.dataset.communityShareExcerpt=item.excerpt || '';
       share.dataset.communityShareUrl = item.shareUrl || item.url; share.dataset.communityShareTitle = item.shareTitle || item.title || 'Community post';
       share.append(icon('share')); actions.append(share);
     }
-    if (item.canEdit) {const edit=editPostLink(item);edit.append(document.createTextNode('Edit'));secondary.panel.append(edit);}
+    if (item.canEdit) {const edit=editPostLink(item);edit.append(document.createTextNode(edit.title));secondary.panel.append(edit);}
     if (item.canDeleteRepost) {
       const remove=button('',async()=>{
         const own=epoch;
         await api('/reposts/'+item.likeSource+'/'+item.likeId,'PUT',{reposted:false});
         if(own===epoch) {await loadFeed(true);status('Repost removed.');}
       },'community-delete-repost');
-      remove.title='Delete repost';remove.setAttribute('aria-label','Delete repost');remove.append(icon('trash'),document.createTextNode('Delete repost'));
+      remove.title='Undo repost';remove.setAttribute('aria-label',remove.title);remove.append(icon('repeat'),document.createTextNode(remove.title));
       secondary.panel.append(remove);
     }
     article.append(actions);
@@ -826,10 +848,10 @@
     const oldMenu=root.querySelector('.community-post-menu');
     if(oldMenu){for(const id of ['edit-post','report-post'])if($(id))previous.append($(id));oldMenu.remove();}
     const secondary=secondaryMenu();secondary.menu.classList.add('community-post-menu');
+    secondary.panel.append(printControl(post.id || postId));
     visibilityControl(post,secondary.panel);
     for(const id of ['edit-post','report-post']) {const control=$(id);if(control){if(!control.textContent.trim())control.append(document.createTextNode(control.title));secondary.panel.append(control);}}
-    const article=previous.closest('article');
-    if(article)article.prepend(secondary.menu);
+    previous.append(secondary.menu);
     if(!post.likeSource)return;
     if ($('blog-toggle')) $('blog-toggle').checked = !!post.isBlog;
     const actions = interactionControls(post, () => {
@@ -939,7 +961,9 @@
     if (!$('moderation').children.length) $('moderation').append(node('p', 'No publications or reports awaiting review.', 'community-empty'));
   }
   const searchDialog = $('user-search-dialog');
-  if (searchDialog) {
+  const searchOpen = $('user-search-open');
+  // Article navigation replaces the contributor sidebar (including its opener).
+  if (searchDialog && searchOpen) {
     const input = $('user-search-input'), results = $('user-search-results'), message = $('user-search-status');
     let timer, revision = 0;
     const invalidate = () => { clearTimeout(timer); ++revision; };
@@ -967,7 +991,7 @@
         }
       }
     };
-    $('user-search-open').addEventListener('click', () => { searchDialog.showModal(); input.focus(); });
+    searchOpen.addEventListener('click', () => { searchDialog.showModal(); input.focus(); });
     $('user-search-close').addEventListener('click', () => searchDialog.close());
     searchDialog.addEventListener('keydown', event => {
       if (event.key === 'Escape') { event.preventDefault(); searchDialog.close(); }

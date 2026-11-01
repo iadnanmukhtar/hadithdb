@@ -11,8 +11,10 @@ test('owner menus hide and restore posts, articles and microactivity, including 
  w.quranApiPath=p=>'/api'+p;w.hadithAuth={getToken:async()=>'token'};
  const author={handle:'writer',name:'Writer',bio:''};
  const items=[{id:1,activity:'post',kind:'note'},{id:2,activity:'post',kind:'article'},{id:3,activity:'hadith_like',kind:'like',url:'/muslim:25b'},{id:4,activity:'post',kind:'note',microinteraction:'title',hadithUrl:'/muslim:25b',hadithTitle:'Source title'},{id:5,activity:'post',kind:'note',microinteraction:'revision',hadithUrl:'/muslim:25b',hadithTitle:'Source title'}].map(item=>({...item,author,status:'published',title:'Example',excerpt:'Text',url:item.url || '/community/p/example',activityAt:'2026-10-31',canHide:true,canEdit:item.id<=2}));
+ w.NotebookPrint={open:jest.fn(async(note,render,isCurrent)=>{const result=await render();expect(isCurrent()).toBe(true);expect(result.html).toBe('<p>Full authorized body</p>');})};
  w.fetch=jest.fn(async(url,options)=>{
   if(url.includes('/visibility/')){const id=Number(url.split('/').pop()),hidden=JSON.parse(options.body).hidden;items.find(i=>i.id===id).hiddenFromOthers=hidden;return {ok:true,json:async()=>({hidden})};}
+  if(/\/posts\/[12]$/.test(url))return {ok:true,json:async()=>({post:{...items.find(i=>i.id===Number(url.split('/').pop())),html:'<p>Full authorized body</p>'}})};
   const data=url.endsWith('/me')?{author,subscriptions:[]}:url.includes('/feed?')?{items:url.includes('kind=hidden')?items.filter(i=>i.hiddenFromOthers):items,hasMore:false,offset:20}:url.endsWith('/contributors')?{contributors:[]}:{items:[],notes:[]};
   return {ok:true,json:async()=>data};
  });
@@ -22,10 +24,12 @@ test('owner menus hide and restore posts, articles and microactivity, including 
   for(let index=0;index<5;index++){
    let card=d.querySelectorAll('#community-feed .community-entry')[index],menu=card.querySelector('.community-secondary-menu');
    const open=card.querySelector('.community-secondary-panel a');
-   expect([...menu.querySelector('.community-secondary-panel').children].map(el=>el.textContent)).toEqual(index<2?['Open','Hide','Edit']:['Open','Hide']);
+   expect([...menu.querySelector('.community-secondary-panel').children].map(el=>el.textContent)).toEqual(index<2?['Open','Print','Hide',index===1?'Edit article':'Edit post']:['Open','Hide']);
+   for(const control of menu.querySelectorAll('.community-secondary-panel > *')) {const label=control.hasAttribute('data-community-print')?'Print / Save as PDF':control.textContent;expect(control.title).toBe(label);expect(control.getAttribute('aria-label')).toBe(label);}
    expect(open.textContent).toBe('Open');expect(open.title).toBe('Open');expect(open.querySelector('.bi-arrow-right')).not.toBeNull();
    expect(index>=2?menu.parentElement===card:menu.parentElement.classList.contains('community-entry-meta')).toBe(true);
    if(index>=2) expect(card.querySelector('.community-secondary-panel a').getAttribute('href')).toBe('/muslim:25b');
+   if(index<2){menu.open=true;card.querySelector('[data-community-print]').click();await settle();expect(menu.open).toBe(false);expect(w.NotebookPrint.open).toHaveBeenCalledTimes(index+1);}
    menu.open=true;menu.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));expect(menu.open).toBe(false);
    card.querySelector('.community-visibility').click();await settle();
    card=d.querySelectorAll('#community-feed .community-entry')[index];expect(card.querySelector('.community-visibility').textContent).toContain('Unhide');

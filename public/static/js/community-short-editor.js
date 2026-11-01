@@ -21,6 +21,79 @@
       if(caption)caption.textContent=(orphan?'Orphaned footnote ':'Footnote ')+row.dataset.footnote;
     });
   }
+  function styleContent(root, editing=false) {
+    const direction = text => /\p{Script_Extensions=Arabic}/u.test(text.match(/\p{L}/u)?.[0] || '') ? 'rtl' : 'ltr';
+    // Keep DOM boundary points, including empty paragraphs and positions after
+    // a BR. A document-wide text offset cannot distinguish those positions.
+    const selection=window.getSelection();
+    const points=selection?.anchorNode && root.contains(selection.anchorNode) && root.contains(selection.focusNode)
+      ? [[selection.anchorNode,selection.anchorOffset],[selection.focusNode,selection.focusOffset]] : [];
+    let moved=false;
+    const remap=(old,resolve)=>points.forEach(point=>{
+      if(point[0]===old){[point[0],point[1]]=resolve(point[1]);moved=true;}
+    });
+    root.querySelectorAll('blockquote').forEach(quote=>{
+      if(quote.closest('[data-notebook-raw]') || [...quote.children].some(el=>/^(P|DIV|H[1-6]|UL|OL|BLOCKQUOTE|PRE|TABLE)$/.test(el.tagName)))return;
+      const paragraph=document.createElement('p');paragraph.append(...quote.childNodes);quote.append(paragraph);moved=true;
+      remap(quote,offset=>[paragraph,offset]);
+    });
+    // Native undo retains references to edited text nodes. Never replace those
+    // nodes during input; the Unicode font face handles newly typed Arabic.
+    if(!editing){
+    const arabic=/[\p{Script_Extensions=Arabic}\u200c\u200d]+(?:[ \t]+[\p{Script_Extensions=Arabic}\u200c\u200d]+)*/gu;
+    root.querySelectorAll('.notebook-arabic').forEach(span=>{
+      if(span.closest('[data-notebook-raw]'))return;
+      if(!/^[\p{Script_Extensions=Arabic}\u200c\u200d \t]+$/u.test(span.textContent)){
+        const parent=span.parentNode,index=[...parent.childNodes].indexOf(span);
+        remap(span,offset=>[parent,index+offset]);
+        span.replaceWith(...span.childNodes);moved=true;
+      }
+    });
+    const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),texts=[];
+    while(walker.nextNode())texts.push(walker.currentNode);
+    for(const text of texts){
+      if(text.parentElement?.closest('.notebook-arabic,[data-notebook-raw],[contenteditable="false"],.community-footnote-label'))continue;
+      const matches=[...text.data.matchAll(arabic)];if(!matches.length)continue;
+      const fragment=document.createDocumentFragment();let offset=0;
+      for(const match of matches){
+        if(match.index>offset)fragment.append(document.createTextNode(text.data.slice(offset,match.index)));
+        const span=document.createElement('span');span.className='notebook-arabic';span.textContent=match[0];fragment.append(span);offset=match.index+match[0].length;
+      }
+      if(offset<text.length)fragment.append(document.createTextNode(text.data.slice(offset)));
+      remap(text,position=>{
+        const walk=document.createTreeWalker(fragment,NodeFilter.SHOW_TEXT);let node,last;
+        while((node=walk.nextNode())){last=node;if(position<=node.length)return [node,position];position-=node.length;}
+        return [last,last.length];
+      });
+      text.replaceWith(fragment);moved=true;
+    }
+    }
+    root.querySelectorAll('.notebook-arabic').forEach(span=>{
+      span.classList.toggle('notebook-edit-mixed',!/^\p{Script_Extensions=Arabic}[\p{Script_Extensions=Arabic}\u200c\u200d \t]*$/u.test(span.textContent));
+    });
+    if(moved && points.length)selection.setBaseAndExtent(...points[0],...points[1]);
+    root.querySelectorAll('p,li,blockquote,h1,h2,h3,h4,h5,h6,.notebook-rich-line').forEach(el => {
+      if (el.closest('[data-notebook-raw]')) return;
+      el.dir = direction(el.textContent);
+      el.classList.toggle('notebook-edit-has-arabic',editing && /\p{Script_Extensions=Arabic}/u.test(el.textContent) && !el.querySelector('.notebook-arabic:not(.notebook-edit-mixed)'));
+    });
+    root.querySelectorAll('.notebook-quote-section,.notebook-quote-switch').forEach(el => el.classList.remove('notebook-quote-section','notebook-quote-switch'));
+    root.querySelectorAll('blockquote').forEach(quote => {
+      if (quote.closest('[data-notebook-raw]')) return;
+      quote.classList.add('notebook-edit-quote');
+      let previous = null;
+      for (const child of quote.children) {
+        if (child.tagName === 'BLOCKQUOTE') { previous = null; continue; }
+        const sections = child.querySelectorAll(':scope > .notebook-rich-line');
+        for (const section of sections.length ? sections : [child]) {
+          section.dir = direction(section.textContent);
+          section.classList.add('notebook-quote-section');
+          if (previous && previous.dir !== section.dir) section.classList.add('notebook-quote-switch');
+          previous = section;
+        }
+      }
+    });
+  }
   function render(markdown) {
     const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
     if (!window.marked || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
@@ -129,7 +202,7 @@
       for(const marker of root.querySelectorAll('[data-footnote-ref]'))if(!definitions.has(marker.dataset.footnoteRef)){
         const content=document.createElement('p');content.textContent='Footnote text';const holder=document.createElement('div');holder.append(content);definitions.set(marker.dataset.footnoteRef,footnoteRow(marker.dataset.footnoteRef,holder));
       }
-      root.append(...definitions.values());reconcileFootnotes(root);return root;
+      root.append(...definitions.values());reconcileFootnotes(root);styleContent(root);return root;
     } catch (_) { return null; }
   }
   function serialize(root) {
@@ -215,7 +288,7 @@
     const required=source.required;source.required=false;
     function sync() {
       if(mode!=='rich'||syncing||rich.innerHTML===lastHTML)return;
-      rich.querySelectorAll('p,div,li,blockquote,h1,h2,h3,h4,h5,h6').forEach(el=>el.dir=el.classList.contains('community-edit-parallel')?'ltr':'auto');
+      styleContent(rich,true);
       reconcileFootnotes(rich);
       const markdown=serialize(rich);
       if(markdown===lastMarkdown){lastHTML=rich.innerHTML;return;}
@@ -572,6 +645,16 @@
         const quote=block?.closest('blockquote'),listItem=block?.closest('li');
         block=block?.closest('p,div,li,blockquote');
         if(active.isCollapsed && quote && rich.contains(quote) && !listItem) {
+          // Use native editing transactions so Enter and quote exit participate
+          // in browser undo. Keep the fallback for engines without these commands.
+          event.preventDefault();
+          const empty=block && !block.textContent.trim();
+          if(document.execCommand?.(empty?'outdent':'insertParagraph',false)) {
+            const node=active.anchorNode?.nodeType===1?active.anchorNode:active.anchorNode?.parentElement;
+            const next=node?.closest('p,div');
+            if(!empty && next && quote.contains(next))next.dataset.quoteLine='true';
+            sync();selection();return;
+          }
           // Continue quote paragraphs normally; an empty paragraph exits the quote.
           if(block && !block.textContent.trim()) {
             event.preventDefault();
@@ -621,6 +704,6 @@
   }
   document.addEventListener('selectionchange',()=>document.querySelectorAll('[data-short-editor]').forEach(el=>instances.get(el)?.selection()));
   function scan(root=document){root.querySelectorAll('textarea[data-short-editor]').forEach(install);}
-  window.CommunityShortEditor={install,render,serialize,get:source=>instances.get(source)};
+  window.CommunityShortEditor={install,render,serialize,styleContent,get:source=>instances.get(source)};
   scan();new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.nodeType===1){if(n.matches('textarea[data-short-editor]'))install(n);scan(n);}}).observe(document.body,{childList:true,subtree:true});
 })();

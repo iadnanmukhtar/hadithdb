@@ -12,7 +12,7 @@ test('Discord subtext interrupts paragraphs and works inside quotes and lists', 
 
 test('supports the extended syntax guide examples', () => {
   const html = Notebook.render('| Left | Right |\n| :--- | ---: |\n| **bold** | text |\n\nTerm\n: Definition\n: Another definition\n\n- [x] Done\n- [ ] Pending\n\n~~old~~ ==new== H~2~O X^2^ :tent: :joy:\n\nhttps://example.com `https://literal.test`\n\nFootnote[^1]\n\n[^1]: Explanation\n\n```json\n{"safe": true}\n```');
-  for (const fragment of ['<table>', 'text-align:right', '<dl>', '<dt dir="auto">Term', '<dd dir="auto">Definition', 'type="checkbox"', 'checked="" disabled=""', '<s>old</s>', '<mark>new</mark>', '<sub>2</sub>', '<sup>2</sup>', '⛺', '😂', 'href="https://example.com"', '<code>https://literal.test</code>', 'footnote-ref', 'hljs-attr']) expect(html).toContain(fragment);
+  for (const fragment of ['<table>', 'text-align:right', '<dl>', '<dt dir="ltr">Term', '<dd dir="ltr">Definition', 'type="checkbox"', 'checked="" disabled=""', '<s>old</s>', '<mark>new</mark>', '<sub>2</sub>', '<sup>2</sup>', '⛺', '😂', 'href="https://example.com"', '<code>https://literal.test</code>', 'footnote-ref', 'hljs-attr']) expect(html).toContain(fragment);
 });
 
 test('heading IDs support safe local links and duplicate IDs', () => {

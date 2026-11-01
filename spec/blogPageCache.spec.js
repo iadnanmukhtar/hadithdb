@@ -16,6 +16,7 @@ beforeEach(() => {
   jest.spyOn(Utils, 'diskCacheEnabled').mockReturnValue(true);
   jest.spyOn(Utils, 'assetVersionSuffix').mockReturnValue('styles');
   jest.spyOn(Utils, 'scriptAssetVersion').mockReturnValue('scripts');
+  jest.spyOn(Utils, 'styleAssetVersion').mockReturnValue('styles-v1');
   jest.spyOn(Utils, 'cacheBookDirectory').mockImplementation(() => path.join(dir, 'media'));
   jest.spyOn(Utils, 'cacheFileFromFilename').mockImplementation(key => path.join(dir, key + '.html'));
   jest.spyOn(Utils, 'cachedTextPathForRead').mockImplementation(file => fs.existsSync(file) ? file : null);
@@ -155,4 +156,11 @@ test.each([{kind:'note',featured:1},{kind:'article',featured:null}])('notes and 
   expect(await Cache.prepare(req,res,true)).toBe(false);
   expect(res.render).toBe(render);
   expect(Utils.cachedTextPathForRead).not.toHaveBeenCalled();
+});
+
+test('shared Markdown style changes invalidate cached article HTML', async () => {
+  await visit({}, 'old typography');
+  Utils.styleAssetVersion.mockReturnValue('styles-v2');
+  const updated = await visit({}, 'shared typography');
+  expect(updated.body).toBe('shared typography');
 });

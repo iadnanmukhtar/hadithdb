@@ -186,7 +186,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-frontmatter-status:not(:empty) { margin-top: .5rem; }
 [data-bs-theme="dark"] .notebook-attachment-content, [data-bs-theme="dark"] #notebook-frontmatter-panel, [data-bs-theme="dark"] #notebook-frontmatter-editor { background: rgba(0,0,0,.1); }
 
-#notebook-editor { font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
+#notebook-editor { font-family: Georgia, "Times New Roman", serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 #notebook-wiki-options { position: absolute; z-index: 10; box-sizing: border-box; max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); box-shadow: 0 .2rem .6rem #0002; }
 #notebook-wiki-options [role="option"] { padding: .3rem .65rem; cursor: pointer; }
 #notebook-wiki-options [aria-selected="true"] { background: var(--bs-secondary-bg, #eee); color: var(--bs-body-color, #222); }
@@ -367,8 +367,9 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 .notebook-line-numbers { position: absolute; inset: 0 auto 0 0; width: 1.8rem; overflow: hidden; pointer-events: none; user-select: none; color: var(--note-ink); opacity: .4; }
 .notebook-line-numbers span { position: absolute; right: .25rem; font: 10px/1.6 system-ui, sans-serif; font-variant-numeric: tabular-nums; }
 #notebook-surface .community-short-editor { display: flex; flex-direction: column; flex: 1; min-height: 0; --community-paper: var(--note-paper); --community-ink: var(--note-ink); }
-#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: var(--content-language-latin-font, Georgia), Kitab, Quran, serif; font-size: var(--notebook-font-size, 1rem); line-height: 1.8; box-shadow: none; }
+#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: Georgia, "Times New Roman", serif; font-size: var(--notebook-font-size, 1rem); line-height: 1.8; box-shadow: none; }
 #notebook-surface .community-rich-input { white-space: normal; }
+#notebook-surface :is(.community-rich-input, #notebook-editor) { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
 #notebook-surface :is(.community-rich-input, #notebook-preview) p { margin: 0 0 1rem; }
 
 </style>

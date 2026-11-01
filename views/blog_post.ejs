@@ -24,6 +24,7 @@
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
+<style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 </head>
 
 <body>
@@ -31,14 +32,14 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
   <div class="container-fluid community-article-layout">
-    <main class="blog-post community" id="community" data-view="blog-article" data-post="<%= attr.postId || '' %>" data-author="<%= attr.authorHandle || '' %>">
+    <main class="community-article community" id="community" data-view="blog-article" data-post="<%= attr.postId || '' %>" data-author="<%= attr.authorHandle || '' %>">
       <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
       <div class="community-columns community-article-columns">
         <%- include('sub-views/community_author_rail.ejs', { railAuthor: { name: attr.authorName || attr.author, handle: attr.authorHandle, photo: attr.authorPhoto, avatarFallback: attr.authorAvatarFallback } }); %>
         <div class="community-wall">
           <article>
             <%- include('sub-views/blog_cover.ejs', { entry: attr, detail: true }); %>
-            <section class="body" data-article-body>
+            <section class="notebook-markdown community-reflection-body" dir="auto" data-article-body>
              <%- body %>
             </section>
             <% if (attr.postId) { %><%- include('sub-views/community_post_actions.ejs', { post: {
@@ -70,5 +71,6 @@
 <script src="<%= utils.staticAssetUrl('/static/js/community-bio.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>" defer></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-image-viewer.js') %>" defer></script>
 </body>
 </html>

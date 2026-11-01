@@ -7,7 +7,7 @@
 <%- include('sub-views/header.ejs', { site, page }); %>
 <% if (view === 'email-preferences') { %><div class="container col-lg-8 mx-auto"><% } %>
 <% if (readingArticle) { %><div class="container-fluid community-article-layout"><% } %>
-<main class="<%= readingArticle ? '' : view === 'email-preferences' ? 'search-results settings-page' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> <%= readingArticle ? 'blog-post' : 'py-4' %> community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
+<main class="<%= readingArticle ? '' : view === 'email-preferences' ? 'search-results settings-page' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> <%= readingArticle ? 'community-article' : 'py-4' %> community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
   <% if (!readingArticle && (view !== 'post' || post.title?.trim())) { %>
   <div class="<%= view === 'email-preferences' ? 'settings-page-heading mb-3' : 'community-heading' %>">
     <% if (view === 'email-preferences') { %><a href="/settings#settings-email-section" class="btn btn-link btn-sm p-0 mb-3"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to My Settings</a><% } %>
@@ -160,7 +160,7 @@
     <% if (post.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= post.subtitle %></p><% } %>
     <% if (post.coverUrl) { %><figure class="community-editor-cover"><img src="<%= post.coverUrl %>" alt="Article cover"></figure><% } %>
     <% } %>
-    <div class="<%= readingArticle ? 'body' : 'notebook-markdown community-reflection-body' %>" dir="auto"<% if (post.kind === 'article') { %> data-article-body<% } %>><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
+    <div class="notebook-markdown community-reflection-body" dir="auto"<% if (post.kind === 'article') { %> data-article-body<% } %>><%- post.html %></div><% if (post.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of post.tags.split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
     <%- include('sub-views/community_post_actions.ejs', { post }); %>
   </article>
   <%- include('sub-views/community_reflections.ejs', { post }); %>
@@ -230,4 +230,5 @@
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
 <% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>
+<script src="/static/js/community-image-viewer.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 </body></html>

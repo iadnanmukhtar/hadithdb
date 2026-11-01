@@ -16,8 +16,8 @@ test('edit pencils appear for owned ordinary posts but never microinteractions',
  const compact={...base,kind:'note',microinteraction:'title',hadithTitle:'Hadith title',hadithRef:'bukhari:1',hadithUrl:'/bukhari:1'};
  for(const item of [base,compact]){
   const render=async canEdit=>load(await ejs.renderFile(path.join(__dirname,'../views/sub-views/community_card.ejs'),{item:{...item,canEdit}}));
-  expect((await render(true))('[aria-label="Edit post"]').length).toBe(item.microinteraction ? 0 : 1);
-  expect((await render(false))('[aria-label="Edit post"]').length).toBe(0);
+  expect((await render(true))('.community-edit-post').length).toBe(item.microinteraction ? 0 : 1);
+  expect((await render(false))('.community-edit-post').length).toBe(0);
  }
 });
 test('revision microinteractions collapse after ten without merging with title activity',async()=>{

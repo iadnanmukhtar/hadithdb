@@ -8,6 +8,8 @@ afterAll(async () => browser?.close());
 afterEach(async () => page?.close());
 async function setup(width = 900) {
   page = await browser.newPage({ viewport: { width, height: 800 } });
+  await page.route('http://notebook.test/**',route=>{const pathname=new URL(route.request().url()).pathname;if(pathname.startsWith('/static/fonts/'))return route.fulfill({body:fs.readFileSync(require('path').join(__dirname,'../public',pathname)),contentType:'font/woff2'});return route.fulfill({body:'<!doctype html>',contentType:'text/html'});});
+  await page.goto('http://notebook.test/');
   const markup = (await ejs.renderFile(require.resolve('../views/sub-views/notebook_modal.ejs'), { utils: { scriptAssetVersion: () => 'test' } })).replace(/<script[^]*?<\/script>/g, '');
   await page.setContent('<style>[hidden]{display:none!important} #notebook-surface{height:550px;display:flex;flex-direction:column} .modal-header,.modal-footer{display:none}</style>' + markup);
   await page.locator('#notebook-modal').evaluate(node => node.setAttribute('aria-hidden', 'false'));
@@ -121,7 +123,7 @@ test.each(['English repeated words here', 'العربية كلمات متكرر�
     const paragraph=preview.querySelectorAll('p')[25];preview.scrollTop=paragraph.offsetTop-preview.offsetTop-100;
   },{text,handlers});
   const point = await page.locator('#notebook-preview p').nth(25).evaluate(el=>{
-    const r=document.createRange();r.setStart(el.firstChild,5);r.setEnd(el.firstChild,6);const b=r.getBoundingClientRect();
+    const r=document.createRange();const walk=document.createTreeWalker(el,NodeFilter.SHOW_TEXT);let text;while((text=walk.nextNode()) && text.length<6){}r.setStart(text,5);r.setEnd(text,6);const b=r.getBoundingClientRect();
     return {x:b.x+b.width/2,y:b.y+b.height/2};
   });
   const expected = await page.evaluate(point => previewCaretOffset({clientX:point.x,clientY:point.y}),point);
@@ -190,7 +192,7 @@ test('English starts on a separate left-aligned line after Arabic in the same qu
   const positions=await lines.evaluateAll(lines=>lines.map(line=>{
     const range=document.createRange();range.selectNodeContents(line);
     const rect=range.getBoundingClientRect(),box=line.getBoundingClientRect();
-    return {direction:getComputedStyle(line).direction,textLeft:rect.left,textTop:rect.top,left:box.left};
+    return {direction:getComputedStyle(line).direction,textLeft:rect.left,textTop:rect.top,left:box.left+parseFloat(getComputedStyle(line).paddingLeft)+parseFloat(getComputedStyle(line).borderLeftWidth)};
   }));
   expect(positions[0].direction).toBe('rtl');expect(positions[1].direction).toBe('ltr');
   expect(positions[1].textTop).toBeGreaterThan(positions[0].textTop);
@@ -222,4 +224,175 @@ test('line numbers count authored lines rather than wrapped visual rows in every
   await page.getByRole('button',{name:'Switch to Markdown editing',exact:true}).click();
   await page.waitForFunction(()=>document.querySelectorAll('.notebook-line-numbers span').length===4);
   expect(await numbers.allTextContents()).toEqual(['1','2','3','4']);
+});
+
+test('formatted editing and Markdown preview use identical Arabic spans and language-specific quote edges',async()=>{
+ await setup(1280);
+ const markdown='> **إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ**\n> العربية\n> Actions are judged by intentions.\n\n> English first.\n> نص عربي';
+ const html=require('../lib/UserNotebook').render(markdown);
+ await page.evaluate(({markdown,html})=>{source.value=markdown;preview.innerHTML=html;edit(true);},{markdown,html});
+ await page.evaluate(()=>document.fonts.ready);
+ const metrics=async selector=>page.locator(selector).evaluateAll(es=>es.map(e=>{const s=getComputedStyle(e);return {dir:s.direction,left:s.borderLeftWidth,right:s.borderRightWidth,color:s.borderInlineStartColor,padding:s.paddingInlineStart};}));
+ const rich=await metrics('.community-rich-input .notebook-quote-section');
+ expect(rich.map(m=>m.dir)).toEqual(['rtl','rtl','ltr','ltr','rtl']);
+ const font=await page.locator('.community-rich-input .notebook-arabic').first().evaluate(e=>{const s=getComputedStyle(e);return [s.fontFamily,s.fontSize,s.lineHeight]});
+ expect(font[0]).toContain('Hafs');
+ await page.screenshot({path:'/tmp/note-formatted-mode.png',fullPage:true});
+ await page.evaluate(()=>edit(false));
+ const rendered=await metrics('#notebook-preview blockquote');
+ expect([rich[0],rich[2],rich[3],rich[4]]).toEqual(rendered);
+ expect(await page.locator('#notebook-preview .notebook-arabic').first().evaluate(e=>{const s=getComputedStyle(e);return [s.fontFamily,s.fontSize,s.lineHeight]})).toEqual(font);
+ await page.screenshot({path:'/tmp/note-markdown-preview-mode.png',fullPage:true});
+ await page.evaluate(()=>edit(true));
+ await page.getByRole('button',{name:'Switch to Markdown editing',exact:true}).click();
+ expect(await page.locator('#notebook-editor').inputValue()).toBe(markdown);
+ expect(await page.locator('#notebook-editor').evaluate(e=>getComputedStyle(e).fontFamily)).toContain('NotebookEditableArabic');
+ await page.getByRole('button',{name:'Switch to formatted editing',exact:true}).click();
+ expect(await page.locator('#notebook-editor').inputValue()).toBe(markdown);
+});
+
+test('typing across Arabic and English keeps the caret, Markdown, and toolbar-created quote edge',async()=>{
+ await setup();
+ await page.evaluate(()=>{source.value='> العربية';edit(true);const rich=CommunityShortEditor.get(source).rich;rich.innerHTML='<blockquote>العربية</blockquote>';rich.focus();const range=document.createRange();range.selectNodeContents(rich.querySelector('blockquote'));range.collapse(false);getSelection().removeAllRanges();getSelection().addRange(range);});
+ await page.keyboard.type(' English');
+ expect(await page.locator('#notebook-editor').inputValue()).toBe('> العربية English');
+ expect(await page.locator('.community-rich-input .notebook-quote-section').count()).toBe(1);
+ expect(await page.locator('.community-rich-input').evaluate(el=>getComputedStyle(el).fontFamily)).toContain('NotebookEditableArabic');
+ await page.keyboard.type('!');
+ expect(await page.locator('#notebook-editor').inputValue()).toBe('> العربية English!');
+});
+
+async function startEditingAtEnd(markdown, selector='p') {
+  await setup();
+  await page.evaluate(({markdown,selector})=>{
+    source.value=markdown;edit(true);const rich=CommunityShortEditor.get(source).rich;
+    rich.focus();const range=document.createRange();range.selectNodeContents(rich.querySelector(selector));range.collapse(false);
+    getSelection().removeAllRanges();getSelection().addRange(range);
+  },{markdown,selector});
+}
+test.each(['English paragraph','العربية كلمات هنا','English العربية','**Bold paragraph**'])('Enter moves the caret into the new paragraph: %s',async markdown=>{
+  await startEditingAtEnd(markdown);
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('Next paragraph');
+  expect(await page.locator('#notebook-editor').inputValue()).toMatch(/\n\n(?:\*\*)?Next paragraph/);
+  await page.keyboard.press('Enter');await page.keyboard.press('Enter');
+  await page.keyboard.type('After blank');
+  expect(await page.locator('.community-rich-input').innerText()).toMatch(/Next paragraph\n+After blank/);
+});
+test.each(['English paragraph','العربية كلمات هنا'])('soft break and deletion preserve the insertion position: %s',async markdown=>{
+  await startEditingAtEnd(markdown);
+  await page.keyboard.press('Shift+Enter');await page.keyboard.type('Next');
+  expect(await page.locator('.community-rich-input').innerText()).toContain(markdown+'\nNext');
+  for(let i=0;i<4;i++)await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');await page.keyboard.type(' joined');
+  expect((await page.locator('.community-rich-input').innerText()).replace(/\u00a0/g,' ')).toContain(markdown+' joined');
+});
+test.each(['> English quote','> العربية هنا'])('Enter continues and then exits a quote at the new caret position: %s',async markdown=>{
+  await startEditingAtEnd(markdown);
+  await page.keyboard.press('Enter');await page.keyboard.type('Translation');
+  expect(await page.locator('#notebook-editor').inputValue()).toContain('\n> Translation');
+  await page.keyboard.press('Enter');await page.keyboard.press('Enter');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>Boolean(getSelection().anchorNode.parentElement.closest('blockquote')))).toBe(true);
+  await page.keyboard.press('Meta+Shift+z');await page.keyboard.type('Outside');
+  expect(await page.locator('#notebook-editor').inputValue()).toContain('\n\nOutside');
+  expect(await page.locator('#notebook-editor').inputValue()).toMatch(/\n\nOutside$/);
+  expect(await page.locator('#notebook-editor').inputValue()).toContain(markdown);
+  expect(await page.evaluate(()=>getSelection().anchorNode.parentElement.closest('blockquote'))).toBeNull();
+});
+test.each(['- English item','- العربية هنا','3. Ordered item'])('list Enter continues and exits without losing the caret: %s',async markdown=>{
+  await startEditingAtEnd(markdown,'li');
+  await page.keyboard.press('Enter');await page.keyboard.type('Next item');
+  expect(await page.locator('.community-rich-input li').nth(1).innerText()).toBe('Next item');
+  await page.keyboard.press('Enter');await page.keyboard.press('Enter');await page.keyboard.type('Outside');
+  expect(await page.locator('#notebook-editor').inputValue()).toContain('\n\nOutside');
+});
+test.each(['English','العربية'])('native undo and redo preserve typed content: %s',async markdown=>{
+  await startEditingAtEnd(markdown);
+  await page.keyboard.type(' appended');
+  await page.keyboard.press('Meta+z');
+  expect((await page.locator('.community-rich-input').innerText()).replace(/\u00a0/g,' ')).toBe(markdown+' appende');
+  await page.keyboard.press('Meta+Shift+z');
+  expect((await page.locator('.community-rich-input').innerText()).replace(/\u00a0/g,' ')).toBe(markdown+' appended');
+});
+test('backward selection survives Arabic decoration and replacement',async()=>{
+  await startEditingAtEnd('Before');
+  const selected=await page.evaluate(()=>{
+    const rich=CommunityShortEditor.get(source).rich,p=rich.querySelector('p');p.textContent='English العربية end';
+    getSelection().setBaseAndExtent(p.firstChild,15,p.firstChild,8);
+    const before=getSelection().toString();CommunityShortEditor.styleContent(rich);
+    return {before,after:getSelection().toString(),backward:getSelection().anchorOffset>getSelection().focusOffset};
+  });
+  expect(selected.after).toBe(selected.before);
+  await page.keyboard.type('replacement');
+  expect(await page.locator('.community-rich-input').innerText()).toBe('English replacement end');
+});
+test('Arabic insertion supports native undo and redo',async()=>{
+  await startEditingAtEnd('Before');
+  await page.keyboard.insertText(' العربية');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('Before العربية');
+  await page.keyboard.press('Meta+z');
+  expect((await page.locator('.community-rich-input').innerText()).trim()).toBe('Before');
+  await page.keyboard.press('Meta+Shift+z');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('Before العربية');
+});
+test('multiline plain-text paste keeps the caret after pasted Arabic',async()=>{
+  await startEditingAtEnd('Before');
+  await page.evaluate(()=>{
+    const data=new DataTransfer();data.setData('text/plain','\nالعربية\nEnglish');data.setData('text/html','<img src=x onerror=alert(1)>');
+    CommunityShortEditor.get(source).rich.dispatchEvent(new ClipboardEvent('paste',{clipboardData:data,bubbles:true,cancelable:true}));
+  });
+  await page.keyboard.type(' end');
+  expect(await page.locator('.community-rich-input').innerText()).toMatch(/Before\n+العربية\n+English end/);
+  expect(await page.locator('.community-rich-input img').count()).toBe(0);
+});
+test('splitting and rejoining a paragraph retains both halves and the caret',async()=>{
+  await startEditingAtEnd('First second');
+  for(let i=0;i<6;i++)await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('Enter');await page.keyboard.type('New ');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('First \n\nNew second');
+  for(let i=0;i<4;i++)await page.keyboard.press('Backspace');
+  await page.keyboard.press('Backspace');await page.keyboard.type('joined ');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('First joined second');
+});
+test('composition defers decoration until committed and preserves the insertion point',async()=>{
+  await startEditingAtEnd('Before');
+  await page.evaluate(()=>CommunityShortEditor.get(source).rich.dispatchEvent(new CompositionEvent('compositionstart',{bubbles:true})));
+  await page.keyboard.insertText(' العربية');
+  expect(await page.locator('.community-rich-input .notebook-arabic').count()).toBe(0);
+  await page.evaluate(()=>CommunityShortEditor.get(source).rich.dispatchEvent(new CompositionEvent('compositionend',{bubbles:true,data:'العربية'})));
+  await page.keyboard.type(' after');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('Before العربية after');
+});
+test.each(['Paragraph','> Quote'])('Enter itself can be undone and redone: %s',async markdown=>{
+  await startEditingAtEnd(markdown);
+  await page.keyboard.press('Enter');
+  const beforeUndo=await page.locator('.community-rich-input').innerHTML();
+  await page.keyboard.press('Meta+z');
+  expect(await page.locator('.community-rich-input').innerHTML()).not.toBe(beforeUndo);
+  await page.keyboard.press('Meta+Shift+z');
+  await page.keyboard.type('New');
+  expect(await page.locator('#notebook-editor').inputValue()).toContain(markdown.startsWith('>')?'\n> New':'\n\nNew');
+});
+test.each([390,900])('Enter visibly moves to the next line and typing follows at %s px',async width=>{
+  await setup(width);
+  await page.evaluate(()=>{
+    source.value='> العربية كلمات هنا\n\nEnglish paragraph';edit(true);
+    const rich=CommunityShortEditor.get(source).rich;rich.focus();const range=document.createRange();range.selectNodeContents(rich.lastElementChild);range.collapse(false);getSelection().removeAllRanges();getSelection().addRange(range);
+  });
+  const before=await page.evaluate(()=>getSelection().getRangeAt(0).getBoundingClientRect().top);
+  await page.keyboard.press('Enter');await page.keyboard.type('The cursor moved here.');
+  const after=await page.evaluate(()=>getSelection().getRangeAt(0).getBoundingClientRect().top);
+  expect(after).toBeGreaterThan(before);
+  await page.screenshot({path:'/tmp/notebook-enter-fixed-'+width+'.png'});
+});
+test('forward deletion and keyboard formatting preserve the selected text and caret',async()=>{
+  await startEditingAtEnd('First second');
+  await page.keyboard.press('ArrowLeft');await page.keyboard.press('Delete');await page.keyboard.type('d');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('First second');
+  for(let i=0;i<6;i++)await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Meta+b');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('First **second**');
+  await page.keyboard.type('replacement');
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('First **replacement**');
 });

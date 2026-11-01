@@ -3,8 +3,6 @@
 
 const express = require('express');
 const createError = require('http-errors');
-const markdownit = require('markdown-it');
-const markdownitfence = require('markdown-it-fence')
 const HttpRange = require('../lib/HttpRange');
 const BlogImport = require('../lib/CommunityBlogImport');
 
@@ -155,28 +153,5 @@ function absoluteCoverUrl(cover) {
 }
 
 function renderHtml(body) {
-  const md = new markdownit({
-    breaks: true,
-    html: true,
-    linkify: true,
-    langPrefix: 'language-',
-  });
-  md.use(require('../lib/BlogArabic'));
-  md.use(require('markdown-it-toc')); // @[toc]
-  md.use(require('markdown-it-wikilinks'));
-  md.use(require('markdown-it-obsidian-images')({ relativeBaseURL: 'Attachments/' }));
-  md.use(require('markdown-it-bracketed-spans')); // [text]{attr=value}
-  md.use(require('markdown-it-footnote'));
-  md.use(require('markdown-it-attrs'));
-  md.use(function (md, options) { // :::ar text :::
-    return markdownitfence(md, "ar", {
-      marker: ":",
-      render: (tokens, idx, options, env, self) => {
-        return `<div lang="ar" dir="rtl">${md.render(tokens[idx].content)}</div>`
-      },
-    })
-  });
-  body = body.replace(/==([^=]+)==/g, '<span class="highlight">$1</span>');
-  body = body.replace(/\[![^\]]+\]/g, ''); // remove [!xyz] tags
-  return global.utils.rewriteStaticAssetUrls(md.render(body));
+  return global.utils.rewriteStaticAssetUrls(require('../lib/Community').content(body, 280, { linkPreviews: false }).html);
 }
