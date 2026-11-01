@@ -226,6 +226,19 @@
     }
     function sizeSource() {
       if(mode!=='source' || source.hidden || source.id==='notebook-editor')return;
+      if(isArticle){
+        // Measuring the live textarea at zero height collapses the page and
+        // clamps its scroll position before the full article height is restored.
+        const measure=document.createElement('textarea'),style=getComputedStyle(source);
+        for(const property of Array.from(style))measure.style.setProperty(property,style.getPropertyValue(property));
+        Object.assign(measure.style,{position:'fixed',top:'0',left:'0',visibility:'hidden',pointerEvents:'none',height:'0',minHeight:'0',maxHeight:'none',overflow:'hidden'});
+        measure.tabIndex=-1;measure.setAttribute('aria-hidden','true');measure.value=source.value;
+        document.body.append(measure);
+        const border=style.boxSizing==='border-box'?(parseFloat(style.borderTopWidth)||0)+(parseFloat(style.borderBottomWidth)||0):-(parseFloat(style.paddingTop)||0)-(parseFloat(style.paddingBottom)||0);
+        const height=measure.scrollHeight+border;measure.remove();
+        source.style.height=height+'px';
+        return;
+      }
       source.style.height='0px';source.style.height=source.scrollHeight+'px';
     }
     function hydrate() {
