@@ -95,9 +95,9 @@
       }
     });
   }
-  function render(markdown) {
+  function render(markdown, propheticSpeech = false) {
     const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
-    if (!window.marked || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
+    if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
     const root = document.createElement('div');
     let parser;const definitions=new Map();
     function append(tokens, parent) {
@@ -139,6 +139,7 @@
         const tags = {hr:'hr',highlight:'mark',paragraph:'p',strong:'strong',em:'em',del:'s',codespan:'code',br:'br',blockquote:'blockquote',heading:'h'+t.depth,link:'a',list:t.ordered?'ol':'ul',list_item:'li'};
         if (!tags[t.type] || t.task || t.title) throw Error('Use Markdown for this content');
         const el = document.createElement(tags[t.type]);
+        if (propheticSpeech && t.type === 'em') el.className = t.raw.startsWith('*') ? 'source-prophetic-speech' : 'source-italic';
         if (['paragraph','heading','list_item','blockquote'].includes(t.type)) el.dir = 'auto';
         if (t.type === 'link') { const href = safeLink(t.href); if (!href) throw Error('Unsafe link'); el.setAttribute('href', href); }
         if (t.type === 'list' && t.ordered && t.start !== 1) el.start = t.start;
@@ -203,7 +204,9 @@
       for(const marker of root.querySelectorAll('[data-footnote-ref]'))if(!definitions.has(marker.dataset.footnoteRef)){
         const content=document.createElement('p');content.textContent='Footnote text';const holder=document.createElement('div');holder.append(content);definitions.set(marker.dataset.footnoteRef,footnoteRow(marker.dataset.footnoteRef,holder));
       }
-      root.append(...definitions.values());reconcileFootnotes(root);styleContent(root);return root;
+      root.append(...definitions.values());reconcileFootnotes(root);styleContent(root);
+      root.querySelectorAll('[data-footnote]').forEach(row=>{if(row.dataset.footnoteRaw!==undefined)row.dataset.footnoteHtml=row.querySelector('.community-footnote-body').innerHTML;});
+      return root;
     } catch (_) { return null; }
   }
   function serialize(root) {
@@ -246,7 +249,7 @@
         case 'CENTER': return '<center>\n'+text().trim()+'\n</center>\n\n';
         case 'MARK': return wrap('==');
         case 'B': case 'STRONG': return wrap('**');
-        case 'I': case 'EM': return wrap('*');
+        case 'I': case 'EM': return wrap(el.classList.contains('source-prophetic-speech') ? '*' : root.dataset.propheticSpeech !== undefined ? '_' : '*');
         case 'S': case 'STRIKE': case 'DEL': return wrap('~~');
         case 'CODE': {const t=el.textContent; const ticks='`'.repeat(Math.max(0,...(t.match(/`+/g)||[]).map(s=>s.length))+1);return ticks+' '+t+' '+ticks;}
         case 'A': {const href=safeLink(el.getAttribute('href'));return href?'['+text()+']('+href.replace(/\(/g,'%28').replace(/\)/g,'%29')+')':text();}
@@ -279,7 +282,7 @@
     const tokens = dependent ? [{raw: markdown}] : window.marked.lexer(markdown);
     for (const token of tokens) {
       if (token.type === 'space') continue;
-      const formatted = !dependent && render(token.raw);
+      const formatted = !dependent && render(token.raw, source.dataset.propheticSpeech !== undefined);
       if (formatted) { root.append(...formatted.childNodes); continue; }
       const block = document.createElement('div');
       block.dataset.notebookRaw = token.raw;
@@ -330,7 +333,7 @@
           return dy * 100000 + dx;
         };
         while ((part = walker.nextNode())) {
-          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref')) continue;
+          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref, .community-footnote-label, [data-footnote-ref]')) continue;
           probe.selectNodeContents(part);
           for (const rect of probe.getClientRects()) {
             if (!rect.height) continue;
@@ -372,7 +375,7 @@
     const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
     let cursor = 0, part;
     while ((part = walker.nextNode())) {
-      if (part.parentElement.closest('button, .footnote-backref')) continue;
+      if (part.parentElement.closest('button, .footnote-backref, .community-footnote-label, [data-footnote-ref]')) continue;
       // Arabic underline adds a display-only Unicode combining overline.
       const overlined = part.parentElement.closest('[data-notebook-overline]');
       const value = overlined ? part.nodeValue.replace(/\u0305/g, '') : part.nodeValue;
@@ -419,13 +422,14 @@
   function install(source) {
     if (!source || instances.has(source) || !window.marked) return;
     const isArticle=source.dataset.articleEditor!==undefined;
-    const renderContent = text => render(text) || (previewRenderers.has(source) ? renderAdvanced(text,source) : null);
+    const renderContent = text => render(text, source.dataset.propheticSpeech !== undefined) || (previewRenderers.has(source) ? renderAdvanced(text,source) : null);
     function toFormatted() { mode='rich'; hydrate(); }
     const shell=document.createElement('div'); shell.className='community-short-editor'+(source.dataset.articleEditor!==undefined?' community-article-surface':'');
     const tools=document.createElement('div'); tools.className='community-short-tools';
     const toggle=document.createElement('button');toggle.type='button';toggle.className='community-editor-mode';toggle.textContent='Markdown';toggle.setAttribute('aria-label','Switch to Markdown editing');
     const format=document.createElement('div');format.className='community-selection-tools';format.hidden=true;format.setAttribute('role','group');format.setAttribute('aria-label','Text formatting');
     const rich=document.createElement('div');rich.className='community-rich-input notebook-markdown';rich.contentEditable='true';rich.setAttribute('role','textbox');rich.setAttribute('aria-multiline','true');rich.setAttribute('aria-label',source.getAttribute('aria-label') || source.labels?.[0]?.textContent || source.placeholder || 'Post text');rich.dataset.placeholder=source.placeholder;rich.dir='auto';
+    if (source.dataset.propheticSpeech !== undefined) rich.dataset.propheticSpeech = '';
     const hint=document.createElement('span');hint.className='community-editor-hint';hint.textContent=isArticle?'Use the formatting bar above':'Select text to format';
     const removeColumns=document.createElement('button');removeColumns.type='button';removeColumns.className='community-remove-columns community-editor-mode';removeColumns.textContent='×';removeColumns.title='Remove column layout';removeColumns.setAttribute('aria-label','Remove column layout');removeColumns.hidden=true;
     const undoColumns=document.createElement('button');undoColumns.type='button';undoColumns.className='community-remove-columns community-editor-mode';undoColumns.textContent='Undo column layout change';undoColumns.hidden=true;
@@ -484,9 +488,16 @@
       const clone=rich.cloneNode(true), range=savedRange;
       // Async block previews may change HTML without changing authored text.
       // Switching modes must not normalize that untouched Markdown.
-      if(range && range.startContainer.nodeType===3 && range.endContainer.nodeType===3 && serialize(rich)===lastMarkdown){
-        const start=caretOffset(source,rich,null,undefined,{node:range.startContainer,offset:range.startOffset});
-        const end=caretOffset(source,rich,null,undefined,{node:range.endContainer,offset:range.endOffset});
+      const textPoint=(node,offset)=>{
+        if(node.nodeType===3)return {node,offset};
+        const next=node.childNodes[offset],previous=node.childNodes[offset-1];
+        const edge=(child,last)=>{if(!child)return null;if(child.nodeType===3)return {node:child,offset:last?child.length:0};const walk=document.createTreeWalker(child,NodeFilter.SHOW_TEXT);let text,found;while((text=walk.nextNode())){found=text;if(!last)break;}return found?{node:found,offset:last?found.length:0}:null;};
+        return edge(next,false)||edge(previous,true);
+      };
+      const firstPoint=range && textPoint(range.startContainer,range.startOffset),lastPoint=range && textPoint(range.endContainer,range.endOffset);
+      if(firstPoint && lastPoint && serialize(rich)===lastMarkdown){
+        const start=caretOffset(source,rich,null,undefined,firstPoint);
+        const end=caretOffset(source,rich,null,undefined,lastPoint);
         const selected=window.getSelection(),backward=selected?.focusNode===range.startContainer && selected.focusOffset===range.startOffset;
         mode='source';hydrate();source.setSelectionRange(start,end,backward?'backward':'forward');return;
       }
@@ -747,7 +758,7 @@
         const last=source.selectionEnd>source.selectionStart && value[source.selectionEnd-1]==='\n'?source.selectionEnd-1:source.selectionEnd;
         const next=value.indexOf('\n',last),end=next<0?value.length:next;
         const prefix=arg==='subtext'?'-# ':String(arg)==='0'?'':'#'.repeat(Number(arg))+' ';
-        const text=value.slice(start,end).split('\n').map(line=>prefix+line.replace(/^(?:#{1,6}|-#)\s+/, '')).join('\n');
+        const text=value.slice(start,end).split('\n').map(line=>line.replace(/^([ \t]*(?:\[\^[^\]\s]+\]:[ \t]*)?)(.*)$/,(_,indent,body)=>indent+prefix+body.replace(/^(?:#{1,6}|-#)\s+/,''))).join('\n');
         source.setRangeText(text,start,end,'select');source.dispatchEvent(new Event('input',{bubbles:true}));
         if(wasRich && renderContent(source.value)){mode='rich';hydrate();rich.focus();}return true;
       }
@@ -756,7 +767,12 @@
         const value=source.value,start=source.selectionStart?value.lastIndexOf('\n',source.selectionStart-1)+1:0;
         const last=source.selectionEnd>source.selectionStart && value[source.selectionEnd-1]==='\n'?source.selectionEnd-1:source.selectionEnd;
         const next=value.indexOf('\n',last),end=next<0?value.length:next;
-        source.setRangeText('<center>\n'+value.slice(start,end)+'\n</center>',start,end,'select');
+        const lines=value.slice(start,end).split('\n');
+        const lead=/^([ \t]*)(\[\^[^\]\s]+\]:[ \t]*)?/.exec(lines[0]);
+        const indent=lead[2]?lead[1]+'    ':lead[1];
+        lines[0]=lines[0].slice(lead[0].length);
+        for(let i=1;i<lines.length;i++)if(indent && lines[i].startsWith(indent))lines[i]=lines[i].slice(indent.length);
+        source.setRangeText(lead[0]+'<center>\n'+lines.map(line=>indent+line).join('\n')+'\n'+indent+'</center>',start,end,'select');
         source.dispatchEvent(new Event('input',{bubbles:true}));
         if(wasRich && renderContent(source.value)){mode='rich';hydrate();rich.focus();}return true;
       }

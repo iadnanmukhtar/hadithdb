@@ -289,7 +289,7 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 .community-blog-preview > img { width: 100%; max-height: 320px; aspect-ratio: 16 / 9; object-fit: cover; }
 
 /* Blog Arabic is detected by the Markdown renderer, without ~~ font markers. */
-.blog-post :is(.blog-arabic, .notebook-arabic) { font-family: Hafs, Serif; font-size: 1.2em; line-height: 2; }
+.blog-post :is(.blog-arabic, .notebook-arabic) { font-family: Hafs, Serif; font-size: 1.2em; line-height: 1lh; }
 .blog-post :is(.blog-arabic, .notebook-arabic) :is(.blog-arabic, .notebook-arabic) { font-size: inherit; }
 .blog-post [dir="rtl"] { text-align: right; }
 .blog-post [data-article-body] { font-size: 1rem; line-height: 1.8; }

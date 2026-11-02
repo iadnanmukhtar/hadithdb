@@ -147,6 +147,20 @@ router.post('/expand', async (req, res, next) => {
 router.post('/auto-expand', async (req, res, next) => {
   try { res.json(await require('../lib/UserNotebook').autoExpandDraft(req.body || {})); } catch (err) { next(err); }
 });
+// The admin editor uses the same renderer as published source content.
+router.post('/content-preview', (req, res) => {
+  const { markdown, commentary, englishQuotationMarks, quranBackticks, bracketedFootnotes, footnotes, prefix } = req.body || {};
+  if (typeof markdown !== 'string' || markdown.length > 1000000)
+    return res.status(400).json({ error: 'Invalid Markdown.' });
+  const html = commentary
+    ? require('../lib/Tafsir').renderCommentaryText(markdown, typeof footnotes === 'string' ? footnotes : '', 'md', {
+      englishQuotationMarks: englishQuotationMarks === true, quranBackticks: quranBackticks === true,
+      bracketedFootnotes: bracketedFootnotes === true,
+      footnoteIdPrefix: typeof prefix === 'string' ? prefix.replace(/[^a-zA-Z0-9_-]/g, '') : 'content-preview'
+    })
+    : require('../lib/ContentMarkdown').render(markdown, { footnoteIdPrefix: prefix, propheticSpeech: true });
+  res.json({ html });
+});
 router.post('/preview', (req, res) => {
   const text = req.body && req.body.markdown;
   if (typeof text !== 'string') return res.status(400).json({ error: 'Invalid Markdown.' });

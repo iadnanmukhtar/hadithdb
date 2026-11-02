@@ -7,8 +7,8 @@ describe('Markdown rendering', () => {
     const markdown = 'فَقَالَ: *«يَا مُعَاذَ بْنَ جَبَلٍ»*. قُلْتُ: لَبَّيْكَ. ثُمَّ قَالَ: *«يَا مُعَاذَ بْنَ جَبَلٍ»* قَالَ: *«هَلْ تَدْرِي؟»* قَالَ: قُلْتُ: اللَّهُ أَعْلَمُ.';
     const html = Utils.markdownToHtml(markdown);
 
-    expect(html.match(/<em>/g)).toHaveLength(3);
-    expect(html).toContain('<em>«يَا مُعَاذَ بْنَ جَبَلٍ»</em>');
+    expect(html.match(/<em\b/g)).toHaveLength(3);
+    expect(require('cheerio').load(html)('em').first().text()).toBe('«يَا مُعَاذَ بْنَ جَبَلٍ»');
     expect(html).not.toContain('*');
   });
 

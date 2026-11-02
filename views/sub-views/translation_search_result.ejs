@@ -7,7 +7,7 @@
 			<% } %>
 		</section>
 		<section lang="en" class="body partial l5" title="Quran Translation">
-			<div class="hadith-body-content partial"><%- translation.translation_body_html %></div>
+			<div class="hadith-body-content content-markdown partial"><%- translation.translation_body_html %></div>
 		</section>
 		<% if (translation.translation_footnote_html) { %>
 			<footer lang="en" class="footnote partial l2" title="Translation Footnote"><%- translation.translation_footnote_html %></footer>
@@ -21,7 +21,7 @@
 			<b><a href="<%= utils.quranUrl(req, translation.url) %>"><%= translation.translation_book_ar %>:<%= arabic.toArabicDigits(arabic.toLatinDigits(translation.translation_ref) || translation.translation_ref) %></a></b>
 		</section>
 		<section class="body partial l5 quran-hafs" lang="ar" dir="rtl">
-			<div class="hadith-body-content partial quran-hafs">
+			<div class="hadith-body-content content-markdown partial quran-hafs">
 				<% (translation.translation_ayahs || []).forEach(function (ayah) { %>
 					<% var translationAyahRef = `${Number(translation.surah)}:${Number(arabic.toLatinDigits(ayah.num))}`; %>
 					<span class="ayah" data-quran-ref="<%= translationAyahRef %>"><span data-quran-script-text="ayah" data-quran-ref="<%= translationAyahRef %>"><%= ayah.text %></span>&nbsp;<button type="button" class="quran-ayah-hero-trigger quran-ayah-end-marker" data-quran-ayah-actions="1" data-quran-ref="<%= translationAyahRef %>" data-quran-href="<%= utils.quranUrl(req, `/quran:${translationAyahRef}`) %>" aria-haspopup="menu" aria-expanded="false" aria-label="Actions for Quran <%= translationAyahRef %>"><%= ayah.marker %></button></span>

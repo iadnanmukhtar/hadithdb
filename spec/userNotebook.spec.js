@@ -567,3 +567,21 @@ test('center block retains safe centering and renders Markdown inside it',()=>{
  const html=require('../lib/UserNotebook').render('<center>\n==Highlighted== and **bold**\n</center>');
  expect(html).toContain('<center>');expect(html).toContain('<mark>Highlighted</mark>');expect(html).toContain('<strong>bold</strong>');expect(html).toContain('</center>');
 });
+
+// Source-content previews share formatting without introducing notebook metadata.
+test('content preview uses the published renderer with separate footnote definitions', async () => {
+  const response = await fetch(`${base}/content-preview`, { method: 'POST',
+    headers: { Authorization: 'Bearer alice', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ markdown: '==Text==[^1]', commentary: true, footnotes: '[^1]: Source', prefix: 'tafsir-7' }) });
+  expect(response.status).toBe(200);
+  const { html } = await response.json();
+  expect(html).toContain('<mark>Text</mark>');
+  expect(html).toContain('id="tafsir-7-fn1"');
+  expect(html).toContain('Source');
+  expect(global.query).not.toHaveBeenCalled();
+});
+test('content preview rejects unauthenticated and malformed requests', async () => {
+  expect((await fetch(`${base}/content-preview`, { method: 'POST' })).status).toBe(401);
+  expect((await fetch(`${base}/content-preview`, { method: 'POST',
+    headers: { Authorization: 'Bearer alice', 'Content-Type': 'application/json' }, body: JSON.stringify({ markdown: {} }) })).status).toBe(400);
+});

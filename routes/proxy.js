@@ -7,8 +7,6 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const fs = require('fs');
 const path = require('path');
-const MarkdownIt = require('markdown-it');
-const markdownitFootnote = require('markdown-it-footnote');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
@@ -24,11 +22,6 @@ const GENERIC_PROXY_ALLOWED_HOSTS = new Set(
     .filter(Boolean)
 );
 const GENERIC_PROXY_TIMEOUT_MS = 10000;
-const md = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
-const quranBacktickMd = new MarkdownIt({ html: true, linkify: true, typographer: false, breaks: true }).use(markdownitFootnote);
-quranBacktickMd.renderer.rules.code_inline = renderQuranBacktickToken;
-quranBacktickMd.renderer.rules.code_block = renderQuranBacktickBlock;
-quranBacktickMd.renderer.rules.fence = renderQuranBacktickBlock;
 
 function setApiNoIndex(res) {
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
@@ -575,9 +568,9 @@ function renderLocalCommentaryResult(row, editMode, lang, src) {
   }
   const sections = [];
   if (arabic)
-    sections.push(`<section lang="ar" dir="rtl">${arabic}</section>`);
+    sections.push(`<section class="content-markdown" lang="ar" dir="rtl">${arabic}</section>`);
   if (english)
-    sections.push(`<section lang="en">${english}</section>`);
+    sections.push(`<section class="content-markdown" lang="en">${english}</section>`);
   return {
     html: sections.join('\n'),
     bilingual: false,
@@ -703,9 +696,9 @@ function renderLocalCommentaryLanguage(row, editMode, lang, src) {
     return '';
   if (lang === 'ar') {
     const translation = editMode ? renderCollapsedEditableTranslation(row, src) : '';
-    return `<section lang="ar" dir="rtl">${content}</section>${translation}`;
+    return `<section class="content-markdown" lang="ar" dir="rtl">${content}</section>${translation}`;
   }
-  return `<section lang="en">${content}</section>`;
+  return `<section class="content-markdown" lang="en">${content}</section>`;
 }
 
 function renderLocalCommentaryArabicContent(row, editMode, src) {
@@ -766,7 +759,7 @@ function renderEditableCommentaryField(id, column, text, format, lang, src, prev
   const value = text || '';
   const placeholder = commentaryFieldPlaceholder(column, lang);
   const escapedPlaceholder = escapeHtml(placeholder);
-  const attrs = `class="_e quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}" data-placeholder="${escapedPlaceholder}"`;
+  const attrs = `class="_e content-markdown quran-tafsir-editor${format === 'md' ? '' : ' form-control'}" data-id="${id}" data-prop="commentary.${column}" data-edit-format="${format}" data-edit-lang="${lang}" data-placeholder="${escapedPlaceholder}"`;
   if (format === 'md' && column.startsWith('footnotes')) {
     const count = Array.from(value.matchAll(/^\[\^[^\]]+\]:/gm)).length;
     const label = lang === 'ar' ? `تحرير الحواشي (${count})` : `Edit footnotes (${count})`;
@@ -794,98 +787,12 @@ function commentaryFormat(format, lang) {
 }
 
 function renderCommentaryText(text, footnotes, format, options = {}) {
-  if (!text)
-    return '';
-  const renderedFootnotes = format === 'md' ? Tafsir.prepareMarkdownFootnotesForRendering(footnotes) : footnotes;
-  let content = [text, renderedFootnotes].filter(Boolean).map(Tafsir.stripPageMarkers).join('\n\n');
-  if (options.bracketedFootnotes)
-    content = bracketedFootnotesToMarkdown(content);
-  if (format === 'html')
-    return maybeMarkArabicOnlyBlocks(namespaceFootnoteIds(content, options.footnoteIdPrefix), options);
-  const renderer = options.quranBackticks ? quranBacktickMd : md;
-  const html = renderer.render(content).replace(/<br>/g, '</p><p>');
-  return maybeMarkArabicOnlyBlocks(namespaceFootnoteIds(html, options.footnoteIdPrefix), options);
-}
-
-function maybeMarkArabicOnlyBlocks(html, options) {
-  if (options && options.markArabicOnlyBlocks === false)
-    return html;
-  return markArabicOnlyBlocks(html);
-}
-
-function renderQuranBacktickToken(tokens, idx) {
-  return quranBacktickSpan(tokens[idx].content);
-}
-
-function renderQuranBacktickBlock(tokens, idx) {
-  const content = (tokens[idx].content || '').replace(/\n+$/g, '');
-  if (!content)
-    return '';
-  return `<p>${content.split(/\n+/).map(quranBacktickSpan).join('<br>')}</p>\n`;
-}
-
-function quranBacktickSpan(text) {
-  return `<span class="quran-tafsir-backtick quran-hafs" lang="ar" dir="rtl">${md.utils.escapeHtml(text)}</span>`;
-}
-
-function bracketedFootnotesToMarkdown(content) {
-  const notes = [];
-  const text = (content || '').replace(/(?:\\\[|\[)(?:\\\[|\[)([\s\S]*?)(?:\\\]|\])(?:\\\]|\])/g, function (match, note) {
-    note = note.trim();
-    if (!note)
-      return '';
-    notes.push(note);
-    return `[^${notes.length}]`;
-  });
-  if (!notes.length)
-    return text;
-  return [
-    text.trimEnd(),
-    notes.map((note, index) => `[^${index + 1}]: ${markdownFootnoteDefinition(note)}`).join('\n')
-  ].join('\n\n');
-}
-
-function markdownFootnoteDefinition(note) {
-  return note.replace(/\r\n?/g, '\n').split('\n').map((line, index) => {
-    return index === 0 ? line : `    ${line}`;
-  }).join('\n');
+  return Tafsir.renderCommentaryText(text, footnotes, format, options);
 }
 
 function commentaryFootnoteIdPrefix(alias, id) {
   const source = [alias, id].filter(Boolean).join('-');
   return `tafsir-${source}`.replace(/[^A-Za-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-}
-
-function namespaceFootnoteIds(html, prefix) {
-  if (!prefix)
-    return html;
-  const $ = cheerio.load(html, null, false);
-  const namespaceId = id => {
-    if (!id || id.startsWith(`${prefix}-`))
-      return id;
-    return `${prefix}-${id}`;
-  };
-  $('[id^="fn"]').each(function () {
-    const element = $(this);
-    element.attr('id', namespaceId(element.attr('id')));
-  });
-  $('a[href^="#fn"]').each(function () {
-    const element = $(this);
-    const href = element.attr('href') || '';
-    element.attr('href', `#${namespaceId(href.slice(1))}`);
-  });
-  return $.html();
-}
-
-function markArabicOnlyBlocks(html) {
-  const $ = cheerio.load(html, null, false);
-  $('p, li, blockquote, h1, h2, h3, h4, h5, h6').each(function () {
-    const element = $(this);
-    const text = element.text();
-    if (/\p{Script=Arabic}/u.test(text) && !/[A-Za-z]/.test(text))
-      element.addClass('quran-tafsir-arabic-only').attr({ lang: 'ar', dir: 'rtl' });
-  });
-  return $.html();
 }
 
 function isEditMode(req) {

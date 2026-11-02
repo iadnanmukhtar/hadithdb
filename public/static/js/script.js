@@ -2575,7 +2575,7 @@ function initQuranTafsirTabs(root) {
 			panel.toggleClass('is-disabled', disabled);
 			appendSourceHeader(panel, book);
 			$('<p>').addClass('quran-tafsir-status text-muted').text(disabled ? 'This tafsir is hidden in My Settings.' : 'Select this tab to load the tafsir.').appendTo(panel);
-			var tafsirText = $('<div>').addClass('quran-tafsir-text').attr({
+			var tafsirText = $('<div>').addClass('quran-tafsir-text content-markdown').attr({
 				lang: book.lang,
 				dir: book.lang === 'ar' ? 'rtl' : 'ltr'
 			}).appendTo(panel);

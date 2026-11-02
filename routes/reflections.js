@@ -7,9 +7,7 @@ const crypto = require('crypto');
 const Utils = require('../lib/Utils');
 const GoogleAuth = require('../lib/GoogleAuth');
 const nodemailer = require('nodemailer');
-const MarkdownIt = require('markdown-it');
-
-const md = new MarkdownIt({ html: false, linkify: true, breaks: true });
+const Markdown = require('../lib/ContentMarkdown');
 const commonFields = 'parentId, user_uid, user_provider, user_name, user_email, user_photo, text, createdAt, up_vote, down_vote, deleted';
 
 function createReflectionRouter(config) {
@@ -445,7 +443,7 @@ function createReflectionRouter(config) {
       ...config.responseFields(row),
       parentId: row.parentId,
       text: deleted ? '' : row.text,
-      html: deleted ? '' : md.render(row.text),
+      html: deleted ? '' : Markdown.render(row.text, { footnoteIdPrefix: `reflection-${config.table}-${row.id}` }),
       deleted,
       ts: row.createdAt,
       upVote: deleted ? 0 : (vote.upVote || row.up_vote || 0),
@@ -462,7 +460,7 @@ function createReflectionRouter(config) {
       id: row.id,
       parentId: row.parentId,
       text: row.text,
-      html: md.render(row.text),
+      html: Markdown.render(row.text, { footnoteIdPrefix: `reflection-${config.table}-${row.id}` }),
       deleted: false,
       ts: row.createdAt,
       upVote: vote.upVote || row.up_vote || 0,

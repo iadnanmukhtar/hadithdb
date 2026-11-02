@@ -101,7 +101,7 @@
           const quranCommentaryDescriptionSummary = bookDescriptionPreviewText;
           %>
           <% if (site.editMode) { %>
-          <div class="_e mb-1" data-id="<%= editableBookId || book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= bookDescriptionMarkdown %>" data-placeholder="Description"><%- bookDescription %></div>
+          <div class="_e mb-1 content-markdown" data-id="<%= editableBookId || book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= bookDescriptionMarkdown %>" data-placeholder="Description"><%- bookDescription %></div>
           <% } else if (quranCommentaryDescriptionSummary || bookDescription) { %>
           <p class="toc-book-description-summary text-muted" data-toc-description-summary="book-description">
             <span class="toc-book-description-preview"><%= quranCommentaryDescriptionSummary %></span>
@@ -109,7 +109,7 @@
           </p>
           <div id="toc-book-description" class="toc-book-description-full d-none" data-toc-description-full="book-description">
             <% if (bookDescription) { %>
-            <div class="mb-1"><%- bookDescription %></div>
+            <div class="mb-1 content-markdown"><%- bookDescription %></div>
             <% } %>
           </div>
           <% } %>

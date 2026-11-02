@@ -21,7 +21,7 @@ test('renders a Surah 0 H2 as a bilingual introductory article', async () => {
 	expect(html).toContain('data-introduction-article="1"');
 	expect(html).toContain('Foreword');
 	expect(html).toContain('<strong>work</strong>');
-	expect(html).toContain('<strong>الكتاب</strong>');
+	expect(require('cheerio').load(html)('section[lang=ar] strong').text()).toBe('الكتاب');
 	expect(html).toContain('data-prop="toc.intro_en"');
 	expect(html).toContain('<details class="quran-commentary-introduction-disclosure">');
 	expect(html).toMatch(/<summary>\s*<heading class="row heading py-2">/);
@@ -56,8 +56,8 @@ test('renders Arabic-only paragraphs in English commentary introductions with Ta
 
 	for (const html of [surahHtml, articleHtml]) {
 		expect(html).toContain('data-prop="toc.intro_en"');
-		expect(html).toContain('<p>An English paragraph.</p>');
-		expect(html).toContain('<p class="quran-tafsir-arabic-only" lang="ar" dir="rtl">"لَا تَجْعَلُوا بُيُوتَكُمْ قُبُورًا"</p>');
+		expect(require('cheerio').load(html)('p').first().text()).toBe('An English paragraph.');
+		expect(require('cheerio').load(html)('p.quran-tafsir-arabic-only[lang=ar][dir=rtl]').text()).toBe('"لَا تَجْعَلُوا بُيُوتَكُمْ قُبُورًا"');
 		expect(html).not.toContain('<p class="quran-tafsir-arabic-only" lang="ar" dir="rtl">An English paragraph.</p>');
 	}
 });
@@ -77,7 +77,7 @@ test('gives a one-language article the full row and hides the empty language sid
 		article: { id: 93, h1: 0, h2: 1, title_en: 'Foreword', title: 'المقدمة', intro_en: 'English only.', intro: '' }
 	});
 	expect(html).toContain('<h2 class="col-12 fs-5 title" lang="en">');
-	expect(html).toContain('<section class="_e col-12 intro" lang="en"');
+	expect(html).toContain('<section class="_e col-12 intro content-markdown" lang="en"');
 	expect(html).not.toContain('lang="ar"');
 });
 
@@ -139,6 +139,12 @@ test('makes Surah 0 introductions part of the tafsir infinite-reader sequence', 
 	expect(script).toContain('openDirectIntroductionDisclosure();');
 	expect(script).toContain('var startsWithIntroduction = startsAtReaderIntroduction');
 	expect(script).toContain("var startsAtTafsirIntroduction = mode === 'tafsir' && main.attr('data-reader-context-key') === '0';");
-	expect(script).toContain("var prefetchAhead = startsAtReaderIntroduction ? 2 : (mode === 'tafsir' ? 1 : 3);");
+	const prefetchExpression = script.match(/var prefetchAhead = (startsAtReaderIntroduction[^;]+);/)[1];
+	for (const [mode, startsAtReaderIntroduction, expected] of [
+		['tafsir', true, 2], ['tafsir', false, 1],
+		['hadith-sharh', false, 1], ['hadith', false, 3]
+	]) {
+		expect(require('vm').runInNewContext(prefetchExpression, { mode, startsAtReaderIntroduction })).toBe(expected);
+	}
 	expect(script).toMatch(/if \(!loaded \|\| pagesAhead\(\) >= prefetchAhead\) \{\s*ensuring = false;\s*window\.requestAnimationFrame\(scheduleInfiniteWork\);/);
 });

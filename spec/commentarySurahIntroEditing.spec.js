@@ -10,6 +10,7 @@ const template = path.join(__dirname, '..', 'views', 'sub-views', 'quran_comment
 function render(editMode, heading) {
 	return ejs.renderFile(template, {
 		site: { editMode },
+        req: { path: '/quran/tafsir/example/1' }, page: { context: {} },
 		utils: Utils,
 		heading,
 		commentaryBook: { id: 42, lang: 'en' },
@@ -22,9 +23,9 @@ describe('commentary surah introduction editing', () => {
 	test('shows both empty language columns directly in Edit mode', async () => {
 		const html = await render(true, { id: 72, h1: 1, intro_en: '', intro: '' });
 
-		expect(html).toContain('class="_e col-md-6 col-sm-12 intro" lang="en"');
+		expect(html).toContain('class="_e col-md-6 col-sm-12 intro content-markdown" lang="en"');
 		expect(html).toContain('data-id="72" data-prop="toc.intro_en"');
-		expect(html).toContain('class="_e col-md-6 col-sm-12 intro" lang="ar"');
+		expect(html).toContain('class="_e col-md-6 col-sm-12 intro content-markdown" lang="ar"');
 		expect(html).toContain('data-id="72" data-prop="toc.intro"');
 	});
 

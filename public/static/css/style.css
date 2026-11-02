@@ -7781,7 +7781,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-translate { margin-top: .5rem; }
 .hadith-sharh-collapse-wrap { font-size: calc(1.05rem * var(--content-font-scale)) !important; line-height: var(--content-line-height) !important; position: relative; }
 .hadith-sharh-body { font-size: calc(1.05rem * var(--content-font-scale)) !important; line-height: var(--content-line-height); text-indent: 0; }
-.hadith-sharh-body * { font-size: inherit !important; }
+.hadith-sharh-body:not(.content-markdown) * { font-size: inherit !important; }
 .hadith-sharh-column:lang(en) .hadith-sharh-body,
 .hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.81rem * var(--content-font-scale)) !important; }
 .hadith-sharh-body[data-hadith-sharh-collapsible]:not(.is-expanded):not(.hadith-sharh-no-overflow) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 10; line-clamp: 10; overflow: hidden; }
@@ -7980,7 +7980,7 @@ main .intro[lang="ar"][data-prop="toc.intro"] {
 	font-size: calc(1.05rem * var(--content-font-scale)) !important;
 }
 
-main .intro[lang="ar"][data-prop="toc.intro"] * {
+main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	font-size: inherit !important;
 }
 

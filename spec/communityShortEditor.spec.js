@@ -286,3 +286,15 @@ test('internal note links render and retain targets and aliases through surround
   expect(input.value).toContain('[[Original title|New label]]');
  }finally{dom.window.close();}
 });
+test('missing footnote definitions serialize editable placeholders rather than undefined',()=>{
+ const {w,input,rich}=setup('Text[^missing]');try{
+  rich.querySelector('p').append(' changed');rich.dispatchEvent(new w.Event('input'));
+  expect(input.value).toContain('[^missing]: Footnote text');expect(input.value).not.toContain('undefined');
+ }finally{w.close();}
+});
+test('inline footnotes use the complete Markdown preview instead of literal editable text',()=>{
+ const {w,input}=setup('Text ^[**bold** العربية]');try{
+  expect(w.CommunityShortEditor.render(input.value)).toBeNull();
+  expect(input.value).toBe('Text ^[**bold** العربية]');
+ }finally{w.close();}
+});

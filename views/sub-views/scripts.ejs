@@ -150,13 +150,41 @@
 	      return $root.html();
 	    };
 
+        const contentPreview = async ($el, markdown) => {
+          const prop = $el.attr('data-prop') || '';
+          const commentary = /^(commentary|hdith_sharh|hdith_toc_sharh|toc)\./.test(prop);
+          const english = /_en$/.test(prop) || $el.attr('data-edit-lang') === 'en';
+          const footnoteProp = prop.replace(/^commentary\.text/, 'commentary.footnotes');
+          const companion = prop.startsWith('commentary.text')
+            ? $('[data-prop="' + footnoteProp + '"]').filter((_, node) => node.dataset.id === $el.attr('data-id')).first()
+            : $();
+          const footnotes = companion.data('contentMarkdownEditor')?.source.value || companion.attr('data-markdown-source') || '';
+          const token = await window.hadithAuth?.getToken();
+          const response = await fetch(editHadithApiPath('/notebook/content-preview'), {
+            method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+            body: JSON.stringify({ markdown, commentary, footnotes, englishQuotationMarks: prop === 'toc.intro_en',
+              quranBackticks: isEnglishTafsirMarkdown($el) || isEnglishCommentaryIntroMarkdown($el),
+              bracketedFootnotes: commentary && !english, prefix: `preview-${$el.attr('data-id')}-${prop}` })
+          });
+          if (!response.ok) throw new Error('Unable to render content preview.');
+          return (await response.json()).html;
+        };
+
 	    const setMarkdownPreview = (el, value) => {
 	      const $el = $(el);
 	      const markdown = (value || '').toString();
 	      const emptyHtml = ($el.attr('data-markdown-empty-html') || '').toString();
 
+          const active = $el.data('contentMarkdownEditor');
+          if (active) { active.surface.shell.remove(); $el.removeData('contentMarkdownEditor'); $el.attr('contenteditable', 'true'); }
 	      setMarkdownSource($el, markdown);
 	      $el.removeClass('markdown-editing');
+          const revision = ($el.data('markdownPreviewRevision') || 0) + 1;
+          $el.data('markdownPreviewRevision', revision);
+          if (markdown) contentPreview($el, markdown).then(html => {
+            if ($el.data('markdownPreviewRevision') === revision && !$el.hasClass('markdown-editing'))
+              $el.html(isQuranCompactMarkdownElement($el) ? stripQuranDisplayFootnoteHtml(html) : html);
+          }).catch(() => {});
 	      if (markdown) {
 	        const html = isQuranCompactMarkdownElement($el) ? renderQuranCompactMarkdown(markdown) : renderMarkdown(markdown);
 	        $el.html(isEnglishTafsirMarkdown($el) || isEnglishCommentaryIntroMarkdown($el) ? renderEnglishTafsirMarkdown(html) : html);
@@ -172,7 +200,20 @@
 	      if ($el.hasClass('markdown-editing'))
 	        return;
 	      $el.addClass('markdown-editing');
-	      $el.text(getMarkdownSource($el));
+          if ($el.is('textarea, input') || !window.CommunityShortEditor) {
+            $el.text(getMarkdownSource($el)); return;
+          }
+          const source = document.createElement('textarea');
+          source.value = getMarkdownSource($el);
+          source.dataset.shortEditor = '';
+          source.dataset.propheticSpeech = '';
+          source.className = 'form-control';
+          source.setAttribute('aria-label', $el.attr('aria-label') || $el.attr('data-placeholder') || 'Content Markdown');
+          $el.empty().attr('contenteditable', 'false').append(source);
+          window.CommunityShortEditor.setPreviewRenderer(source, markdown => contentPreview($el, markdown));
+          const surface = window.CommunityShortEditor.get(source) || window.CommunityShortEditor.install(source);
+          $el.data('contentMarkdownEditor', { source, surface });
+          source.focus();
 	    };
 
 	    const isTafsirEditor = ($el) => $el.hasClass('quran-tafsir-editor');
@@ -398,6 +439,10 @@
 	          value = $(this).prop('checked') ? "1" : "0";
 	        else if ($(this).is('textarea') || $(this).is('select') || $(this).is('input'))
 	          value = $(this).val();
+            else if ($el.data('contentMarkdownEditor')) {
+              const active = $el.data('contentMarkdownEditor');
+              active.surface.sync(); value = active.source.value;
+            }
 	        else if (isMarkdownField)
 	          value = $(this).hasClass('markdown-editing') ? htmlToMarkdown($(this).html()) : getMarkdownSource($(this)) || htmlToMarkdown($(this).html());
 	        else
@@ -1017,7 +1062,7 @@
 	          // that empty field may not emit input, but still requests translation.
 	          if ((event.key === 'Backspace' || event.key === 'Delete') &&
 	              /_en$/.test($el.attr('data-prop') || '') &&
-	              isMarkdownElement($el) && !$el.text().trim()) {
+	              isMarkdownElement($el) && !($el.data('contentMarkdownEditor')?.source.value ?? $el.text()).trim()) {
 	            $el.attr('editing', 'true');
 	            $el.removeClass('partial');
 	          }
@@ -1033,6 +1078,13 @@
 	          });
 	        else if (isTafsirEditor($el))
 	          ensureTafsirSaveButton($el);
+            else if (isMarkdownElement($el))
+              $el.on('focusout', function (event) {
+                // Moving between formatted content, Markdown and toolbar stays in this edit session.
+                setTimeout(() => {
+                  if (!this.contains(document.activeElement)) changeListener.call(this, event);
+                }, 0);
+              });
 	        else
 	          $el.on('blur', changeListener);
 	      });

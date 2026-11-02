@@ -19,6 +19,7 @@ test.each([
     on: (_event, callback) => { handler = callback; },
     attr: (name, value) => value === undefined ? attrs[name] : (attrs[name] = value),
     text: () => text,
+    data: () => null,
     removeClass: jest.fn()
   };
   vm.runInNewContext(source.slice(start, end), { $el, isMarkdownElement: () => true });

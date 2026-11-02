@@ -275,14 +275,14 @@
                       </div>
                       <% if (site.editMode) { %>
                         <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
-                          <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
+                          <div class="_e tafsir-book-description-editor content-markdown" data-id="<%= editableBookId %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
                         </div>
                       <% } else if (descriptionPreview || descriptionHtml) { %>
                         <button type="button" class="toc-book-description-summary tafsir-book-description-summary text-muted text-start" data-toc-description-summary="<%= descriptionKey %>" data-toc-description-expand="<%= descriptionKey %>" aria-expanded="false" aria-controls="<%= descriptionId %>">
                           <span class="toc-book-description-preview"><%= descriptionPreview %></span>
                           <span class="tafsir-book-description-more">More...</span>
                         </button>
-                        <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full d-none" data-toc-description-full="<%= descriptionKey %>">
+                        <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full content-markdown d-none" data-toc-description-full="<%= descriptionKey %>">
                           <%- descriptionHtml %>
                         </div>
                       <% } %>

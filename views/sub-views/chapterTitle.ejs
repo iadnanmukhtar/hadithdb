@@ -146,7 +146,7 @@
   <div class="col-12 mb-2" id="note-intro-<%= chapter.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${chapter.id}`, noteTitle: utils.notebookIntroTitle(chapter, book), noteUrl: utils.urlFor(req, `/${chapter.path || req.path.replace(/^\//, "")}#note-intro-${chapter.id}`) }); %></div>
 
   <% if (chapterIntroShowEn) { %>
-  <section class="_e <%= chapterIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">
+  <section class="_e <%= chapterIntroShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro content-markdown" lang="en" data-id="<%= chapter.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= utils.emptyIfNull(chapter.intro_en) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro_en || site.editMode) { 
         const introEn = Tafsir.renderCommentaryText(chapter.intro_en, '', 'md', { englishQuotationMarks: true, footnoteIdPrefix: `toc-intro-${chapter.id}-en` }) || '&hellip;';
     %>
@@ -158,7 +158,7 @@
   <% } %>
 
   <% if (chapterIntroShowAr) { %>
-  <section class="_e <%= chapterIntroShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(chapter.intro) %>" data-markdown-empty-html="&hellip;">
+  <section class="_e <%= chapterIntroShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro content-markdown" lang="ar" data-id="<%= chapter.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= utils.emptyIfNull(chapter.intro) %>" data-markdown-empty-html="&hellip;">
     <% if (chapter.intro || site.editMode) { 
         const introAr = Tafsir.renderCommentaryText(chapter.intro, '', 'md', { bracketedFootnotes: true, footnoteIdPrefix: `toc-intro-${chapter.id}-ar` }) || '&hellip;';
     %>

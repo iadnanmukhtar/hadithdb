@@ -159,7 +159,7 @@ for(const kind of ['post','article','note'])describe(kind,()=>{
    const sections=[...el.querySelectorAll('.notebook-quote-section')].map(el=>{const s=getComputedStyle(el);return [s.direction,s.textAlign,s.borderInlineStartWidth,s.borderInlineStartColor];});
    return {arabic:[arabic.fontFamily,arabic.fontSize,arabic.lineHeight],sections};
   });
-  expect(metrics).toEqual({arabic:['Hafs, serif','21.6px','43.2px'],sections:[['rtl','right','3px','rgb(44, 155, 229)'],['ltr','left','3px','rgb(44, 155, 229)']]});
+  expect(metrics).toEqual({arabic:['Hafs, serif','21.6px','32.4px'],sections:[['rtl','right','3px','rgb(44, 155, 229)'],['ltr','left','3px','rgb(44, 155, 229)']]});
   await page.screenshot({path:`/tmp/shared-editor-${kind}-${width}.png`});
  });
 });
@@ -191,4 +191,52 @@ test.each([390,900])('post secondary formatting menu stays inside the viewport a
  expect(await more.getAttribute('aria-expanded')).toBe('false');
  await more.press('Enter');expect(await menu.isVisible()).toBe(true);
  await page.locator('.community-rich-input').click({position:{x:8,y:8}});expect(await menu.isVisible()).toBe(false);
+});
+
+for(const kind of ['post','article','note'])describe(kind+' footnote audit',()=>{
+ const original='Main text[^source] and again[^source].\n\n[^source]: English **bold** العربية\n\n    Second paragraph.';
+ test('unrelated edits preserve the exact footnote definition',async()=>{
+  await setup(kind,original);await page.keyboard.type(' More');
+  expect(await page.evaluate(()=>source.value)).toBe(original.replace('again[^source].','again[^source]. More'));
+ });
+ test('footnote caret maps to source and back without losing its definition',async()=>{
+  await setup(kind,original);
+  await page.evaluate(()=>{selectBlock('.community-footnote-body p:last-child');surface.toSource();});
+  expect(await page.evaluate(()=>source.selectionStart)).toBe(original.length);
+  await page.getByRole('button',{name:'Switch to formatted editing',exact:true}).click();
+  await page.keyboard.type(' Appended');
+  expect(await page.evaluate(()=>source.value)).toContain('Second paragraph. Appended');
+  expect(await page.locator('.community-footnote-body').innerText()).toContain('Appended');
+ });
+ test('Enter, formatting, undo and mode switching retain multiline footnotes',async()=>{
+  await setup(kind,original);
+  await page.evaluate(()=>selectBlock('.community-footnote-body p:last-child'));
+  await page.keyboard.press('Enter');await page.keyboard.type('New paragraph');
+  expect(await page.locator('.community-footnote-body').innerText()).toContain('New paragraph');
+  for(let i=0;i<9;i++)await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Meta+b');
+  expect(await page.evaluate(()=>source.value)).toContain('    New **paragraph**');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).not.toContain('**paragraph**');
+  await page.getByRole('button',{name:'Switch to Markdown editing',exact:true}).click();
+  const before=await page.evaluate(()=>source.value);
+  await page.getByRole('button',{name:'Switch to formatted editing',exact:true}).click();
+  expect(await page.evaluate(()=>source.value)).toBe(before);
+ });
+ test('subtext and center formatting remain inside the footnote definition',async()=>{
+  await setup(kind,original);
+  await page.evaluate(()=>{selectBlock('.community-footnote-body p:last-child');surface.format('style','subtext');});
+  expect(await page.evaluate(()=>source.value)).toContain('    -# Second paragraph.');
+  expect(await page.locator('.community-footnote-body .notebook-subtext').count()).toBe(1);
+  await page.evaluate(()=>{selectBlock('.community-footnote-body p:first-child');surface.format('center');});
+  const md=await page.evaluate(()=>source.value);
+  expect(md).toContain('[^source]: <center>');expect(md).toContain('    </center>');
+  expect(Notebook.render(md)).toContain('<center>');
+ });
+ test('footnotes use smaller text while keeping Arabic, bold, quote and heading formatting',async()=>{
+  await setup(kind,'Main[^1]\n\n[^1]: **Bold** العربية\n\n    > العربية\n    > English\n\n    ## Heading');
+  const metrics=await page.evaluate(()=>{const body=rich.querySelector('.community-footnote-body'),style=getComputedStyle(body);return {main:parseFloat(getComputedStyle(rich).fontSize),note:parseFloat(style.fontSize),arabic:parseFloat(getComputedStyle(body.querySelector('.notebook-arabic')).fontSize),bold:getComputedStyle(body.querySelector('strong')).fontWeight,heading:parseFloat(getComputedStyle(body.querySelector('h2')).fontSize),directions:[...body.querySelectorAll('.notebook-quote-section')].map(el=>el.dir)};});
+  expect(metrics.note).toBeCloseTo(metrics.main*.85);expect(metrics.arabic).toBeCloseTo(metrics.note*1.2);expect(metrics.bold).toBe('700');expect(metrics.heading).toBeGreaterThan(metrics.note);expect(metrics.directions).toEqual(['rtl','ltr']);
+  await page.screenshot({path:'/tmp/footnote-editor-'+kind+'.png'});
+ });
 });

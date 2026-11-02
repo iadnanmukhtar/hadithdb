@@ -1,67 +1,67 @@
 @font-face { font-family: Hafs; font-style: normal; src: url('/static/fonts/kd-hafs.woff2'); }
 @font-face { font-family: QuranV1; font-style: normal; font-weight: 400; src: url('/static/fonts/DigitalKhattV1.otf'); }
-.notebook-markdown { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
-.notebook-markdown a { color: var(--note-link, #0d6efd); }
-.notebook-markdown .footnotes-list { list-style-type: decimal; }
+:is(.notebook-markdown, .content-markdown) { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
+:is(.notebook-markdown, .content-markdown) a { color: var(--note-link, #0d6efd); }
+:is(.notebook-markdown, .content-markdown) .footnotes-list { list-style-type: decimal; }
 /* Each item chooses its own direction; reserve marker space on that side. */
-.notebook-markdown :is(ul, ol) { padding-inline: 0; }
-.notebook-markdown li { margin-inline-start: 1.6em; }
-.notebook-markdown :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
-.notebook-markdown > :first-child { margin-top: 0; }
-.notebook-markdown h1 { font-size: 1.4em; }
-.notebook-markdown h2 { font-size: 1.25em; }
-.notebook-markdown h3 { font-size: 1.15em; }
-.notebook-markdown h4 { font-size: 1.08em; }
-.notebook-markdown h5 { font-size: 1.04em; }
-.notebook-markdown h6 { font-size: 1em; }
-.notebook-markdown [dir="rtl"] { direction: rtl; unicode-bidi: isolate; text-align: right; }
-.notebook-markdown [dir="ltr"] { direction: ltr; unicode-bidi: isolate; text-align: left; }
-.notebook-markdown .notebook-text-line { display: block; }
-.notebook-markdown [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
-.notebook-markdown .notebook-arabic { font-family: Hafs, serif; line-height: 2; font-synthesis: weight style; }
-.notebook-markdown strong, .notebook-markdown strong .notebook-arabic { font-weight: 700; }
-.notebook-markdown em, .notebook-markdown em .notebook-arabic { font-style: italic; }
-.notebook-markdown mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
-.notebook-markdown u { text-decoration: none; }
-.notebook-markdown .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
-.notebook-markdown .notebook-arabic { font-size: 1.2em; }
-.notebook-markdown .notebook-arabic .notebook-arabic { font-size: inherit; }
-.notebook-markdown .quran-ayah-end-marker { font-family: QuranV1, serif; font-size: 1em; font-weight: 400; white-space: nowrap; }
+:is(.notebook-markdown, .content-markdown) :is(ul, ol) { padding-inline: 0; }
+:is(.notebook-markdown, .content-markdown) li { margin-inline-start: 1.6em; }
+:is(.notebook-markdown, .content-markdown) :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
+:is(.notebook-markdown, .content-markdown) > :first-child { margin-top: 0; }
+:is(.notebook-markdown, .content-markdown) h1 { font-size: 1.4em; }
+:is(.notebook-markdown, .content-markdown) h2 { font-size: 1.25em; }
+:is(.notebook-markdown, .content-markdown) h3 { font-size: 1.15em; }
+:is(.notebook-markdown, .content-markdown) h4 { font-size: 1.08em; }
+:is(.notebook-markdown, .content-markdown) h5 { font-size: 1.04em; }
+:is(.notebook-markdown, .content-markdown) h6 { font-size: 1em; }
+:is(.notebook-markdown, .content-markdown) [dir="rtl"] { direction: rtl; unicode-bidi: isolate; text-align: right; }
+:is(.notebook-markdown, .content-markdown) [dir="ltr"] { direction: ltr; unicode-bidi: isolate; text-align: left; }
+:is(.notebook-markdown, .content-markdown) .notebook-text-line { display: block; }
+:is(.notebook-markdown, .content-markdown) [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
+:is(.notebook-markdown, .content-markdown) .notebook-arabic { font-family: Hafs, serif; line-height: 1lh; font-synthesis: weight style; }
+:is(.notebook-markdown, .content-markdown) strong, :is(.notebook-markdown, .content-markdown) strong .notebook-arabic { font-weight: 700; }
+:is(.notebook-markdown, .content-markdown) em, :is(.notebook-markdown, .content-markdown) em .notebook-arabic { font-style: italic; }
+:is(.notebook-markdown, .content-markdown) mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+:is(.notebook-markdown, .content-markdown) u { text-decoration: none; }
+:is(.notebook-markdown, .content-markdown) .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
+:is(.notebook-markdown, .content-markdown) .notebook-arabic { font-size: 1.2em; }
+:is(.notebook-markdown, .content-markdown) .notebook-arabic .notebook-arabic { font-size: inherit; }
+:is(.notebook-markdown, .content-markdown) .quran-ayah-end-marker { font-family: QuranV1, serif; font-size: 1em; font-weight: 400; white-space: nowrap; }
 /* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
-.notebook-markdown [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
-.notebook-markdown blockquote { margin: 1rem 0; border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
-.notebook-markdown blockquote > :first-child { margin-top: 0; }
-.notebook-markdown blockquote > :last-child { margin-bottom: 0; }
+:is(.notebook-markdown, .content-markdown) [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
+:is(.notebook-markdown, .content-markdown) blockquote { margin: 1rem 0; border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
+:is(.notebook-markdown, .content-markdown) blockquote > :first-child { margin-top: 0; }
+:is(.notebook-markdown, .content-markdown) blockquote > :last-child { margin-bottom: 0; }
 .notebook-expand-reference { color: var(--note-link, #805d00); margin-inline-start: .3rem; font-size: .85em; }
-.notebook-markdown pre { direction: ltr; text-align: left; overflow: auto; }
-.notebook-markdown img { max-width: 100%; }
-.notebook-markdown table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; margin-block: 0 1rem; }
-.notebook-markdown td, .notebook-markdown th { border: 1px solid var(--note-edge, #bbb); padding: .4rem; vertical-align: top; }
+:is(.notebook-markdown, .content-markdown) pre { direction: ltr; text-align: left; overflow: auto; }
+:is(.notebook-markdown, .content-markdown) img { max-width: 100%; }
+:is(.notebook-markdown, .content-markdown) table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; margin-block: 0 1rem; }
+:is(.notebook-markdown, .content-markdown) td, :is(.notebook-markdown, .content-markdown) th { border: 1px solid var(--note-edge, #bbb); padding: .4rem; vertical-align: top; }
 
 /* Keep bilingual rows in source order, with equal tracks even on small screens. */
-.notebook-markdown .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
-.notebook-markdown .notebook-parallel-cell { min-width: 0; padding-inline: .5rem; }
-.notebook-markdown .notebook-parallel-cell > :first-child { margin-top: 0; }
-.notebook-markdown .notebook-parallel-cell > :last-child { margin-bottom: .5rem; }
+:is(.notebook-markdown, .content-markdown) .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
+:is(.notebook-markdown, .content-markdown) .notebook-parallel-cell { min-width: 0; padding-inline: .5rem; }
+:is(.notebook-markdown, .content-markdown) .notebook-parallel-cell > :first-child { margin-top: 0; }
+:is(.notebook-markdown, .content-markdown) .notebook-parallel-cell > :last-child { margin-bottom: .5rem; }
 
-.notebook-markdown .notebook-subtext { font-size: .8em; opacity: .75; }
-.notebook-markdown .task-list-item { list-style-type: none; }
-.notebook-markdown .task-list-item-checkbox { margin-inline: 0 .5em; }
-.notebook-markdown dd { margin-inline: 2em 0; }
-.notebook-markdown .hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #8250df; }
-.notebook-markdown .hljs-string, .hljs-attr { color: #116329; }
-.notebook-markdown .hljs-number, .hljs-built_in { color: #0550ae; }
-.notebook-markdown .hljs-comment { color: #656d76; font-style: italic; }
+:is(.notebook-markdown, .content-markdown) .notebook-subtext { font-size: .8em; opacity: .75; }
+:is(.notebook-markdown, .content-markdown) .task-list-item { list-style-type: none; }
+:is(.notebook-markdown, .content-markdown) .task-list-item-checkbox { margin-inline: 0 .5em; }
+:is(.notebook-markdown, .content-markdown) dd { margin-inline: 2em 0; }
+:is(.notebook-markdown, .content-markdown) .hljs-keyword, .hljs-selector-tag, .hljs-literal { color: #8250df; }
+:is(.notebook-markdown, .content-markdown) .hljs-string, .hljs-attr { color: #116329; }
+:is(.notebook-markdown, .content-markdown) .hljs-number, .hljs-built_in { color: #0550ae; }
+:is(.notebook-markdown, .content-markdown) .hljs-comment { color: #656d76; font-style: italic; }
 
-.notebook-markdown p { margin-block: 0 1rem; }
-.notebook-markdown img { height: auto; }
-.notebook-markdown :is(ul, ol) { margin-block: 0 1rem; }
-.notebook-markdown .community-toc { border: 1px solid #ccc; padding: 1rem; margin-block: 1rem; }
+:is(.notebook-markdown, .content-markdown) p { margin-block: 0 1rem; }
+:is(.notebook-markdown, .content-markdown) img { height: auto; }
+:is(.notebook-markdown, .content-markdown) :is(ul, ol) { margin-block: 0 1rem; }
+:is(.notebook-markdown, .content-markdown) .community-toc { border: 1px solid #ccc; padding: 1rem; margin-block: 1rem; }
 
 /* Raw Markdown and newly typed text use the same Hafs glyphs and 1.2 scale
    through a script-specific font face. */
 @font-face { font-family: NotebookEditableArabic; src: url('/static/fonts/kd-hafs.woff2'); size-adjust: 120%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+1EE00-1EEFF; }
-.community-short-editor textarea[data-short-editor], .community-rich-input.notebook-markdown { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
+.community-short-editor textarea[data-short-editor], .community-rich-input:is(.notebook-markdown, .content-markdown) { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
 .community-rich-input blockquote.notebook-edit-quote { border: 0; padding: 0; }
 .community-rich-input .notebook-quote-section { border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
 .community-rich-input .notebook-quote-section[dir="rtl"] { direction: rtl; text-align: right; }
@@ -69,5 +69,79 @@
 .community-rich-input .notebook-quote-section.notebook-quote-switch { margin-block-start: 1rem; }
 
 /* Keep native editable text nodes intact so browser undo remains reliable. */
-.community-rich-input .notebook-arabic.notebook-edit-mixed { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; font-size: 1em; line-height: 2.4; }
-.community-rich-input .notebook-edit-has-arabic { line-height: 2.4; }
+.community-rich-input .notebook-arabic.notebook-edit-mixed { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; font-size: 1em; line-height: 1lh; }
+.community-rich-input .notebook-edit-has-arabic { line-height: 1.8em; }
+
+/* Source readers retain their surrounding language font and size. */
+.content-markdown { font-family: inherit; font-size: inherit; color: inherit; }
+.markdown-editing:has(.community-short-editor) { white-space: normal; }
+
+/* Footnotes inherit the ordinary Markdown rules at a smaller relative scale.
+   Reset legacy reader overrides here instead of restyling their contents. */
+:is(.notebook-markdown, .content-markdown) :is(.footnotes, .community-footnote-body) { font-size: .85em !important; line-height: 1.8 !important; }
+:is(.notebook-markdown, .content-markdown) .footnotes :is(p, li, s) { font-size: inherit !important; line-height: inherit !important; }
+:is(.notebook-markdown, .content-markdown) .footnotes .notebook-arabic { font-size: 1.2em; }
+
+/* Stop the legacy body :lang(ar) rule from resetting every descendant's size. */
+.content-markdown :is(p, li, span, a, strong, em, u, mark, blockquote, ul, ol, div) { font-size: inherit; }
+
+/* The inline source editor keeps the surrounding reader's scale. Whitespace
+   between generated blocks must not become extra visible blank lines. */
+.content-markdown .community-rich-input { font-family: inherit; font-size: inherit; line-height: inherit; white-space: normal; }
+.content-markdown .community-rich-input :is(p, li) { font-size: inherit; line-height: inherit; }
+.content-markdown .community-rich-input p { margin-block: 0 .25rem; }
+.content-markdown .community-rich-input :is(p, .notebook-rich-line) { white-space: pre-wrap; }
+.content-markdown .footnote-ref { direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+.content-markdown .footnote-ref, .content-markdown .footnote-ref a { font-family: system-ui, sans-serif !important; }
+.content-markdown .footnotes p { text-indent: 0; }
+[data-bs-theme="dark"] :is(.quran-commentary-introduction-article, .hadith-heading-sharh) { --c-ghostwhite: var(--bs-tertiary-bg); }
+[data-bs-theme="dark"] .hadith-sharh-title-input { background-color: var(--bs-body-bg) !important; color: var(--bs-body-color); }
+[data-bs-theme="dark"] :is(.quran-commentary-introduction-article, .hadith-heading-sharh) .hadith-admin-action { color: var(--bs-secondary-color); }
+
+/* Fix Arabic line boxes at the block's text size. Inline Hafs glyphs (including
+   ﷺ) paint within those lines without enlarging the baseline-to-baseline gap. */
+:is(.notebook-markdown, .content-markdown) :is(p, li, .notebook-text-line, .notebook-rich-line)[dir="rtl"] { line-height: 1.8em; }
+
+/* Editable spans keep a real caret box, using the block's resolved line height
+   rather than multiplying it again by the larger Arabic font size. */
+.community-rich-input .notebook-arabic { line-height: 1lh; }
+
+/* Source Markdown distinguishes prophetic speech (*) from ordinary italics (_). */
+:is(.notebook-markdown, .content-markdown) em.source-prophetic-speech,
+:is(.notebook-markdown, .content-markdown) em.source-prophetic-speech .notebook-arabic {
+  color: var(--c-speech, #1b7b00);
+  font-style: normal;
+}
+:is(.notebook-markdown, .content-markdown) em.source-italic,
+:is(.notebook-markdown, .content-markdown) em.source-italic .notebook-arabic {
+  color: inherit;
+  font-style: italic;
+}
+
+/* Arabic source readers already establish their language size (including the
+   isnad). Do not enlarge Markdown runs a second time inside those readers. */
+.content-markdown:lang(ar) .notebook-arabic,
+.content-markdown:lang(ar) .community-rich-input .notebook-arabic {
+  font-size: inherit;
+}
+
+/* Keep the established 0.9rem English / 1.3rem Arabic reader proportion at
+   every reader zoom level, including mobile and standalone tafsir pages. */
+.h:lang(en),
+.quran-tafsir-text.content-markdown:lang(en),
+.tafsir-only-page .quran-tafsir-text.content-markdown:lang(en),
+.quran-tafsir-local-pair .content-markdown:lang(en) {
+  font-size: calc(var(--f-size-ar) * 9 / 13);
+}
+
+/* Resolve one Arabic hadith line height at the reader size. Sharing a length
+   across the chain, matn and footer prevents inline font metrics (notably ﷺ)
+   and the Markdown paragraph defaults from giving each section a new rhythm. */
+.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) {
+  --hadith-arabic-line-height: calc(var(--f-size-ar) * 1.58);
+  line-height: var(--hadith-arabic-line-height);
+}
+.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) :is(.chain, .body, .hadith-body-content, footer.footnote),
+.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) :is(.hadith-body-content, footer.footnote) :is(p, li, .notebook-text-line, .notebook-rich-line) {
+  line-height: var(--hadith-arabic-line-height);
+}

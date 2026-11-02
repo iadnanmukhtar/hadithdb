@@ -26,7 +26,7 @@
     <div class="hadith-detail-disclosure-content">
   <div class="row heading-intro mb-3">
     <% ['en', 'ar'].forEach(function (lang) { const intro = lang === 'en' ? heading.intro_en : heading.intro; if (!intro) return; %>
-    <section class="<%= heading.intro && heading.intro_en ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
+    <section class="<%= heading.intro && heading.intro_en ? 'col-md-6 col-sm-12' : 'col-12' %> intro content-markdown" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
       <%- Tafsir.renderCommentaryText(intro, '', 'md', { englishQuotationMarks: lang === 'en', bracketedFootnotes: lang === 'ar', footnoteIdPrefix: `sharh-context-${heading.id}-${lang}` }) %>
     </section>
     <% }); %>

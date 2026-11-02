@@ -85,7 +85,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
     <div class="row g-4" dir="ltr">
     <% ['en', 'ar'].forEach(function (lang) { const field = lang === 'en' ? 'text_en' : 'text'; const text = entry[field] || ''; if (!text && !site.editMode) return; %>
       <div class="<%= site.editMode || (entry.text && entry.text_en) ? 'col-md-6' : 'col-12' %> col-sm-12" data-reader-language-column="<%= lang === 'ar' ? 'arabic' : 'english' %>" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
-        <div class="quran-tafsir-text quran-tafsir-entry-body<%= site.editMode ? ' _e quran-tafsir-editor' : '' %>"<% if (site.editMode) { %> data-id="<%= entry.id %>" data-prop="<%= updateType %>.<%= field %>" data-edit-format="md" data-markdown-source="<%= text %>" data-markdown-empty-html="<%= lang === 'ar' ? 'نص الشرح' : 'English explanation' %>"<% } %>><%- text ? Tafsir.renderCommentaryText(text, '', entry.format || 'md', { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: `sharh-${kind}-${entry.id}-${lang}` }) : (lang === 'ar' ? 'نص الشرح' : 'English explanation') %></div>
+        <div class="quran-tafsir-text quran-tafsir-entry-body content-markdown<%= site.editMode ? ' _e quran-tafsir-editor' : '' %>"<% if (site.editMode) { %> data-id="<%= entry.id %>" data-prop="<%= updateType %>.<%= field %>" data-edit-format="md" data-markdown-source="<%= text %>" data-markdown-empty-html="<%= lang === 'ar' ? 'نص الشرح' : 'English explanation' %>"<% } %>><%- text ? Tafsir.renderCommentaryText(text, '', entry.format || 'md', { bracketedFootnotes: lang === 'ar', footnoteIdPrefix: `sharh-${kind}-${entry.id}-${lang}` }) : (lang === 'ar' ? 'نص الشرح' : 'English explanation') %></div>
       </div>
     <% }); %>
     </div>

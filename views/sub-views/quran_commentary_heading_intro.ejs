@@ -13,12 +13,12 @@
 <section class="chapter-intro row mt-2 quran-commentary-heading-intro" data-commentary-surah="<%= commentaryHeading.h1 %>">
   <div class="col-12 mb-2" id="note-intro-<%= commentaryHeading.id %>"><%- include('notebook_anchor.ejs', { noteKey: `intro:${commentaryHeading.id}`, noteTitle: utils.notebookIntroTitle(commentaryHeading, locals.commentaryBook || page.context.quranCommentaryBook || page.context.book), noteUrl: utils.urlFor(req, `/${commentaryHeading.path || req.path.replace(/^\//, "")}#note-intro-${commentaryHeading.id}`) }); %></div>
   <% if (commentaryHeadingShowEn) { %>
-  <section class="_e <%= commentaryHeadingShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="en" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= commentaryHeadingEnMarkdown %>" data-markdown-empty-html="&hellip;">
+  <section class="_e <%= commentaryHeadingShowAr ? 'col-md-6 col-sm-12' : 'col-12' %> intro content-markdown" lang="en" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro_en" data-reader-language-column="english" data-arabizi="true" data-markdown-source="<%= commentaryHeadingEnMarkdown %>" data-markdown-empty-html="&hellip;">
     <div><%- commentaryHeadingEnHtml || '&hellip;' %></div>
   </section>
   <% } %>
   <% if (commentaryHeadingShowAr) { %>
-  <section class="_e <%= commentaryHeadingShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro" lang="ar" dir="rtl" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= commentaryHeadingArMarkdown %>" data-markdown-empty-html="&hellip;">
+  <section class="_e <%= commentaryHeadingShowEn ? 'col-md-6 col-sm-12' : 'col-12' %> intro content-markdown" lang="ar" dir="rtl" data-id="<%= commentaryHeading.id %>" data-prop="toc.intro" data-reader-language-column="arabic" data-markdown-source="<%= commentaryHeadingArMarkdown %>" data-markdown-empty-html="&hellip;">
     <div><%- commentaryHeadingArHtml || '&hellip;' %></div>
   </section>
   <% } %>
