@@ -145,3 +145,52 @@
 .h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) :is(.hadith-body-content, footer.footnote) :is(p, li, .notebook-text-line, .notebook-rich-line) {
   line-height: var(--hadith-arabic-line-height);
 }
+
+/* One continuous, lightly tinted panel, including its title and all blocks. */
+:is(.notebook-markdown, .content-markdown) blockquote.markdown-callout {
+  --callout-color: #3974a8;
+  background: color-mix(in srgb, var(--callout-color) 7%, transparent);
+  border: 0;
+  border-inline-start: 3px solid color-mix(in srgb, var(--callout-color) 65%, transparent);
+  padding: .65em .9em;
+  color: inherit;
+  text-indent: 0;
+}
+:is(.notebook-markdown, .content-markdown) .markdown-callout:is(.markdown-callout-warning, .markdown-callout-caution) { --callout-color: #b47a13; }
+:is(.notebook-markdown, .content-markdown) .markdown-callout:is(.markdown-callout-danger, .markdown-callout-error) { --callout-color: #c54a4a; }
+:is(.notebook-markdown, .content-markdown) .markdown-callout:is(.markdown-callout-tip, .markdown-callout-success) { --callout-color: #30865a; }
+:is(.notebook-markdown, .content-markdown) .markdown-callout.markdown-callout-important { --callout-color: #8656b3; }
+:is(.notebook-markdown, .content-markdown) .markdown-callout > .markdown-callout-title,
+:is(.notebook-markdown, .content-markdown) .markdown-callout > .markdown-callout-title .notebook-arabic {
+  font-weight: 700;
+}
+:is(.notebook-markdown, .content-markdown) .markdown-callout > .markdown-callout-title { margin-block: 0 .35em; }
+
+/* Commentary reading text shares the hadith scale. History and sirah share the
+   hadith language containers and Markdown body classes. */
+.quran-tafsir-text.content-markdown:lang(ar) {
+  font-size: var(--f-size-ar);
+}
+.tafsir-only-page .quran-tafsir-local-pair .content-markdown:lang(en) {
+  font-size: calc(var(--f-size-ar) * 9 / 13);
+}
+
+/* Introductory notes and inline sharh are the deliberately smaller surfaces. */
+main .intro.content-markdown:lang(ar) {
+  font-size: calc(1.05rem * var(--content-font-scale)) !important;
+}
+main .intro.content-markdown:lang(en) {
+  font-size: calc(.81rem * var(--content-font-scale));
+}
+
+/* Bilingual tafsir can be mounted inside an English-language Markdown root.
+   Size its actual language columns, not just that outer root. */
+.quran-tafsir-local-pair > [lang="ar"] {
+  font-size: var(--f-size-ar);
+}
+.quran-tafsir-local-pair > [lang="ar"] .notebook-arabic {
+  font-size: inherit;
+}
+.tafsir-only-page .quran-tafsir-local-pair > [lang="en"] {
+  font-size: calc(var(--f-size-ar) * 9 / 13);
+}

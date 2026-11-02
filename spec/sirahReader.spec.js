@@ -85,3 +85,10 @@ test('chapter opening passages precede their first section without repeating sec
  expect(adjacentHeadings(rows,{h1:10,h2:1},book).prev.path).toBe('ibnhisham/10');
  expect(adjacentHeadings(rows,{h1:10,h2:1},book).next.path).toBe('ibnhisham/11');
 });
+test.each(['history', 'ibnhisham'])('%s uses the shared hadith typography for both languages and footers', alias => {
+ const $=render({book_alias:alias,body_en:'English text',footnote:'حاشية عربية',footnote_en:'English footer'});
+ for(const lang of ['ar','en']) {
+  expect($(`.h[lang=${lang}] .hadith-body-content.content-markdown p`)).toHaveLength(1);
+  expect($(`.h[lang=${lang}] footer.footnote.content-markdown p`)).toHaveLength(1);
+ }
+});

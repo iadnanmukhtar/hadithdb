@@ -208,3 +208,64 @@ test.each([390, 1100])('Arabic chain, matn and footer keep equal line boxes with
     expect(await page.locator('.chain-block,.hadith-body-content p,footer p').evaluateAll(nodes => nodes.map(n=>n.getBoundingClientRect().height))).toEqual(heights);
   } finally { await page.close(); }
 });
+
+test('callouts tint the entire panel and emphasize only the title', async () => {
+  const page = await browser.newPage({viewport:{width:700,height:650}});
+  try {
+    const html=require('../lib/ContentMarkdown').render('> [!warning] Check the source {.callout}\n> First paragraph.\n>\n> Another paragraph.\n\n> [!note] ملاحظة\n> نص عربي للتوضيح');
+    await page.setContent(`<main class="content-markdown">${html}</main>`);
+    await page.addStyleTag({path:'public/static/css/markdown-content.css'});
+    const result=await page.locator('.markdown-callout-warning').evaluate(el=>({background:getComputedStyle(el).backgroundColor,border:getComputedStyle(el).borderInlineStartWidth,title:getComputedStyle(el.querySelector('.markdown-callout-title')).fontWeight,body:getComputedStyle(el.querySelector('p:last-child')).fontWeight,text:el.textContent}));
+    expect(result.background).not.toBe('rgba(0, 0, 0, 0)');
+    expect(result.border).toBe('3px');
+    expect(result.title).toBe('700');
+    expect(result.body).toBe('400');
+    expect(result.text).not.toMatch(/\[!|\{\.callout\}/);
+    await page.screenshot({path:'/tmp/markdown-callouts.png'});
+  } finally {await page.close();}
+});
+
+test.each([390,1100])('full-page commentary and narrative readers share hadith sizes, with smaller inline notes at %s px', async width => {
+  const page=await browser.newPage({viewport:{width,height:800}});
+  try {
+    const text=lang=>require('../lib/Utils').markdownToHtml(lang==='ar'?'نص عربي للقراءة':'English reading text');
+    const pair=(classes)=>['ar','en'].map(lang=>`<section lang="${lang}"><div class="${classes}">${text(lang)}</div></section>`).join('');
+    await page.setContent(`<main>
+      <div id="hadith">${['ar','en'].map(lang=>`<article class="h" lang="${lang}"><span class="chain">Chain</span><div class="hadith-body-content content-markdown">${text(lang)}</div></article>`).join('')}</div>
+      <div id="tafsir" class="tafsir-only-page">${pair('quran-tafsir-text quran-tafsir-entry-body content-markdown')}</div>
+      <div id="sharh" class="tafsir-only-page sharh-only-page">${pair('quran-tafsir-text quran-tafsir-entry-body content-markdown')}</div>
+      <div id="intro">${['ar','en'].map(lang=>`<section class="intro content-markdown" lang="${lang}">${text(lang)}</section>`).join('')}</div>
+      <div id="inline">${['ar','en'].map(lang=>`<section class="hadith-sharh-column" lang="${lang}"><div class="hadith-sharh-body content-markdown">${text(lang)}</div></section>`).join('')}</div>
+    </main>`);
+    for(const name of ['style','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
+    for(const scale of [1,1.25]) {
+      await page.evaluate(scale=>document.documentElement.style.setProperty('--content-font-scale',scale),scale);
+      for(const lang of ['ar','en']) {
+        const sizes=await page.evaluate(lang=>Object.fromEntries(['hadith','tafsir','sharh','intro','inline'].map(id=>[id,parseFloat(getComputedStyle(document.querySelector(`#${id} [lang=${lang}] ${lang==='ar'?'.notebook-arabic':'p'}`)).fontSize)])),lang);
+        expect(sizes.tafsir).toBeCloseTo(sizes.hadith);
+        expect(sizes.sharh).toBeCloseTo(sizes.hadith);
+        expect(sizes.intro).toBeLessThan(sizes.hadith);
+        expect(sizes.inline).toBeCloseTo(sizes.intro);
+      }
+    }
+    await page.screenshot({path:`/tmp/reader-surfaces-${width}.png`});
+  }finally{await page.close();}
+});
+
+test('bilingual tafsir Arabic nested in an English Markdown root matches hadith', async () => {
+ const page=await browser.newPage();
+ try {
+  const text=require('../lib/Tafsir').renderCommentaryText('نص عربي ﷺ', '', 'md');
+  await page.setContent(`<main class="tafsir-only-page"><div class="quran-tafsir-text content-markdown" lang="en"><div class="quran-tafsir-entry-body"><div class="row quran-tafsir-local-pair"><section lang="en"><p>English</p></section><section lang="ar">${text}</section></div></div></div><article class="h" lang="ar"><span class="chain">نص عربي</span></article></main>`);
+  for(const name of ['style','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
+  for(const scale of [1,1.25]) {
+   await page.evaluate(scale=>document.documentElement.style.setProperty('--content-font-scale',scale),scale);
+   const sizes=await page.evaluate(()=>{
+    const size=selector=>parseFloat(getComputedStyle(document.querySelector(selector)).fontSize);
+    return {arabic:size('.quran-tafsir-local-pair [lang=ar] .notebook-arabic'),chain:size('.chain'),english:size('.quran-tafsir-local-pair [lang=en] p')};
+   });
+   expect(sizes.arabic).toBeCloseTo(sizes.chain);
+   expect(sizes.english/sizes.arabic).toBeCloseTo(9/13);
+  }
+ }finally{await page.close();}
+});

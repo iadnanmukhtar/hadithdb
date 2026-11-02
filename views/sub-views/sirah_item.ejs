@@ -17,14 +17,14 @@
   <% if (sirahHasEnglish) { %>
   <section class="col-md-6 col-sm-12 h" lang="en" dir="ltr" data-reader-language-column="english">
     <b><a href="/<%= i.ref %>"><%= i.book_alias || i.book_shortName_en %>:<%= i.num %></a></b>
-    <section class="body l5"><div><%- utils.markdownToHtml(i.body_en || '') %></div></section>
-    <% if (i.footnote_en) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
+    <section class="body l5"><div class="hadith-body-content content-markdown"><%- utils.markdownToHtml(i.body_en || '') %></div></section>
+    <% if (i.footnote_en) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
   </section>
   <% } %>
   <section class="<%= sirahColumns %> h" lang="ar" dir="rtl" data-reader-language-column="arabic">
     <b><a href="/<%= i.ref %>"><%= i.book_shortName || i.book_shortName_en %>:<%= arabic.toArabicDigits(String(i.num || '')) %></a></b>
-    <section class="body l5"><div><%- utils.markdownToHtml(i.body || i.text || '') %></div></section>
-    <% if (i.footnote) { %><footer class="footnote l2"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
+    <section class="body l5"><div class="hadith-body-content content-markdown"><%- utils.markdownToHtml(i.body || i.text || '') %></div></section>
+    <% if (i.footnote) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
   </section>
   <footer class="col-12 h"><aside class="tags reader-social-actions sirah-item-actions">
     <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_alias || i.book_shortName_en || 'sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage" aria-label="Bookmark this passage">
