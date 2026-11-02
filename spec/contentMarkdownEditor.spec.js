@@ -70,3 +70,14 @@ test('late preview responses cannot replace an active edit', async () => {
     expect(el.textContent).not.toContain('Late response');
   } finally { dom.window.close(); }
 });
+
+test.each(['toc.intro_en', 'hdith_sharh.text', 'hdith_toc_sharh.text_en', 'commentary.text_en', 'hadith_virtual.note_en', 'hadith_virtual.footnote_en'])('Delete uses shared line formatting removal in %s', prop => {
+ const {dom,w,active}=setup('## **Keep text**',prop);
+ try {
+  const rich=active.surface.rich,text=rich.querySelector('strong').firstChild;
+  w.getSelection().setBaseAndExtent(text,0,text,0);
+  rich.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Delete',bubbles:true,cancelable:true}));
+  expect(active.source.value).toBe('**Keep text**');
+  expect(rich.querySelector('h2')).toBeNull();
+ } finally {dom.window.close();}
+});

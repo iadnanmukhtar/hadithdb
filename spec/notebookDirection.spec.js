@@ -20,3 +20,10 @@ test('ordinary paragraphs independently align each language line without splitti
  expect($('.notebook-text-line').map((_,el)=>$(el).attr('dir')).get()).toEqual(['ltr','rtl','ltr']);
  expect($('.notebook-text-line').first().text()).toBe('English with العربية inline');
 });
+test('loose bilingual list items place markers according to their own text',()=>{
+ const source='- ﴿التَّائِبُونَ الْعَابِدُونَ﴾ [سُورَةُ التَّوْبَةِ ٩:١١٢](/quran/9:112)\n\n  > English translation\n\n- English item\n\n  - العربية';
+ const $=load(Notebook.render(source),null,false);
+ expect($('li').map((_,el)=>$(el).attr('dir')).get()).toEqual(['rtl','ltr','rtl']);
+ expect($('li p').first().attr('dir')).toBe('rtl');
+ expect(normalize($.root().html())).toBe($.root().html());
+});

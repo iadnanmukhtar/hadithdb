@@ -298,3 +298,23 @@ test('inline footnotes use the complete Markdown preview instead of literal edit
   expect(input.value).toBe('Text ^[**bold** العربية]');
  }finally{w.close();}
 });
+test.each([
+ '> [!note]\n> Body العربية',
+ '> Title {.callout}\n> Body العربية',
+ '> [!important] Title\n>\n> - Item\n> - Second'
+])('callouts preserve exact untouched source and retain their type after direct editing: %s',original=>{
+ const {w,input,rich}=setup('Before\n\n'+original);
+ try{
+  expect(input.hidden).toBe(true);
+  const quote=rich.querySelector('[data-callout-kind]');
+  expect(quote).not.toBeNull();
+  const kind=quote.dataset.calloutKind;
+  rich.querySelector('p').append(' changed');rich.dispatchEvent(new w.Event('input',{bubbles:true}));
+  expect(input.value).toContain(original);
+  const target=quote.querySelector('li') || quote.querySelector('p:last-child');
+  target.append(' edited');rich.dispatchEvent(new w.Event('input',{bubbles:true}));
+  expect(input.value).toContain('[!'+kind+']');
+  expect(input.value).toContain(' edited');
+  expect(require('../lib/UserNotebook').render(input.value)).toContain('markdown-callout-'+kind);
+ }finally{w.close();}
+});

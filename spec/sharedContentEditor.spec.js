@@ -240,3 +240,220 @@ for(const kind of ['post','article','note'])describe(kind+' footnote audit',()=>
   await page.screenshot({path:'/tmp/footnote-editor-'+kind+'.png'});
  });
 });
+for(const kind of ['post','article','note'])test.each(['English line','العربية هنا'])('Delete at the start unwraps only the current quote line in '+kind+': %s',async text=>{
+ const markdown='Before\n\n> First line\n> **'+text+'**\n> Last line\n\nAfter';
+ await setup(kind,markdown);
+ await page.evaluate(()=>{const line=rich.querySelectorAll('.notebook-rich-line')[1],walk=document.createTreeWalker(line,NodeFilter.SHOW_TEXT),text=walk.nextNode();rich.focus();getSelection().setBaseAndExtent(text,0,text,0);surface.selection();});
+ await page.keyboard.press('Delete');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n> First line\n\n**'+text+'**\n\n> Last line\n\nAfter');
+ await page.keyboard.type('Inserted ');
+ expect(await page.evaluate(()=>source.value)).toContain('Inserted ');
+});
+test('quote-line removal supports Undo and does not intercept Delete inside text',async()=>{
+ await setup('article','Before\n\n> First\n> Second\n\nAfter');
+ await page.evaluate(()=>{const line=rich.querySelectorAll('.notebook-rich-line')[1];rich.focus();getSelection().setBaseAndExtent(line.firstChild,0,line.firstChild,0);});
+ await page.keyboard.press('Delete');
+ expect(await page.evaluate(()=>source.value)).toContain('\n\nSecond\n\nAfter');
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n> First\n> Second\n\nAfter');
+ await page.evaluate(()=>{const line=rich.querySelectorAll('.notebook-rich-line')[1];getSelection().setBaseAndExtent(line.firstChild,1,line.firstChild,1);});
+ await page.keyboard.press('Delete');
+ expect(await page.evaluate(()=>source.value)).toContain('> Scond');
+});
+test('advanced blocks expose code editing without changing their contents',async()=>{
+ const original='Before\n\n```js\nconst value = 1;\n```\n\nAfter';
+ await setup('article',original);
+ await page.getByRole('button',{name:'Edit block Markdown',exact:true}).click();
+ expect(await page.evaluate(()=>source.hidden)).toBe(false);
+ expect(await page.evaluate(()=>source.value)).toBe(original);
+ expect(await page.evaluate(()=>source.value.slice(source.selectionStart,source.selectionEnd))).toBe('```js\nconst value = 1;\n```');
+ await page.getByRole('button',{name:'Switch to formatted editing',exact:true}).click();
+ expect(await page.getByRole('button',{name:'Edit block Markdown',exact:true}).isVisible()).toBe(true);
+});
+test('Delete unwraps a nested quote line inside a list without changing neighboring text',async()=>{
+ await setup('article','Before\n\n- Item\n\n  > > First\n  > > Second\n\nAfter');
+ await page.evaluate(()=>{const line=rich.querySelectorAll('.notebook-rich-line')[0];rich.focus();getSelection().setBaseAndExtent(line.firstChild,0,line.firstChild,0);});
+ await page.keyboard.press('Delete');
+ expect(await page.locator('li').innerText()).toContain('First');
+ expect(await page.locator('blockquote blockquote').innerText()).toBe('Second');
+ expect(await page.evaluate(()=>source.value)).toContain('After');
+});
+for(const kind of ['post','article','note'])test.each([
+ ['heading','## **Target**','h2','**Target**'],
+ ['subtext','-# **Target**','.notebook-subtext','**Target**'],
+ ['center','<center>\nFirst\nTarget\nLast\n</center>','.notebook-rich-line:nth-child(2)','<center>\nFirst\n</center>\n\nTarget\n\n<center>\nLast\n</center>'],
+ ['bullet','- First\n- **Target**\n- Last','li:nth-child(2)','- First\n\n**Target**\n\n- Last'],
+ ['numbered','3. First\n4. **Target**\n5. Last','li:nth-child(2)','3. First\n\n**Target**\n\n5. Last'],
+ ['list continuation','- First\n  Target\n  Last','.notebook-rich-line:nth-child(2)','- First\n\nTarget\n\n- Last'],
+ ['inline','**Target** and *rest*','p:last-child','Target and rest'],
+])('Delete clears current %s line in '+kind,async(_name,input,selector,expected)=>{
+ input='Before\n\n'+input;expected='Before\n\n'+expected;
+ await setup(kind,input);
+ await page.evaluate(selector=>{const line=rich.querySelector(selector),text=document.createTreeWalker(line,NodeFilter.SHOW_TEXT).nextNode();rich.focus();getSelection().setBaseAndExtent(text,0,text,0);},selector);
+ await page.keyboard.press('Delete');
+ expect(await page.evaluate(()=>source.value)).toBe(expected);
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe(input);
+ await page.keyboard.press('Meta+Shift+z');
+ expect(await page.evaluate(()=>source.value)).toBe(expected);
+});
+
+for(const kind of ['post','article','note'])describe(kind+' natural editing audit',()=>{
+ test('repeated highlight toggles formatting off and preserves selection',async()=>{
+  await setup(kind,'Before\n\nTarget words');
+  await page.evaluate(()=>{const p=rich.querySelector('p:last-child'),r=document.createRange();r.selectNodeContents(p);getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('highlight');surface.format('highlight');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget words');
+ });
+ test('Markdown list and quote controls toggle instead of nesting prefixes',async()=>{
+  await setup(kind,'Before\n\nFirst\nSecond');
+  for(const command of ['insertUnorderedList','insertOrderedList','formatBlock']){
+   await page.evaluate(command=>{surface.toSource();source.setSelectionRange(8,source.value.length);surface.format(command,'blockquote');surface.format(command,'blockquote');},command);
+   expect(await page.evaluate(()=>source.value)).toBe('Before\n\nFirst\nSecond');
+  }
+ });
+ test('sequential line-format removals undo and redo independently',async()=>{
+  await setup(kind,'Before\n\n## First\n\n## Second');
+  for(const selector of ['h2:first-of-type','h2']){
+   await page.evaluate(selector=>selectBlock(selector,false),selector);
+   await page.keyboard.press('Delete');
+  }
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nFirst\n\nSecond');
+  await page.keyboard.press('Meta+z');await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n## First\n\n## Second');
+  await page.keyboard.press('Meta+Shift+z');await page.keyboard.press('Meta+Shift+z');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nFirst\n\nSecond');
+ });
+ test('centering an already centered selection removes alignment',async()=>{
+  await setup(kind,'Before\n\nTarget words');
+  await page.evaluate(()=>{selectBlock('p:last-child');surface.format('center');surface.format('center');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget words');
+  expect(await page.evaluate(()=>surface.mode)).toBe('rich');
+ });
+});
+
+for(const kind of ['post','article','note'])test.each(['center','subtext'])('%s preserves the typing position in '+kind,async style=>{
+ await setup(kind,'Before\n\nTarget العربية');
+ await page.evaluate(style=>{selectBlock('p:last-child');surface.format(style==='center'?'center':'style',style==='subtext'?'subtext':undefined);},style);
+ await page.keyboard.type(' appended');
+ const expected=style==='center'?'Before\n\n<center>\nTarget العربية appended\n</center>':'Before\n\n-# Target العربية appended';
+ expect(await page.evaluate(()=>source.value)).toBe(expected);
+});
+test('highlight removal affects only selected text and can be undone',async()=>{
+ await setup('article','Before\n\n==First middle last==');
+ await page.evaluate(()=>{const text=rich.querySelector('mark').firstChild;rich.focus();getSelection().setBaseAndExtent(text,6,text,12);surface.selection();surface.format('highlight');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n==First== middle ==last==');
+ expect(await page.evaluate(()=>getSelection().toString())).toBe('middle');
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n==First middle last==');
+});
+
+test('typing after a line-format change undoes before the formatting change',async()=>{
+ await setup('article','Before\n\n## Target');
+ await page.evaluate(()=>selectBlock('h2',false));
+ await page.keyboard.press('Delete');await page.keyboard.insertText('New ');
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget');
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n## Target');
+});
+test('clear formatting removes highlight and code while retaining selected words',async()=>{
+ await setup('article','Before\n\n==Marked== and `code`');
+ await page.evaluate(()=>{const r=document.createRange();r.selectNodeContents(rich.querySelector('p:last-child'));getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('removeFormat');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nMarked and code');
+});
+test('clear formatting preserves unselected emphasis across paragraphs and supports Undo',async()=>{
+ const original='Before\n\n**First middle**\n\n==Last words==';
+ await setup('article',original);
+ await page.evaluate(()=>{const first=rich.querySelector('strong').firstChild,last=rich.querySelector('mark').firstChild;getSelection().setBaseAndExtent(first,6,last,4);surface.selection();surface.format('removeFormat');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n**First** middle\n\nLast ==words==');
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe(original);
+});
+for(const command of ['center','subtext','divider','footnote'])test(command+' insertion supports Undo and Redo in formatted mode',async()=>{
+ await setup('article','Before\n\nTarget words');
+ await page.evaluate(command=>{selectBlock('p:last-child');surface.format(command==='subtext'?'style':command,command==='subtext'?'subtext':undefined);},command);
+ const changed=await page.evaluate(()=>source.value);
+ expect(changed).not.toBe('Before\n\nTarget words');
+ await page.keyboard.press('Meta+z');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget words');
+ await page.keyboard.press('Meta+Shift+z');
+ expect(await page.evaluate(()=>source.value)).toBe(changed);
+});
+test('Markdown center control toggles its selected block without nesting tags',async()=>{
+ await setup('article','Before\n\nTarget');
+ await page.evaluate(()=>{surface.toSource();source.setSelectionRange(8,source.value.length);surface.format('center');surface.format('center');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget');
+});
+
+for(const kind of ['post','article','note'])test('quote and subtext compose without exposing markers in '+kind,async()=>{
+ await setup(kind,'Before\n\n> Target العربية\n\nAfter');
+ await page.evaluate(()=>{selectBlock('blockquote p');surface.format('style','subtext');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n> -# Target العربية\n\nAfter');
+ expect(await page.locator('blockquote .notebook-subtext').innerText()).toBe('Target العربية');
+ await page.evaluate(()=>surface.format('formatBlock','blockquote'));
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n-# Target العربية\n\nAfter');
+ await page.evaluate(()=>surface.format('formatBlock','blockquote'));
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n> -# Target العربية\n\nAfter');
+ await page.keyboard.type(' appended');
+ expect(await page.evaluate(()=>source.value)).toContain('> -# Target العربية appended');
+});
+test('article subtext preserves the viewport and Markdown switch is above the body',async()=>{
+ await setup('article',Array.from({length:80},(_,i)=>'Paragraph '+i+' العربية').join('\n\n'));
+ const toggle=page.getByRole('button',{name:'Switch to Markdown editing',exact:true});
+ expect((await toggle.boundingBox()).y).toBeLessThan((await page.locator('.community-rich-input').boundingBox()).y);
+ await page.evaluate(()=>{selectBlock('p:nth-child(50)');rich.querySelector('p:nth-child(50)').scrollIntoView({block:'center'});});
+ const before=await page.evaluate(()=>({scroll:scrollY,y:rich.querySelector('p:nth-child(50)').getBoundingClientRect().top}));
+ await page.evaluate(()=>surface.format('style','subtext'));
+ const after=await page.evaluate(()=>({scroll:scrollY,y:rich.querySelector('.notebook-subtext').getBoundingClientRect().top}));
+ expect(Math.abs(after.scroll-before.scroll)).toBeLessThan(2);
+ expect(Math.abs(after.y-before.y)).toBeLessThan(2);
+ await page.screenshot({path:'/tmp/article-subtext-viewport.png'});
+});
+test('switching quoted subtext back to normal retains the quote',async()=>{
+ await setup('article','Before\n\n> -# Target\n\nAfter');
+ await page.evaluate(()=>{selectBlock('.notebook-subtext');surface.format('style','0');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\n> Target\n\nAfter');
+});
+for(const kind of ['post','article','note'])describe(kind+' editable colored blocks',()=>{
+ test('callout title and bilingual body support typing, Enter, Undo and mode switching',async()=>{
+  await setup(kind,'Before\n\n> [!tip] **A title**\n> Body العربية\n\nAfter');
+  expect(await page.locator('.markdown-callout [contenteditable=false]').count()).toBe(0);
+  expect(await page.locator('[data-notebook-raw]').count()).toBe(0);
+  await page.evaluate(()=>selectBlock('.markdown-callout-title'));
+  await page.keyboard.type(' changed');
+  await page.evaluate(()=>selectBlock('.markdown-callout p:last-child'));
+  await page.keyboard.press('Enter');await page.keyboard.insertText('New paragraph');
+  expect(await page.evaluate(()=>source.value)).toContain('> New paragraph');
+  expect(await page.locator('.markdown-callout').innerText()).toContain('A title changed');
+  await page.keyboard.press('Meta+z');
+  expect(await page.locator('.markdown-callout').innerText()).not.toContain('New paragraph');
+  await page.keyboard.press('Meta+Shift+z');
+  const edited=await page.evaluate(()=>source.value);
+  await page.getByRole('button',{name:'Switch to Markdown editing',exact:true}).click();
+  await page.getByRole('button',{name:'Switch to formatted editing',exact:true}).click();
+  expect(await page.evaluate(()=>source.value)).toBe(edited);
+  expect(await page.locator('.markdown-callout-tip').innerText()).toContain('New paragraph');
+  await page.screenshot({path:'/tmp/editable-callout-'+kind+'.png'});
+ });
+ test('unrelated edits preserve exact callout Markdown and body formatting stays inside it',async()=>{
+  const callout='> [!WARNING] Title {.callout}\n> Body **bold** العربية\n>\n> - One\n> - Two';
+  await setup(kind,'Before\n\n'+callout+'\n\nAfter');
+  await page.keyboard.type(' changed');
+  expect(await page.evaluate(()=>source.value)).toContain(callout);
+  await page.evaluate(()=>{selectBlock('.markdown-callout p:nth-child(2)');surface.format('style','subtext');});
+  expect(await page.locator('.markdown-callout-warning .notebook-subtext').innerText()).toBe('Body bold العربية');
+ });
+});
+test('Arabic list markers stay RTL in formatted, rendered and print views',async()=>{
+ const md='Paragraph\n\n- ﴿التَّائِبُونَ الْعَابِدُونَ﴾ [سُورَةُ التَّوْبَةِ ٩:١١٢](/quran/9:112)\n\n  > English translation\n\n- English item\n\n  - العربية';
+ await setup('article',md);
+ await page.evaluate(()=>rich.dataset.listAudit='true');
+ const directions=()=>page.locator('[data-list-audit] li').evaluateAll(items=>items.map(item=>({dir:getComputedStyle(item).direction,left:parseFloat(getComputedStyle(item).marginLeft),right:parseFloat(getComputedStyle(item).marginRight)})));
+ let metrics=await directions();expect(metrics.map(item=>item.dir)).toEqual(['rtl','ltr','rtl']);expect(metrics[0].right).toBeGreaterThan(metrics[0].left);
+ await page.screenshot({path:'/tmp/arabic-list-editor.png'});
+ await page.evaluate(html=>{rich.innerHTML=html;rich.contentEditable='false';rich.classList.remove('community-rich-input');},Notebook.render(md));
+ metrics=await directions();expect(metrics.map(item=>item.dir)).toEqual(['rtl','ltr','rtl']);expect(metrics[0].right).toBeGreaterThan(metrics[0].left);
+ await page.screenshot({path:'/tmp/arabic-list-direction.png'});
+ await page.emulateMedia({media:'print'});
+ expect((await directions()).map(item=>item.dir)).toEqual(['rtl','ltr','rtl']);
+});

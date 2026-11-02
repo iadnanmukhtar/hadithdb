@@ -684,7 +684,7 @@
       save('draft', true).catch(err => { if (account === epoch) $('editor-status').textContent = 'Not saved: ' + err.message; });
     }, 1800);
   }
-  function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = false; $('preview-panel').hidden = true; scheduleArticleSave(); }
+  function invalidatePreview() { dirty = true; previewSignature = null; $('publish').disabled = false; $('preview-panel').close?.(); scheduleArticleSave(); }
   function renderEditorCover(post) {
     $('cover-url').value=post.coverUrl||''; $('cover-remove').hidden=!post.coverUrl;
     let figure=$('editor-cover');
@@ -718,7 +718,7 @@
     $('publish').textContent = post.status === 'published' ? 'Update' : 'Publish';
     $('editor-status').textContent = post.status === 'pending' ? 'Submitted for moderation. Your article is not public yet.' : post.status === 'hidden' ? 'A moderator has hidden this article. Contact a moderator for review.' : post.status === 'published' ? 'Published. Saving a draft keeps the current public version until you publish an update.' : 'Draft saved. Only you can see it.';
     renderEditorBlog();document.dispatchEvent(new Event('communityEditorPopulated'));
-    previewSignature = null; dirty = false; $('publish').disabled = false; $('preview-panel').hidden = true;
+    previewSignature = null; dirty = false; $('publish').disabled = false; $('preview-panel').close?.();
   }
   async function save(action, background = false) {
     clearTimeout(articleSaveTimer);
@@ -801,6 +801,11 @@
       const submitter = event.submitter || $('editor-form').querySelector('[data-action="draft"]');
       run(() => save(submitter.dataset.action), submitter);
     });
+    $('preview-close').addEventListener('click', () => $('preview-panel').close());
+    $('preview-panel').addEventListener('click', event => {
+      const dialog = $('preview-panel'), rect = dialog.getBoundingClientRect();
+      if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close();
+    });
     $('preview-button').addEventListener('click', () => run(async () => {
       if(window.communityMediaPending) throw new Error('Wait for the image upload to finish.');
       if (!$('editor-form').reportValidity()) return;
@@ -808,8 +813,9 @@
       if (signature() !== own) return;
       if(window.communityRenderPostPreview) window.communityRenderPostPreview($('preview'),result.html,$('cover-url').value); else $('preview').innerHTML=result.html; $('preview-title').textContent = $('title').value.trim(); $('preview-title').hidden = !$('title').value.trim(); $('preview-subtitle').textContent = $('subtitle').value;
 
-      $('preview-panel').hidden = false; previewSignature = own; $('publish').disabled = false;
-      $('preview-panel').scrollIntoView({ block: 'start', behavior: 'smooth' });
+      previewSignature = own; $('publish').disabled = false;
+      if (!$('preview-panel').open) $('preview-panel').showModal();
+      $('preview-panel').scrollTop = 0;
     }, $('preview-button')));
     $('delete').addEventListener('click',()=>run(async()=>{
       if(!editing || !window.confirm('Delete this post? It and its discussion will be removed from the site.'))return;
@@ -1334,7 +1340,7 @@
     resetQuickComposer();
     if ($('contributors')) $('contributors').replaceChildren();
     // A different account must never inherit the previous account's draft or feed.
-    if (view === 'write') { $('editor-cover')?.remove(); $('editor-form').reset(); $('kind').disabled = false; editing = null; dirty = false; previewSignature = null; $('preview-panel').hidden = true; $('publish').disabled = false; $('unpublish').hidden = true; $('delete').hidden = true; $('notebook-results').replaceChildren(); $('import-panel').hidden = true; }
+    if (view === 'write') { $('editor-cover')?.remove(); $('editor-form').reset(); $('kind').disabled = false; editing = null; dirty = false; previewSignature = null; $('preview-panel').close?.(); $('publish').disabled = false; $('unpublish').hidden = true; $('delete').hidden = true; $('notebook-results').replaceChildren(); $('import-panel').hidden = true; }
     if (['mine', 'following'].includes(view)) { $('feed').replaceChildren(); $('more').hidden = true; }
     if (view === 'mine') { $('profile-dialog').close(); $('people-dialog').close(); $('followers').replaceChildren(); $('profile-form').reset(); $('subscriptions').replaceChildren(); $('wall-profile').hidden = true; $('wall-name').textContent = ''; $('wall-handle').textContent = ''; $('wall-bio').textContent = ''; $('wall-stats').textContent = ''; $('wall-avatar').replaceChildren(); }
     if (view === 'moderation') $('moderation').replaceChildren();

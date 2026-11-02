@@ -75,12 +75,23 @@
     if(moved && points.length)selection.setBaseAndExtent(...points[0],...points[1]);
     root.querySelectorAll('p,li,blockquote,h1,h2,h3,h4,h5,h6,.notebook-rich-line').forEach(el => {
       if (el.closest('[data-notebook-raw]')) return;
-      el.dir = direction(el.textContent);
+      let text=el.textContent;
+      if(el.tagName==='LI'){
+        const own=el.cloneNode(true);own.querySelectorAll('ul,ol,blockquote').forEach(node=>node.remove());text=own.textContent;
+      }
+      el.dir = direction(text);
       el.classList.toggle('notebook-edit-has-arabic',editing && /\p{Script_Extensions=Arabic}/u.test(el.textContent) && !el.querySelector('.notebook-arabic:not(.notebook-edit-mixed)'));
     });
     root.querySelectorAll('.notebook-quote-section,.notebook-quote-switch').forEach(el => el.classList.remove('notebook-quote-section','notebook-quote-switch'));
     root.querySelectorAll('blockquote').forEach(quote => {
       if (quote.closest('[data-notebook-raw]')) return;
+      if(quote.dataset.calloutKind){
+        quote.classList.remove('notebook-edit-quote');
+        const title=quote.querySelector(':scope > .markdown-callout-title');
+        quote.dir=direction(title?.textContent || quote.textContent);
+        quote.querySelectorAll(':scope > .markdown-callout-title').forEach(node=>{if(node!==title)node.classList.remove('markdown-callout-title');});
+        return;
+      }
       quote.classList.add('notebook-edit-quote');
       let previous = null;
       for (const child of quote.children) {
@@ -97,12 +108,25 @@
   }
   function render(markdown, propheticSpeech = false) {
     const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
-    if (!window.marked || /^\s*(?:>\s*)+\[![a-z][a-z0-9_-]*\]/im.test(markdown) || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
+    if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
     const root = document.createElement('div');
     let parser;const definitions=new Map();
     function append(tokens, parent) {
       for (const t of tokens) {
         if (t.type === 'space') continue;
+        if(t.type==='blockquote' && t.tokens?.[0]?.type==='paragraph' && (/^\[![a-z][a-z0-9_-]*\]/i.test(t.text) || /\{\.callout\}/.test(t.text))){
+          const marker=/^\[!([a-z][a-z0-9_-]*)\][ \t]*/i.exec(t.text),kind=marker?marker[1].toLowerCase():'note';
+          const clean=t.text.replace(/[ \t]*\{\.callout\}/g,'').replace(/^\[![a-z][a-z0-9_-]*\][ \t]*/i,'');
+          const newline=clean.indexOf('\n'),title=(newline<0?clean:clean.slice(0,newline)).trim(),body=newline<0?'':clean.slice(newline+1);
+          const quote=document.createElement('blockquote');quote.className='markdown-callout markdown-callout-'+kind;
+          quote.dataset.calloutKind=kind;quote.dataset.calloutRaw=t.raw.trimEnd();
+          const heading=document.createElement('p');heading.className='markdown-callout-title';
+          const defaultTitle=kind.charAt(0).toUpperCase()+kind.slice(1);
+          append(new window.marked.Lexer(parser.defaults).inlineTokens(title || defaultTitle),heading);quote.append(heading);
+          if(!title)quote.dataset.calloutDefaultTitle=defaultTitle;
+          append(parser.lexer(body),quote);parent.append(quote);continue;
+        }
+
         if(t.type==='footnoteDefinition'){
           if(definitions.has(t.label))throw Error('Duplicate footnote definition');
           const content=document.createElement('div');append(parser.lexer(t.text),content);
@@ -145,7 +169,7 @@
         if (t.type === 'list' && t.ordered && t.start !== 1) el.start = t.start;
         if (t.type === 'codespan') el.textContent = t.text;
         else if (t.type !== 'br') append(t.items || t.tokens || [], el);
-        if(t.type==='paragraph' && el.querySelector('br')) {
+        if((t.type==='paragraph' || t.type==='list_item' && !el.querySelector('p,ul,ol,blockquote')) && el.querySelector('br')) {
           // Give each authored line its own bidi paragraph without adding blank
           // lines to the stored Markdown. Clone inline ancestors across breaks.
           const lines=[],breaks=[...el.querySelectorAll('br')];
@@ -205,6 +229,7 @@
         const content=document.createElement('p');content.textContent='Footnote text';const holder=document.createElement('div');holder.append(content);definitions.set(marker.dataset.footnoteRef,footnoteRow(marker.dataset.footnoteRef,holder));
       }
       root.append(...definitions.values());reconcileFootnotes(root);styleContent(root);
+      [...root.querySelectorAll('[data-callout-kind]')].reverse().forEach(quote=>{quote.dataset.calloutContent=serialize(quote);});
       root.querySelectorAll('[data-footnote]').forEach(row=>{if(row.dataset.footnoteRaw!==undefined)row.dataset.footnoteHtml=row.querySelector('.community-footnote-body').innerHTML;});
       return root;
     } catch (_) { return null; }
@@ -256,6 +281,15 @@
         case 'P': case 'DIV': return text()+'\n\n';
         case 'H1': case 'H2': case 'H3': case 'H4': case 'H5': case 'H6': return '#'.repeat(Number(el.tagName[1]))+' '+text()+'\n\n';
         case 'BLOCKQUOTE': {
+          if(el.dataset.calloutKind){
+            const current=text().replace(/\n{3,}/g,'\n\n').trim();
+            if(current===el.dataset.calloutContent)return el.dataset.calloutRaw+'\n\n';
+            const title=el.querySelector(':scope > .markdown-callout-title');
+            const heading=title?read(title).trim():'';
+            const body=Array.from(el.childNodes).filter(node=>node!==title).map(read).join('').trim();
+            const label=heading===el.dataset.calloutDefaultTitle?'':heading;
+            return ('[!'+el.dataset.calloutKind+']'+(label?' '+label:'')+(body?'\n\n'+body:'')).split('\n').map(line=>'> '+line).join('\n')+'\n\n';
+          }
           if(!Array.from(el.children).some(child=>child.dataset.quoteLine==='true'))return text().trim().split('\n').map(line=>'> '+line).join('\n')+'\n\n';
           let quote='';
           for(const child of el.childNodes){
@@ -289,7 +323,18 @@
       block.contentEditable = 'false';
       block.title = 'Use Markdown to edit this advanced formatting';
       block.className = 'notebook-advanced-block';
-      block.textContent = 'Loading formatted content…';
+      const controls=document.createElement('div');controls.className='community-advanced-tools';
+      const label=document.createElement('span');label.textContent='Markdown block';
+      const code=document.createElement('button');code.type='button';code.textContent='Edit code';code.setAttribute('aria-label','Edit block Markdown');
+      controls.append(label,code);
+      const preview=document.createElement('div');preview.className='notebook-advanced-content';preview.textContent='Loading formatted content…';
+      block.append(controls,preview);
+      code.addEventListener('click',()=>{
+        const surface=instances.get(source);if(!surface || source.disabled || source.readOnly)return;
+        let cursor=0,start=0;
+        for(const current of surface.rich.querySelectorAll('[data-notebook-raw]')){const found=source.value.indexOf(current.dataset.notebookRaw.trimEnd(),cursor);if(found>=0){start=found;cursor=found+current.dataset.notebookRaw.trimEnd().length;}if(current===block)break;}
+        surface.toSource();source.focus();source.setSelectionRange(start,cursor);
+      });
       root.append(block);
       if (previewRenderers.has(source)) {
         let result = cache.get(token.raw);
@@ -298,11 +343,11 @@
           if (cache.size >= 100) cache.clear();
           cache.set(token.raw, result);
         }
-        result.then(html => { block.innerHTML = html; }).catch(() => {
+        result.then(html => { preview.innerHTML = html; }).catch(() => {
           cache.delete(token.raw);
-          block.textContent = 'Preview unavailable. Use Markdown to edit this block.';
+          preview.textContent = 'Preview unavailable. Use Edit code to edit this block.';
         });
-      } else block.textContent='Use Markdown to edit this advanced block.';
+      } else preview.textContent='Use Edit code to edit this block.';
     }
     return root;
   }
@@ -333,7 +378,7 @@
           return dy * 100000 + dx;
         };
         while ((part = walker.nextNode())) {
-          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref, .community-footnote-label, [data-footnote-ref]')) continue;
+          if (!part.nodeValue.trim() || part.parentElement.closest('button, .footnote-backref, .community-footnote-label, .community-advanced-tools, [data-footnote-ref]')) continue;
           probe.selectNodeContents(part);
           for (const rect of probe.getClientRects()) {
             if (!rect.height) continue;
@@ -375,7 +420,7 @@
     const walker = document.createTreeWalker(surface, NodeFilter.SHOW_TEXT);
     let cursor = 0, part;
     while ((part = walker.nextNode())) {
-      if (part.parentElement.closest('button, .footnote-backref, .community-footnote-label, [data-footnote-ref]')) continue;
+      if (part.parentElement.closest('button, .footnote-backref, .community-footnote-label, .community-advanced-tools, [data-footnote-ref]')) continue;
       // Arabic underline adds a display-only Unicode combining overline.
       const overlined = part.parentElement.closest('[data-notebook-overline]');
       const value = overlined ? part.nodeValue.replace(/\u0305/g, '') : part.nodeValue;
@@ -433,8 +478,10 @@
     const hint=document.createElement('span');hint.className='community-editor-hint';hint.textContent=isArticle?'Use the formatting bar above':'Select text to format';
     const removeColumns=document.createElement('button');removeColumns.type='button';removeColumns.className='community-remove-columns community-editor-mode';removeColumns.textContent='×';removeColumns.title='Remove column layout';removeColumns.setAttribute('aria-label','Remove column layout');removeColumns.hidden=true;
     const undoColumns=document.createElement('button');undoColumns.type='button';undoColumns.className='community-remove-columns community-editor-mode';undoColumns.textContent='Undo column layout change';undoColumns.hidden=true;
-    let activeRow=null, removedColumns=null;
-    tools.append(hint,toggle);shell.append(format,removeColumns,undoColumns,rich,tools);source.before(shell);shell.insertBefore(source,tools);
+    let activeRow=null, removedColumns=null, formatHistory=[], formatHistoryIndex=0;
+    tools.append(hint,toggle);shell.append(tools,format,removeColumns,undoColumns,rich);source.before(shell);shell.insertBefore(source,rich);
+    const footerMode=isArticle && source.form?.querySelector('[data-article-editor-mode]');
+    if(footerMode){footerMode.append(toggle);tools.hidden=true;}
     let mode='rich', syncing=false, savedRange=null, composing=false, lastHTML='', lastMarkdown='';
     const required=source.required;source.required=false;
     function sync() {
@@ -467,13 +514,13 @@
     }
     function hydrate() {
       if(syncing)return;
-      removedColumns=null;undoColumns.hidden=true;removeColumns.hidden=true;activeRow=null;
+      removedColumns=null;formatHistory=[];formatHistoryIndex=0;undoColumns.hidden=true;removeColumns.hidden=true;activeRow=null;
       const rendered=renderContent(source.value);
       if(mode==='rich' && !rendered) mode='source';
       if(rendered && mode==='rich'){rich.replaceChildren(...rendered.childNodes);lastHTML=rich.innerHTML;lastMarkdown=serialize(rich);}
       source.hidden=mode==='rich';rich.hidden=mode!=='rich';
       source.required=mode==='source' && required;
-      toggle.textContent=mode==='rich'?'Markdown':'Formatted';
+      toggle.textContent=mode==='rich'?'Edit Markdown':'Formatted editing';
       toggle.setAttribute('aria-label',mode==='rich'?'Switch to Markdown editing':'Switch to formatted editing');
       hint.textContent=mode==='rich'?(isArticle?'Use the formatting bar above':'Select text to format'):rendered?'Markdown editing':'Advanced formatting · Markdown editing';
       rich.contentEditable=String(!source.disabled && !source.readOnly);rich.setAttribute('aria-disabled',String(source.disabled));toggle.disabled=source.disabled || mode==='source' && !rendered;
@@ -698,6 +745,27 @@
     }
     rich.addEventListener('beforeinput',event=>{if(crossesColumns()){event.preventDefault();hint.textContent='Edit one column at a time';}});
     function formatAction(command,arg) {
+      // Source-backed formatting rebuilds the DOM. Keep it in the same
+      // structural undo history instead of losing the operation on hydration.
+      const wasRich=mode==='rich',before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
+      const history=formatHistory,index=formatHistoryIndex;
+      const preserveViewport=wasRich && ['style','center','formatBlock'].includes(command);
+      const scrollParents=[];if(preserveViewport)for(let parent=shell.parentElement;parent;parent=parent.parentElement)scrollParents.push([parent,parent.scrollTop,parent.scrollLeft]);
+      const scrollX=window.scrollX,scrollY=window.scrollY,minHeight=shell.style.minHeight;
+      if(preserveViewport)shell.style.minHeight=shell.getBoundingClientRect().height+'px';
+      let result;
+      try { result=applyFormatAction(command,arg); }
+      finally {
+        shell.style.minHeight=minHeight;
+        for(const [parent,top,left] of scrollParents){parent.scrollTop=top;parent.scrollLeft=left;}
+        if(preserveViewport)window.scrollTo(scrollX,scrollY);
+      }
+      if(wasRich && mode==='rich' && history!==formatHistory && before!==rich.innerHTML){
+        formatHistory=history;formatHistoryIndex=index;recordFormatChange(before,beforePoint,beforeMarkdown);
+      }
+      return result;
+    }
+    function applyFormatAction(command,arg) {
       if(source.disabled || source.readOnly)return true;
       if(mode==='rich' && crossesColumns()){hint.textContent='Select text within one column to format';return true;}
       if(command==='wiki') {
@@ -749,24 +817,43 @@
       if(command==='parallel'){insertParallel();selection();return true;}
       if(command==='style') {
         if(!/^(?:[0-6]|subtext)$/.test(String(arg)))return false;
-        if(mode==='rich' && arg!=='subtext' && document.execCommand){
+        if(mode==='rich' && arg!=='subtext' && ![...rich.querySelectorAll('.notebook-subtext')].some(node=>savedRange?.intersectsNode(node)) && document.execCommand){
           rich.focus();if(savedRange){const selected=window.getSelection();selected.removeAllRanges();selected.addRange(savedRange);}
           if(document.execCommand('formatBlock',false,String(arg)==='0'?'p':'h'+arg)){sync();selection();return true;}
         }
         const wasRich=mode==='rich';if(wasRich)toSource();
+        const selectionStart=source.selectionStart,selectionEnd=source.selectionEnd;
         const value=source.value,start=source.selectionStart?value.lastIndexOf('\n',source.selectionStart-1)+1:0;
         const last=source.selectionEnd>source.selectionStart && value[source.selectionEnd-1]==='\n'?source.selectionEnd-1:source.selectionEnd;
         const next=value.indexOf('\n',last),end=next<0?value.length:next;
         const prefix=arg==='subtext'?'-# ':String(arg)==='0'?'':'#'.repeat(Number(arg))+' ';
-        const text=value.slice(start,end).split('\n').map(line=>line.replace(/^([ \t]*(?:\[\^[^\]\s]+\]:[ \t]*)?)(.*)$/,(_,indent,body)=>indent+prefix+body.replace(/^(?:#{1,6}|-#)\s+/,''))).join('\n');
+        const text=value.slice(start,end).split('\n').map(line=>line.replace(/^([ \t]*(?:>[ \t]*)*(?:(?:[-+*]|\d+[.)])[ \t]+)?(?:\[\^[^\]\s]+\]:[ \t]*)?)(.*)$/,(_,indent,body)=>indent+prefix+body.replace(/^(?:#{1,6}|-#)\s+/,''))).join('\n');
+        const delta=text.length-(end-start),firstDelta=text.split('\n')[0].length-value.slice(start,end).split('\n')[0].length;
         source.setRangeText(text,start,end,'select');source.dispatchEvent(new Event('input',{bubbles:true}));
-        if(wasRich && renderContent(source.value)){mode='rich';hydrate();rich.focus();}return true;
+        if(wasRich && renderContent(source.value)){restoreFormattedSelection(selectionStart+firstDelta,selectionEnd+delta);}return true;
       }
       if(command==='center') {
+        if(mode==='rich'){
+          const node=savedRange?.startContainer,element=node?.nodeType===1?node:node?.parentElement;
+          const centered=element?.closest('center');
+          if(centered && centered.contains(savedRange.endContainer)){
+            const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret(),range=savedRange.cloneRange();
+            centered.replaceWith(...centered.childNodes);
+            rich.focus();window.getSelection().removeAllRanges();window.getSelection().addRange(range);
+            sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
+          }
+        }
         const wasRich=mode==='rich';if(wasRich)toSource();
+        const selectionStart=source.selectionStart,selectionEnd=source.selectionEnd;
         const value=source.value,start=source.selectionStart?value.lastIndexOf('\n',source.selectionStart-1)+1:0;
         const last=source.selectionEnd>source.selectionStart && value[source.selectionEnd-1]==='\n'?source.selectionEnd-1:source.selectionEnd;
         const next=value.indexOf('\n',last),end=next<0?value.length:next;
+        const centeredSource=/^([ \t]*)<center>\n([\s\S]*)\n\1<\/center>$/.exec(value.slice(start,end));
+        if(centeredSource){
+          source.setRangeText(centeredSource[2],start,end,'select');source.dispatchEvent(new Event('input',{bubbles:true}));
+          if(wasRich && renderContent(source.value))restoreFormattedSelection(start,start+centeredSource[2].length);
+          return true;
+        }
         const lines=value.slice(start,end).split('\n');
         const lead=/^([ \t]*)(\[\^[^\]\s]+\]:[ \t]*)?/.exec(lines[0]);
         const indent=lead[2]?lead[1]+'    ':lead[1];
@@ -774,9 +861,10 @@
         for(let i=1;i<lines.length;i++)if(indent && lines[i].startsWith(indent))lines[i]=lines[i].slice(indent.length);
         source.setRangeText(lead[0]+'<center>\n'+lines.map(line=>indent+line).join('\n')+'\n'+indent+'</center>',start,end,'select');
         source.dispatchEvent(new Event('input',{bubbles:true}));
-        if(wasRich && renderContent(source.value)){mode='rich';hydrate();rich.focus();}return true;
+        if(wasRich && renderContent(source.value)){restoreFormattedSelection(selectionStart+9+indent.length,selectionEnd+9+indent.length);}return true;
       }
-      if(command==='underline' && mode==='rich')toSource();
+      const richQuote=command==='formatBlock' && arg==='blockquote' && mode==='rich';
+      if((command==='underline' || richQuote) && mode==='rich')toSource();
       if(mode!=='rich') {
         const start=source.selectionStart,end=source.selectionEnd,value=source.value;
         const selected=value.slice(start,end),markers={bold:'**',italic:'*',strikeThrough:'~~',code:'`',underline:'__',highlight:'=='};
@@ -796,18 +884,72 @@
           if(!safeLink(url)){hint.textContent='Use an http, https, or mailto link.';return true;}
           text='['+selected+']('+url.replace(/\(/g,'%28').replace(/\)/g,'%29')+')';
         } else if(['insertUnorderedList','insertOrderedList','formatBlock'].includes(command)) {
-          const begin=value.lastIndexOf('\n',start-1)+1,stop=value.indexOf('\n',end);
-          const finish=stop<0?value.length:stop;
-          text=value.slice(begin,finish).split('\n').map((line,i)=>(command==='formatBlock'?'> ':command==='insertOrderedList'?(i+1)+'. ':'- ')+line).join('\n');
-          source.setRangeText(text,begin,finish,'select');source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
+          const begin=start?value.lastIndexOf('\n',start-1)+1:0;
+          const last=end>start && value[end-1]==='\n'?end-1:end,stop=value.indexOf('\n',last);
+          const finish=stop<0?value.length:stop,lines=value.slice(begin,finish).split('\n');
+          const pattern=command==='formatBlock'?/^(\s*)> ?/:command==='insertOrderedList'?/^(\s*)\d+[.)] +/:/^(\s*)[-+*] +/;
+          const already=lines.every(line=>!line.trim() || pattern.test(line));
+          text=lines.map((line,i)=>{
+            if(!line.trim())return line;
+            if(already)return line.replace(pattern,'$1');
+            const match=/^([ \t]*)(.*)$/.exec(line);
+            const body=command==='formatBlock'?match[2]:match[2].replace(/^(?:[-+*]|\d+[.)]) +/,'');
+            return match[1]+(command==='formatBlock'?'> ':command==='insertOrderedList'?(i+1)+'. ':'- ')+body;
+          }).join('\n');
+          const firstDelta=text.split('\n')[0].length-lines[0].length,delta=text.length-(finish-begin);
+          source.setRangeText(text,begin,finish,'select');source.dispatchEvent(new Event('input',{bubbles:true}));
+          if(richQuote)restoreFormattedSelection(start+firstDelta,end+delta);else selection();
+          return true;
         } else return false;
         source.setRangeText(text,start,end,'select');source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
       }
       if(!savedRange){rich.focus();selection();}
       if(!savedRange)return true;
       const s=window.getSelection();rich.focus();s.removeAllRanges();s.addRange(savedRange);
+      if(command==='removeFormat' && !s.isCollapsed){
+        const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret(),range=s.getRangeAt(0).cloneRange();
+        const blocks=[...rich.querySelectorAll('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6')].filter(block=>!block.querySelector('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6') && !block.closest('[data-notebook-raw]') && range.intersectsNode(block));
+        const markers=[];
+        for(const block of blocks){
+          const part=document.createRange();part.selectNodeContents(block);
+          if(range.compareBoundaryPoints(Range.START_TO_START,part)>0)part.setStart(range.startContainer,range.startOffset);
+          if(range.compareBoundaryPoints(Range.END_TO_END,part)<0)part.setEnd(range.endContainer,range.endOffset);
+          if(part.collapsed)continue;
+          const left=document.createRange(),right=document.createRange();
+          left.selectNodeContents(block);left.setEnd(part.startContainer,part.startOffset);
+          right.selectNodeContents(block);right.setStart(part.endContainer,part.endOffset);
+          const leftContent=left.cloneContents(),rightContent=right.cloneContents(),middle=document.createElement('span');
+          middle.append(part.cloneContents());
+          middle.querySelectorAll('strong,b,em,i,u,s,strike,del,mark,code,sub,sup:not([data-footnote-ref])').forEach(node=>node.replaceWith(...node.childNodes));
+          middle.querySelectorAll('[style]').forEach(node=>node.removeAttribute('style'));
+          block.replaceChildren(leftContent,middle,rightContent);markers.push(middle);
+        }
+        if(markers.length){
+          const selected=document.createRange();selected.setStartBefore(markers[0]);selected.setEndAfter(markers[markers.length-1]);
+          // Keep ordinary spans as selection boundaries; serialization ignores them.
+          s.removeAllRanges();s.addRange(selected);sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
+        }
+      }
       if(command==='highlight'){
-        const mark=document.createElement('mark');mark.append(s.getRangeAt(0).cloneContents());document.execCommand('insertHTML',false,mark.outerHTML);
+        const range=s.getRangeAt(0),node=range.startContainer;
+        const existing=(node.nodeType===1?node:node.parentElement).closest('mark');
+        if(existing && existing.contains(range.endContainer)){
+          const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
+          const left=existing.cloneNode(false),right=existing.cloneNode(false),edge=document.createRange();
+          edge.selectNodeContents(existing);edge.setEnd(range.startContainer,range.startOffset);left.append(edge.cloneContents());
+          edge.selectNodeContents(existing);edge.setStart(range.endContainer,range.endOffset);right.append(edge.cloneContents());
+          const middle=document.createElement('span');middle.append(range.cloneContents());
+          if(range.collapsed){middle.append(...existing.childNodes);existing.replaceWith(middle);}
+          else existing.replaceWith(...(left.textContent?[left]:[]),middle,...(right.textContent?[right]:[]));
+          const first=middle.firstChild,last=middle.lastChild;middle.replaceWith(...middle.childNodes);
+          if(first && last){const selected=document.createRange();selected.setStartBefore(first);selected.setEndAfter(last);s.removeAllRanges();s.addRange(selected);}
+          sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
+        }else{
+          const mark=document.createElement('mark');mark.dataset.editorInserted='true';mark.append(range.cloneContents());
+          document.execCommand('insertHTML',false,mark.outerHTML);
+          const inserted=rich.querySelector('mark[data-editor-inserted]');
+          if(inserted){inserted.removeAttribute('data-editor-inserted');const selected=document.createRange();selected.selectNodeContents(inserted);s.removeAllRanges();s.addRange(selected);}
+        }
       }else if(command==='code'){
         const code=document.createElement('code');code.textContent=s.toString();document.execCommand('insertHTML',false,code.outerHTML);
       }else if(command==='link'){
@@ -836,10 +978,88 @@
     });
     rich.addEventListener('dragover',event=>{if(event.dataTransfer?.types.includes('Files'))event.preventDefault();});
     rich.addEventListener('drop',event=>{event.preventDefault();if(event.dataTransfer?.files.length){toSource();source.dispatchEvent(new DragEvent('drop',{dataTransfer:event.dataTransfer,bubbles:true,cancelable:true}));}});
+    function recordFormatChange(before,beforePoint,beforeMarkdown){
+      formatHistory.splice(formatHistoryIndex);
+      formatHistory.push({before,after:rich.innerHTML,beforeMarkdown,afterMarkdown:source.value,beforePoint,afterPoint:formatCaret()});
+      if(formatHistory.length>100)formatHistory.shift();
+      formatHistoryIndex=formatHistory.length;
+    }
+    function restoreFormattedSelection(start,end){
+      mode='rich';hydrate();rich.focus({preventScroll:true});
+      const first=caretOffset(source,rich,null,start),last=caretOffset(source,rich,null,end);
+      if(first && last)window.getSelection().setBaseAndExtent(first.startContainer,first.startOffset,last.startContainer,last.startOffset);
+      selection();
+    }
+    function formatCaret(){
+      const selected=window.getSelection(),path=[];let node=selected?.anchorNode;
+      if(!node || !rich.contains(node))return null;
+      const offset=selected.anchorOffset;
+      while(node!==rich){path.unshift(Array.prototype.indexOf.call(node.parentNode.childNodes,node));node=node.parentNode;}
+      return {path,offset};
+    }
+    function restoreFormatCaret(point){
+      if(!point)return;let node=rich;for(const index of point.path){node=node.childNodes[index];if(!node)return;}
+      window.getSelection().setBaseAndExtent(node,point.offset,node,point.offset);
+    }
+    function unwrapFormattingLine(selected){
+      if(!selected?.isCollapsed || !rich.contains(selected.anchorNode))return false;
+      const element=selected.anchorNode.nodeType===1?selected.anchorNode:selected.anchorNode.parentElement;
+      if(element.closest('[data-notebook-raw]'))return false;
+      const line=element.closest('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6');
+      if(!line || !line.firstChild)return false;
+      const prefix=document.createRange();prefix.selectNodeContents(line);prefix.setEnd(selected.anchorNode,selected.anchorOffset);
+      if(prefix.toString().length)return false;
+      // Remove the nearest block style, splitting its container at authored
+      // line boundaries. Other lines and inline emphasis remain untouched.
+      const block=line.closest('h1,h2,h3,h4,h5,h6,.notebook-subtext,blockquote,center,li');
+      const inlineSelector='strong,b,em,i,u,s,strike,del,mark,code,sub,sup:not([data-footnote-ref])';
+      if(!block && !line.querySelector(inlineSelector))return false;
+      const container=block?.tagName==='LI'?block.parentElement:block || (line.classList.contains('notebook-rich-line')?line.parentElement:line);
+      if(!rich.contains(container))return false;
+      const before=container.cloneNode(false),after=container.cloneNode(false),range=document.createRange();
+      range.selectNodeContents(container);range.setEndBefore(line===container?container.firstChild:line);before.append(range.cloneContents());
+      range.selectNodeContents(container);
+      if(line===container)range.collapse(false);else range.setStartAfter(line);
+      after.append(range.cloneContents());
+      const paragraph=document.createElement('p');paragraph.dir=line.dir || 'auto';paragraph.dataset.unwrappedFormattingLine='true';
+      paragraph.append(...Array.from(line.childNodes,node=>node.cloneNode(true)));
+      // Nested lists stay structural siblings, never children of a paragraph.
+      const trailing=[];
+      if(line.tagName==='LI')for(const child of [...paragraph.children])if(/^(UL|OL)$/.test(child.tagName)){trailing.push(child);child.remove();}
+      if(!block)paragraph.querySelectorAll(inlineSelector).forEach(node=>{
+        if(!node.hasAttribute('data-footnote-ref'))node.replaceWith(...node.childNodes);
+      });
+      if(container.tagName==='OL'){
+        const item=line.closest('li'),index=[...container.children].indexOf(item);
+        after.start=(Number(container.getAttribute('start'))||1)+index+(line===item?1:0);
+      }
+      const replacement=document.createElement('div');
+      const hasContent=el=>el.textContent.trim() || el.querySelector('img,hr,table,pre');
+      if(hasContent(before))replacement.append(before);
+      replacement.append(paragraph,...trailing);
+      if(hasContent(after))replacement.append(after);
+      const beforeHTML=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
+      container.replaceWith(...replacement.childNodes);
+      const inserted=rich.querySelector('[data-unwrapped-formatting-line]');
+      if(inserted){inserted.removeAttribute('data-unwrapped-formatting-line');const caret=document.createRange();caret.selectNodeContents(inserted);caret.collapse(true);selected.removeAllRanges();selected.addRange(caret);}
+      sync();selection();recordFormatChange(beforeHTML,beforePoint,beforeMarkdown);return true;
+    }
     rich.addEventListener('keydown',event=>{
       if(source.disabled || source.readOnly)return;
+      if((event.metaKey||event.ctrlKey) && event.key.toLowerCase()==='z'){
+        const change=formatHistory[event.shiftKey?formatHistoryIndex:formatHistoryIndex-1];
+        if(change && rich.innerHTML===(event.shiftKey?change.before:change.after)){
+          event.preventDefault();rich.innerHTML=event.shiftKey?change.after:change.before;
+          restoreFormatCaret(event.shiftKey?change.afterPoint:change.beforePoint);
+          formatHistoryIndex+=event.shiftKey?1:-1;sync();
+          const markdown=event.shiftKey?change.afterMarkdown:change.beforeMarkdown;
+          if(source.value!==markdown){syncing=true;source.value=markdown;source.dispatchEvent(new Event('input',{bubbles:true}));syncing=false;}
+          selection();return;
+        }
+      }
       if((event.metaKey||event.ctrlKey) && !event.shiftKey && event.key.toLowerCase()==='z' && removedColumns?.after===rich.innerHTML && undoColumnRemoval()){event.preventDefault();return;}
       const selected=window.getSelection(),cell=parallelCell(selected?.anchorNode);
+      if(event.key==='Delete' && !event.isComposing && !event.altKey && !event.metaKey && !event.ctrlKey && unwrapFormattingLine(selected)){event.preventDefault();return;}
       if(cell && selected.isCollapsed && ['Backspace','Delete'].includes(event.key)) {
         const edge=selected.getRangeAt(0).cloneRange();edge.selectNodeContents(cell);
         if(event.key==='Backspace')edge.setEnd(selected.anchorNode,selected.anchorOffset);else edge.setStart(selected.anchorNode,selected.anchorOffset);

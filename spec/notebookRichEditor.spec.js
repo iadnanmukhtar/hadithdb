@@ -50,7 +50,7 @@ test('advanced Markdown opens formatted and switches to source only on request',
   const markdown = '- [x] Task\n\n[[My note]]\n\n```js\nconst a = 1;\n```';
   await page.evaluate(text => { source.value = text; preview.innerHTML = '<p>Rendered advanced note</p>'; edit(true); }, markdown);
   expect(await page.locator('#notebook-editor').isVisible()).toBe(false);
-  await page.waitForFunction(() => document.querySelector('.notebook-advanced-block')?.textContent === 'Rendered advanced block');
+  await page.waitForFunction(() => document.querySelector('.notebook-advanced-content')?.textContent === 'Rendered advanced block');
   await page.getByRole('button', { name: 'Switch to Markdown editing', exact: true }).click();
   expect(await page.locator('#notebook-editor').isVisible()).toBe(true);
   expect(await page.locator('#notebook-editor').inputValue()).toBe(markdown);
