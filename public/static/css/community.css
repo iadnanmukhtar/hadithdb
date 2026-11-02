@@ -974,7 +974,19 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
   .reader-social-actions :is(button, a) { min-width: 44px; min-height: 44px; padding: .4rem .5rem !important; font-size: .8rem; }
   .reader-social-actions .bi { font-size: 1rem; }
   .reader-social-actions { gap: .15rem; white-space: normal; overflow: visible; }
-  .quran-ayah-hero-with-nav > .reader-social-actions { width: 100%; margin-inline: 0; }
+  .reader-social-actions.quran-ayah-hero-toolbar {
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    white-space: nowrap;
+    overflow-x: auto;
+    padding-inline: 0;
+  }
+  /* Use the space below the hero's navigation arrows for the action row. */
+  .quran-ayah-hero-with-nav > .reader-social-actions.quran-ayah-hero-toolbar {
+    width: calc(100% + 4rem);
+    margin-inline: -2rem;
+  }
+  .reader-social-actions.quran-ayah-hero-toolbar > .personal-note-actions { gap: .1rem; }
 }
 
 .reader-social-actions.reader-heading-actions { display: inline-flex; width: auto; vertical-align: middle; }
