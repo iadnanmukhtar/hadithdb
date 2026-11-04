@@ -36,7 +36,9 @@
 :is(.notebook-markdown, .content-markdown) pre { direction: ltr; text-align: left; overflow: auto; }
 :is(.notebook-markdown, .content-markdown) img { max-width: 100%; }
 :is(.notebook-markdown, .content-markdown) table { display: block; overflow-x: auto; max-width: 100%; border-collapse: collapse; margin-block: 0 1rem; }
-:is(.notebook-markdown, .content-markdown) td, :is(.notebook-markdown, .content-markdown) th { border: 1px solid var(--note-edge, #bbb); padding: .4rem; vertical-align: top; }
+/* Keep prose columns readable; the table scrolls within the reading pane when
+   these minimums no longer fit. Retain wrapping for long links and Arabic. */
+:is(.notebook-markdown, .content-markdown) td, :is(.notebook-markdown, .content-markdown) th { min-width: 12em; border: 1px solid var(--note-edge, #bbb); padding: .4rem; vertical-align: top; }
 
 /* Keep bilingual rows in source order, with equal tracks even on small screens. */
 :is(.notebook-markdown, .content-markdown) .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
