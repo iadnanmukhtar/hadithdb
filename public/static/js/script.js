@@ -1518,8 +1518,12 @@ function initCommandSearch() {
 	function setMode(nextMode, options) {
 		var previousMode = mode;
 		var resolvedMode = nextMode === 'quran' ? 'quran' : 'hadith';
-		if (resolvedMode !== previousMode)
+		if (resolvedMode !== previousMode) {
 			storeSearchTerm(previousMode);
+			dialog.querySelectorAll('[data-command-filter]').forEach(function (checkbox) {
+				checkbox.checked = false;
+			});
+		}
 		mode = resolvedMode;
 		if (mode === 'quran') normalizeQuranFilters();
 		if (resolvedMode !== previousMode)

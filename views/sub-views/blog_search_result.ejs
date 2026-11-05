@@ -1,7 +1,8 @@
 <article class="row mt-3 blog-search-result">
+  <%- include('search_result_header.ejs', { resultKind: article.doctype === 'community' ? 'Community · Article' : 'Blog · Article', resultAuthor: article.author, resultDate: article.publishedAt }); %>
   <section class="col-12 h">
-    <div class="small text-muted">Blog · <%= article.author %><% if (article.publishedAt) { %> · <%= new Date(article.publishedAt).toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric',timeZone:'UTC'}) %><% } %></div>
-    <h2 class="fs-5 mb-2" dir="auto"><a href="<%= article.url %>"><%= article.title_en %></a></h2>
-    <p class="body" dir="auto"><%= article.excerpt %></p>
+
+    <h2 class="search-result-title" dir="auto"><a href="<%= article.url %>"><%= article.title_en %></a></h2>
+    <p class="body" dir="auto"><% if (article.excerpt_html) { %><%- article.excerpt_html %><% } else { %><%= article.excerpt %><% } %></p>
   </section>
 </article>

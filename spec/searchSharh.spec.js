@@ -15,18 +15,18 @@ describe('Sharh book search', () => {
 		Index.docsFromQuery.mockReset();
 		Index.docsFromQuery.mockResolvedValue(Object.assign([], { total: 0 }));
 	});
-	test('General defaults include all five sources and preserve explicit exclusions', async () => {
-		expect(Search.generalContentFilters([])).toEqual(['hadith', 'sharh', 'sirah', 'quran', 'commentaries']);
+	test('General defaults include library and article sources and preserve explicit exclusions', async () => {
+		expect(Search.generalContentFilters([])).toEqual(['hadith', 'sharh', 'sirah', 'quran', 'commentaries', 'blog', 'community']);
 		expect(Search.generalContentFilters(['quran'])).toEqual(['quran']);
 		expect(Search.generalContentFilters(['bukhari'])).toEqual(['hadith', 'sharh', 'bukhari']);
 		await Search.a_searchText('=mercy', Search.generalContentFilters([]), 0, { generalSearch: true });
 		const union = Index.docsFromQuery.mock.calls[0][1].bool.filter[0].bool;
 		expect(union.minimum_should_match).toBe(1);
-		expect(union.should).toHaveLength(5);
-		expect(union.should[0].bool.filter).toContainEqual({ terms: { doctype: ['hadith', 'sharh'] } });
-		expect(JSON.stringify(union.should[1])).toContain('"book_alias":"quran"');
-		expect(JSON.stringify(union.should[1])).toContain('"commentary_type":"trans"');
-		expect(union.should[2].bool.filter).toContainEqual({ bool: { should: [{ bool: { filter: [{ term: { doctype: 'commentary' } }, { term: { commentary_type: 'tafsir' } }] } }], minimum_should_match: 1 } });
+		expect(union.should).toContainEqual({terms:{doctype:['blog','community']}});
+		expect(union.should.some(branch => branch.bool?.filter?.some(filter => JSON.stringify(filter) === JSON.stringify({ terms: { doctype: ['hadith', 'sharh'] } })))).toBe(true);
+		expect(JSON.stringify(union)).toContain('"book_alias":"quran"');
+		expect(JSON.stringify(union)).toContain('"commentary_type":"trans"');
+		expect(union.should.find(branch => JSON.stringify(branch).includes('commentary_type') && JSON.stringify(branch).includes('tafsir')).bool.filter).toContainEqual({ bool: { should: [{ bool: { filter: [{ term: { doctype: 'commentary' } }, { term: { commentary_type: 'tafsir' } }] } }], minimum_should_match: 1 } });
 	});
 
 	test('puts translations in the Quran scope and excludes them from the Tafsir scope', async () => {
@@ -74,11 +74,11 @@ describe('Sharh book search', () => {
 
 	test('General autocomplete carries mixed-source filters beyond Quran matches', async () => {
 		await Search.a_autocomplete('uncommon search phrase', Search.generalContentFilters([]), 10, { generalSearch: true });
-		const restCall = Index.docsFromQuery.mock.calls.find(call => call[0] === 'hadiths,toc,commentaries,sharhs');
+		const restCall = Index.docsFromQuery.mock.calls.find(call => call[0] === 'hadiths,toc,commentaries,sharhs,community_articles_v1');
 		expect(restCall).toBeDefined();
-		const union = restCall[1].bool.must.bool.filter[0].bool;
-		expect(union.should).toHaveLength(5);
-		expect(union.should[0].bool.filter).toContainEqual({ terms: { doctype: ['hadith', 'sharh'] } });
+		const union = restCall[1].bool.filter[0].bool;
+		expect(union.should).toContainEqual({terms:{doctype:['blog','community']}});
+		expect(union.should.some(branch => branch.bool?.filter?.some(filter => JSON.stringify(filter) === JSON.stringify({ terms: { doctype: ['hadith', 'sharh'] } })))).toBe(true);
 	});
 
 	test('General restricts named Tafsir only within the commentary branch', async () => {

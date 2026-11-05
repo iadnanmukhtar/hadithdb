@@ -123,6 +123,12 @@
               <input class="form-check-input" type="checkbox" name="b" value="sirah" <%= selectedCommandHadithAliases.includes('sirah') ? 'checked' : '' %> data-command-filter data-command-filter-label="History">
               <span>History</span>
             </label>
+            <% [['blog', 'Blog'], ['community', 'Community']].forEach(function (source) { %>
+            <label class="command-search-book-option" data-command-general-only-filter>
+              <input class="form-check-input" type="checkbox" name="b" value="<%= source[0] %>" <%= selectedCommandHadithAliases.includes(source[0]) ? 'checked' : '' %> data-command-filter data-command-filter-label="<%= source[1] %>">
+              <span><%= source[1] %></span>
+            </label>
+            <% }); %>
           </div>
           <section id="command-search-quran-filters" class="command-search-filter-panel" data-command-search-panel="quran">
             <div data-command-search-book-list="quran">

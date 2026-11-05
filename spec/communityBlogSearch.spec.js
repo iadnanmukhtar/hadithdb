@@ -1,38 +1,38 @@
 'use strict';
-jest.mock('../lib/Community',()=>({ensure:jest.fn(async()=>{}),sql:jest.fn()}));
-const Community=require('../lib/Community');
-const Blog=require('../lib/CommunityBlogSearch');
-let rows,bodies;
-beforeEach(()=>{rows=[];bodies=[];Community.sql.mockImplementation(async sql=>sql.includes('public_markdown')?bodies:rows);});
-function article(id,title,body){rows.push({id,public_title:title,version:1,updated_at:new Date(),published_at:'2020-01-01',name:'Author',handle:'author',slug:'Original path '+id});bodies.push({id,public_markdown:body});}
-test('finds public title and full body with Arabic diacritics, preserving legacy URLs',async()=>{
- article(1,'Duas of Protection','Opening paragraph. '.repeat(100)+'الصَّلَاةُ and wellness');
- expect((await Blog.search('duas protection'))[0].url).toBe('/blog/Original%20path%201');
- expect((await Blog.search('الصلاة'))[0].id).toBe(1);
- expect((await Blog.search('wellness'))[0].excerpt).toContain('wellness');
- expect(await Blog.search('missing')).toEqual([]);
+jest.mock('../lib/Index',()=>({docsFromQuery:jest.fn()}));
+const Index=require('../lib/Index');
+const Search=require('../lib/Search');
+const Articles=require('../lib/CommunitySearchIndex');
+beforeEach(()=>{
+ global.settings={search:{itemsPerPage:20}};global.books=[];global.surahs=[];
+ Index.docsFromQuery.mockReset();
 });
-test('removes hidden or unfeatured articles immediately despite cached body',async()=>{
- article(2,'Needle','Public needle');expect(await Blog.search('needle')).toHaveLength(1);
- rows=[];bodies=[];expect(await Blog.search('needle')).toEqual([]);
+test('articles and library results use a single ES query, score order and total',async()=>{
+ const docs=Object.assign([
+ {doctype:'blog',id:1,title_en:'Mercy',article_text:'Published mercy',url:'/blog/mercy',_score:8},
+ {doctype:'community',id:2,title_en:'A public article',article_text:'Mercy in life',url:'/community/p/example',_score:3}
+ ],{total:87});
+ Index.docsFromQuery.mockResolvedValue(docs);
+ const result=await Search.a_searchText('mercy',[],20,{generalSearch:true,resultSize:20});
+ expect(Index.docsFromQuery).toHaveBeenCalledTimes(1);
+ const [indexes,query,offset,size,sort]=Index.docsFromQuery.mock.calls[0];
+ expect(indexes).toBe('hadiths,toc,commentaries,sharhs,community_articles_v1');
+ expect(offset).toBe(20);expect(size).toBe(20);expect(sort).toContain('_score DESC');
+ expect(JSON.stringify(query)).toContain('article_text^5');
+ expect(JSON.stringify(query)).not.toContain('wildcard');
+ expect(result.map(r=>r.id)).toEqual([1,2]);expect(result.total).toBe(87);
 });
-test('refreshes changed published snapshots and never uses draft fields',async()=>{
- article(3,'Published','Public needle');rows[0].title='Private draft';rows[0].markdown='secret-draft';
- expect(await Blog.search('secret-draft')).toEqual([]);
- expect(await Blog.search('needle')).toHaveLength(1);
- rows[0].version=2;bodies[0].public_markdown='Replacement';expect(await Blog.search('needle')).toEqual([]);
- expect(await Blog.search('replacement')).toHaveLength(1);
+test.each(['blog','community'])('explicit %s filter reaches ES without database searching',async type=>{
+ Index.docsFromQuery.mockResolvedValue(Object.assign([],{total:0}));
+ await Search.a_searchText('test',[type],0,{generalSearch:true});
+ const query=Index.docsFromQuery.mock.calls[0][1];
+ expect(query.bool.filter).toEqual([{bool:{should:[{terms:{doctype:[type]}}],minimum_should_match:1}}]);
 });
-test('merged pagination preserves all corpus items and totals across boundary',async()=>{
- for(let i=10;i<15;i++)article(i,'Needle '+i,'Body');
- const corpus=Array.from({length:8},(_,i)=>({id:100+i}));
- const fetchCorpus=jest.fn(async(offset,size)=>Object.assign(corpus.slice(offset,offset+size),{total:corpus.length}));
- const pages=[];
- for(let offset=0;offset<13;offset+=4){const page=await Blog.merge('needle',offset,5,fetchCorpus);expect(page.total).toBe(13);pages.push(...page.slice(0,4));}
- expect(pages).toHaveLength(13);expect(new Set(pages.map(i=>i.id)).size).toBe(13);
- expect(pages.filter(p=>p.id>=100).map(p=>p.id)).toEqual(corpus.map(p=>p.id));
+test('article excerpts escape markup while preserving ES highlight markers',()=>{
+ const item=Articles.formatResult({_highlight:{article_text:['<script>x</script> <i>mercy</i>']},article_text:'fallback'});
+ expect(item.excerpt_html).toBe('&lt;script&gt;x&lt;/script&gt; <mark>mercy</mark>');
 });
-test('result template escapes author title and content',async()=>{
+test('result template escapes author title and ordinary excerpt',async()=>{
  const html=await require('ejs').renderFile(require('path').join(__dirname,'../views/sub-views/blog_search_result.ejs'),{article:{url:'/blog/safe',author:'<script>x</script>',title_en:'<img src=x>',excerpt:'<script>alert(1)</script>'}});
  expect(html).not.toContain('<script>');expect(html).toContain('&lt;script&gt;');
 });

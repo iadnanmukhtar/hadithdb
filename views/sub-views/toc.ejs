@@ -32,6 +32,9 @@
 %>
 
 <article class="row">
+  <% if (searchResult) { %>
+    <%- include('search_result_header.ejs', { resultKind: isQuranToc ? 'Quran · Passage' : 'Chapter heading' }); %>
+  <% } %>
 
 	<!-- English TOC ----------------------------------------- -->
 	<section class="col-md-6 col-sm-12 h" lang="en">

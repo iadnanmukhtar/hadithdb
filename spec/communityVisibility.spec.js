@@ -4,6 +4,7 @@ const V = require('../lib/CommunityVisibility');
 let q;
 beforeEach(()=>{
   q=jest.fn();
+  jest.spyOn(require('../lib/CommunitySearchIndex'),'syncPost').mockResolvedValue();
   jest.spyOn(C,'transaction').mockImplementation(work=>work(q));
   jest.spyOn(require('../lib/CommunityDrive'),'enqueue').mockResolvedValue();
   jest.spyOn(require('../lib/BlogPageCache'),'invalidate').mockResolvedValue();
@@ -24,6 +25,7 @@ test.each([true,false])('post visibility preserves content and cancels queued ma
   await expect(V.set({uid:'me'},'post',12,hidden)).resolves.toEqual({hidden});
   expect(q).toHaveBeenCalledWith('UPDATE community_posts SET status=?,version=version+1 WHERE id=?',[hidden?'private':'published',12]);
   expect(q.mock.calls.some(([sql])=>sql.includes("status='cancelled'"))).toBe(hidden);
+  expect(require('../lib/CommunitySearchIndex').syncPost).toHaveBeenCalledWith(12);
 });
 test.each(Object.keys(V.sources).filter(s=>s!=='post'))('hide/unhide %s without deleting its underlying interaction',async source=>{
   q.mockResolvedValue([{user_uid:'me'}]);

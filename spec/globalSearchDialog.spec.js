@@ -71,7 +71,7 @@ describe('global search dialog', () => {
 		const sourceOptions = html.match(/<div class="command-search-source-options" data-command-global-source-options>([\s\S]*?)<\/div>/)[1];
 		const values = Array.from(sourceOptions.matchAll(/name="b" value="([^"]+)"/g), match => match[1]);
 
-		expect(values).toEqual(['quran', 'tafsir', 'translations', 'hadith', 'sharh', 'sirah']);
+		expect(values).toEqual(['quran', 'tafsir', 'translations', 'hadith', 'sharh', 'sirah', 'blog', 'community']);
 		expect(html.match(/data-command-global-source-options/g)).toHaveLength(1);
 	});
 
@@ -195,4 +195,32 @@ describe('global search dialog', () => {
 		expect(client).toContain("'Quran, Tafsir, and Translation'");
 		expect(client).toContain("'General search'");
 	});
+});
+
+test('switching modes clears filters, while initialization and same-mode selection preserve them', async () => {
+ const { JSDOM } = require('jsdom');
+ const vm = require('vm');
+ const dom = new JSDOM(await render(['blog'], {
+   quranSearchBookFilters: ['quran'],
+   quranSearchCommentaryAliases: ['tabari'],
+   quranSearchTafsirs: [{alias:'tabari',source:'local',hidden:0,shortName_en:'Tabari'}]
+ }));
+ const dialog = dom.window.document.querySelector('dialog');
+ const ctx = vm.createContext({
+   dialog, mode:'hadith', form:dialog.querySelector('form'), input:dialog.querySelector('[name=q]'),
+   storeSearchTerm:jest.fn(), restoreSearchTerm:jest.fn(), normalizeQuranFilters:jest.fn(),
+   renderSelectedFilters:jest.fn(), refreshAutocomplete:jest.fn()
+ });
+ vm.runInContext(client.slice(client.indexOf('\tfunction setMode('),client.indexOf('\n\tfunction openDialog(',client.indexOf('\tfunction setMode('))),ctx);
+ const selected = () => [...dialog.querySelectorAll('[data-command-filter]:checked')].map(node=>node.value);
+ ctx.setMode('hadith',{refresh:false});
+ expect(selected()).toEqual(expect.arrayContaining(['blog','quran','tabari']));
+ ctx.setMode('quran');
+ expect(selected()).toEqual([]);
+ dialog.querySelector('[value=tabari]').checked=true;
+ ctx.setMode('quran');
+ expect(selected()).toEqual(['tabari']);
+ ctx.setMode('hadith');
+ expect(selected()).toEqual([]);
+ dom.window.close();
 });

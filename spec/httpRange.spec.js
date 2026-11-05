@@ -1,4 +1,3 @@
-jest.mock('../lib/CommunityBlogSearch',()=>({merge:jest.fn(async(q,offset,size,search)=>search(offset,size))}));
 jest.mock('../lib/CommunityBlogImport', () => ({records:jest.fn(async()=>[]),publicUrls:jest.fn(async()=>[])}));
 'use strict';
 jest.mock('../lib/Community',()=>({blogPosts:jest.fn(async()=>[])}));
@@ -322,4 +321,16 @@ describe('Hadith route status errors', () => {
       search.mockRestore();
     }
   });
+  test.each(['blog', 'community', 'blog&b=community'])('source-only filter %s uses the shared ES search', async (source) => {
+    const search = jest.spyOn(Search, 'a_searchText').mockResolvedValue(Object.assign([], {total: 2}));
+
+    try {
+      const response = await fetch(`${baseUrl}/?q=test&b=${source}&o=100`);
+      expect(response.status).toBe(416);
+      expect(search).toHaveBeenCalledWith('test', source.split('&b='), 100, expect.objectContaining({generalSearch:true}));
+    } finally {
+      search.mockRestore();
+    }
+  });
+
 });

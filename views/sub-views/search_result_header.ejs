@@ -1,0 +1,7 @@
+<header class="col-12 search-result-header" dir="ltr">
+  <span class="search-result-kind"><%= resultKind %></span>
+  <% if (locals.resultAuthor) { %><span class="search-result-author" dir="auto"><%= resultAuthor %></span><% } %>
+  <% if (locals.resultDate && Number.isFinite(new Date(resultDate).getTime())) { %>
+    <time datetime="<%= new Date(resultDate).toISOString() %>"><%= new Date(resultDate).toLocaleDateString('en-US', {year:'numeric', month:'short', day:'numeric', timeZone:'UTC'}) %></time>
+  <% } %>
+</header>

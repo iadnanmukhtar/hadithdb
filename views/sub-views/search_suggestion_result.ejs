@@ -82,6 +82,7 @@
 	const bookCountLineAr = countLine('ar');
 %>
 <article class="row mt-3 search-suggestion-result">
+  <%- include('search_result_header.ejs', { resultKind: type }); %>
 	<section class="col-md-6 col-sm-12 h" lang="en">
 		<% if (isBook) { %>
 			<b><a href="<%= href %>"><%- alias %></a></b>
