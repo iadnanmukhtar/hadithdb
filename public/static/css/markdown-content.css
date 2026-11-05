@@ -196,3 +196,16 @@ main .intro.content-markdown:lang(en) {
 .tafsir-only-page .quran-tafsir-local-pair > [lang="en"] {
   font-size: calc(var(--f-size-ar) * 9 / 13);
 }
+
+/* Native contenteditable indentation nests a list directly inside another list.
+   Give that structure the same inset as a list nested inside its parent item. */
+.community-rich-input :is(ul, ol) > :is(ul, ol) {
+  margin-inline-start: 1.6em;
+}
+.community-rich-input :is(ul, ol) > :is(ul, ol):has(> li:first-child[dir="rtl"]) {
+  direction: rtl;
+}
+.community-rich-input a[href],
+.community-rich-input a[href] * {
+  cursor: pointer;
+}

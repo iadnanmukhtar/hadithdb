@@ -501,3 +501,34 @@ test.each(['-','1.'])('formatted Tab indents a selected group and survives mode 
  expect(await page.evaluate(()=>source.value)).toBe(nested);
  expect(await page.locator('.community-rich-input li > :is(ul,ol) > li').count()).toBe(2);
 });
+
+test.each(['en','ar'])('formatted Tab visibly moves bullet text inward and link hover uses pointer: %s',async lang=>{
+ const parent=lang==='ar'?'العنصر الأول':'First item',child=lang==='ar'?'العنصر الثاني':'Second item';
+ await setup('article',`Intro\n\n- ${parent}\n- ${child}\n\n[Read source](https://example.com)`);
+ const edge=()=>page.evaluate(()=>{const li=[...rich.querySelectorAll('li')].find(n=>!n.querySelector('li') && (n.textContent.includes('Second item')||n.textContent.includes('العنصر الثاني')));const r=document.createRange();r.selectNodeContents(li);const rect=r.getBoundingClientRect();return getComputedStyle(li).direction==='rtl'?-rect.right:rect.left;});
+ await page.evaluate(()=>selectBlock('li:nth-child(2)'));
+ const before=await edge();
+ await page.keyboard.press('Tab');
+ const after=await edge();
+ await page.screenshot({path:`/tmp/list-indent-${lang}.png`});
+ expect(after-before).toBeGreaterThan(20);
+ await page.keyboard.press('Shift+Tab');
+ expect(await edge()).toBeCloseTo(before,0);
+ await page.locator('.community-rich-input a').hover();
+ expect(await page.locator('.community-rich-input a').evaluate(n=>getComputedStyle(n).cursor)).toBe('pointer');
+});
+
+test.each(['post','article','note'])('%s Tab nests loose bullets with bold text instead of creating blockquotes',async kind=>{
+ await setup(kind,'Intro\n\n- Truthful foretelling\n\n- **Nubuwwah** means prophethood\n\n- Foretelling is one aspect');
+ await page.evaluate(()=>{rich.focus();const text=rich.querySelector('li:nth-child(2) strong').firstChild;getSelection().setBaseAndExtent(text,0,text,0);surface.selection();});
+ await page.keyboard.press('Tab');
+ expect(await page.locator('.community-rich-input blockquote').count()).toBe(0);
+ expect(await page.locator('.community-rich-input li > ul > li strong').textContent()).toBe('Nubuwwah');
+ expect(await page.evaluate(()=>source.value)).not.toContain('>');
+ await page.screenshot({path:`/tmp/loose-bullet-indent-${kind}.png`});
+ await page.keyboard.press('Shift+Tab');
+ expect(await page.locator('.community-rich-input > ul > li').count()).toBe(3);
+ expect(await page.locator('.community-rich-input blockquote').count()).toBe(0);
+ await page.keyboard.press('Meta+z');
+ expect(await page.locator('.community-rich-input li > ul > li strong').textContent()).toBe('Nubuwwah');
+});
