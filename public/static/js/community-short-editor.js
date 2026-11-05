@@ -529,6 +529,7 @@
       if(mode==='rich' && !rendered) mode='source';
       if(rendered && mode==='rich'){rich.replaceChildren(...rendered.childNodes);lastHTML=rich.innerHTML;lastMarkdown=serialize(rich);}
       source.hidden=mode==='rich';rich.hidden=mode!=='rich';
+      const editingLayout=rich.closest('.community-editing-layout');if(editingLayout)editingLayout.hidden=rich.hidden;
       source.required=mode==='source' && required;
       toggle.textContent=mode==='rich'?'Edit Markdown':'Formatted editing';
       toggle.setAttribute('aria-label',mode==='rich'?'Switch to Markdown editing':'Switch to formatted editing');
@@ -1203,6 +1204,26 @@
     source.form?.addEventListener('submit',event=>{sync();if(required&&!source.value.trim() || source.maxLength>0&&source.value.length>source.maxLength){event.preventDefault();event.stopImmediatePropagation();rich.setAttribute('aria-invalid','true');source.focus();}},true);
     new MutationObserver(hydrate).observe(source,{attributes:true,attributeFilter:['disabled','readonly']});
     // One document listener serves every mounted editor, including feed replies.
+    if(isArticle && source.id!=='notebook-editor'){
+      const layout=document.createElement('div');layout.className='community-editing-layout';
+      const outline=document.createElement('nav');outline.className='community-editing-outline';outline.setAttribute('aria-label','Article heading outline');
+      const title=document.createElement('strong');title.textContent='In this article';
+      const list=document.createElement('ol');outline.append(title,list);rich.before(layout);layout.append(rich,outline);
+      let frame=0;
+      const rebuild=()=>{
+        frame=0;layout.hidden=rich.hidden;
+        const headings=[...rich.querySelectorAll('h1,h2,h3,h4,h5,h6')].filter(h=>h.textContent.trim() && !h.closest('.footnotes,.community-edit-parallel-cell + .community-edit-parallel-cell'));
+        outline.hidden=!headings.length;layout.classList.toggle('has-outline',!!headings.length);
+        const base=Math.min(...headings.map(h=>Number(h.tagName[1])));
+        list.replaceChildren(...headings.map(heading=>{
+          const item=document.createElement('li'),button=document.createElement('button');button.type='button';button.dir='auto';button.textContent=heading.textContent.trim();button.style.setProperty('--outline-depth',Number(heading.tagName[1])-base);
+          button.addEventListener('click',()=>{heading.scrollIntoView({block:'center'});rich.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(heading);range.collapse(true);const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);selection();});
+          item.append(button);return item;
+        }));
+      };
+      new MutationObserver(()=>{if(!frame)frame=requestAnimationFrame(rebuild);}).observe(rich,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+      rebuild();
+    }
     instances.set(source,{selection,hydrate,toSource,toFormatted,shell,rich,sync,format:formatAction,get mode(){return mode;}});hydrate();
     return instances.get(source);
   }

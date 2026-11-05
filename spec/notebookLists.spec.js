@@ -72,7 +72,7 @@ test('parallel headings share their size and create one private outline entry', 
     const rebuild = source.slice(source.indexOf('  function rebuildOutline()'), source.indexOf('  new MutationObserver(rebuildOutline)'));
     await page.setContent(`<style>${css}</style><article id="preview" class="notebook-markdown">${Notebook.render('## Heading || Translation')}</article><ol id="items"></ol>`);
     const result = await page.evaluate(rebuild => {
-      window.preview = document.getElementById('preview'); window.outlineItems = document.getElementById('items');
+      window.preview = document.getElementById('preview'); window.outlineSurface=()=>preview; window.outlineItems = document.getElementById('items');
       window.outlineHeadings = []; window.outlineButtons = []; window.updateOutlineVisibility = () => {};
       (0, eval)(rebuild); rebuildOutline();
       return { entries: outlineHeadings.map(h => h.textContent), sizes: [...preview.querySelectorAll('h2')].map(h => getComputedStyle(h).fontSize) };
@@ -92,7 +92,7 @@ test('the private outline scrolls its rail to keep the highlighted heading visib
     const result = await page.evaluate(({ functions }) => {
       window.outline = document.getElementById('outline');
       window.outlineContent = document.getElementById('content');
-      window.preview = document.getElementById('preview');
+      window.preview = document.getElementById('preview'); window.outlineSurface=()=>preview;
       window.outlineItems = document.getElementById('items');
       for (let index = 0; index < 20; index++) {
         const button = document.createElement('button');

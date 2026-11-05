@@ -532,3 +532,29 @@ test.each(['post','article','note'])('%s Tab nests loose bullets with bold text 
  await page.keyboard.press('Meta+z');
  expect(await page.locator('.community-rich-input li > ul > li strong').textContent()).toBe('Nubuwwah');
 });
+
+test.each(['note','article'])('%s formatted heading outline stays visible and updates while editing',async kind=>{
+ await setup(kind,'Intro\n\n# First heading\n\nBody\n\n## العنوان الثاني',1200);
+ if(kind==='note'){
+  const sourceText=fs.readFileSync('public/static/js/notebook.js','utf8');
+  const outlineCode=sourceText.slice(sourceText.indexOf('  // The outline stays outside'),sourceText.indexOf('  async function openRequestedWiki'));
+  await page.addScriptTag({content:`(()=>{const modal=document.getElementById('notebook-modal'),editor=document.getElementById('notebook-editor'),preview=document.getElementById('notebook-preview');modal.querySelector('.modal-dialog').classList.add('modal-fullscreen');${outlineCode}})();`});
+ }
+ const panel=page.locator(kind==='note'?'#notebook-outline':'.community-editing-outline');
+ await expectVisible();
+ async function expectVisible(){await page.waitForFunction(selector=>{const n=document.querySelector(selector);return n && !n.hidden && n.querySelectorAll('button').length>=2;},kind==='note'?'#notebook-outline':'.community-editing-outline');}
+ const buttons=panel.locator(kind==='note'?'#notebook-outline-items button':'ol button');
+ expect(await buttons.allTextContents()).toEqual(kind==='note'?['H1First heading','H2العنوان الثاني']:['First heading','العنوان الثاني']);
+ await page.evaluate(()=>{rich.querySelector('h1').textContent='Renamed heading';const h=document.createElement('h3');h.textContent='Added heading';rich.append(h);rich.dispatchEvent(new InputEvent('input',{bubbles:true}));});
+ await page.waitForFunction(()=>document.querySelector('#notebook-outline-items,.community-editing-outline ol')?.textContent.includes('Added heading'));
+ expect(await buttons.first().textContent()).toContain('Renamed heading');
+ await buttons.last().click();
+ expect(await page.evaluate(()=>rich.contains(getSelection().anchorNode))).toBe(true);
+ await page.keyboard.type('Edited ');
+ await page.waitForFunction(()=>document.querySelector('#notebook-outline-items,.community-editing-outline ol')?.textContent.includes('Edited Added heading'));
+ await page.evaluate(()=>{rich.querySelector('h2').remove();rich.dispatchEvent(new InputEvent('input',{bubbles:true}));});
+ await page.waitForFunction(()=>!document.querySelector('#notebook-outline-items,.community-editing-outline ol')?.textContent.includes('العنوان الثاني'));
+ const positions=await page.evaluate(selector=>{const panel=document.querySelector(selector).getBoundingClientRect(),editor=rich.getBoundingClientRect();return {panelLeft:panel.left,editorRight:editor.right};},kind==='note'?'#notebook-outline':'.community-editing-outline');
+ expect(positions.panelLeft).toBeGreaterThanOrEqual(positions.editorRight);
+ await page.screenshot({path:`/tmp/live-heading-outline-${kind}.png`});
+});

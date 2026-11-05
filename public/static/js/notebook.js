@@ -1075,6 +1075,11 @@
   const outlineContent = document.getElementById('notebook-outline-content');
   const outlineItems = document.getElementById('notebook-outline-items');
   let outlineHeadings = [], outlineButtons = [], outlineActive = -1;
+  function outlineSurface() {
+    if(!preview.hidden)return preview;
+    const surface=window.CommunityShortEditor?.get(editor);
+    return surface && !surface.shell.hidden && !surface.rich.hidden ? surface.rich : null;
+  }
   function scrollOutlineToActive(button) {
     if (!button || outlineContent.hidden || !outlineContent.clientHeight) return;
     const contentBox = outlineContent.getBoundingClientRect();
@@ -1084,7 +1089,7 @@
   }
   function updateOutlinePosition() {
     if (outline.hidden || !outlineHeadings.length) return;
-    const top = preview.getBoundingClientRect().top;
+    const top = (outlineSurface() || preview).getBoundingClientRect().top;
     let active = 0;
     outlineHeadings.forEach((heading, index) => {
       if (heading.getBoundingClientRect().top <= top + 24) active = index;
@@ -1099,11 +1104,11 @@
     }
   }
   function updateOutlineVisibility() {
-    outline.hidden = preview.hidden || !outlineHeadings.length || !modal.querySelector('.modal-dialog').classList.contains('modal-fullscreen');
+    outline.hidden = !outlineSurface() || !outlineHeadings.length || !modal.querySelector('.modal-dialog').classList.contains('modal-fullscreen');
     updateOutlinePosition();
   }
   function rebuildOutline() {
-    outlineHeadings = Array.from(preview.querySelectorAll('h1, h2, h3, h4, h5, h6')).filter(heading => heading.textContent.trim() && !heading.closest('.notebook-parallel-cell + .notebook-parallel-cell'));
+    outlineHeadings = Array.from(outlineSurface()?.querySelectorAll('h1, h2, h3, h4, h5, h6') || []).filter(heading => heading.textContent.trim() && !heading.closest('.notebook-parallel-cell + .notebook-parallel-cell, .community-edit-parallel-cell + .community-edit-parallel-cell'));
     const baseLevel = Math.min(...outlineHeadings.map(heading => Number(heading.tagName.slice(1))));
     outlineActive = -1;
     outlineItems.replaceChildren();
@@ -1130,9 +1135,11 @@
       text.append(label.slice(labelCursor));
       button.style.setProperty('--outline-depth', Number(heading.tagName.slice(1)) - baseLevel);
       button.addEventListener('click', () => {
-        preview.scrollTop += heading.getBoundingClientRect().top - preview.getBoundingClientRect().top - 8;
-        heading.setAttribute('tabindex', '-1');
-        heading.focus({ preventScroll: true });
+        const surface=outlineSurface();if(!surface)return;
+        surface.scrollTop += heading.getBoundingClientRect().top - surface.getBoundingClientRect().top - 8;
+        if(surface===preview){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
+        else {surface.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(heading);range.collapse(true);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);}
+
         updateOutlinePosition();
       });
       item.appendChild(button);
@@ -1142,8 +1149,14 @@
     updateOutlineVisibility();
   }
   new MutationObserver(rebuildOutline).observe(preview, { childList: true, subtree: true, characterData: true });
-  new MutationObserver(updateOutlineVisibility).observe(preview, { attributes: true, attributeFilter: ['hidden'] });
+  new MutationObserver(rebuildOutline).observe(preview, { attributes: true, attributeFilter: ['hidden'] });
   new MutationObserver(updateOutlineVisibility).observe(modal.querySelector('.modal-dialog'), { attributes: true, attributeFilter: ['class'] });
+  const outlineEditor=window.CommunityShortEditor?.get(editor);
+  if(outlineEditor){
+    new MutationObserver(rebuildOutline).observe(outlineEditor.rich,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden']});
+    new MutationObserver(rebuildOutline).observe(outlineEditor.shell,{attributes:true,attributeFilter:['hidden']});
+    outlineEditor.rich.addEventListener('scroll',updateOutlinePosition,{passive:true});
+  }
   preview.addEventListener('scroll', updateOutlinePosition, { passive: true });
   window.addEventListener('resize', updateOutlinePosition);
   modal.addEventListener('shown.bs.modal', updateOutlinePosition);

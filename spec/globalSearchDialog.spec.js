@@ -197,7 +197,7 @@ describe('global search dialog', () => {
 	});
 });
 
-test('switching modes clears filters, while initialization and same-mode selection preserve them', async () => {
+test('Quran tab supplies its default while switches clear old filters and initialization preserves selections', async () => {
  const { JSDOM } = require('jsdom');
  const vm = require('vm');
  const dom = new JSDOM(await render(['blog'], {
@@ -216,10 +216,13 @@ test('switching modes clears filters, while initialization and same-mode selecti
  ctx.setMode('hadith',{refresh:false});
  expect(selected()).toEqual(expect.arrayContaining(['blog','quran','tabari']));
  ctx.setMode('quran');
- expect(selected()).toEqual([]);
+ expect(selected()).toEqual(['quran']);
  dialog.querySelector('[value=tabari]').checked=true;
- ctx.setMode('quran');
+ dialog.querySelector('[value=quran]').checked=false;
+ ctx.setMode('quran',{refresh:false});
  expect(selected()).toEqual(['tabari']);
+ ctx.setMode('quran');
+ expect(selected()).toEqual(['quran','tabari']);
  ctx.setMode('hadith');
  expect(selected()).toEqual([]);
  dom.window.close();

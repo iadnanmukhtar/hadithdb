@@ -1525,6 +1525,11 @@ function initCommandSearch() {
 			});
 		}
 		mode = resolvedMode;
+		// Tab activation supplies Quran by default; initialization preserves URL filters.
+		if (mode === 'quran' && (!options || options.refresh !== false)) {
+			var quranFilter = form.querySelector('[data-command-filter][name="b"][value="quran"]');
+			if (quranFilter) quranFilter.checked = true;
+		}
 		if (mode === 'quran') normalizeQuranFilters();
 		if (resolvedMode !== previousMode)
 			restoreSearchTerm(mode);

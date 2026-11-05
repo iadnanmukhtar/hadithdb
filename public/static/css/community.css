@@ -1034,3 +1034,16 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 @media (max-width: 575.98px) {
   .community-editor-preferences { flex-basis: 100%; }
 }
+
+.community-editing-layout { min-width: 0; }
+.community-editing-layout.has-outline { display: grid; grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem); gap: 1.25rem; align-items: start; }
+.community-editing-layout[hidden] { display: none; }
+.community-editing-layout .community-rich-input { min-width: 0; }
+.community-editing-outline { position: sticky; top: calc(var(--site-fixed-header-height, 0px) + 4rem); max-height: 70vh; overflow: auto; border-inline-start: 1px solid var(--community-line, #ddd); padding-inline-start: .75rem; font-size: .85rem; }
+.community-editing-outline ol { list-style: none; padding: 0; margin: .5rem 0; }
+.community-editing-outline button { display: block; width: 100%; border: 0; background: transparent; color: inherit; font: inherit; text-align: start; padding: .35rem .4rem; padding-inline-start: calc(.4rem + var(--outline-depth) * .7rem); cursor: pointer; overflow-wrap: anywhere; }
+.community-editing-outline button:hover { background: var(--community-line, #eee); }
+@media(max-width: 767px) {
+  .community-editing-layout.has-outline { grid-template-columns: minmax(0, 1fr); }
+  .community-editing-outline { grid-row: 1; position: static; max-height: 20vh; }
+}
