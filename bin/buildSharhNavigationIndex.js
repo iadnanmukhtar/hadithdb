@@ -11,21 +11,26 @@ const Sharh = require('../lib/Sharh');
 (async () => {
 	try {
 		const args = process.argv.slice(2);
-		if (args.some(arg => arg !== '--apply' && !arg.startsWith('--book='))) throw new Error('Usage: node bin/buildSharhNavigationIndex.js [--book=alias] [--apply]');
+		if (args.some(arg => !['--apply', '--check'].includes(arg) && !arg.startsWith('--book=')) || (args.includes('--apply') && args.includes('--check'))) throw new Error('Usage: node bin/buildSharhNavigationIndex.js [--book=alias] [--apply | --check]');
 		const alias = args.find(arg => arg.startsWith('--book='))?.slice(7);
 		const apply = args.includes('--apply');
+		const check = args.includes('--check');
 		const books = await global.query(`SELECT id, alias FROM books WHERE type='sharh'${alias ? ` AND alias=${mysql.escape(alias)}` : ''} ORDER BY id`);
 		if (!books.length) throw new Error('No matching Sharh books');
 		if (apply) await Navigation.ensureIndex();
 		for (const book of books) {
 			const started = Date.now();
-			if (apply) console.log(JSON.stringify({ alias: book.alias, entries: await Navigation.refreshBook(book), published: true, ms: Date.now() - started }));
+			if (check) {
+				const result = await Navigation.inspect(book);
+				console.log(JSON.stringify({ bookId: Number(book.id), alias: book.alias, status: result.status, entries: result.rows?.length, error: result.error, ms: Date.now() - started }));
+				if (result.status !== 'ready') process.exitCode = 1;
+			} else if (apply) console.log(JSON.stringify({ alias: book.alias, entries: await Navigation.refreshBook(book), published: true, ms: Date.now() - started }));
 			else {
 				const rows = await Sharh.buildReaderSequence(book);
 				const doc = Navigation.document(book, rows);
 				if (!Navigation.valid(doc, book)) throw new Error(`Invalid navigation for ${book.alias}`);
-				const indexed = await Navigation.read(book);
-				console.log(JSON.stringify({ alias: book.alias, entries: rows.length, bytes: Buffer.byteLength(JSON.stringify(doc)), matchesIndex: JSON.stringify(indexed) === JSON.stringify(rows), dryRun: true, ms: Date.now() - started }));
+				const indexed = await Navigation.inspect(book);
+				console.log(JSON.stringify({ alias: book.alias, entries: rows.length, bytes: Buffer.byteLength(JSON.stringify(doc)), status: indexed.status, error: indexed.error, matchesIndex: indexed.status === 'ready' && JSON.stringify(indexed.rows) === JSON.stringify(rows), dryRun: true, ms: Date.now() - started }));
 			}
 		}
 	} catch (error) { console.error(error.message); process.exitCode = 1; }

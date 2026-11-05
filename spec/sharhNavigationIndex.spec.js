@@ -1,4 +1,6 @@
 'use strict';
+const mockNavigationError = jest.fn();
+jest.mock('../lib/Debug', () => () => Object.assign(jest.fn(), { error: mockNavigationError, slow: jest.fn(), info: jest.fn() }));
 const axios = require('axios');
 const Navigation = require('../lib/SharhNavigationIndex');
 const Sharh = require('../lib/Sharh');
@@ -12,6 +14,7 @@ const rows = [
 const missing = () => Object.assign(new Error('missing'), { response: { status: 404 } });
 
 beforeEach(() => {
+	mockNavigationError.mockClear();
 	global.settings = { search: { domain: 'http://es.test' } };
 	global.query = jest.fn().mockResolvedValue([book]);
 	jest.spyOn(axios, 'get').mockRejectedValue(missing());
@@ -51,8 +54,34 @@ test.each([
 
 test('missing or unavailable ES permits the existing SQL fallback', async () => {
 	expect(await Navigation.read(book)).toBeNull();
+	expect(mockNavigationError).toHaveBeenLastCalledWith(expect.stringContaining('ES snapshot missing'));
 	axios.get.mockRejectedValueOnce(new Error('offline'));
 	expect(await Navigation.read(book)).toBeNull();
+	expect(mockNavigationError).toHaveBeenLastCalledWith(expect.stringContaining('ES snapshot unavailable: offline'));
+});
+
+test('invalid snapshots explain SQL fallback while valid snapshots stay quiet', async () => {
+	axios.get.mockResolvedValueOnce({ data: { _source: { ...Navigation.document(book, rows), alias: 'old' } } });
+	expect(await Navigation.read(book)).toBeNull();
+	expect(mockNavigationError).toHaveBeenCalledWith(expect.stringContaining('ES snapshot invalid'));
+	mockNavigationError.mockClear();
+	axios.get.mockResolvedValueOnce({ data: { _source: Navigation.document(book, rows) } });
+	expect(await Navigation.read(book)).toEqual(rows);
+	expect(mockNavigationError).not.toHaveBeenCalled();
+});
+
+test('coverage inspection reports all states without SQL or writes', async () => {
+	expect(await Navigation.inspect(book)).toEqual({ status: 'missing' });
+	axios.get.mockResolvedValueOnce({ data: { _source: {} } });
+	expect(await Navigation.inspect(book)).toEqual({ status: 'invalid' });
+	axios.get.mockRejectedValueOnce(new Error('offline'));
+	expect(await Navigation.inspect(book)).toEqual({ status: 'unavailable', error: 'offline' });
+	axios.get.mockResolvedValueOnce({ data: { _source: Navigation.document(book, []) } });
+	expect(await Navigation.inspect(book)).toEqual({ status: 'ready', rows: [] });
+	expect(global.query).not.toHaveBeenCalled();
+	expect(axios.put).not.toHaveBeenCalled();
+	expect(axios.post).not.toHaveBeenCalled();
+	expect(mockNavigationError).not.toHaveBeenCalled();
 });
 
 test('publishes atomically before invalidating sequence and neighbor HTML', async () => {

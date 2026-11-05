@@ -15,6 +15,18 @@ HTML that embeds previous/next links.
 
 ## Initial rollout
 
+Check snapshot coverage without rebuilding navigation or writing anything:
+
+```sh
+node bin/buildSharhNavigationIndex.js --check
+```
+
+This reads the Sharh book catalog and one ES document per book. It reports
+`ready`, `missing`, `invalid`, or `unavailable`, and exits nonzero if any snapshot
+is not ready. Add `--book=malik-zarqani` to check one book. This checks structural
+validity and coverage; use the default dry run below to compare content with SQL.
+`--check` cannot be combined with `--apply`.
+
 From a checkout containing this change, validate without writing:
 
 ```sh
@@ -34,6 +46,9 @@ navigation after indexing commentary text.
 
 Verify a cold-disk passage request uses `sharh_navigation/_doc/<bookId>` and does not
 run the `reader_entries` SQL query. Warm requests should use the disk cache.
+
+When the reader falls back to SQL, `hadithdb:SharhNavigation` logs the book ID,
+alias and snapshot failure reason, together with the request URL when available.
 
 ## Updates
 
