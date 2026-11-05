@@ -299,7 +299,17 @@
           }
           return quote.trim().split('\n').map(line=>'> '+line).join('\n')+'\n\n';
         }
-        case 'UL': case 'OL': return Array.from(el.children).map((li,i)=>{const prefix=el.tagName==='OL'?(Number(el.getAttribute('start'))||1)+i+'. ':'- ';return prefix+contents(li).trim().replace(/\n/g,'\n'+' '.repeat(prefix.length));}).join('\n')+'\n\n';
+        case 'UL': case 'OL': {
+          let number=Number(el.getAttribute('start'))||1, indent=el.tagName==='OL'?String(number).length+2:2;
+          return Array.from(el.children).map(child=>{
+            // Chrome's native indent command creates sibling lists inside a list.
+            // Serialize these like a nested list without mutating native undo state.
+            if(child.matches('ul,ol'))return read(child).trimEnd().split('\n').map(line=>' '.repeat(indent)+line).join('\n');
+            const prefix=el.tagName==='OL'?String(number++)+'. ':'- ';indent=prefix.length;
+            const body=Array.from(child.childNodes).map(node=>node.nodeType===1 && node.matches('ul,ol')?'\n'+read(node).trimEnd():read(node)).join('').trim();
+            return prefix+body.replace(/\n/g,'\n'+' '.repeat(indent));
+          }).join('\n')+'\n\n';
+        }
         default: return text();
       }
     }
@@ -959,6 +969,16 @@
       }else document.execCommand(command,false,arg);
       sync();selection();return true;
     }
+    rich.addEventListener('click',event=>{
+      const link=event.target.closest('a[href]');
+      if(!link || !rich.contains(link) || event.defaultPrevented || event.button!==0 || event.detail>1 || !window.getSelection()?.isCollapsed)return;
+      const href=safeLink(link.getAttribute('href'));if(!href)return;
+      event.preventDefault();event.stopPropagation();
+      if(href.startsWith('#')){
+        const target=document.getElementById(href.slice(1));
+        if(target && rich.contains(target))target.scrollIntoView({block:'nearest'});
+      }else window.open(href,'_blank','noopener,noreferrer');
+    });
     rich.addEventListener('focus',selection);
     rich.addEventListener('keyup',selection);
     rich.addEventListener('mouseup',selection);
@@ -1065,6 +1085,16 @@
         if(event.key==='Backspace')edge.setEnd(selected.anchorNode,selected.anchorOffset);else edge.setStart(selected.anchorNode,selected.anchorOffset);
         if(!edge.toString()){event.preventDefault();return;}
       }
+      if(event.key==='Tab' && !event.defaultPrevented && !event.isComposing && !event.altKey && !event.metaKey && !event.ctrlKey) {
+        const element=node=>node?.nodeType===1?node:node?.parentElement;
+        const first=element(selected?.anchorNode)?.closest('li');
+        const last=element(selected?.focusNode)?.closest('li');
+        if(first && last && rich.contains(first) && rich.contains(last)) {
+          event.preventDefault();event.stopPropagation();
+          document.execCommand(event.shiftKey?'outdent':'indent',false);
+          sync();selection();return;
+        }
+      }
       if(cell && !event.isComposing && ['Enter','Tab'].includes(event.key)) {
         event.preventDefault();const row=cell.parentElement;
         let target=event.shiftKey?cell.previousElementSibling:cell.nextElementSibling;
@@ -1139,9 +1169,9 @@
       source.setSelectionRange(edit.selectStart,edit.selectEnd);
       source.dispatchEvent(new Event('input',{bubbles:true}));
     });
-    // Full-bar surfaces install these with their toolbar/notebook adapter.
-    // Contextual post editors use the same Markdown keyboard commands.
-    if(!isArticle){
+    // Every surface owns its raw-mode shortcuts, including standalone article
+    // editors. Existing adapters safely skip events already handled here.
+    {
       const installShortcuts=()=>window.NotebookShortcuts?.install(source,()=>mode==='source',()=>{});
       if(window.NotebookShortcuts)installShortcuts();else document.addEventListener('DOMContentLoaded',installShortcuts,{once:true});
     }

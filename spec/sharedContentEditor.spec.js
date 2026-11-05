@@ -457,3 +457,47 @@ test('Arabic list markers stay RTL in formatted, rendered and print views',async
  await page.emulateMedia({media:'print'});
  expect((await directions()).map(item=>item.dir)).toEqual(['rtl','ltr','rtl']);
 });
+
+for(const kind of ['post','article','note'])describe(`${kind} list keyboard indentation`,()=>{
+ test('Tab nests a selected bullet, Shift+Tab restores it, and undo preserves editing',async()=>{
+  await setup(kind,'Intro\n\n- First\n- العربية\n- Third');
+  await page.evaluate(()=>selectBlock('li:nth-child(2)'));
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(()=>source.value)).toBe('Intro\n\n- First\n  - العربية\n- Third');
+  expect(await page.evaluate(()=>rich.contains(document.activeElement))).toBe(true);
+  await page.keyboard.press('Shift+Tab');
+  expect(await page.evaluate(()=>source.value)).toBe('Intro\n\n- First\n- العربية\n- Third');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).toBe('Intro\n\n- First\n  - العربية\n- Third');
+ });
+ test('raw Markdown Tab and Shift+Tab work without relying on the toolbar',async()=>{
+  await setup(kind,'Intro\n\n- First\n- Second');
+  await page.evaluate(()=>{surface.toSource();source.focus();const start=source.value.indexOf('- Second');source.setSelectionRange(start,source.value.length);});
+  await page.keyboard.press('Tab');
+  expect(await page.evaluate(()=>source.value)).toBe('Intro\n\n- First\n  - Second');
+  await page.keyboard.press('Shift+Tab');
+  expect(await page.evaluate(()=>source.value)).toBe('Intro\n\n- First\n- Second');
+ });
+});
+
+for(const kind of ['post','article','note'])test(`${kind} formatted links open without changing the draft`,async()=>{
+ await setup(kind,'Intro\n\n[Read source](https://example.com/source)');
+ await page.evaluate(()=>{window.opened=[];window.open=(...args)=>opened.push(args);});
+ await page.locator('.community-rich-input a').click();
+ expect(await page.evaluate(()=>opened)).toEqual([['https://example.com/source','_blank','noopener,noreferrer']]);
+ expect(await page.evaluate(()=>source.value)).toBe('Intro\n\n[Read source](https://example.com/source)');
+});
+
+test.each(['-','1.'])('formatted Tab indents a selected group and survives mode switching: %s',async marker=>{
+ const original=marker==='-'?'Intro\n\n- Parent\n- Second\n- Third':'Intro\n\n1. Parent\n2. Second\n3. Third';
+ await setup('article',original);
+ await page.evaluate(()=>{
+  rich.focus();const items=rich.querySelectorAll('li'),range=document.createRange();range.setStart(items[1].firstChild,0);range.setEnd(items[2].firstChild,items[2].firstChild.textContent.length);getSelection().removeAllRanges();getSelection().addRange(range);surface.selection();
+ });
+ await page.keyboard.press('Tab');
+ const nested=await page.evaluate(()=>source.value);
+ expect(require('../lib/ContentMarkdown').render(nested)).toMatch(/<li[^>]*>Parent\s*<(?:ul|ol)>/);
+ await page.evaluate(()=>{surface.toSource();surface.toFormatted();surface.sync();});
+ expect(await page.evaluate(()=>source.value)).toBe(nested);
+ expect(await page.locator('.community-rich-input li > :is(ul,ol) > li').count()).toBe(2);
+});
