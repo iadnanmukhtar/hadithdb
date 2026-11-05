@@ -1,0 +1,32 @@
+<div class="modal fade" id="quran-audio-range-modal" tabindex="-1" aria-labelledby="quran-audio-range-title" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered"><form class="modal-content" dir="ltr">
+    <div class="modal-header">
+      <h2 class="modal-title" id="quran-audio-range-title"><span class="bi bi-headphones me-2" aria-hidden="true"></span>Play Quran</h2>
+      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+      <div class="quran-audio-range-grid">
+        <span></span><span class="text-muted small" aria-hidden="true">Surah</span><span class="text-muted small" aria-hidden="true">Ayah</span>
+        <% ['start', 'end'].forEach(function (position) { %>
+        <span class="quran-audio-range-label"><%= position === 'start' ? 'Start' : 'End' %></span>
+        <label class="visually-hidden" for="quran-audio-<%= position %>-surah"><%= position === 'start' ? 'Starting surah' : 'Ending surah (optional)' %></label>
+        <select class="form-select form-select-sm" id="quran-audio-<%= position %>-surah" <%= position === 'start' ? 'required' : '' %>>
+          <% if (position === 'end') { %><option value="">End of Quran</option><% } %>
+          <% (global.surahs || []).forEach(function (surah) { %><option value="<%= surah.num %>" data-ayahs="<%= surah.ayahs %>"><%= surah.num %>. <%= surah.name_en %></option><% }); %>
+        </select>
+        <label class="visually-hidden" for="quran-audio-<%= position %>-ayah"><%= position === 'start' ? 'Starting ayah' : 'Ending ayah (optional)' %></label>
+        <input class="form-control form-control-sm" type="number" min="1" step="1" id="quran-audio-<%= position %>-ayah" required>
+        <% }); %>
+      </div>
+      <p class="text-danger small mb-0" role="alert" data-audio-range-error></p>
+    </div>
+    <div class="modal-footer">
+      <span class="text-muted small me-auto">Continuous unless looped</span>
+      <div class="btn-group btn-group-sm" role="group" aria-label="Playback options">
+        <input class="btn-check" type="checkbox" id="quran-audio-range-loop" autocomplete="off" aria-label="Loop this range">
+        <label class="btn btn-outline-secondary quran-ayah-select-btn" for="quran-audio-range-loop" title="Loop this range"><span class="bi bi-repeat" aria-hidden="true"></span><span class="visually-hidden">Loop this range</span></label>
+        <button type="submit" class="btn btn-outline-secondary quran-ayah-select-btn" title="Play" aria-label="Play"><span class="bi bi-play-fill" aria-hidden="true"></span></button>
+      </div>
+    </div>
+  </form></div>
+</div>

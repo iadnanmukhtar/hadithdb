@@ -8725,6 +8725,57 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	padding: .25em .55em;
 }
 
+#quran-audio-range-modal .modal-dialog {
+	max-width: 360px;
+	margin-left: auto;
+	margin-right: auto;
+	width: calc(100% - 1rem);
+}
+
+#quran-audio-range-modal .modal-header,
+#quran-audio-range-modal .modal-body,
+#quran-audio-range-modal .modal-footer {
+	padding: .65rem .8rem;
+}
+
+#quran-audio-range-modal .modal-title {
+	font-size: 1rem;
+}
+
+#quran-audio-range-modal .btn-close {
+	font-size: .7rem;
+}
+
+.quran-audio-range-grid {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) 4.5rem;
+	align-items: center;
+	gap: .4rem .5rem;
+}
+
+.quran-audio-range-label {
+	font-size: .875rem;
+}
+
+#quran-audio-range-modal .modal-footer {
+	flex-wrap: nowrap;
+}
+
+#quran-audio-range-modal .quran-ayah-select-btn {
+	font-size: 1rem;
+	min-width: 2rem;
+	min-height: 2rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#quran-audio-range-modal .btn-check:checked + .btn {
+	background-color: var(--bs-secondary);
+	border-color: var(--bs-secondary);
+	color: #fff;
+}
+
 .quran-mushaf-page-toolbar .quran-passage-audio-control {
 	gap: .3em;
 }
@@ -11192,7 +11243,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	font-size: inherit;
 }
 
-.quran-ayah-hero [lang="ar"] .quran-corpus-word {
+.quran-ayah-hero [lang="ar"] .quran-corpus-word,
+.quran-ayah-hero [lang="ar"] .quran-ayah-hero-text .notebook-arabic {
 	font-family: inherit;
 	font-size: inherit;
 	line-height: inherit;

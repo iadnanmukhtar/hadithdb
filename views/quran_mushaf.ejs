@@ -5,6 +5,7 @@
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
 </head>
 <body>
+  <%- include('sub-views/quran_audio_range_modal.ejs'); %>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <% var showQuranHeadingToc = !review && locals.quranHeadingOutlines && Object.keys(locals.quranHeadingOutlines).length > 0; %>
   <div<% if (showQuranHeadingToc) { %> class="container-fluid quran-heading-layout quran-heading-layout-mushaf"<% } %>>
