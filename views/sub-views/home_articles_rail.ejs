@@ -10,7 +10,7 @@
         <img class="home-article-thumbnail" src="<%= article.coverUrl %>" alt="" width="64" height="64" loading="lazy" decoding="async">
         <span class="home-article-copy">
           <span class="home-article-title" dir="auto"><%= article.title %></span>
-          <% if (article.author) { %><span class="home-article-author" dir="auto"><%= article.author %></span><% } %>
+          <% if (article.authorHandle) { %><span class="home-article-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
         </span>
       </a>
       <% }); %>
