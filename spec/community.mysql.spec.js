@@ -3,7 +3,7 @@
 jest.mock('../lib/GoogleAuth', () => ({ verifyRequest: jest.fn(async req => {
   const uid = req.headers.authorization?.replace('Bearer ', '');
   if (uid === 'expired') throw new Error('Expired session');
-  return ['alice', 'bob', 'moderator', 'mallory'].includes(uid) ? { uid, name: uid === 'alice' ? 'Amina أحمد' : uid, email: uid + '@private.test' } : null;
+  return ['alice', 'bob', 'moderator', 'mallory', 'site-admin'].includes(uid) ? { uid, name: uid === 'alice' ? 'Amina أحمد' : uid, email: uid + '@private.test' } : null;
 }) }));
 // Keep the disposable SQL fixture isolated from the real Elasticsearch index.
 jest.mock('../lib/CommunitySearchIndex', () => ({ syncPost: jest.fn(), syncAuthor: jest.fn() }));
@@ -18,6 +18,7 @@ const Community = require('../lib/Community');
 jest.setTimeout(30000);
 const suite = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? describe : describe.skip;
 suite('Community publication, privacy, subscriptions, discussion and moderation', () => {
+  const previousModerationEnabled = process.env.COMMUNITY_MODERATION_ENABLED;
   const prefix = `c_test_${process.pid}_${Date.now()}_`;
   const tables = ['hidden_activity','activity_state','activity','alert_reads','hadith_posts','blog_media_imports','blog_imports','blog_posts','media','link_previews','dislikes','reposts','author_aliases','authors','posts','revisions','follows','comments','reports','email_outbox','likes'];
   // Rewrite identifiers only: source names stored as SQL string values must stay canonical.
@@ -58,9 +59,39 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     post=await Community.savePost(user,postInput({version:post.version,action:'publish',category:'',tags:''}),post.id);
     expect(await Community.post(post.id)).toMatchObject({category:'',tags:''});
   });
+  test('site administrator has moderation navigation and can approve without moderator configuration', async () => {
+    expect(process.env.COMMUNITY_MODERATOR_UIDS.split(',')).not.toContain('site-admin');
+    const me=await json('/api/community/me','GET','site-admin');
+    expect(me).toMatchObject({admin:true,moderator:true});
+    let draft=await Community.savePost({uid:'bob',name:'Bob',email:'bob@private.test'},postInput({action:'publish'}));
+    expect(draft.status).toBe('pending');
+    const queue=await json('/api/community/moderation','GET','site-admin');
+    expect(queue.pending.some(post=>post.id===draft.id)).toBe(true);
+    await json('/api/community/moderation','GET','mallory',undefined,403);
+    await json('/api/community/posts/'+draft.id+'/moderation','POST','mallory',{action:'approve',version:draft.version,admin:true},403);
+    await json('/api/community/posts/'+draft.id+'/moderation','POST','site-admin',{action:'approve',version:draft.version});
+    expect((await Community.post(draft.id)).title).toBe(draft.title);
+    const rows=await q(`SELECT status FROM ${prefix}posts WHERE id=?`,[draft.id]);expect(rows[0].status).toBe('published');
+  });
+  test('disabled moderation publishes untrusted authors directly and releases pending drafts on Publish', async () => {
+    const previous=process.env.COMMUNITY_MODERATION_ENABLED;
+    const user={uid:'mallory',name:'Writer',email:'mallory@private.test'};
+    let draft=await Community.savePost(user,postInput({action:'publish'}));expect(draft.status).toBe('pending');
+    try {
+      delete process.env.COMMUNITY_MODERATION_ENABLED;
+      expect((await json('/api/community/me','GET','site-admin'))).toMatchObject({admin:true,moderator:false,moderationEnabled:false});
+      await json('/api/community/moderation','GET','site-admin',undefined,404);
+      draft=await Community.savePost(user,postInput({action:'publish',version:draft.version}),draft.id);
+      expect(draft.status).toBe('published');expect((await Community.post(draft.id)).html).toContain('Original published body');
+      const fresh=await Community.savePost(user,postInput({action:'publish'}));expect(fresh.status).toBe('published');
+      const privateDraft=await Community.savePost(user,postInput());expect(privateDraft.status).toBe('draft');
+      await expect(Community.post(privateDraft.id)).rejects.toMatchObject({status:404});
+    } finally {if(previous===undefined)delete process.env.COMMUNITY_MODERATION_ENABLED;else process.env.COMMUNITY_MODERATION_ENABLED=previous;}
+  });
   beforeAll(async () => {
-    adminSpy=jest.spyOn(require('../lib/UserSettings'),'isAdminUser').mockImplementation(async uid=>uid==='moderator');
+    adminSpy=jest.spyOn(require('../lib/UserSettings'),'isAdminUser').mockImplementation(async uid=>['moderator','site-admin'].includes(uid));
     process.env.COMMUNITY_MODERATOR_UIDS = 'moderator';
+    process.env.COMMUNITY_MODERATION_ENABLED = 'true';
     pool = mysql.createPool({ ...require('../bin/initializeHadithAttributions').connectionSettings(), connectionLimit: 5, supportBigNumbers: true });
     q = promisify(pool.query).bind(pool);
     const wrapConnection = connection => ({ query: (s,v,cb) => trackedQuery(connection,s,v,cb), beginTransaction: connection.beginTransaction.bind(connection), commit: connection.commit.bind(connection), rollback: connection.rollback.bind(connection), release: connection.release.bind(connection) });
@@ -100,6 +131,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     if(blogDir)require('fs').rmSync(blogDir,{recursive:true,force:true});
     adminSpy?.mockRestore();
     delete process.env.COMMUNITY_MODERATOR_UIDS;
+    if(previousModerationEnabled===undefined)delete process.env.COMMUNITY_MODERATION_ENABLED;else process.env.COMMUNITY_MODERATION_ENABLED=previousModerationEnabled;
   });
   test('email preferences require sign-in and unsubscribe GET never changes delivery', async () => {
     await json('/api/community/email-preferences','GET',null,undefined,401);

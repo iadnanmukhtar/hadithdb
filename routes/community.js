@@ -25,7 +25,8 @@ api.use((req, res, next) => req.method === 'GET' ? next() : writeLimit(req, res,
 function signed(req) { if (!req.user) throw require('http-errors')(401, 'Please sign in.'); return req.user; }
 api.get('/me', wrap(async (req, res) => {
   const author = await Community.authorFor(signed(req));
-  res.json({ author: await Community.profile(author.handle, req.user), moderator: Community.moderator(req.user), admin: await Community.admin(req.user), subscriptions: await Community.subscriptions(req.user) });
+  const isAdmin = await Community.admin(req.user);
+  res.json({ author: await Community.profile(author.handle, req.user), moderationEnabled: Community.moderationEnabled(), moderator: Community.moderationEnabled() && (isAdmin || Community.moderator(req.user)), admin: isAdmin, subscriptions: await Community.subscriptions(req.user) });
 }));
 const EmailPreferences = require('../lib/NotificationPreferences');
 api.get('/email-preferences', wrap(async (req,res) => res.json({preferences:await EmailPreferences.get(signed(req))})));
@@ -104,6 +105,7 @@ function page(res, req, view, extra = {}) {
   res.locals.req = req; res.locals.res = res;
   res.set('Cache-Control', 'private, no-store');
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
+    moderationEnabled: Community.moderationEnabled(),
     articleCategories: require('../lib/CommunityTaxonomy').categories,
     page: { menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
@@ -153,7 +155,8 @@ router.get('/p/:guid', wrap(async (req,res) => {
   if (post.url.startsWith('/blog/') || '/community'+req.path !== post.url) return res.redirect(301,post.url);
   page(res,req,'post',{post,author:post.author,...(post.kind==='article' ? await require('../lib/HomeArticles').forArticle(post.id) : {})});
 }));
-for (const view of ['following', 'mine', 'write', 'moderation']) router.get('/' + view, (req, res) => page(res, req, view));
+router.get('/moderation', (req, res) => Community.moderationEnabled() ? page(res, req, 'moderation') : res.redirect('/community/mine'));
+for (const view of ['following', 'mine', 'write']) router.get('/' + view, (req, res) => page(res, req, view));
 router.get('/@:handle', wrap(async (req, res) => {
   if (!/^[a-z0-9_.-]{3,40}$/.test(req.params.handle)) return res.sendStatus(404);
   page(res, req, 'author', {author:{handle:req.params.handle, name:'Profile'}});

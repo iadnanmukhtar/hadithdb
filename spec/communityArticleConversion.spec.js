@@ -6,7 +6,7 @@ function harness(overrides={}){
  const row={id:9,author_uid:'owner',kind:'article',status:'published',version:4,published_at:'2026-10-29',...overrides};
  const q=jest.fn(async sql=>sql.startsWith('SELECT *')?[row]:[]);
  const invalidate=jest.fn(async()=>{}),syncPost=jest.fn(async()=>{});
- const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityRelated'?require('../lib/CommunityRelated'):name==='./CommunityTaxonomy'?require('../lib/CommunityTaxonomy'):name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate,syncPost},queueEmails:jest.fn()});
+ const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,moderationEnabled:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityRelated'?require('../lib/CommunityRelated'):name==='./CommunityTaxonomy'?require('../lib/CommunityTaxonomy'):name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate,syncPost},queueEmails:jest.fn()});
  vm.runInContext(saveSource,ctx);
  return {q,invalidate,syncPost,save:(input={},user={uid:'owner'})=>ctx.savePost(user,{kind:'note',convertToNote:true,title:'Title',markdown:'Body',version:4,action:'publish',...input},9)};
 }

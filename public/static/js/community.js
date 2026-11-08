@@ -720,7 +720,7 @@
     $('title').required = false;
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
     $('publish').textContent = post.status === 'published' ? 'Update' : 'Publish';
-    $('editor-status').textContent = post.status === 'pending' ? 'Submitted for moderation. Your article is not public yet.' : post.status === 'hidden' ? 'A moderator has hidden this article. Contact a moderator for review.' : post.status === 'published' ? 'Published. Saving a draft keeps the current public version until you publish an update.' : 'Draft saved. Only you can see it.';
+    $('editor-status').textContent = post.status === 'pending' ? (me?.moderationEnabled === false ? 'Not published yet. Click Publish to make this article public.' : 'Submitted for moderation. Your article is not public yet.') : post.status === 'hidden' ? 'A moderator has hidden this article. Contact a moderator for review.' : post.status === 'published' ? 'Published. Saving a draft keeps the current public version until you publish an update.' : 'Draft saved. Only you can see it.';
     renderEditorBlog();document.dispatchEvent(new Event('communityEditorPopulated'));
     previewSignature = null; dirty = false; $('publish').disabled = false; $('preview-panel').close?.();
   }
@@ -977,7 +977,7 @@
           vote.setAttribute('aria-pressed', String(!!selected)); if (total) vote.append(node('span', ' ' + total)); controls.append(vote);
         }
         controls.append(reflectionAction('Reply', 'chat-right-text', () => { replyId = c.id; $('reply-target').textContent = 'Replying to ' + c.author.name; $('reply-target').hidden = false; $('cancel-reply').hidden = false; showReplyContext($('reply-context'),c.author,c.html);$('comment-text').focus();$('comment-form').scrollIntoView({block:'center',behavior:'smooth'}); }, 'comment-reply'));
-        controls.append(reflectionAction('Report', 'flag', () => report(c.id)));
+        if (me?.moderationEnabled) controls.append(reflectionAction('Report', 'flag', () => report(c.id)));
         if (c.canDelete) controls.append(reflectionAction('Delete', 'trash', async () => { if (!window.confirm('Remove this reflection?')) return; await api('/comments/' + c.id, 'DELETE'); if (replyId === c.id) cancelReply(); await loadComments(); }, 'comment-delete comment-action-delete'));
       }
       entry.append(controls); row.append(avatar, entry); article.append(row); $('comments').append(article);

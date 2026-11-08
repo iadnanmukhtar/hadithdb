@@ -3,7 +3,7 @@ const {JSDOM} = require('jsdom');
 const path = require('path');
 
 test.each(['note', 'article'])('renders shared %s controls without a permalink', async kind => {
-  const html = await ejs.renderFile(path.resolve('views/sub-views/community_post_actions.ejs'), {post: {
+  const html = await ejs.renderFile(path.resolve('views/sub-views/community_post_actions.ejs'), {moderationEnabled:true,post: {
     id: 44, kind, url: '/community/p/example', title: 'Example', author: {handle: 'author', name: 'Author'}
   }});
   const dom = new JSDOM(html);
@@ -18,4 +18,13 @@ test.each(['note', 'article'])('renders shared %s controls without a permalink',
     expect(document.querySelector('#community-edit-post').getAttribute('href')).toBe(kind === 'note' ? '/community/mine?editPost=44' : '/community/write?post=44');
     expect(document.querySelector('[title="Post permalink"], .bi-arrow-right')).toBeNull();
   } finally { dom.window.close(); }
+});
+
+test('disabled moderation omits Report while keeping sharing and editing controls',async()=>{
+ const html=await ejs.renderFile(path.resolve('views/sub-views/community_post_actions.ejs'),{moderationEnabled:false,post:{id:44,kind:'article',url:'/community/p/example',title:'Example',author:{handle:'author',name:'Author'}}});
+ const dom=new JSDOM(html);try{
+  expect(dom.window.document.querySelector('#community-report-post')).toBeNull();
+  expect(dom.window.document.querySelector('#community-edit-post')).not.toBeNull();
+  expect(dom.window.document.querySelector('[data-community-share-url]')).not.toBeNull();
+ }finally{dom.window.close();}
 });
