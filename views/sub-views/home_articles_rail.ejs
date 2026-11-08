@@ -1,0 +1,25 @@
+<aside class="hadith-heading-toc home-articles-rail d-none d-lg-block" aria-labelledby="home-articles-title">
+  <div class="hadith-heading-toc-sticky">
+    <div class="home-articles-heading">
+      <span id="home-articles-title" class="home-articles-eyebrow"><i class="bi bi-book" aria-hidden="true"></i> From the community</span>
+    </div>
+    <div class="home-articles-scroll">
+    <nav class="home-articles-list" aria-label="Latest articles and blog posts">
+      <% latestArticles.forEach(function (article) { %>
+      <a class="home-article" href="<%= article.url %>">
+        <img class="home-article-thumbnail" src="<%= article.coverUrl %>" alt="" width="64" height="64" loading="lazy" decoding="async">
+        <span class="home-article-copy">
+          <span class="home-article-title" dir="auto"><%= article.title %></span>
+          <% if (article.author) { %><span class="home-article-author" dir="auto"><%= article.author %></span><% } %>
+        </span>
+      </a>
+      <% }); %>
+    </nav>
+    <a class="home-community-explore" href="/community">
+      <span class="home-community-icon bi bi-people" aria-hidden="true"></span>
+      <span><strong>Explore the community</strong><small>More voices. More to discover.</small></span>
+      <i class="bi bi-arrow-right" aria-hidden="true"></i>
+    </a>
+    </div>
+  </div>
+</aside>

@@ -1305,7 +1305,14 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
       if (editMode)
         await addVirtualReferences([random]);
     }
+    let latestArticles = [];
+    try {
+      latestArticles = await require('../lib/HomeArticles').latest();
+    } catch (err) {
+      debug.error(`Error loading home page articles: ${err.stack || err}`);
+    }
     res.render('index', {
+      latestArticles,
       random: random,
       results: null, // results,
       totalResults: 0,
