@@ -4,7 +4,7 @@ const BlogFeed=require('../lib/BlogFeed');
 const post={postId:7,title:'A </script><script>unsafe()</script> title',subtitle:'Reflection',html:'<p>English and العربية</p><img src="/sample.jpg">',cover:'/cover.jpg',published:new Date('2026-10-29T12:00:00Z'),file:'example',authorName:'Amina',authorHandle:'amina'};
 async function render(){
  global.settings={blog:{url:'https://example.test'}};
- return ejs.renderFile('views/blog.ejs',{feedItems:[BlogFeed.item(post)],req:{url:'/blog'},utils:{staticAssetUrl:p=>p}},{includer:(original,parsed)=>/head.ejs|header.ejs|footer.ejs|scripts.ejs|mobile_navigation/.test(original)?{template:' '}:{filename:parsed}});
+ return ejs.renderFile('views/blog.ejs',{feedItems:[BlogFeed.item(post)],req:{url:'/blog'},utils:{staticAssetUrl:p=>p,scriptAssetVersion:()=> 'test-version'}},{includer:(original,parsed)=>/head.ejs|header.ejs|footer.ejs|scripts.ejs|mobile_navigation/.test(original)?{template:' '}:{filename:parsed}});
 }
 const settle=async()=>{for(let n=0;n<12;n++)await new Promise(setImmediate);};
 test('blog items preserve canonical URLs, public author, media and legacy thread identity',()=>{
@@ -66,4 +66,12 @@ test('imported blog articles receive the same fallback in the Community feed',as
   expect(item.mediaHtml).toContain('/static/img/pearls_of_the_deep.jpg');
   expect(item.url).toBe('/blog/example');
  }finally{query.mockRestore();}
+});
+
+test('Blog listing versions every dynamically rendering community script',async()=>{
+ const dom=new JSDOM(await render());
+ try {
+  for(const name of ['community-cover-cards','community','community-media','community-social-share'])
+   expect(dom.window.document.querySelector('script[src^="/static/js/'+name+'.js"]').getAttribute('src')).toBe('/static/js/'+name+'.js?v=test-version');
+ } finally {dom.window.close();}
 });

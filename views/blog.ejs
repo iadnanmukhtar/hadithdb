@@ -60,9 +60,9 @@
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 
-<script src="<%= utils.staticAssetUrl('/static/js/community-cover-cards.js') %>"></script>
-<script src="<%= utils.staticAssetUrl('/static/js/community.js') %>"></script>
-<script src="<%= utils.staticAssetUrl('/static/js/community-media.js') %>"></script>
-<script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>" defer></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-cover-cards.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-media.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>?v=<%= utils.scriptAssetVersion() %>" defer></script>
 </body>
 </html>

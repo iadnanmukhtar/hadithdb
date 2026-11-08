@@ -180,3 +180,11 @@ test('changing only the community composer changes the script asset version', ()
     Utils.SCRIPT_ASSET_VERSION = previous;
   }
 });
+
+test('cached Blog HTML refreshes cover and hydration scripts including deferred scripts',()=>{
+ const scripts=['community-cover-cards','community','community-media','community-social-share'];
+ const html=scripts.map(name=>'<script src="/static/js/'+name+'.js?v=old" defer></script>').join('');
+ const result=Utils.injectCachedAssetVersions(html);
+ for(const name of scripts) expect(result).toContain('/static/js/'+name+'.js?v='+Utils.scriptAssetVersion());
+ expect(Utils.injectCachedAssetVersions(result)).toBe(result);
+});
