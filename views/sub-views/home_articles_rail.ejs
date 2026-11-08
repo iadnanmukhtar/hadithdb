@@ -7,11 +7,15 @@
     <nav class="home-articles-list" aria-label="Latest articles and blog posts">
       <% latestArticles.forEach(function (article) { %>
       <a class="home-article" href="<%= article.url %>">
-        <img class="home-article-thumbnail" src="<%= article.coverUrl %>" alt="" width="64" height="64" loading="lazy" decoding="async">
+        <img class="home-article-thumbnail" src="<%= article.coverUrl %>" alt="" width="52" height="52" loading="lazy" decoding="async">
         <span class="home-article-copy">
-          <% if (article.category) { %><span class="home-article-category"><%= article.category %></span><% } %>
-          <span class="home-article-title" dir="auto"><%= article.title %></span>
-          <% if (article.authorHandle) { %><span class="home-article-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
+          <span class="home-article-title" dir="auto" title="<%= article.title %>"><%= article.title %></span>
+          <% if (article.category || article.authorHandle) { %>
+          <span class="home-article-meta">
+            <% if (article.category) { %><span class="home-article-category"><%= article.category %></span><% } %>
+            <% if (article.authorHandle) { %><span class="home-article-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
+          </span>
+          <% } %>
         </span>
       </a>
       <% }); %>
