@@ -30,7 +30,8 @@ test('shared reflection reply carries parent context and cancel preserves the dr
 test('editing a reflection retains extended Markdown and uses a plain Save control',async()=>{
  const {dom,w,input,markdown}=await setup();try {
  w.document.querySelector('.comment-edit').click();
- expect(input.value).toBe(markdown);expect(input.hidden).toBe(false);
+ expect(input.value).toBe(markdown);expect(input.hidden).toBe(true);
+ expect(w.document.querySelector('.community-rich-input u').textContent).toBe('Keep underline');
  expect(w.document.querySelector('[type=submit]').textContent).toBe('Save');
  expect(w.document.querySelector('.comment-vote .bi').className).toContain('bi-heart');
  }finally{dom.window.close();}

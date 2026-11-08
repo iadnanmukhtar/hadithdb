@@ -558,3 +558,93 @@ test.each(['note','article'])('%s formatted heading outline stays visible and up
  expect(positions.panelLeft).toBeGreaterThanOrEqual(positions.editorRight);
  await page.screenshot({path:`/tmp/live-heading-outline-${kind}.png`});
 });
+
+for(const kind of ['post','article','note'])describe('Markdown typing in '+kind,()=>{
+ test.each([['**bold**','strong'],['*italic*','em'],['_italic_','em'],['~~removed~~','s'],['==marked==','mark'],['`code`','code'],['[[My note]]','a'],['[Example](https://example.org)','a']])('converts %s at the caret and supports undo',async(text,tag)=>{
+  await setup(kind,'Before\n\nUnchanged');
+  await page.keyboard.type(' '+text);
+  expect(await page.locator('.community-rich-input > p').first().locator(tag).count()).toBe(1);
+  await page.keyboard.press('Meta+z');
+  expect(await page.locator('.community-rich-input > p').first().textContent()).toBe('Before '+text);
+  await page.keyboard.press('Meta+Shift+z');
+  await page.keyboard.type(' after');
+  expect((await page.locator('.community-rich-input > p').first().textContent()).replace(/\u00a0/g,' ')).toMatch(/ after$/);
+  expect(await page.locator('.community-rich-input > p').first().locator(tag).textContent()).not.toContain('after');
+  expect(await page.locator('.community-rich-input > p').last().textContent()).toBe('Unchanged');
+ });
+ test.each([['# ','h1'],['### ','h3'],['- ','ul > li'],['3. ','ol > li'],['> ','blockquote > p']])('converts a line prefix %s',async(text,selector)=>{
+  await setup(kind,'Start');await page.evaluate(()=>{rich.focus();getSelection().selectAllChildren(rich);});await page.keyboard.press('Backspace');
+  await page.keyboard.type(text+'Mercy');
+  expect(await page.locator('.community-rich-input '+selector).textContent()).toBe('Mercy');
+ });
+ test('does not convert escaped syntax, intraword underscores or code contents',async()=>{
+  await setup(kind,'Start');await page.keyboard.type(' \\*literal* word_inside_word `**literal**`');
+  expect(await page.locator('.community-rich-input strong,.community-rich-input em').count()).toBe(0);
+  expect(await page.locator('.community-rich-input code').textContent()).toBe('**literal**');
+ });
+ test('formatting deep in the editor preserves scroll position',async()=>{
+  await setup(kind,Array.from({length:80},(_,i)=>'Paragraph '+i+' with words').join('\n\n'));
+  await page.evaluate(()=>{selectBlock('p:nth-child(50)');rich.querySelector('p:nth-child(50)').scrollIntoView({block:'center'});});
+  const before=await page.evaluate(()=>({top:rich.scrollTop,y:scrollY}));
+  await page.evaluate(()=>surface.format('center'));
+  const after=await page.evaluate(()=>({top:rich.scrollTop,y:scrollY}));
+  expect(Math.abs(after.top-before.top)).toBeLessThan(2);expect(Math.abs(after.y-before.y)).toBeLessThan(2);
+ });
+});
+
+test('a horizontal rule converts on Enter and undo restores the typed marker',async()=>{
+ await setup('note','Start');await page.evaluate(()=>{rich.focus();getSelection().selectAllChildren(rich);});await page.keyboard.press('Backspace');
+ await page.keyboard.type('---');await page.keyboard.press('Enter');
+ expect(await page.locator('.community-rich-input hr').count()).toBe(1);
+ await page.keyboard.press('Meta+z');expect(await page.locator('.community-rich-input').innerText()).toBe('---');
+});
+
+for(const kind of ['post','article','note'])describe('reported Markdown examples in '+kind,()=>{
+ test.each(['Enter','Shift+Enter'].flatMap(key=>[['- ','ul > li'],['* ','ul > li'],['> ','blockquote > p'],['-# ','.notebook-subtext']].map(pair=>[...pair,key])))('converts %s after %s (%s)',async(text,selector,key)=>{
+  await setup(kind,'Previous paragraph');await page.keyboard.press(key);await page.keyboard.type(text+'New line');
+  expect(await page.locator('.community-rich-input '+selector).textContent()).toBe('New line');
+  expect(await page.locator('.community-rich-input').innerText()).toContain('Previous paragraph');
+ });
+ test.each([['__double underline__','u'],['~subscript~','sub'],['word^1^','sup']])('converts custom inline %s',async(text,tag)=>{
+  await setup(kind,'Before');await page.keyboard.type(' '+text);
+  expect(await page.locator('.community-rich-input '+tag).count()).toBe(1);
+  expect(await page.evaluate(()=>source.value)).toContain(text);
+  await page.keyboard.press('Meta+z');expect(await page.locator('.community-rich-input').innerText()).toContain(text);
+ });
+ test('converts columns when the completed row is followed by Enter',async()=>{
+  await setup(kind,'Previous');await page.keyboard.press('Enter');await page.keyboard.type('col 1 || col 2');await page.keyboard.press('Enter');
+  expect(await page.locator('.community-edit-parallel-cell').allTextContents()).toEqual(['col 1','col 2']);
+  expect(await page.evaluate(()=>source.value)).toContain('col 1 || col 2');
+  await page.keyboard.type('Next paragraph');expect(await page.evaluate(()=>source.value)).toContain('Next paragraph');
+ });
+ test.each(['___','***'])('converts standalone %s after normal Enter',async(marker)=>{
+  await setup(kind,'Previous');await page.keyboard.press('Enter');await page.keyboard.type(marker);await page.keyboard.press('Enter');
+  expect(await page.locator('.community-rich-input hr').count()).toBe(1);
+ });
+});
+
+for(const kind of ['post','article','note'])test('spaced subscript and Arabic underline in '+kind,async()=>{
+ await setup(kind,'Before');await page.keyboard.type(' ~not working~');
+ expect(await page.locator('.community-rich-input sub').textContent()).toBe('not working');
+ expect(await page.evaluate(()=>source.value)).toContain('~not\\ working~');
+ await page.keyboard.type(' __');await page.keyboard.insertText('العربية');await page.keyboard.type('__');
+ expect(await page.locator('.community-rich-input u').textContent()).toBe('العربية');
+ expect(await page.locator('.community-rich-input u [data-underline-run]').evaluate(el=>getComputedStyle(el).textDecorationLine)).toBe('overline');
+ expect(await page.evaluate(()=>source.value)).toContain('__العربية__');
+});
+
+for(const kind of ['post','article','note'])describe('divider input paths in '+kind,()=>{
+ test.each(['___','***'].flatMap(marker=>['Enter','Shift+Enter','insertParagraph','insertLineBreak'].map(action=>[marker,action])))('%s converts with %s at an element caret',async(marker,action)=>{
+  await setup(kind,'Before\n\nMarker\n\nAfter');
+  await page.evaluate(marker=>{
+   const p=rich.querySelectorAll('p')[1];p.innerHTML='<strong></strong>';p.firstChild.textContent=marker;rich.focus();
+   const range=document.createRange();range.selectNodeContents(p);range.collapse(false);getSelection().removeAllRanges();getSelection().addRange(range);surface.sync();
+  },marker);
+  if(action.startsWith('insert')){
+   expect(await page.evaluate(inputType=>rich.dispatchEvent(new InputEvent('beforeinput',{inputType,bubbles:true,cancelable:true})),action)).toBe(false);
+  }else await page.keyboard.press(action);
+  expect(await page.locator('.community-rich-input hr').count()).toBe(1);
+  expect(await page.evaluate(()=>source.value)).toContain('Before');expect(await page.evaluate(()=>source.value)).toContain('After');
+  await page.keyboard.type('New paragraph');expect(await page.evaluate(()=>source.value)).toContain('New paragraph');
+ });
+});

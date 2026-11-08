@@ -72,6 +72,19 @@
     root.querySelectorAll('.notebook-arabic').forEach(span=>{
       span.classList.toggle('notebook-edit-mixed',!/^\p{Script_Extensions=Arabic}[\p{Script_Extensions=Arabic}\u200c\u200d \t]*$/u.test(span.textContent));
     });
+    root.querySelectorAll('u').forEach(underline=>{
+      underline.style.textDecoration='none';
+      const walker=document.createTreeWalker(underline,NodeFilter.SHOW_TEXT),texts=[];
+      while(walker.nextNode())texts.push(walker.currentNode);
+      for(const text of texts){
+        let span=text.parentElement;
+        if(!span.hasAttribute('data-underline-run')){
+          span=document.createElement('span');span.dataset.underlineRun='';text.before(span);span.append(text);moved=true;
+        }
+        const letters=text.data.match(/\p{L}/gu)||[];
+        span.style.textDecoration=letters.length && letters.every(letter=>/\p{Script_Extensions=Arabic}/u.test(letter))?'overline':'underline';
+      }
+    });
     if(moved && points.length)selection.setBaseAndExtent(...points[0],...points[1]);
     root.querySelectorAll('p,li,blockquote,h1,h2,h3,h4,h5,h6,.notebook-rich-line').forEach(el => {
       if (el.closest('[data-notebook-raw]')) return;
@@ -108,7 +121,7 @@
   }
   function render(markdown, propheticSpeech = false) {
     const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
-    if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /__|[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
+    if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
     const root = document.createElement('div');
     let parser;const definitions=new Map();
     function append(tokens, parent) {
@@ -162,7 +175,7 @@
         }
         const tags = {hr:'hr',highlight:'mark',paragraph:'p',strong:'strong',em:'em',del:'s',codespan:'code',br:'br',blockquote:'blockquote',heading:'h'+t.depth,link:'a',list:t.ordered?'ol':'ul',list_item:'li'};
         if (!tags[t.type] || t.task || t.title) throw Error('Use Markdown for this content');
-        const el = document.createElement(tags[t.type]);
+        const el = document.createElement(t.type==='strong' && t.raw.startsWith('__')?'u':tags[t.type]);
         if (propheticSpeech && t.type === 'em') el.className = t.raw.startsWith('*') ? 'source-prophetic-speech' : 'source-italic';
         if (['paragraph','heading','list_item','blockquote'].includes(t.type)) el.dir = 'auto';
         if (t.type === 'link') { const href = safeLink(t.href); if (!href) throw Error('Unsafe link'); el.setAttribute('href', href); }
@@ -263,6 +276,7 @@
         if(el.innerHTML===el.dataset.parallelHtml)return el.dataset.parallelSource+'\n\n';
         return Array.from(el.children,cell=>contents(cell).trim().replace(/\n+/g,' ')).join(' || ')+'\n\n';
       }
+      if(el.hasAttribute('data-markdown-boundary'))return contents(el).replace(/\u200b/g,'');
       if(el.classList.contains('notebook-rich-line'))return contents(el)+(el.nextSibling?'\n':'');
       if(el.classList.contains('notebook-subtext'))return '-# '+contents(el).trim()+'\n\n';
       const text = () => contents(el);
@@ -273,6 +287,7 @@
         case 'BR': return '\n';
         case 'CENTER': return '<center>\n'+text().trim()+'\n</center>\n\n';
         case 'MARK': return wrap('==');
+        case 'U': return wrap('__');
         case 'B': case 'STRONG': return wrap('**');
         case 'I': case 'EM': return wrap(el.classList.contains('source-prophetic-speech') ? '*' : root.dataset.propheticSpeech !== undefined ? '_' : '*');
         case 'S': case 'STRIKE': case 'DEL': return wrap('~~');
@@ -485,7 +500,7 @@
     const format=document.createElement('div');format.className='community-selection-tools';format.hidden=true;format.setAttribute('role','group');format.setAttribute('aria-label','Text formatting');
     const rich=document.createElement('div');rich.className='community-rich-input notebook-markdown';rich.contentEditable='true';rich.setAttribute('role','textbox');rich.setAttribute('aria-multiline','true');rich.setAttribute('aria-label',source.getAttribute('aria-label') || source.labels?.[0]?.textContent || source.placeholder || 'Post text');rich.dataset.placeholder=source.placeholder;rich.dir='auto';
     if (source.dataset.propheticSpeech !== undefined) rich.dataset.propheticSpeech = '';
-    const hint=document.createElement('span');hint.className='community-editor-hint';hint.textContent=isArticle?'Use the formatting bar above':'Select text to format';
+    const hint=document.createElement('span');hint.className='community-editor-hint';hint.textContent=isArticle?'Use the formatting bar above':'Type Markdown or select text to format';
     const removeColumns=document.createElement('button');removeColumns.type='button';removeColumns.className='community-remove-columns community-editor-mode';removeColumns.textContent='×';removeColumns.title='Remove column layout';removeColumns.setAttribute('aria-label','Remove column layout');removeColumns.hidden=true;
     const undoColumns=document.createElement('button');undoColumns.type='button';undoColumns.className='community-remove-columns community-editor-mode';undoColumns.textContent='Undo column layout change';undoColumns.hidden=true;
     let activeRow=null, removedColumns=null, formatHistory=[], formatHistoryIndex=0;
@@ -496,6 +511,11 @@
     const required=source.required;source.required=false;
     function sync() {
       if(mode!=='rich'||syncing||rich.innerHTML===lastHTML)return;
+      rich.querySelectorAll('[data-markdown-boundary]').forEach(boundary=>{
+        if(boundary.textContent==='\u200b')return;
+        const first=boundary.firstChild;if(first?.nodeType===3 && first.data.startsWith('\u200b'))first.deleteData(0,1);
+        boundary.removeAttribute('data-markdown-boundary');
+      });
       styleContent(rich,true);
       reconcileFootnotes(rich);
       const markdown=serialize(rich);
@@ -533,7 +553,7 @@
       source.required=mode==='source' && required;
       toggle.textContent=mode==='rich'?'Edit Markdown':'Formatted editing';
       toggle.setAttribute('aria-label',mode==='rich'?'Switch to Markdown editing':'Switch to formatted editing');
-      hint.textContent=mode==='rich'?(isArticle?'Use the formatting bar above':'Select text to format'):rendered?'Markdown editing':'Advanced formatting · Markdown editing';
+      hint.textContent=mode==='rich'?(isArticle?'Use the formatting bar above':'Type Markdown or select text to format'):rendered?'Markdown editing':'Advanced formatting · Markdown editing';
       rich.contentEditable=String(!source.disabled && !source.readOnly);rich.setAttribute('aria-disabled',String(source.disabled));toggle.disabled=source.disabled || mode==='source' && !rendered;
       if(mode!=='rich'){format.hidden=true;removeColumns.hidden=true;activeRow=null;sizeSource();}
     }
@@ -620,7 +640,7 @@
       source.dispatchEvent(new Event('input',{bubbles:true}));
       if(wasRich && renderContent(source.value)) {
         const rowIndex=markdown.slice(0,edit.start).split('\n').filter(line=>window.CommunityParallelText.separator(line)>=0).length;
-        mode='rich';hydrate();rich.focus();
+        mode='rich';hydrate();rich.focus({preventScroll:true});
         const cell=rich.querySelectorAll('.community-edit-parallel')[rowIndex]?.lastElementChild;
         if(cell){const range=document.createRange();range.selectNodeContents(cell);const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);selection();}
       }
@@ -704,7 +724,7 @@
       const lines=Array.from(row.children,cell=>{const line=document.createElement('div');line.dir='auto';line.append(...Array.from(cell.childNodes,node=>node.cloneNode(true)));return line;});
       row.before(marker,...lines);row.remove();
       removedColumns={row,marker,lines};activeRow=null;removeColumns.hidden=true;undoColumns.hidden=false;
-      rich.focus();const range=document.createRange();range.setStartAfter(marker);range.collapse(true);
+      rich.focus({preventScroll:true});const range=document.createRange();range.setStartAfter(marker);range.collapse(true);
       const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);
       sync();selection();removedColumns.after=rich.innerHTML;
     });
@@ -715,7 +735,7 @@
       if(lines.some(line=>!rich.contains(line)))return false;
       lines.forEach((line,index)=>{row.children[index].replaceChildren(...Array.from(line.childNodes,node=>node.cloneNode(true)));line.remove();});
       marker.replaceWith(row);removedColumns=null;undoColumns.hidden=true;
-      rich.focus();const range=document.createRange();range.selectNodeContents(row.firstElementChild);range.collapse(true);
+      rich.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(row.firstElementChild);range.collapse(true);
       const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);sync();selection();return true;
     }
     undoColumns.addEventListener('mousedown',e=>e.preventDefault());
@@ -754,14 +774,17 @@
       const first=parallelCell(s.anchorNode),last=parallelCell(s.focusNode);
       return first!==last && !!(first || last);
     }
-    rich.addEventListener('beforeinput',event=>{if(crossesColumns()){event.preventDefault();hint.textContent='Edit one column at a time';}});
+    rich.addEventListener('beforeinput',event=>{
+      if(crossesColumns()){event.preventDefault();hint.textContent='Edit one column at a time';return;}
+      if(!event.defaultPrevented && !event.isComposing && ['insertParagraph','insertLineBreak'].includes(event.inputType) && convertTypedMarkdown(event.inputType==='insertLineBreak'?'lineBreak':true))event.preventDefault();
+    });
     function formatAction(command,arg) {
       // Source-backed formatting rebuilds the DOM. Keep it in the same
       // structural undo history instead of losing the operation on hydration.
       const wasRich=mode==='rich',before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
       const history=formatHistory,index=formatHistoryIndex;
-      const preserveViewport=wasRich && ['style','center','formatBlock'].includes(command);
-      const scrollParents=[];if(preserveViewport)for(let parent=shell.parentElement;parent;parent=parent.parentElement)scrollParents.push([parent,parent.scrollTop,parent.scrollLeft]);
+      const preserveViewport=wasRich;
+      const scrollParents=[];if(preserveViewport)for(let parent=rich;parent;parent=parent.parentElement)scrollParents.push([parent,parent.scrollTop,parent.scrollLeft]);
       const scrollX=window.scrollX,scrollY=window.scrollY,minHeight=shell.style.minHeight;
       if(preserveViewport)shell.style.minHeight=shell.getBoundingClientRect().height+'px';
       let result;
@@ -794,7 +817,7 @@
           source.setRangeText('[['+title+(text===title?'':'|'+text)+']]',source.selectionStart,source.selectionEnd,'end');
           source.dispatchEvent(new Event('input',{bubbles:true}));return true;
         }
-        rich.focus();
+        rich.focus({preventScroll:true});
         const active=window.getSelection();
         if(range && rich.contains(range.startContainer)){active.removeAllRanges();active.addRange(range);}
         const link=document.createElement('a');link.dataset.wikiTarget=title;link.href='/notebook?note='+encodeURIComponent(title);link.title=title;link.textContent=text;
@@ -821,7 +844,7 @@
         }
         source.dispatchEvent(new Event('input',{bubbles:true}));
         if(wasRich && renderContent(source.value)){
-          mode='rich';hydrate();rich.focus();
+          mode='rich';hydrate();rich.focus({preventScroll:true});
           if(label){const body=Array.from(rich.querySelectorAll('[data-footnote]')).find(row=>row.dataset.footnote===label)?.querySelector('.community-footnote-body');if(body){const range=document.createRange();range.selectNodeContents(body);const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);body.scrollIntoView?.({block:'nearest'});selection();}}
         }return true;
       }
@@ -829,7 +852,7 @@
       if(command==='style') {
         if(!/^(?:[0-6]|subtext)$/.test(String(arg)))return false;
         if(mode==='rich' && arg!=='subtext' && ![...rich.querySelectorAll('.notebook-subtext')].some(node=>savedRange?.intersectsNode(node)) && document.execCommand){
-          rich.focus();if(savedRange){const selected=window.getSelection();selected.removeAllRanges();selected.addRange(savedRange);}
+          rich.focus({preventScroll:true});if(savedRange){const selected=window.getSelection();selected.removeAllRanges();selected.addRange(savedRange);}
           if(document.execCommand('formatBlock',false,String(arg)==='0'?'p':'h'+arg)){sync();selection();return true;}
         }
         const wasRich=mode==='rich';if(wasRich)toSource();
@@ -850,7 +873,7 @@
           if(centered && centered.contains(savedRange.endContainer)){
             const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret(),range=savedRange.cloneRange();
             centered.replaceWith(...centered.childNodes);
-            rich.focus();window.getSelection().removeAllRanges();window.getSelection().addRange(range);
+            rich.focus({preventScroll:true});window.getSelection().removeAllRanges();window.getSelection().addRange(range);
             sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
           }
         }
@@ -914,9 +937,9 @@
         } else return false;
         source.setRangeText(text,start,end,'select');source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
       }
-      if(!savedRange){rich.focus();selection();}
+      if(!savedRange){rich.focus({preventScroll:true});selection();}
       if(!savedRange)return true;
-      const s=window.getSelection();rich.focus();s.removeAllRanges();s.addRange(savedRange);
+      const s=window.getSelection();rich.focus({preventScroll:true});s.removeAllRanges();s.addRange(savedRange);
       if(command==='removeFormat' && !s.isCollapsed){
         const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret(),range=s.getRangeAt(0).cloneRange();
         const blocks=[...rich.querySelectorAll('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6')].filter(block=>!block.querySelector('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6') && !block.closest('[data-notebook-raw]') && range.intersectsNode(block));
@@ -985,7 +1008,7 @@
     rich.addEventListener('mouseup',selection);
     rich.addEventListener('compositionstart',()=>{composing=true;});
     rich.addEventListener('compositionend',()=>{composing=false;sync();});
-    rich.addEventListener('input',()=>{if(!composing)sync();});
+    rich.addEventListener('input',event=>{if(!composing){if(event.inputType==='insertText')convertTypedMarkdown();sync();}});
     // Pasted HTML never enters the editable DOM. Plain-text paste preserves
     // paragraph breaks and excludes external markup, handlers and tracking URLs.
     rich.addEventListener('paste',event=>{
@@ -999,6 +1022,101 @@
     });
     rich.addEventListener('dragover',event=>{if(event.dataTransfer?.types.includes('Files'))event.preventDefault();});
     rich.addEventListener('drop',event=>{event.preventDefault();if(event.dataTransfer?.files.length){toSource();source.dispatchEvent(new DragEvent('drop',{dataTransfer:event.dataTransfer,bubbles:true,cancelable:true}));}});
+    // Convert only newly typed syntax at the caret. Never reparse the document:
+    // existing escaped literals, advanced blocks and unrelated selections stay intact.
+    function convertTypedMarkdown(enter=false) {
+      const selected=window.getSelection(),node=selected?.anchorNode;
+      if(composing || source.disabled || source.readOnly || !selected?.isCollapsed || ![1,3].includes(node?.nodeType) || !rich.contains(node))return false;
+      const element=node.nodeType===1?node:node.parentElement;
+      if(element.closest('pre,code,a,[data-notebook-raw],[contenteditable="false"]'))return false;
+      const offset=selected.anchorOffset,prefix=node.nodeType===3?node.data.slice(0,offset).replace(/\u00a0/g,' '):'';
+      const line=element.closest('.notebook-rich-line,p,div,h1,h2,h3,h4,h5,h6,li');
+      if(!line)return false;
+      // Work on the logical line, including soft breaks and native Enter's BR.
+      const caretRange=selected.getRangeAt(0),segment=document.createRange();segment.selectNodeContents(line);
+      let priorBreak=null,nextBreak=null;
+      const walker=document.createTreeWalker(line,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT),breaks=[];
+      while(walker.nextNode()){
+        const part=walker.currentNode;
+        if(part.nodeType===3){for(let at=part.data.indexOf('\n');at>=0;at=part.data.indexOf('\n',at+1))breaks.push({start:[part,at],end:[part,at+1]});}
+        else if(part.tagName==='BR'){const at=Array.prototype.indexOf.call(part.parentNode.childNodes,part);breaks.push({start:[part.parentNode,at],end:[part.parentNode,at+1]});}
+      }
+      for(const boundary of breaks){
+        if(caretRange.comparePoint(...boundary.start)<0)priorBreak=boundary;
+        else {nextBreak=boundary;break;}
+      }
+      if(priorBreak)segment.setStart(...priorBreak.end);
+      if(nextBreak)segment.setEnd(...nextBreak.start);
+      const lineRange=segment.cloneRange();lineRange.setEnd(node,offset);
+      const linePrefix=lineRange.toString().replace(/\u00a0/g,' ').replace(/\u200b/g,'');
+      const atLineEnd=segment.toString().replace(/\u00a0/g,' ').replace(/\u200b/g,'')===linePrefix;
+      const plain=!segment.cloneContents().querySelector('p,div,h1,h2,h3,h4,h5,h6,strong,em,u,s,mark,code,a,ul,ol,blockquote,pre,table');
+      const blockLine=(line.matches('p,div') || line.classList.contains('notebook-rich-line')) && !parallelCell(node);
+      let match,replacement,from=0,to=offset,target,inline=false;
+      const make=tag=>document.createElement(tag);
+      if(plain && !parallelCell(node) && (match=/^(#{1,6}|-#|>|[-+*]|\d+[.)]) $/.exec(linePrefix)) && !enter && blockLine){
+        const marker=match[1];
+        if(marker==='-#'){replacement=make('p');replacement.className='notebook-subtext';}
+        else if(marker[0]==='#')replacement=make('h'+marker.length);
+        else if(marker==='>'){replacement=make('blockquote');replacement.append(make('p'));}
+        else {replacement=make(/^\d/.test(marker)?'ol':'ul');if(replacement.tagName==='OL')replacement.start=parseInt(marker,10);replacement.append(make('li'));}
+        target=replacement.lastElementChild || replacement;
+        const tail=segment.cloneRange();tail.setStart(node,offset);target.append(tail.cloneContents());
+        if(!target.textContent)target.append(make('br'));
+      }else if(enter && /^ {0,3}(?:-{3,}|\*{3,}|_{3,})[ \t]*$/.test(linePrefix) && atLineEnd && blockLine && !segment.cloneContents().querySelector('code,pre,a,[data-notebook-raw]')){
+        replacement=document.createDocumentFragment();target=make('p');target.append(make('br'));replacement.append(make('hr'),target);
+      }else if((enter===true || !enter && /\|\| $/.test(linePrefix)) && atLineEnd && plain && blockLine && window.CommunityParallelText?.separator(linePrefix)>=0){
+        const rendered=render(linePrefix,source.dataset.propheticSpeech!==undefined);
+        if(!rendered?.querySelector('.community-edit-parallel'))return false;
+        replacement=document.createDocumentFragment();replacement.append(...rendered.childNodes);
+        if(enter){target=make('p');target.append(make('br'));replacement.append(target);}
+        else target=replacement.querySelector('.community-edit-parallel-cell:last-child');
+      }else if(!enter && node.nodeType===3){
+        // A boundary before the opener prevents intraword underscores and a
+        // partial **bold** sequence from being mistaken for single emphasis.
+        match=/(^|[\s(])((\*\*|__|~~|==|\*|_)(?=\S)([^\n]+?\S|\S)\3|`([^`\n]+)`|\[\[([^\]\n]+)\]\]|\[([^\]\n]+)\]\(([^\s)]+)\))([ \u00a0]?)$/.exec(prefix);
+        if(!match){
+          const custom=/(?<![\\~^])([~^])([^~^\n]+)\1$/.exec(prefix);
+          if(custom)match=Object.assign([custom[0],'',custom[0],undefined,undefined,undefined,undefined,undefined,undefined,''],{index:custom.index});
+        }
+        if(!match || /\\/.test(match[2]) || (match[3] && (match[4].startsWith(match[3][0]) || match[4].endsWith(match[3][0]))))return false;
+        from=match.index+match[1].length;to=offset-match[9].length;
+        if((prefix.slice(0,from).match(/(?<!\\)`/g)||[]).length%2)return false;
+        const typed=/^[~^](?![~^])/.test(match[2])?match[2].replace(/ /g,'\\ '):match[2];
+        const rendered=render(typed,source.dataset.propheticSpeech!==undefined);
+        const paragraph=rendered?.firstElementChild;
+        if(!paragraph?.matches('p') || !paragraph.querySelector('strong,em,u,s,del,mark,code,a,sub,sup'))return false;
+        replacement=document.createDocumentFragment();replacement.append(...paragraph.childNodes);inline=true;
+      }else return false;
+      const before=rich.innerHTML,beforePoint=formatCaret();
+      // Capture the literal typed form for Undo, even before the input handler syncs.
+      const beforeMarkdown=serialize(rich),scroll=[];
+      for(let parent=rich;parent;parent=parent.parentElement)scroll.push([parent,parent.scrollTop,parent.scrollLeft]);
+      const x=window.scrollX,y=window.scrollY;
+      if(inline){
+        const range=document.createRange();range.setStart(node,from);range.setEnd(node,offset);range.deleteContents();
+        const boundary=make('span');boundary.dataset.markdownBoundary='';
+        // A temporary caret boundary prevents Chrome from inheriting the
+        // preceding inline style. sync removes it as soon as typing resumes;
+        // serialize never stores the boundary character.
+        const caret=document.createTextNode('\u200b'+prefix.slice(to,offset));boundary.append(caret);replacement.append(boundary);range.insertNode(replacement);
+        selected.setBaseAndExtent(caret,caret.length,caret,caret.length);
+      }else{
+        const container=line.classList.contains('notebook-rich-line')?line.parentElement:line;
+        const leading=document.createRange(),trailing=document.createRange();leading.selectNodeContents(container);trailing.selectNodeContents(container);
+        if(priorBreak)leading.setEnd(...priorBreak.start);else leading.setEnd(segment.startContainer,segment.startOffset);
+        if(nextBreak)trailing.setStart(...nextBreak.end);else trailing.setStart(segment.endContainer,segment.endOffset);
+        const before=leading.cloneContents(),after=trailing.cloneContents(),parts=document.createDocumentFragment();
+        const appendPart=fragment=>{if(!fragment.textContent && !fragment.querySelector('img,hr,table'))return;const p=make('p');p.dir='auto';p.append(fragment);parts.append(p);};
+        appendPart(before);parts.append(replacement);appendPart(after);
+        if(container===rich)container.replaceChildren(parts);else container.replaceWith(parts);
+        const range=document.createRange();range.selectNodeContents(target);range.collapse(true);selected.removeAllRanges();selected.addRange(range);
+      }
+      sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);
+      for(const [parent,top,left] of scroll){parent.scrollTop=top;parent.scrollLeft=left;}
+      if(window.scrollX!==x || window.scrollY!==y)window.scrollTo(x,y);
+      return true;
+    }
     function recordFormatChange(before,beforePoint,beforeMarkdown){
       formatHistory.splice(formatHistoryIndex);
       formatHistory.push({before,after:rich.innerHTML,beforeMarkdown,afterMarkdown:source.value,beforePoint,afterPoint:formatCaret()});
@@ -1095,15 +1213,17 @@
     }
     rich.addEventListener('keydown',event=>{
       if(source.disabled || source.readOnly)return;
+      if(event.key==='Enter' && !event.isComposing && !event.metaKey && !event.ctrlKey && !event.altKey && convertTypedMarkdown(event.shiftKey?'lineBreak':true)){event.preventDefault();return;}
       if((event.metaKey||event.ctrlKey) && event.key.toLowerCase()==='z'){
         const change=formatHistory[event.shiftKey?formatHistoryIndex:formatHistoryIndex-1];
         if(change && rich.innerHTML===(event.shiftKey?change.before:change.after)){
-          event.preventDefault();rich.innerHTML=event.shiftKey?change.after:change.before;
+          event.preventDefault();const scroll=[];for(let parent=rich;parent;parent=parent.parentElement)scroll.push([parent,parent.scrollTop,parent.scrollLeft]);
+          rich.innerHTML=event.shiftKey?change.after:change.before;
           restoreFormatCaret(event.shiftKey?change.afterPoint:change.beforePoint);
           formatHistoryIndex+=event.shiftKey?1:-1;sync();
           const markdown=event.shiftKey?change.afterMarkdown:change.beforeMarkdown;
           if(source.value!==markdown){syncing=true;source.value=markdown;source.dispatchEvent(new Event('input',{bubbles:true}));syncing=false;}
-          selection();return;
+          selection();for(const [parent,top,left] of scroll){parent.scrollTop=top;parent.scrollLeft=left;}return;
         }
       }
       if((event.metaKey||event.ctrlKey) && !event.shiftKey && event.key.toLowerCase()==='z' && removedColumns?.after===rich.innerHTML && undoColumnRemoval()){event.preventDefault();return;}

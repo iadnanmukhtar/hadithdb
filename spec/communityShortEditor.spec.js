@@ -9,7 +9,7 @@ function setup(markdown='') {
  return {dom,w,input,rich:w.document.querySelector('.community-rich-input')};
 }
 test.each([
- '__underline__ and ==highlight==', 'Term\n: Definition', '- [x] Task',
+ 'Term\n: Definition', '- [x] Task',
  '# Heading {#custom}',
  '<span dir="rtl">العربية</span>', '```js\nconst x=1;\n```',
  '| A | B |\n|---|---|\n| 1 | 2 |', ':smile:', '![Image](/community/media/test)',
@@ -37,7 +37,7 @@ test('formats new input, emits one input event and preserves the live rich DOM',
 });
 test('programmatic source updates preserve unsupported content and reset clears the editor',async()=>{
  const {dom,w,input,rich}=setup();try{
-  input.value='__Existing underline__';expect(input.hidden).toBe(false);expect(input.value).toBe('__Existing underline__');
+  input.value='Term\n: Definition';expect(input.hidden).toBe(false);expect(input.value).toBe('Term\n: Definition');
   input.form.reset();await Promise.resolve();expect(input.hidden).toBe(true);expect(rich.textContent).toBe('');
  }finally{dom.window.close();}
 });
@@ -79,7 +79,7 @@ test('post toolbar including parallel text appears only for selected rich text',
  }finally{w.close();}
 });
 test.each(['rich','source'])('double-click opens formatting after native word selection in %s mode',async mode=>{
- const {w,input,rich}=setup(mode==='source'?'Reflection\n\n__underline__':'A reflection');try{
+ const {w,input,rich}=setup(mode==='source'?'Reflection\n\nTerm\n: Definition':'A reflection');try{
   const surface=mode==='source'?input:rich;surface.focus();
   surface.dispatchEvent(new w.MouseEvent('dblclick',{bubbles:true}));
   if(mode==='source')input.setSelectionRange(0,10);
@@ -89,7 +89,7 @@ test.each(['rich','source'])('double-click opens formatting after native word se
  }finally{w.close();}
 });
 test('posts containing extended Markdown still offer selection formatting without rewriting other content',()=>{
- const original='Reflection\n\nEnglish || العربية\n\n__underline__';
+ const original='Reflection\n\nEnglish || العربية\n\nTerm\n: Definition';
  const {dom,w,input}=setup(original);try{
   input.focus();input.setSelectionRange(0,10);input.dispatchEvent(new w.Event('select'));
   const toolbar=w.document.querySelector('.community-selection-tools');expect(toolbar.hidden).toBe(false);
@@ -120,7 +120,7 @@ test('escaped pipes and code-span pipes remain literal rather than creating colu
  const {w,rich}=setup('Literal \\|\\| text and `a||b`');try{expect(rich.querySelector('.community-edit-parallel')).toBeNull();}finally{w.close();}
 });
 test('parallel rows coexist with the source fallback for unsupported extended syntax',()=>{
- const original='English || العربية\n\n__underline__';const {w,input}=setup(original);try{expect(input.hidden).toBe(false);expect(input.value).toBe(original);}finally{w.close();}
+ const original='English || العربية\n\nTerm\n: Definition';const {w,input}=setup(original);try{expect(input.hidden).toBe(false);expect(input.value).toBe(original);}finally{w.close();}
 });
 test('Enter moves between columns and exits the row without corrupting parallel syntax',()=>{
  const {w,input,rich}=setup('English || العربية');try{
@@ -316,5 +316,40 @@ test.each([
   expect(input.value).toContain('[!'+kind+']');
   expect(input.value).toContain(' edited');
   expect(require('../lib/UserNotebook').render(input.value)).toContain('markdown-callout-'+kind);
+ }finally{w.close();}
+});
+
+test.each(['**Mercy**','*رحمة*','==Mercy==','~~old~~','`literal`','[[My note]]','[site](https://example.org)'])('typed Markdown converts locally: %s',text=>{
+ const {w,input,rich}=setup('Before\n\nUntouched');try{
+  const untouched=rich.lastChild,paragraph=rich.firstChild;paragraph.textContent='Before '+text;
+  w.getSelection().setBaseAndExtent(paragraph.firstChild,paragraph.textContent.length,paragraph.firstChild,paragraph.textContent.length);
+  rich.dispatchEvent(new w.InputEvent('input',{inputType:'insertText',data:text.slice(-1)}));
+  expect(paragraph.querySelector('strong,em,mark,s,code,a')).not.toBeNull();expect(rich.lastChild).toBe(untouched);
+  expect(input.value).toContain('Untouched');
+  rich.dispatchEvent(new w.KeyboardEvent('keydown',{key:'z',metaKey:true,bubbles:true,cancelable:true}));
+  expect(rich.firstChild.textContent).toBe('Before '+text);
+ }finally{w.close();}
+});
+
+test('Markdown conversion waits for composition and ignores unsafe links',()=>{
+ const {w,rich}=setup('Before');try{
+  const paragraph=rich.firstChild;
+  const type=(text,inputType='insertText')=>{paragraph.textContent=text;w.getSelection().setBaseAndExtent(paragraph.firstChild,text.length,paragraph.firstChild,text.length);rich.dispatchEvent(new w.InputEvent('input',{inputType}));};
+  rich.dispatchEvent(new w.CompositionEvent('compositionstart'));type('**رحمة**');expect(paragraph.querySelector('strong')).toBeNull();
+  rich.dispatchEvent(new w.CompositionEvent('compositionend'));expect(paragraph.querySelector('strong')).toBeNull();
+  type('[bad](javascript:alert)');expect(paragraph.querySelector('a')).toBeNull();
+  type('**literal**','insertFromPaste');expect(paragraph.querySelector('strong')).toBeNull();
+ }finally{w.close();}
+});
+
+test('custom underline stays editable and round-trips mixed Arabic and English',()=>{
+ const original='__English العربية__ and **bold**';const {w,input,rich}=setup(original);try{
+  expect(input.hidden).toBe(true);expect(rich.querySelector('u').textContent).toBe('English العربية');
+  expect(rich.querySelector('strong').textContent).toBe('bold');
+  const runs=[...rich.querySelectorAll('u [data-underline-run]')];
+  expect(runs.map(el=>el.style.textDecoration)).toEqual(['underline','overline']);
+  expect(w.CommunityShortEditor.serialize(rich)).toBe(original);
+  w.CommunityShortEditor.get(input).toSource();expect(input.value).toBe(original);
+  w.CommunityShortEditor.get(input).toFormatted();expect(rich.querySelector('u').textContent).toBe('English العربية');
  }finally{w.close();}
 });
