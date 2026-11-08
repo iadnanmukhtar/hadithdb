@@ -546,8 +546,11 @@ have their own limits; this is not a cluster-wide concurrency limit.
 | `maxQueue` | `HADITHDB_SEARCH_MAX_QUEUE` | 128 |
 
 Settings take precedence over environment variables. Values must be positive
-integers; invalid values fall back to defaults. Existing `queryTimeoutMs` /
-`HADITHDB_SEARCH_QUERY_TIMEOUT_MS` still overrides the HTTP deadline for searches.
+integers; invalid values fall back to defaults. `queryTimeoutMs` /
+`HADITHDB_SEARCH_QUERY_TIMEOUT_MS` controls the Elasticsearch query limit. Search
+HTTP deadlines use the larger of `httpTimeoutMs` and the query limit (rounded up
+to seconds) plus 5 seconds. A 5-second query limit therefore gets at least a
+10-second HTTP deadline, including queue time.
 
 New Elasticsearch callers should use `SearchHttp.get/post/put/delete/head`.
 `axiosConfig()` remains available for older maintenance scripts and supplies a
