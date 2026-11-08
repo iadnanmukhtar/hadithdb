@@ -68,3 +68,10 @@ test('publishing with no relation field preserves the existing authored link',as
  const values=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'))[1];
  expect(values[15]).toBe(12);expect(values[16]).toBe(12);
 });
+
+test('publication stores lowercase tags in draft, public snapshot and revision',async()=>{
+ const {q,save}=harness();await save({tags:'Quran, al-Baqarah, FAITH, تقوى'});
+ const values=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'))[1];
+ expect(values[4]).toBe('quran, al-baqarah, faith, تقوى');expect(values[13]).toBe(values[4]);
+ expect(q.mock.calls.find(([sql])=>sql.startsWith('INSERT INTO community_revisions'))[1][6]).toBe(values[4]);
+});

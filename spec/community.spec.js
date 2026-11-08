@@ -53,3 +53,8 @@ test('post and article feed snippets preserve notebook Markdown and truncate val
   expect(Community.postView({...row, public_title: 'Chosen title'}).title).toBe('Chosen title');
   expect(Community.postView({...row, public_markdown: 'بسم الله الرحمن الرحيم'}).shareTitle).toBe('بسم الله الرحمن الرحيم');
 });
+
+test('legacy mixed-case tags display lowercase in public and editor views',()=>{
+ const row={id:9,kind:'article',markdown:'Draft body',public_markdown:'Published body',tags:'Quran, Al-Baqarah',public_tags:'Hadith, FAITH',handle:'author'};
+ expect(Community.postView(row).tags).toBe('hadith, faith');expect(Community.postView(row,true).tags).toBe('quran, al-baqarah');
+});

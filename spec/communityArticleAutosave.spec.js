@@ -2,7 +2,7 @@
 const fs = require('fs'), vm = require('vm');
 const { JSDOM } = require('jsdom');
 const source = fs.readFileSync(require.resolve('../public/static/js/community.js'), 'utf8');
-const names = ['payload', 'signature', 'scheduleArticleSave', 'invalidatePreview', 'save', 'performArticleSave', 'closeArticle', 'stageShortPostConversion'];
+const names = ['payload', 'signature', 'scheduleArticleSave', 'invalidatePreview', 'save', 'performArticleSave', 'articleSnapshot', 'saveArticlePayload', 'closeArticle', 'stageShortPostConversion'];
 const functions = names.map(name => {
   const start = source.search(new RegExp(`  (?:async )?function ${name}\\(`));
   const lineEnd = source.indexOf('\n', start);
@@ -173,4 +173,30 @@ test('blank rich article source does not autosave even when native required is d
 test('updating an existing article returns to its canonical reading page',async()=>{
  const {ctx}=harness();ctx.api.mockResolvedValue({post:{id:3,version:2,status:'published',url:'/blog/existing-article'}});
  await ctx.save('publish');expect(ctx.location.assign).toHaveBeenCalledWith('/blog/existing-article');
+});
+
+test('stale version after tag casing changes retries without losing the current article',async()=>{
+ const {ctx,$}=harness();
+ ctx.editing={id:3,version:1,status:'draft',kind:'article',title:'Title',markdown:'Original body',tags:'Quran'};
+ $('tags').value='Quran';
+ ctx.api.mockRejectedValueOnce(Object.assign(new Error('Conflict'),{status:409}))
+  .mockResolvedValueOnce({post:{...ctx.editing,version:4,tags:'quran'}})
+  .mockResolvedValueOnce({post:{...ctx.editing,version:5,tags:'quran'}});
+ await ctx.save('draft');
+ expect(ctx.api.mock.calls[1]).toEqual(['/posts/3?edit=1']);
+ expect(ctx.api.mock.calls[2][2]).toMatchObject({version:4,tags:'quran',markdown:'Original body'});
+});
+test('a genuine conflict keeps local text and never overwrites the newer draft',async()=>{
+ const {ctx,$}=harness();ctx.editing={id:3,version:1,status:'draft',kind:'article',title:'Title',markdown:'Original body'};
+ $('markdown').value='My unsaved changes';
+ ctx.api.mockRejectedValueOnce(Object.assign(new Error('Conflict'),{status:409}))
+  .mockResolvedValueOnce({post:{...ctx.editing,version:4,markdown:'Other tab changes'}});
+ await expect(ctx.save('publish')).rejects.toThrow('Your unsaved text is still here');
+ expect(ctx.api).toHaveBeenCalledTimes(2);expect($('markdown').value).toBe('My unsaved changes');
+});
+test('visibility changes are never automatically overridden',async()=>{
+ const {ctx}=harness();ctx.editing={id:3,version:1,status:'published',kind:'article',title:'Title',markdown:'Original body'};
+ ctx.api.mockRejectedValueOnce(Object.assign(new Error('Conflict'),{status:409}))
+  .mockResolvedValueOnce({post:{...ctx.editing,version:4,status:'private'}});
+ await expect(ctx.save('publish')).rejects.toThrow('newer edits');expect(ctx.api).toHaveBeenCalledTimes(2);
 });

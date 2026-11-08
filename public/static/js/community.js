@@ -672,7 +672,7 @@
     const target='/community/write?post='+quickEditing.id+'&convert=1';
     quickEditing=null;$('quick-text').value='';location.assign(target);
   },$('quick-convert')));
-  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, category: $('category')?.value || '', relatedArticleUrl: $('related-article')?.value || '', notifyEmail: false, version: editing?.version, ...(editing?.conversionPending ? {convertToArticle:true} : {}), action }; }
+  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value.toLowerCase(), category: $('category')?.value || '', relatedArticleUrl: $('related-article')?.value || '', notifyEmail: false, version: editing?.version, ...(editing?.conversionPending ? {convertToArticle:true} : {}), action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
   let articleSaveTimer, articleSaveTask = null, articleReturnUrl = false;
   function scheduleArticleSave() {
@@ -699,6 +699,7 @@
     if ($('category')?.value) figure.append(node('span', $('category').value, 'community-category-pill'));
   }
   document.addEventListener('communityCoverChanged',event=>{if(event.detail.editor==='quick'){showQuickCover(event.detail.url);return;}renderEditorCover({coverUrl:event.detail.url});invalidatePreview();});
+  $('tags')?.addEventListener('blur',()=>{ $('tags').value = $('tags').value.toLowerCase(); });
   $('category')?.addEventListener('change',()=>renderEditorCover({coverUrl:$('cover-url').value}));
   $('cover-remove')?.addEventListener('click',()=>{renderEditorCover({coverUrl:''});invalidatePreview();});
   function renderEditorBlog() {
@@ -714,7 +715,7 @@
     $('delete').hidden = false;
     if ($('convert-note')) $('convert-note').hidden=post.kind!=='article'||post.conversionPending||post.status==='hidden'||post.isBlog;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
-    $('markdown').value = post.markdown; $('tags').value = post.tags; $('category').value = post.category || ''; $('related-article').value = post.relatedArticleUrl || ''; renderEditorCover(post);
+    $('markdown').value = post.markdown; $('tags').value = (post.tags || '').toLowerCase(); $('category').value = post.category || ''; $('related-article').value = post.relatedArticleUrl || ''; renderEditorCover(post);
     if($('article-options'))$('article-options').open=!!(post.subtitle || post.coverUrl);
     $('title').required = false;
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
@@ -734,6 +735,27 @@
     articleSaveTask = task;
     try { await task; } finally { if (articleSaveTask === task) articleSaveTask = null; }
   }
+  function articleSnapshot(post) {
+    return JSON.stringify([post.kind, post.draftTitle ?? post.title ?? '', post.subtitle || '', post.coverUrl || '',
+      post.markdown || '', (post.tags || '').toLowerCase(), post.category || '', post.relatedArticleUrl || '']);
+  }
+  async function saveArticlePayload(body, account) {
+    const path = editing ? '/posts/' + editing.id : '/posts';
+    try { return await api(path, editing ? 'PUT' : 'POST', body); }
+    catch (err) {
+      if (err.status !== 409 || !editing?.id) throw err;
+      const baseline = editing;
+      const latest = (await api(path + '?edit=1')).post;
+      if (account !== epoch) throw new Error('Account changed. Please try again.');
+      // Retry only when no authored fields changed, or this exact save already reached the server.
+      // A different status requires an explicit reopen; never undo another tab's visibility change.
+      if (latest.status !== baseline.status || (articleSnapshot(latest) !== articleSnapshot(baseline) && articleSnapshot(latest) !== articleSnapshot(body))) {
+        throw new Error('This article has newer edits in another tab. Your unsaved text is still here. Open the latest draft in a new tab to compare before saving.');
+      }
+      editing = latest;
+      return api(path, 'PUT', {...body, version: latest.version});
+    }
+  }
   async function performArticleSave(action, background) {
     if (background && (!me || !dirty || editing?.conversionPending)) return;
     if (background && window.communityMediaPending) { scheduleArticleSave(); return; }
@@ -751,7 +773,7 @@
       const currentSignature = signature(), wasDirty = dirty, updating=!!editing?.id;
       if (background) $('editor-status').textContent = 'Saving…';
       const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, category: editing.category, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
-      const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
+      const result = await saveArticlePayload(body, account);
       if (account !== epoch) return;
       if (editing?.conversionPending) sessionStorage.removeItem('community-convert-'+editing.id);
       editing = result.post;
