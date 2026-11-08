@@ -4,7 +4,6 @@
 
 require('dotenv').config();
 require('../lib/Globals');
-const axios = require('axios');
 const fs = require('fs');
 const MySQL = require('mysql');
 const path = require('path');
@@ -260,7 +259,7 @@ function freshQueryOnce(sql) {
 async function ensureIndexExists() {
 	const indexURL = `${global.settings.search.domain}/${INDEX}`;
 	try {
-		await axios.head(indexURL, SearchHttp.axiosConfig());
+		await SearchHttp.head(indexURL, SearchHttp.axiosConfig());
 		console.log(`${INDEX} index already exists`);
 		return;
 	} catch (err) {
@@ -273,7 +272,7 @@ async function ensureIndexExists() {
 		throw new Error(`Mapping file ${mappingFile} does not define index '${INDEX}'`);
 	console.log(`creating missing ${INDEX} index from ${path.basename(mappingFile)}...`);
 	try {
-		await axios.put(indexURL, mappingDoc[INDEX], SearchHttp.axiosConfig());
+		await SearchHttp.put(indexURL, mappingDoc[INDEX], SearchHttp.axiosConfig());
 	} catch (err) {
 		throw describeAxiosError(err, `Unable to create index '${INDEX}'`);
 	}
@@ -281,7 +280,7 @@ async function ensureIndexExists() {
 
 async function deleteExistingDocuments() {
 	try {
-		await axios.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
+		await SearchHttp.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
 			query: { match_all: {} }
 		}, SearchHttp.axiosConfig());
 	} catch (err) {
@@ -291,7 +290,7 @@ async function deleteExistingDocuments() {
 
 async function deleteExistingDocumentsByAlias(alias) {
 	try {
-		await axios.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
+		await SearchHttp.post(`${global.settings.search.domain}/${INDEX}/_delete_by_query`, {
 			query: { term: { commentary_alias: alias } }
 		}, SearchHttp.axiosConfig());
 	} catch (err) {

@@ -2,7 +2,6 @@
 'use strict';
 require('dotenv').config();
 require('../lib/Globals');
-const axios = require('axios');
 const SearchHttp = require('../lib/SearchHttp');
 const SharhIndex = require('../lib/HadithSharhIndex');
 (async () => {
@@ -19,7 +18,7 @@ const SharhIndex = require('../lib/HadithSharhIndex');
 			count += batch.length;
 			if (count % 5000 === 0) console.log(`Indexed ${count} Sharh entries (after ID ${afterId})`);
 		}
-		await axios.post(`${global.settings.search.domain}/sharhs/_refresh`, null, SearchHttp.axiosConfig());
+		await SearchHttp.post(`${global.settings.search.domain}/sharhs/_refresh`, null, SearchHttp.axiosConfig());
 		console.log(`Indexed ${count} Sharh entries`);
 		const Navigation = require('../lib/SharhNavigationIndex');
 		await Navigation.ensureIndex();

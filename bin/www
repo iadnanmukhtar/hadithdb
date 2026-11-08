@@ -4,6 +4,7 @@
 
 const newrelic = require('newrelic');
 require('dotenv').config();
+const memoryDiagnostics = require('../lib/RuntimeMemory').start({ axios: require('axios') });
 const app = require('../app');
 const debug = require('../lib/Debug')('hadithdb:Server');
 const http = require('http');
@@ -13,6 +14,7 @@ app.set('port', port);
 console.log('http://localhost:' + port);
 
 var server = http.createServer(app);
+memoryDiagnostics.attach(server);
 server.on('error', onError);
 server.on('listening', onListening);
 server.on('clientError', onClientError);

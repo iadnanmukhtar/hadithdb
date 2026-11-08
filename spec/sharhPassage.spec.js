@@ -32,10 +32,12 @@ test.each(['0', '-1', '1 OR 1=1', '1.5', '9007199254740992'])('rejects invalid e
 });
 
 test('loads the current hadith owner and bilingual body directly from SQL', async () => {
- global.query = jest.fn().mockResolvedValueOnce([{ id: 7, book_id: 100, hadith_id: 42 }]).mockResolvedValueOnce([book]).mockResolvedValueOnce([{ hId: 42, body: 'متن', body_en: 'Hadith', chain: 'السند', footnote_en: 'Footnote', num: '1', book_alias: 'bukhari' }]);
+ global.query = jest.fn().mockResolvedValueOnce([{ id: 7, book_id: 100, hadith_id: 42 }]).mockResolvedValueOnce([book]).mockResolvedValueOnce([{ id: 42, tocId: 55 }]).mockResolvedValueOnce([{ hId: 42, body: 'متن', body_en: 'Hadith', chain: 'السند', footnote_en: 'Footnote', num: '1', book_alias: 'bukhari' }]);
  const data = await Sharh.entryById(7);
  expect(data.owner).toMatchObject({ hId: 42, body: 'متن', body_en: 'Hadith' });
- expect(global.query.mock.calls[2][0]).toContain('WHERE hId=42');
+ expect(global.query.mock.calls[3][0]).toContain('WHERE h.id=42');
+ expect(global.query.mock.calls[3][0]).toContain('v_toc WHERE tId=55');
+ expect(global.query.mock.calls[3][0]).toContain('v_hadiths_grades WHERE id=42');
  expect(data.owner.single).toBe(true);
  expect(data.owner.ar.chain).toBe('السند');
  expect(data.owner.en.footnote).toBe('Footnote');
@@ -137,7 +139,7 @@ test('reference pages retain every passage for the same book and hadith', async 
   .mockResolvedValueOnce([{ id: 7 }, { id: 8 }])
   .mockResolvedValueOnce([{ id: 7, book_id: 100, hadith_id: 42 }])
   .mockResolvedValueOnce([book])
-  .mockResolvedValueOnce([{ hId: 42, book_alias: 'bukhari', num: '100' }])
+  .mockResolvedValueOnce([{ id: 42, tocId: 55 }]).mockResolvedValueOnce([{ hId: 42, book_alias: 'bukhari', num: '100' }])
   .mockResolvedValueOnce([{ id: 8, text: 'Second passage' }]);
  const data = await Sharh.entryByReference(book.alias, 'bukhari:100');
  expect(data.canonical).toBe('/sharh/fath-al-bari/bukhari:100');
@@ -176,9 +178,9 @@ test('stale indexed hadith placement falls back to the current SQL reader view',
  Index.docFromId.mockResolvedValue({ hId: 42, book_id: 1, tId: 54, grade_id: 1, grader_id: 2 });
  global.query = jest.fn().mockResolvedValueOnce([{ id: 7, book_id: 100, hadith_id: 42 }]).mockResolvedValueOnce([book])
   .mockResolvedValueOnce([{ id: 42, bookId: 1, tocId: 55, gradeId: 1, graderId: 2 }])
-  .mockResolvedValueOnce([{ hId: 42, book_alias: 'bukhari', num: '100', body: 'Current' }]);
+  .mockResolvedValueOnce([{ id: 42, tocId: 55 }]).mockResolvedValueOnce([{ hId: 42, book_alias: 'bukhari', num: '100', body: 'Current' }]);
  expect((await Sharh.entryById(7)).owner.ar.body).toBe('Current');
- expect(global.query.mock.calls[3][0]).toContain('FROM v_hadiths');
+ expect(global.query.mock.calls[4][0]).toContain('v_hadiths_grades WHERE id=42');
 });
 
 test('indexed source heading uses its live introduction without querying the slow TOC view', async () => {
@@ -195,7 +197,7 @@ test('indexed source heading uses its live introduction without querying the slo
 test('ES outages still render the current SQL-backed hadith', async () => {
  Index.docFromId.mockRejectedValue(new Error('ES unavailable'));
  global.query = jest.fn().mockResolvedValueOnce([{ id: 7, book_id: 100, hadith_id: 42 }]).mockResolvedValueOnce([book])
-  .mockResolvedValueOnce([{ hId: 42, book_alias: 'bukhari', num: '100', body: 'Fallback text' }]);
+  .mockResolvedValueOnce([{ id: 42, tocId: 55 }]).mockResolvedValueOnce([{ hId: 42, book_alias: 'bukhari', num: '100', body: 'Fallback text' }]);
  expect((await Sharh.entryById(7)).owner.ar.body).toBe('Fallback text');
 });
 
@@ -249,4 +251,16 @@ test('reader sequence connects introduction commentary to hadith commentary with
  const hadith = await Sharh.readerNavigation({ book, owner: { id: 10 }, kind: 'hadith' });
  expect(hadith.prev).toBe('/sharh/fath-al-bari/heading/10');
  expect(hadith.next).toBeUndefined();
+});
+
+test('action-bar identity lookup skips Elasticsearch and full reader metadata', async () => {
+ global.books = [book];
+ global.query = jest.fn().mockResolvedValueOnce([{id:7,book_id:100,hadith_id:42,text:'Explanation'}])
+  .mockResolvedValueOnce([{id:42,num:'100',book_alias:'bukhari'}]);
+ const data = await Sharh.entryById(7,'hadith',{ownerIdentityOnly:true});
+ expect(data.canonical).toBe('/sharh/fath-al-bari/bukhari:100');
+ expect(data.entry.text).toBe('Explanation');
+ expect(Index.docFromId).not.toHaveBeenCalled();
+ expect(global.query.mock.calls[1][0]).toContain('SELECT h.id, h.num, b.alias AS book_alias');
+ expect(global.query.mock.calls.some(([sql]) => /v_hadiths|v_toc/.test(sql))).toBe(false);
 });

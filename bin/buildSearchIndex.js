@@ -6,7 +6,6 @@ require('dotenv').config();
 const options = readOptions(process.argv.slice(2));
 
 require('../lib/Globals');
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
 const HadithTranslationIndexView = require('../lib/HadithTranslationIndexView');
@@ -178,7 +177,7 @@ async function ensureIndexExists(indexName) {
 	if (!payload)
 		throw new Error(`Mapping file ${mappingFile} does not define index '${indexName}'`);
 	try {
-		await axios.head(indexURL, SearchHttp.axiosConfig({
+		await SearchHttp.head(indexURL, SearchHttp.axiosConfig({
 			headers: {
 				'Content-Type': 'application/json'
 			}
@@ -192,7 +191,7 @@ async function ensureIndexExists(indexName) {
 	}
 	log(`\n*****\ncreating missing ${indexName} index from ${path.basename(mappingFile)}...`);
 	try {
-		await axios.put(indexURL, payload, SearchHttp.axiosConfig({
+		await SearchHttp.put(indexURL, payload, SearchHttp.axiosConfig({
 			headers: {
 				'Content-Type': 'application/json'
 			}
@@ -207,7 +206,7 @@ async function ensureIndexMapping(indexName, indexConfig) {
 	if (!properties)
 		return;
 	try {
-		const mappingResponse = await axios.get(`${global.settings.search.domain}/${indexName}/_mapping`, SearchHttp.axiosConfig());
+		const mappingResponse = await SearchHttp.get(`${global.settings.search.domain}/${indexName}/_mapping`, SearchHttp.axiosConfig());
 		const current = mappingResponse.data?.[indexName]?.mappings?.properties || {};
 		const missing = {};
 		Object.keys(properties).forEach(field => {
@@ -216,7 +215,7 @@ async function ensureIndexMapping(indexName, indexConfig) {
 		});
 		if (Object.keys(missing).length < 1)
 			return;
-		await axios.put(`${global.settings.search.domain}/${indexName}/_mapping`, { properties: missing }, SearchHttp.axiosConfig({
+		await SearchHttp.put(`${global.settings.search.domain}/${indexName}/_mapping`, { properties: missing }, SearchHttp.axiosConfig({
 			headers: { 'Content-Type': 'application/json' }
 		}));
 		log(`added ${Object.keys(missing).length} field(s) to ${indexName} mapping`);

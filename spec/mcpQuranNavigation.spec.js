@@ -99,14 +99,15 @@ test('does not manufacture headings, summaries or a passage for absent source da
 
 test('Mushaf reference mapping keeps first and last page caches separate for split ayahs', async () => {
   const original = global.query;
-  global.query = jest.fn().mockResolvedValueOnce([{ page_number: 10 }]).mockResolvedValueOnce([{ page_number: 11 }]);
+  global.query = jest.fn().mockResolvedValueOnce([{global_word_id:1,surah:2,ayah:50},{global_word_id:2,surah:2,ayah:50}])
+    .mockResolvedValueOnce([{page_number:10,first_word_id:1,last_word_id:1},{page_number:11,first_word_id:2,last_word_id:2}]);
   Mushaf.invalidateMappings();
   try {
     expect(await Mushaf.pageForRef(2, 50)).toBe(10);
     expect(await Mushaf.pageForRef(2, 50, { last: true })).toBe(11);
     expect(await Mushaf.pageForRef(2, 50)).toBe(10);
     expect(global.query).toHaveBeenCalledTimes(2);
-    expect(global.query.mock.calls[0][0]).toContain('page.page_number ASC');
-    expect(global.query.mock.calls[1][0]).toContain('page.page_number DESC');
+    expect(global.query.mock.calls[0][0]).toContain('FROM quran_mushaf_words');
+    expect(global.query.mock.calls[1][0]).toContain('FROM quran_mushaf_pages');
   } finally { global.query = original; Mushaf.invalidateMappings(); }
 });

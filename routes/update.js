@@ -2867,7 +2867,7 @@ async function suppressAllVisibleSimilarCandidates(parentId) {
   parentId = parseInt(parentId, 10);
   if (!Number.isInteger(parentId) || parentId <= 0)
     return null;
-  var item = (await global.query(`SELECT * FROM v_hadiths WHERE hId=${parentId} LIMIT 1`))[0];
+  var item = await require('../lib/HadithTranslationIndexView').byId(parentId);
   if (!item)
     return null;
   var candidates = await Hadith.a_dbGetSimilarCandidates(new Item(item));

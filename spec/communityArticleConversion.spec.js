@@ -5,9 +5,10 @@ const saveSource=source.slice(source.indexOf('async function savePost('),source.
 function harness(overrides={}){
  const row={id:9,author_uid:'owner',kind:'article',status:'published',version:4,published_at:'2026-10-29',...overrides};
  const q=jest.fn(async sql=>sql.startsWith('SELECT *')?[row]:[]);
- const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityRelated'?require('../lib/CommunityRelated'):name==='./CommunityTaxonomy'?require('../lib/CommunityTaxonomy'):name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate:async()=>{},syncPost:async()=>{}},queueEmails:jest.fn()});
+ const invalidate=jest.fn(async()=>{}),syncPost=jest.fn(async()=>{});
+ const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityRelated'?require('../lib/CommunityRelated'):name==='./CommunityTaxonomy'?require('../lib/CommunityTaxonomy'):name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate,syncPost},queueEmails:jest.fn()});
  vm.runInContext(saveSource,ctx);
- return {q,save:(input={},user={uid:'owner'})=>ctx.savePost(user,{kind:'note',convertToNote:true,title:'Title',markdown:'Body',version:4,action:'publish',...input},9)};
+ return {q,invalidate,syncPost,save:(input={},user={uid:'owner'})=>ctx.savePost(user,{kind:'note',convertToNote:true,title:'Title',markdown:'Body',version:4,action:'publish',...input},9)};
 }
 test.each(['draft','published'])('article conversion preserves identity and %s status',async status=>{
  const {q,save}=harness({status});await save({action:status==='published'?'publish':'draft'});
@@ -74,4 +75,18 @@ test('publication stores lowercase tags in draft, public snapshot and revision',
  const values=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'))[1];
  expect(values[4]).toBe('quran, al-baqarah, faith, تقوى');expect(values[13]).toBe(values[4]);
  expect(q.mock.calls.find(([sql])=>sql.startsWith('INSERT INTO community_revisions'))[1][6]).toBe(values[4]);
+});
+
+test.each(['draft','published','pending'])('private article autosaves avoid public cache purges and ES refreshes (%s)',async status=>{
+ const {save,invalidate,syncPost}=harness({status});
+ await save({kind:'article',convertToNote:false,action:'draft'});
+ expect(invalidate).not.toHaveBeenCalled();expect(syncPost).not.toHaveBeenCalled();
+});
+test.each(['publish','unpublish'])('%s still refreshes public caches and search',async action=>{
+ const {save,invalidate,syncPost}=harness();
+ await save({kind:'article',convertToNote:false,action});
+ expect(invalidate).toHaveBeenCalledTimes(1);expect(syncPost).toHaveBeenCalledWith(9);
+});
+test('converting a published article to a post still removes its public article index',async()=>{
+ const {save,invalidate,syncPost}=harness();await save();expect(invalidate).toHaveBeenCalledTimes(1);expect(syncPost).toHaveBeenCalledWith(9);
 });

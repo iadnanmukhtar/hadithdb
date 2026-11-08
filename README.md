@@ -523,3 +523,34 @@ In the table below, **Records** is the number of entries in each work, **English
 Set `payments.content.adminOnly` to `true` in `~/.hadithdb/settings.json` and restart the app to disable payments and restrict new translations/revisions to authenticated admins. Admin translations cost zero points and do not require Stripe. The Payments section in My Settings is hidden, and payment endpoints are disabled. Existing translations remain readable by everyone. The separate Tafsir translation switch still applies.
 
 Set the flag to `false` (the default) to restore the existing paid translation flow, subject to `payments.enabled` and Stripe configuration.
+
+## Elasticsearch HTTP limits
+
+Runtime Elasticsearch calls and the main index builders use `lib/SearchHttp.js`.
+The default HTTP deadline is 10 seconds, including queue wait, connection setup,
+and downloading the response. Expiry aborts the Axios request; queued requests
+that expire are removed without being sent. Explicit per-call timeouts (including
+120-second bulk writes) override the default. Elasticsearch's own query timeout
+remains separate and does not replace this HTTP deadline.
+
+Each Node process allows 8 active Elasticsearch requests and 128 queued requests.
+A full queue rejects new work with `ESEARCHBUSY` / HTTP status 503. A deadline
+rejects with `ECONNABORTED`. Slots remain occupied until the transport settles,
+including after cancellation. PM2 workers and separately launched builders each
+have their own limits; this is not a cluster-wide concurrency limit.
+
+| Setting under `settings.search` | Environment variable | Default |
+| --- | --- | --- |
+| `httpTimeoutMs` | `HADITHDB_SEARCH_HTTP_TIMEOUT_MS` | 10000 |
+| `maxConcurrency` | `HADITHDB_SEARCH_MAX_CONCURRENCY` | 8 |
+| `maxQueue` | `HADITHDB_SEARCH_MAX_QUEUE` | 128 |
+
+Settings take precedence over environment variables. Values must be positive
+integers; invalid values fall back to defaults. Existing `queryTimeoutMs` /
+`HADITHDB_SEARCH_QUERY_TIMEOUT_MS` still overrides the HTTP deadline for searches.
+
+New Elasticsearch callers should use `SearchHttp.get/post/put/delete/head`.
+`axiosConfig()` remains available for older maintenance scripts and supplies a
+finite Axios timeout, but calling Axios directly bypasses the shared queue and
+wall-clock deadline. The client does not automatically retry mutations; existing
+bulk retry logic remains in the indexing layer.

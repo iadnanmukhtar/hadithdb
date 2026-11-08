@@ -791,7 +791,9 @@
       else { dirty = true; $('unpublish').hidden = !['published', 'pending'].includes(editing.status); $('editor-status').textContent = 'Earlier changes saved. You still have unsaved edits.'; }
       if (!background) status(action === 'publish' ? editing.status === 'pending' ? 'Submitted for moderation.' : 'Your article is public.' : action === 'unpublish' ? 'Unpublished. The article is now private.' : 'Draft saved.');
       saved = true;
-      if (!background && action === 'publish') articleReturnUrl = updating ? (editing.url || '/community/p/'+editing.id) : '/community/mine';
+      // Pending submissions have no public reading page; keep their destination private.
+      if (!background && action === 'publish') articleReturnUrl = updating && editing.status === 'published'
+        ? (editing.url || '/community/mine') : '/community/mine';
       if (articleReturnUrl && !dirty) {
         clearTimeout(articleSaveTimer);
         location.assign(articleReturnUrl);

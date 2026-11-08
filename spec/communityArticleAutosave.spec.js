@@ -135,7 +135,7 @@ test('edits made during an update save before returning to the reading view', as
   expect(ctx.location.assign).not.toHaveBeenCalled();
   await jest.advanceTimersByTimeAsync(1800);
   expect(ctx.api.mock.calls[1][2]).toMatchObject({action:'draft',markdown:'A newer edit',version:2});
-  expect(ctx.location.assign).toHaveBeenCalledWith('/community/p/3');
+  expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
 });
 
  test('conversion edits and cancellation leave the published post untouched', async () => {
@@ -199,4 +199,18 @@ test('visibility changes are never automatically overridden',async()=>{
  ctx.api.mockRejectedValueOnce(Object.assign(new Error('Conflict'),{status:409}))
   .mockResolvedValueOnce({post:{...ctx.editing,version:4,status:'private'}});
  await expect(ctx.save('publish')).rejects.toThrow('newer edits');expect(ctx.api).toHaveBeenCalledTimes(2);
+});
+
+test('publishing an existing draft awaiting moderation never opens its private public URL',async()=>{
+ const {ctx}=harness();ctx.editing={id:1998,version:4,status:'draft'};
+ ctx.api.mockResolvedValueOnce({post:{id:1998,version:5,status:'pending',url:'/community/p/d5d58000-1f87-4e8d-9376-001b3645accd'}});
+ await ctx.save('publish');
+ expect(ctx.status).toHaveBeenCalledWith('Submitted for moderation.');
+ expect(ctx.location.assign).toHaveBeenCalledWith('/community/mine');
+});
+test('approved publication of an existing draft opens its canonical reading page',async()=>{
+ const {ctx}=harness();ctx.editing={id:1998,version:4,status:'draft'};
+ const url='/community/p/d5d58000-1f87-4e8d-9376-001b3645accd';
+ ctx.api.mockResolvedValueOnce({post:{id:1998,version:5,status:'published',url}});
+ await ctx.save('publish');expect(ctx.location.assign).toHaveBeenCalledWith(url);
 });
