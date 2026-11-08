@@ -13968,3 +13968,5 @@ center [dir] { text-align: center !important; }
 .search-results-page > article > header[lang="ar"] :is(h1, h2, h3) {
   font-size: var(--f-size-ar) !important;
 }
+
+.home-article-category { display: inline-block; width: fit-content; border-radius: 999px; padding: .08rem .45rem; margin-bottom: .2rem; border: 1px solid var(--bs-border-color); font-size: .62rem; line-height: 1.4; font-weight: 600; background: var(--bs-tertiary-bg); color: var(--bs-body-color); }

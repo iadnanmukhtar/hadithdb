@@ -104,7 +104,7 @@ router.get('/:title', async function (req, res, next) {
       const author={name:attr.authorName,handle:attr.authorHandle,photo:attr.authorPhoto,avatarFallback:attr.authorAvatarFallback};
       attr.socialMetadata=require('../lib/CommunitySocialMetadata')('post',{post:{title:attr.title,subtitle:attr.subtitle,excerpt:require('../lib/SocialMetadata').excerpt(migrated.public_markdown),html:body,author}});
     }
-    return res.render('blog_post',{attr:applyCoverFallback(attr),body,slug});
+    return res.render('blog_post',{attr:applyCoverFallback(attr),body,slug,...await require('../lib/HomeArticles').forArticle(attr.postId)});
   }
   return next(createError(404, 'Post not found'));
 

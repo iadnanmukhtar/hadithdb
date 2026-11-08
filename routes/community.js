@@ -104,6 +104,7 @@ function page(res, req, view, extra = {}) {
   res.locals.req = req; res.locals.res = res;
   res.set('Cache-Control', 'private, no-store');
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
+    articleCategories: require('../lib/CommunityTaxonomy').categories,
     page: { menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
       noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe', 'email-preferences', 'email-unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
@@ -150,7 +151,7 @@ router.get('/p/:guid', wrap(async (req,res) => {
   if (!require('../lib/CommunityPostIdentity').valid(req.params.guid)) return res.sendStatus(404);
   const post = await Community.post(req.params.guid);
   if (post.url.startsWith('/blog/') || '/community'+req.path !== post.url) return res.redirect(301,post.url);
-  page(res,req,'post',{post,author:post.author});
+  page(res,req,'post',{post,author:post.author,...(post.kind==='article' ? await require('../lib/HomeArticles').forArticle(post.id) : {})});
 }));
 for (const view of ['following', 'mine', 'write', 'moderation']) router.get('/' + view, (req, res) => page(res, req, view));
 router.get('/@:handle', wrap(async (req, res) => {
@@ -160,6 +161,6 @@ router.get('/@:handle', wrap(async (req, res) => {
 router.get('/@:handle/:id', wrap(async (req, res) => {
   const post = await Community.post(req.params.id);
   if (post.url !== '/community'+req.path) return res.redirect(301, post.url);
-  page(res, req, 'post', { post, author: post.author });
+  page(res, req, 'post', { post, author: post.author, ...(post.kind==='article' ? await require('../lib/HomeArticles').forArticle(post.id) : {}) });
 }));
 module.exports = { pages: router, api };

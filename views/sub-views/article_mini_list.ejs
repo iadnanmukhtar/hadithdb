@@ -1,0 +1,12 @@
+    <div class="article-recommendation-list">
+      <% for (const article of articles) { %>
+      <a class="article-recommendation" href="<%= article.url %>">
+        <img src="<%= article.coverUrl %>" alt="" width="64" height="64" loading="lazy" decoding="async">
+        <span class="article-recommendation-copy">
+          <% if (article.category) { %><span class="article-mini-pill"><%= article.category %></span><% } %>
+          <span class="article-recommendation-title" dir="auto"><%= article.title %></span>
+          <% if (article.authorHandle) { %><span class="article-recommendation-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
+        </span>
+      </a>
+      <% } %>
+    </div>

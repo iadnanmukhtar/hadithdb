@@ -1,0 +1,13 @@
+<% const recommendationGroups = [
+  {title: 'Related posts', items: locals.relatedArticles || []}
+].filter(group => group.items.length); %>
+<% if (recommendationGroups.length) { %>
+<aside class="article-recommendations" aria-label="More articles">
+  <% for (const group of recommendationGroups) { %>
+  <section class="article-recommendation-group" aria-label="<%= group.title %>">
+    <h2><%= group.title %></h2>
+    <%- include('article_mini_list.ejs', { articles: group.items }); %>
+  </section>
+  <% } %>
+</aside>
+<% } %>

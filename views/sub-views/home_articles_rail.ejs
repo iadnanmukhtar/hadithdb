@@ -9,6 +9,7 @@
       <a class="home-article" href="<%= article.url %>">
         <img class="home-article-thumbnail" src="<%= article.coverUrl %>" alt="" width="64" height="64" loading="lazy" decoding="async">
         <span class="home-article-copy">
+          <% if (article.category) { %><span class="home-article-category"><%= article.category %></span><% } %>
           <span class="home-article-title" dir="auto"><%= article.title %></span>
           <% if (article.authorHandle) { %><span class="home-article-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
         </span>

@@ -5,14 +5,14 @@ const saveSource=source.slice(source.indexOf('async function savePost('),source.
 function harness(overrides={}){
  const row={id:9,author_uid:'owner',kind:'article',status:'published',version:4,published_at:'2026-10-29',...overrides};
  const q=jest.fn(async sql=>sql.startsWith('SELECT *')?[row]:[]);
- const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate:async()=>{},syncPost:async()=>{}},queueEmails:jest.fn()});
+ const ctx=vm.createContext({authorFor:async()=>({trusted:true}),admin:async()=>false,moderator:()=>false,text:v=>v,content:v=>({markdown:v}),id:Number,createError:require('http-errors'),transaction:fn=>fn(q),post:async()=>row,require:name=>name==='./CommunityRelated'?require('../lib/CommunityRelated'):name==='./CommunityTaxonomy'?require('../lib/CommunityTaxonomy'):name==='./CommunityDrive'?{enqueue:async()=>{}}:name==='./CommunityCover'?{validate:async()=>''}:{prepare:async()=>{},invalidate:async()=>{},syncPost:async()=>{}},queueEmails:jest.fn()});
  vm.runInContext(saveSource,ctx);
  return {q,save:(input={},user={uid:'owner'})=>ctx.savePost(user,{kind:'note',convertToNote:true,title:'Title',markdown:'Body',version:4,action:'publish',...input},9)};
 }
 test.each(['draft','published'])('article conversion preserves identity and %s status',async status=>{
  const {q,save}=harness({status});await save({action:status==='published'?'publish':'draft'});
  const update=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'));
- expect(update[1][5]).toBe(status);expect(update[1][6]).toBe(5);expect(update[1].slice(-2)).toEqual(['note',9]);
+ expect(update[1][6]).toBe(status);expect(update[1][7]).toBe(5);expect(update[1].slice(-2)).toEqual(['note',9]);
  expect(q.mock.calls.some(([sql])=>sql.startsWith('INSERT INTO community_revisions'))).toBe(true);
 });
 test.each([
@@ -40,4 +40,31 @@ test.each([
  expect(postWrites[0][0]).toMatch(/^UPDATE community_posts SET/);
  expect(postWrites[0][0]).not.toMatch(/\bguid\s*=/i);
  expect(postWrites[0][1].slice(-2)).toEqual([to,9]);
+});
+test('draft saves preserve public category and revisions record the edited category',async()=>{
+ const {q,save}=harness({category:'Hadith',public_category:'Tafsir'});
+ await save({kind:'article',convertToNote:false,category:'Fiqh',action:'draft'});
+ const [sql,values]=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'));
+ expect(sql).toContain('category=?');expect(values[5]).toBe('Fiqh');expect(values[14]).toBe('Tafsir');
+ const revision=q.mock.calls.find(([sql])=>sql.startsWith('INSERT INTO community_revisions'));
+ expect(revision[1][7]).toBe('Fiqh');
+});
+test('publishing explicitly clears the category in both snapshots',async()=>{
+ const {q,save}=harness({category:'Hadith',public_category:'Tafsir'});
+ await save({kind:'article',convertToNote:false,category:'',action:'publish'});
+ const values=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'))[1];
+ expect(values[5]).toBe('');expect(values[14]).toBe('');
+});
+test('draft saves preserve a published relationship and revision history',async()=>{
+ const {q,save}=harness({related_article_id:12,public_related_article_id:10});
+ await save({kind:'article',convertToNote:false,relatedArticleUrl:'',action:'draft'});
+ const values=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'))[1];
+ expect(values[15]).toBeNull();expect(values[16]).toBe(10);
+ expect(q.mock.calls.find(([sql])=>sql.startsWith('INSERT INTO community_revisions'))[1][8]).toBeNull();
+});
+test('publishing with no relation field preserves the existing authored link',async()=>{
+ const {q,save}=harness({related_article_id:12,public_related_article_id:10});
+ await save({kind:'article',convertToNote:false,action:'publish'});
+ const values=q.mock.calls.find(([sql])=>sql.startsWith('UPDATE community_posts'))[1];
+ expect(values[15]).toBe(12);expect(values[16]).toBe(12);
 });

@@ -5,6 +5,8 @@ jest.mock('../lib/GoogleAuth', () => ({ verifyRequest: jest.fn(async req => {
   if (uid === 'expired') throw new Error('Expired session');
   return ['alice', 'bob', 'moderator', 'mallory'].includes(uid) ? { uid, name: uid === 'alice' ? 'Amina أحمد' : uid, email: uid + '@private.test' } : null;
 }) }));
+// Keep the disposable SQL fixture isolated from the real Elasticsearch index.
+jest.mock('../lib/CommunitySearchIndex', () => ({ syncPost: jest.fn(), syncAuthor: jest.fn() }));
 jest.mock('../lib/CommunityDrive', () => ({ ensure: jest.fn(), enqueue: jest.fn() }));
 jest.mock('../lib/NotebookDrive', () => ({ get: jest.fn(async (uid, source) => uid === 'alice' && source === 'item:42' ? { title: 'Notebook title', markdown: '---\nsecret: private metadata\n---\nPrivate notebook body\n\n[[Secret|Label]]', tags: ['learning'] } : null) }));
 const mysql = require('mysql');
@@ -25,6 +27,37 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const json = async (url, method, uid, body, expected = 200) => { const response = await request(url, method, uid, body); const data = await response.json(); expect({ status: response.status, error: data.error }).toEqual({ status: expected, error: expected >= 400 ? expect.any(String) : undefined }); return data; };
   const postInput = overrides => ({ kind: 'article', title: 'A reflection العربية', markdown: 'Original published body', tags: 'learning', action: 'draft', ...overrides });
+  test('related links publish separately from drafts and recommend in both directions', async () => {
+    const user={uid:'moderator',name:'Moderator',email:'moderator@private.test',admin:true};
+    const target=await Community.savePost(user,postInput({action:'publish',title:'Related target',category:'Fiqh',tags:'unique-related-tag'}));
+    let source=await Community.savePost(user,postInput({action:'publish',title:'Related source',category:'Hadith',tags:'',relatedArticleUrl:target.url}));
+    const Articles=require('../lib/HomeArticles');
+    expect((await Articles.forArticle(source.id)).relatedArticles[0].id).toBe(target.id);
+    expect((await Articles.forArticle(target.id)).relatedArticles[0].id).toBe(source.id);
+    source=await Community.savePost(user,postInput({version:source.version,relatedArticleUrl:'',tags:''}),source.id);
+    expect((await Articles.forArticle(source.id)).relatedArticles[0].id).toBe(target.id);
+    expect((await Community.post(source.id,user,true)).relatedArticleUrl).toBe('');
+    source=await Community.savePost(user,postInput({version:source.version,action:'publish',relatedArticleUrl:'',tags:''}),source.id);
+    expect((await Articles.forArticle(source.id)).relatedArticles.some(item=>item.id===target.id)).toBe(false);
+    await Community.sql('UPDATE community_posts SET public_tags=? WHERE id=?',[' UNIQUE-related-tag, extra ',source.id]);
+    expect((await Articles.forArticle(source.id)).relatedArticles.some(item=>item.id===target.id)).toBe(true);
+    await Community.sql('UPDATE community_posts SET public_tags=?,public_category=? WHERE id=?',['','Fiqh',source.id]);
+    expect((await Articles.forArticle(source.id)).relatedArticles.some(item=>item.id===target.id)).toBe(true);
+    await Community.sql("UPDATE community_posts SET status='private' WHERE id=?",[target.id]);
+    expect((await Articles.forArticle(source.id)).relatedArticles.some(item=>item.id===target.id)).toBe(false);
+    expect((await Articles.latest()).some(item=>item.id===target.id)).toBe(false);
+  });
+  test('article category and tags preserve public snapshots until republished and can be cleared', async () => {
+    const user={uid:'moderator',name:'Moderator',email:'moderator@private.test',admin:true};
+    let post=await Community.savePost(user,postInput({action:'publish',category:'Hadith',tags:'faith, prayer'}));
+    post=await Community.savePost(user,postInput({version:post.version,category:'Fiqh',tags:'fasting'}),post.id);
+    expect(await Community.post(post.id)).toMatchObject({category:'Hadith',tags:'faith, prayer'});
+    expect(await Community.post(post.id,user,true)).toMatchObject({category:'Fiqh',tags:'fasting'});
+    post=await Community.savePost(user,postInput({version:post.version,action:'publish',category:'Fiqh',tags:'fasting'}),post.id);
+    expect(await Community.post(post.id)).toMatchObject({category:'Fiqh',tags:'fasting'});
+    post=await Community.savePost(user,postInput({version:post.version,action:'publish',category:'',tags:''}),post.id);
+    expect(await Community.post(post.id)).toMatchObject({category:'',tags:''});
+  });
   beforeAll(async () => {
     adminSpy=jest.spyOn(require('../lib/UserSettings'),'isAdminUser').mockImplementation(async uid=>uid==='moderator');
     process.env.COMMUNITY_MODERATOR_UIDS = 'moderator';

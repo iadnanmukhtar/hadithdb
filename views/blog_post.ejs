@@ -42,12 +42,14 @@
             <section class="notebook-markdown community-reflection-body" dir="auto" data-article-body>
              <%- body %>
             </section>
+            <% if (attr.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of String(attr.tags).split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
             <% if (attr.postId) { %><%- include('sub-views/community_post_actions.ejs', { post: {
               id: attr.postId, kind: 'article', isBlog: true, title: attr.title,
               url: attr.shareUrl || ('/blog/' + slugVal), coverUrl: attr.cover,
               excerpt: attr.subtitle || '', author: {handle: attr.authorHandle, name: attr.authorName || attr.author, photo: attr.authorPhoto, avatarFallback: attr.authorAvatarFallback}
             } }); %><% } %>
           </article>
+          <%- include('sub-views/article_recommendations.ejs'); %>
           <%- include('sub-views/comment_widget.ejs', {
             widgetId: 'blog-comments',
             heading: 'Reflections',

@@ -9,6 +9,7 @@
 %>
 <% if (!detail) { %><div class="community-cover-card blog-cover-card<%= safeImage ? '' : ' community-cover-unavailable' %>"><% } else { %><header class="community-cover-card blog-cover-card blog-cover-hero<%= safeImage ? '' : ' community-cover-unavailable' %>"><% } %>
   <% if (safeImage) { %><img class="community-cover-image" src="<%= safeImage %>" alt=""<% if (!detail) { %> loading="lazy"<% } else { %> fetchpriority="high"<% } %>><% } %>
+  <% if (entry.category) { %><span class="community-category-pill"><%= entry.category %></span><% } %>
   <div class="community-cover-copy">
     <% if (writer) { %><div class="community-cover-author"><% if (safePhoto) { %><span class="community-avatar"><img src="<%= safePhoto %>" alt="" loading="lazy" referrerpolicy="no-referrer"></span><% } %><span class="community-cover-identity"><% if (entry.authorHandle) { %><a href="/community/@<%= entry.authorHandle %>" dir="auto"><%= writer %></a><span class="community-cover-handle" dir="ltr">@<%= entry.authorHandle %></span><% } else { %><span dir="auto"><%= writer %></span><% } %></span><% if (entry.authorHandle) { %><button class="btn btn-sm btn-outline-light community-cover-follow" type="button" data-cover-follow="<%= entry.authorHandle %>">Follow</button><% } %></div><% } %>
     <% if (detail) { %><h1 class="community-cover-title" dir="auto"><%= entry.title %></h1><% } else { %><h2 class="community-cover-title" dir="auto"><a class="community-cover-destination" href="<%= entry.url || ('/blog/' + entry.file) %>"><%= entry.title %></a></h2><% } %>

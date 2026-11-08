@@ -45,6 +45,8 @@
       const label = document.createElement('span'); label.className = 'community-cover-handle'; label.dir = 'ltr'; label.textContent = '@' + handle; identity.append(label);
       const follow = document.createElement('button'); follow.type = 'button'; follow.className = 'btn btn-sm btn-outline-light community-cover-follow'; follow.dataset.coverFollow = handle; follow.textContent = 'Follow'; byline.append(follow);
     }
+    const category = item.category || article.dataset.coverCategory;
+    if (category) { const pill = document.createElement('span'); pill.className = 'community-category-pill'; pill.textContent = category; card.append(pill); }
     copy.append(byline);
     for (const [tag, className, text] of [['h2','community-cover-title',item.title],['p','community-cover-subtitle',item.subtitle],['p','community-cover-excerpt',item.excerpt]]) {
       if (!text) continue;

@@ -350,6 +350,7 @@
     const authorLink = link(item.author.name, '/community/@' + item.author.handle, 'community-author'); authorLink.dir = 'auto'; identity.append(authorLink);
     const subline = node('div', undefined, 'community-entry-subline'); subline.append(node('span', kind === 'like' ? 'Liked' : kind === 'comment' ? 'In conversation' : kind === 'article' ? 'Article' : 'Post'));
     if (item.activityAt) { const dot = node('span', '·'); dot.setAttribute('aria-hidden', 'true'); const time = node('time', activityDate(item)); time.dataset.communityTime = ''; time.dateTime = item.publicationDate || new Date(item.activityAt).toISOString(); subline.append(dot, time); }
+    if (kind === 'article' && item.category) subline.append(node('span', '·'), node('span', item.category));
     identity.append(subline); meta.append(avatar, identity);
     if (privatePost && item.status !== 'private') meta.append(node('span', item.status === 'draft' ? 'Unpublished Draft' : item.status === 'pending' ? 'Awaiting review · Not published' : item.status === 'private' ? 'Hidden from others' : 'Hidden · Not published', 'community-entry-state'));
     if(item.repostedBy) { const credit=node('div',undefined,'community-repost-credit');credit.append(icon('repeat'),document.createTextNode(' Reposted by '),link(item.repostedBy.name,'/community/@'+item.repostedBy.handle));article.append(credit); }
@@ -671,7 +672,7 @@
     const target='/community/write?post='+quickEditing.id+'&convert=1';
     quickEditing=null;$('quick-text').value='';location.assign(target);
   },$('quick-convert')));
-  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, notifyEmail: false, version: editing?.version, ...(editing?.conversionPending ? {convertToArticle:true} : {}), action }; }
+  function payload(action = 'draft') { return { kind: $('kind').value, title: $('title').value, subtitle: $('subtitle').value, coverUrl: $('cover-url').value, markdown: $('markdown').value, tags: $('tags').value, category: $('category')?.value || '', relatedArticleUrl: $('related-article')?.value || '', notifyEmail: false, version: editing?.version, ...(editing?.conversionPending ? {convertToArticle:true} : {}), action }; }
   function signature() { const data = payload(); delete data.version; return JSON.stringify(data); }
   let articleSaveTimer, articleSaveTask = null, articleReturnUrl = false;
   function scheduleArticleSave() {
@@ -695,8 +696,10 @@
     const caption=node('figcaption',post.coverUrl?'Cover image':'Default cover · Pearls of the Deep','small text-muted');
     img.addEventListener('error',()=>{if(img.getAttribute('src')!==fallback){img.src=fallback;caption.textContent='Default cover · Pearls of the Deep';}});
     figure.replaceChildren(img,caption);
+    if ($('category')?.value) figure.append(node('span', $('category').value, 'community-category-pill'));
   }
   document.addEventListener('communityCoverChanged',event=>{if(event.detail.editor==='quick'){showQuickCover(event.detail.url);return;}renderEditorCover({coverUrl:event.detail.url});invalidatePreview();});
+  $('category')?.addEventListener('change',()=>renderEditorCover({coverUrl:$('cover-url').value}));
   $('cover-remove')?.addEventListener('click',()=>{renderEditorCover({coverUrl:''});invalidatePreview();});
   function renderEditorBlog() {
     if(view !== 'write')return;
@@ -711,7 +714,7 @@
     $('delete').hidden = false;
     if ($('convert-note')) $('convert-note').hidden=post.kind!=='article'||post.conversionPending||post.status==='hidden'||post.isBlog;
     editing = post; $('kind').value = post.kind; $('kind').disabled = true; $('title').value = post.draftTitle ?? post.title; $('subtitle').value = post.subtitle || ''; $('subtitle').hidden = post.kind !== 'article';
-    $('markdown').value = post.markdown; $('tags').value = post.tags;
+    $('markdown').value = post.markdown; $('tags').value = post.tags; $('category').value = post.category || ''; $('related-article').value = post.relatedArticleUrl || ''; renderEditorCover(post);
     if($('article-options'))$('article-options').open=!!(post.subtitle || post.coverUrl);
     $('title').required = false;
     $('unpublish').hidden = !['published', 'pending'].includes(post.status);
@@ -747,7 +750,7 @@
       }
       const currentSignature = signature(), wasDirty = dirty, updating=!!editing?.id;
       if (background) $('editor-status').textContent = 'Saving…';
-      const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
+      const body = action === 'unpublish' ? { kind: editing.kind, title: editing.draftTitle ?? editing.title, subtitle: editing.subtitle, coverUrl: editing.coverUrl, markdown: editing.markdown, tags: editing.tags, category: editing.category, notifyEmail: editing.notifyEmail, version: editing.version, action } : payload(action);
       const result = await api(editing ? '/posts/' + editing.id : '/posts', editing ? 'PUT' : 'POST', body);
       if (account !== epoch) return;
       if (editing?.conversionPending) sessionStorage.removeItem('community-convert-'+editing.id);
@@ -794,7 +797,7 @@
   }
   if (view === 'write') {
     document.querySelectorAll('[data-close-editor]').forEach(control => control.addEventListener('click', closeArticle));
-    for (const control of ['title', 'subtitle', 'markdown', 'tags', 'kind']) $(control).addEventListener('input', invalidatePreview);
+    for (const control of ['title', 'subtitle', 'markdown', 'tags', 'category', 'related-article', 'kind']) $(control).addEventListener('input', invalidatePreview);
     $('kind').addEventListener('change', () => { $('title').required = false; });
     $('editor-form').addEventListener('submit', event => {
       event.preventDefault();

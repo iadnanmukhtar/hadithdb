@@ -5,5 +5,11 @@
     <p class="community-author-rail-name" dir="auto"><% if (railAuthor.handle) { %><a href="/community/@<%= railAuthor.handle %>"><%= railAuthor.name %></a> <span class="small text-muted fw-normal" dir="ltr">@<%= railAuthor.handle %></span><% } else { %><strong><%= railAuthor.name || 'Author' %></strong><% } %></p>
     <p class="community-author-rail-bio" data-article-author-bio dir="auto" hidden></p>
     <% if (railAuthor.handle) { %><a class="btn btn-sm btn-outline-secondary community-author-profile-link" href="/community/@<%= railAuthor.handle %>">View profile</a><div class="mt-3" data-author-follow-controls><button class="btn btn-sm btn-outline-secondary" data-author-follow type="button">Follow</button></div><% } %>
+    <% if ((locals.authorArticles || []).length) { %>
+    <section class="community-author-articles" aria-label="More by this author">
+      <h2 class="hadith-heading-toc-title">More by this author</h2>
+      <%- include('article_mini_list.ejs', { articles: authorArticles }); %>
+    </section>
+    <% } %>
   </aside>
 </div>

@@ -20,3 +20,13 @@ test('feed cover links the author separately and exposes their handle and follow
  expect(d.querySelector('[data-cover-follow]').closest('a')).toBeNull();
  }finally{dom.window.close();}
 });
+test('category is escaped and displayed on the cover for server and dynamic cards', async () => {
+ const dom=await setup({category:'Tafsir'}); try {
+  const d=dom.window.document;
+  expect(d.querySelector('.community-cover-card > .community-category-pill').textContent).toBe('Tafsir');
+  const a=d.createElement('article'); a.dataset.kind='article'; d.body.append(a);
+  dom.window.CommunityCoverCards.enhance(a,{...item,category:'<img src=x onerror=alert(1)>'});
+  expect(a.querySelector('.community-category-pill').textContent).toBe('<img src=x onerror=alert(1)>');
+  expect(a.querySelector('.community-category-pill img')).toBeNull();
+ } finally {dom.window.close();}
+});
