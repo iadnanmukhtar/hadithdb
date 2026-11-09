@@ -42,7 +42,7 @@
             <section class="notebook-markdown community-reflection-body" dir="auto" data-article-body>
              <%- body %>
             </section>
-            <% if (attr.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of String(attr.tags).split(',').map(tag => tag.trim()).filter(Boolean)) { %><span><%= tag %></span><% } %></div><% } %>
+            <% if (attr.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of String(attr.tags).split(',').map(tag => tag.trim()).filter(Boolean)) { %><a href="/community?filter=article<%= attr.category ? '&category=' + encodeURIComponent(attr.category) : '' %>&tag=<%= encodeURIComponent(tag.toLowerCase()) %>"><%= tag.toLowerCase() %></a><% } %></div><% } %>
             <% if (attr.postId) { %><%- include('sub-views/community_post_actions.ejs', { post: {
               id: attr.postId, kind: 'article', isBlog: true, title: attr.title,
               url: attr.shareUrl || ('/blog/' + slugVal), coverUrl: attr.cover,

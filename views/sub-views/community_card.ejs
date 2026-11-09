@@ -24,7 +24,7 @@
   <% if (entryKind === 'article' && item.subtitle) { %><p class="community-article-subtitle" dir="auto"><%= item.subtitle %></p><% } %>
   <% if ((entryKind === 'comment' && item.html) || item.feedHtml) { %><div dir="auto" class="notebook-markdown community-reflection-body"><%- entryKind === 'comment' ? item.html : item.feedHtml %></div><% } else { %><p dir="auto" class="community-entry-excerpt"><%= item.excerpt %></p><% } %>
   <% if (item.mediaHtml) { %><div class="community-feed-media"><%- item.mediaHtml %></div><% } %>
-  <% if (item.tags) { %><div class="community-entry-tags" dir="auto"><% for (const tag of item.tags.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 5)) { %><span><%= tag %></span><% } %></div><% } %>
+  <% if (item.tags) { %><div class="community-entry-tags" dir="auto"><% for (const tag of item.tags.split(',').map(tag => tag.trim()).filter(Boolean).slice(0, 5)) { %><% if (entryKind === 'article') { %><a href="/community?filter=article<%= locals.feedCategory ? '&category=' + encodeURIComponent(locals.feedCategory) : '' %>&tag=<%= encodeURIComponent(tag.toLowerCase()) %>"><%= tag.toLowerCase() %></a><% } else { %><span><%= tag.toLowerCase() %></span><% } %><% } %></div><% } %>
   <div class="community-entry-actions">
     <% if (item.likeSource) { %><span class="community-like" title="Like" aria-label="<%= item.likeCount || 0 %> likes"><i class="bi bi-<%= 'heart' %>" aria-hidden="true"></i><% if (item.likeCount) { %> <%= item.likeCount %><% } %></span><% } %>
     <% if (item.likeSource) { %><span class="community-like" title="Dislike" aria-label="<%= item.dislikeCount || 0 %> dislikes"><i class="bi bi-hand-thumbs-down" aria-hidden="true"></i><% if (item.dislikeCount) { %> <%= item.dislikeCount %><% } %></span><% } %>

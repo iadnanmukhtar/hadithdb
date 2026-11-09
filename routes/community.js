@@ -107,6 +107,7 @@ function page(res, req, view, extra = {}) {
   res.render('community', { view, author: null, post: null, initial: null, unsubscribed: false, ...extra,
     moderationEnabled: Community.moderationEnabled(),
     articleCategories: require('../lib/CommunityTaxonomy').categories,
+    feedCategory: typeof req.query.category === 'string' ? req.query.category : '',
     page: { menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
       noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe', 'email-preferences', 'email-unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
@@ -148,7 +149,7 @@ router.post('/unsubscribe/:token', wrap(async (req, res) => {
   if (req.body['List-Unsubscribe'] === 'One-Click') return res.sendStatus(200);
   page(res, req, 'unsubscribe', { unsubscribed: true });
 }));
-router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed({kind: ['article', 'note', 'comment', 'like'].includes(req.query.filter) ? req.query.filter : 'all'}) })));
+router.get('/', wrap(async (req, res) => page(res, req, 'everyone', { initial: await Community.feed({category:req.query.category, tag:req.query.tag, kind: ['article', 'note', 'comment', 'like'].includes(req.query.filter) ? req.query.filter : 'all'}) })));
 router.get('/p/:guid', wrap(async (req,res) => {
   if (!require('../lib/CommunityPostIdentity').valid(req.params.guid)) return res.sendStatus(404);
   const post = await Community.post(req.params.guid);

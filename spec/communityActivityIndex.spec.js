@@ -117,3 +117,23 @@ test('legacy hidden activity filtering happens in every source query before LIMI
  expect(q.mock.calls).toHaveLength(5);
  for(const [sql] of q.mock.calls)expect(sql).toMatch(/AND EXISTS \(SELECT 1 FROM community_hidden_activity hv WHERE hv.source=.*hv.source_id=(l|v).id\)/);
 });
+
+test('category and exact tag intersect before pagination and bind the cursor to both filters', async()=>{
+ const options={...base,kind:'article',category:'Fiqh',tag:'prayer'};
+ const q=db();const first=await Index.page(q,options);
+ const [sql,params]=q.mock.calls[1];
+ expect(sql).toContain("a.source='post' AND EXISTS(SELECT 1 FROM community_posts p WHERE p.id=a.source_id AND p.kind='article' AND p.public_category=? AND LOWER(p.public_tags) REGEXP ?)");
+ expect(params).toContain('Fiqh');expect(params).toContain('(^|,)[[:space:]]*prayer[[:space:]]*(,|$)');
+ for(const changed of [{category:'Hadith'},{tag:'fasting'}]) await expect(Index.page(db(),{...options,...changed,cursor:first.cursor})).rejects.toMatchObject({status:400});
+});
+test('fallback category and tag filtering uses public snapshots and only loads articles',async()=>{
+ const Community=require('../lib/Community'),previous=global.dbPool,queries=[];
+ global.dbPool={query(sql,values,callback){if(typeof values==='function')callback=values;queries.push([sql,values]);callback(null,[]);}};
+ try {
+  await Community.feed({category:'Fiqh',tag:' PRAYER '});
+  const [sql,params]=queries.find(([sql])=>sql.startsWith('SELECT p.*, a.handle'));
+  expect(sql).toContain("p.status='published'");expect(sql).toContain("p.kind='article' AND p.public_category=? AND LOWER(p.public_tags) REGEXP ?");
+  expect(params).toContain('article');expect(params).toContain('Fiqh');expect(params).toContain('(^|,)[[:space:]]*prayer[[:space:]]*(,|$)');
+  expect(queries.some(([sql])=>sql.includes('FROM community_comments c\n'))).toBe(false);
+ }finally{global.dbPool=previous;}
+});

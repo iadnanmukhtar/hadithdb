@@ -364,7 +364,7 @@
     const excerpt = node(bodyHtml ? 'div':'p', undefined, bodyHtml ? 'notebook-markdown community-reflection-body':'community-entry-excerpt'); excerpt.dir='auto';
     if(bodyHtml) excerpt.innerHTML=bodyHtml; else excerpt.textContent=item.excerpt || ''; article.append(excerpt);
     if (item.mediaHtml) { const media=node('div',undefined,'community-feed-media');media.innerHTML=privatePost ? (window.communityPrepareMediaHtml?.(item.mediaHtml)||item.mediaHtml) : item.mediaHtml;article.append(media); }
-    if (item.tags) { const tags = node('div', undefined, 'community-entry-tags'); tags.dir = 'auto'; for (const tag of item.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)) tags.append(node('span', tag)); article.append(tags); }
+    if (item.tags) { const tags = node('div', undefined, 'community-entry-tags'); tags.dir = 'auto'; for (const tag of item.tags.split(',').map(t => t.trim()).filter(Boolean).slice(0, 5)) { const label = node(kind === 'article' ? 'a' : 'span', tag.toLowerCase()); if (kind === 'article') { const query = new URLSearchParams({filter:'article',tag:tag.toLowerCase()}); if ($('category-filter')?.value) query.set('category', $('category-filter').value); label.href = '/community?' + query; } tags.append(label); } article.append(tags); }
     let toggleDiscussion;
     const actions = item.likeSource && !privatePost ? interactionControls(item,()=>toggleDiscussion()) : node('div',undefined,'community-entry-actions');
     if(privatePost) actions.append(openItemLink(href));
@@ -450,6 +450,9 @@
       // activity, rather than presenting a Load more button that appears inert.
       while (true) {
         const params = new URLSearchParams({ scope: view === 'author' ? 'everyone' : view, kind: $('filter')?.value || 'all', offset: String(offset) });
+        if ($('category-filter')?.value) params.set('category', $('category-filter').value);
+        const tag = new URLSearchParams(location.search).get('tag');
+        if (tag) params.set('tag', tag);
         if (feedCursor) params.set('cursor', feedCursor);
         if (view === 'author') params.set('author', handle);
         const data = await api('/feed?' + params);
@@ -638,20 +641,37 @@
   root.querySelectorAll('[data-author-follow]').forEach(button => button.addEventListener('click', () => run(() => changeRelation(), button)));
   function writeFilterUrl(method) {
     const url = new URL(location.href), value = $('filter').value;
+    if (value !== 'article') url.searchParams.delete('tag');
     if (value === 'all') url.searchParams.delete('filter');
     else url.searchParams.set('filter', value);
+    if ($('category-filter')?.value) url.searchParams.set('category', $('category-filter').value);
+    else url.searchParams.delete('category');
     if (url.href !== location.href) history[method](history.state, '', url.pathname + url.search + url.hash);
   }
   function restoreFeedFilter() {
     if (!$('filter')) return;
     const value = new URLSearchParams(location.search).get('filter');
     $('filter').value = Array.from($('filter').options).some(option => option.value === value) ? value : 'all';
+    const query = new URLSearchParams(location.search), category = query.get('category') || '';
+    if ($('category-filter')) $('category-filter').value = Array.from($('category-filter').options).some(option => option.value === category) ? category : '';
+    const tag = query.get('tag');
+    if ($('tag-filter')) { $('tag-filter').hidden = !tag; $('tag-filter').textContent = tag ? '#' + tag.toLowerCase() + ' ×' : ''; $('tag-filter').setAttribute('aria-label', 'Clear tag filter'); }
+    if (category || tag) $('filter').value = 'article';
     writeFilterUrl('replaceState');
   }
   restoreFeedFilter();
   $('filter')?.addEventListener('change', () => {
+    if ($('filter').value !== 'article') { $('category-filter').value = ''; $('tag-filter').hidden = true; }
     writeFilterUrl('pushState');
     run(() => loadFeed(true));
+  });
+  $('category-filter')?.addEventListener('change', () => {
+    if ($('category-filter').value) $('filter').value = 'article';
+    writeFilterUrl('pushState'); run(() => loadFeed(true));
+  });
+  $('tag-filter')?.addEventListener('click', () => {
+    const url = new URL(location.href); url.searchParams.delete('tag'); history.pushState(history.state, '', url);
+    restoreFeedFilter(); run(() => loadFeed(true));
   });
   window.addEventListener('popstate', () => {
     if (!$('filter')) return;
@@ -820,6 +840,12 @@
       else location.assign('/community/mine');
   }
   if (view === 'write') {
+    $('editor-actions-toggle')?.addEventListener('click', event => {
+      const toggle = event.currentTarget;
+      const expanded = toggle.getAttribute('aria-expanded') !== 'true';
+      toggle.setAttribute('aria-expanded', String(expanded));
+      toggle.closest('.community-editor-actions').classList.toggle('is-expanded', expanded);
+    });
     document.querySelectorAll('[data-close-editor]').forEach(control => control.addEventListener('click', closeArticle));
     for (const control of ['title', 'subtitle', 'markdown', 'tags', 'category', 'related-article', 'kind']) $(control).addEventListener('input', invalidatePreview);
     $('kind').addEventListener('change', () => { $('title').required = false; });
