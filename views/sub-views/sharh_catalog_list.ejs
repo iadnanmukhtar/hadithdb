@@ -82,6 +82,10 @@
                           </h3>
                         <% } %>
                       </div>
+                      <div class="book-download-links">
+                        <a href="<%= browseUrl %>.json" download>JSON</a>
+                        <a href="<%= browseUrl %>.epub" download>EPUB</a>
+                      </div>
                       <% if (site.editMode) { %>
                         <div class="tafsir-book-full-name text-muted">
                           <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en" data-placeholder="English short name"><%- tafsir.shortName_en || '' %></span></div>

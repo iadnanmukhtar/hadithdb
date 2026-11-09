@@ -40,3 +40,14 @@ test('a thousand-record export uses five bounded batch loads instead of a thousa
   expect(batch.mock.calls.every(([ids]) => ids.length === 200)).toBe(true);
   expect(single).not.toHaveBeenCalled();
 });
+
+test('book export metadata skips the sharh data query entirely', async () => {
+  const previous = global.query;
+  jest.spyOn(Pairs, 'managed').mockResolvedValue([]);
+  global.query = jest.fn(async () => []);
+  try {
+    await Metadata.forHadiths([7], { includeSharh: false });
+    expect(global.query.mock.calls.some(([sql]) => sql.includes('FROM hdith_hadith_sharh hs'))).toBe(false);
+    expect(global.query.mock.calls.some(([sql]) => sql.includes('FROM hdith_hadith_grades hg'))).toBe(true);
+  } finally { global.query = previous; }
+});

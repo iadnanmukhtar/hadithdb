@@ -42,6 +42,10 @@ if (sharhBook) {
       showBookLayout: true, showBookMetadata: true,
       quranCommentaryBook: null, isEnglishQuranTranslation: false
     }); %>
+    <div class="book-download-links">
+      <a href="/sharh/<%= encodeURIComponent(sharhBook.alias) %>.json" download>JSON</a>
+      <a href="/sharh/<%= encodeURIComponent(sharhBook.alias) %>.epub" download>EPUB</a>
+    </div>
     <hr class="mt-3">
     <section aria-labelledby="sharh-covered-books-title">
       <h2 id="sharh-covered-books-title" class="fs-4">Commentary on</h2>

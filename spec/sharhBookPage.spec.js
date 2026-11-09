@@ -46,7 +46,7 @@ test.each([[[]], [[{ alias: 'malik', shortName_en: 'Muwatta Malik', shortName: '
 
 test.each([false, true])('catalog rows share tafsir styling and inline editors (edit=%s)', async editMode => {
  const html = await ejs.renderFile(path.join(__dirname, '../views/sub-views/sharh_catalog_list.ejs'), {
-  site: { editMode }, sharhBooks: [{ ...book, lang: 'ar-en' }],
+  BookGroups: require('../lib/BookGroups'), site: { editMode }, sharhBooks: [{ ...book, lang: 'ar-en' }],
   utils: { sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
  });
  const $ = cheerio.load(html);
@@ -57,5 +57,5 @@ test.each([false, true])('catalog rows share tafsir styling and inline editors (
  expect($('[data-prop="book.name_en"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-prop="book.description"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-toc-description-expand]')).toHaveLength(editMode ? 0 : 1);
- expect($('.book-download-links')).toHaveLength(0);
+ expect($('.book-download-links a').map((_, el) => $(el).attr('href')).get()).toEqual(['/sharh/malik-istidhkar.json', '/sharh/malik-istidhkar.epub']);
 });

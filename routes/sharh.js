@@ -56,6 +56,7 @@ async function passage(req, res, next) {
 	}
 	res.render('sharh_passage', renderLocals);
 }
+router.get('/:alias.:format(json|epub)', require('../lib/BookDownloads').sendSharhBook);
 router.get('/:alias/heading/:id', handle(passage));
 router.get('/:alias/:reference', handle(passage));
 router.get('/:alias', handle(async (req, res, next) => {

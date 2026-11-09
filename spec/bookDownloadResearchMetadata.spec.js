@@ -5,7 +5,7 @@ const HdithMetadata = require('../lib/HdithMetadata');
 
 afterEach(() => jest.restoreAllMocks());
 
-test('JSON book items retain all research opinions, narrators, references and full commentary texts', async () => {
+test('JSON book items retain all research opinions, narrators, references without embedded commentaries', async () => {
   const grades = Array.from({ length: 12 }, (_, ordinal) => ({ ordinal, grader: ordinal === 0 ? 'أبو حاتم' : `Grader ${ordinal}`, grade: 'صحيح' }));
   const narrators = Array.from({ length: 22 }, (_, id) => ({ id, name: 'Narrator', reliability: 'ثقة', death_text: '179 هـ' }));
   const text = 'Commentary '.repeat(1000);
@@ -17,7 +17,7 @@ test('JSON book items retain all research opinions, narrators, references and fu
   const rows = [{ hId: 100, hId_ref: 7, book_virtual: 1, book_id: 42, book_alias: 'sample', ref: 'sample:1', num: '1',
     grade_grade: 'حسن', grader_shortName: 'البوصيري' }];
   await BookDownloads.attachResearchMetadata(rows);
-  expect(lookup).toHaveBeenCalledWith([7]);
+  expect(lookup).toHaveBeenCalledWith([7], { includeSharh: false });
   const document = BookDownloads.buildBookDocument({ id: 42, alias: 'sample', type: 'hadith' }, rows);
   const item = document.chapters[0].items[0];
   expect(item.metadata.grades).toHaveLength(13);
@@ -25,8 +25,7 @@ test('JSON book items retain all research opinions, narrators, references and fu
   expect(item.metadata.narrators).toHaveLength(22);
   expect(item.metadata.narrators[0]).toMatchObject(narrators[0]);
   expect(item.metadata.related_reports).toEqual(['muslim:1a', 'abudawud:2']);
-  expect(item.metadata.sharh).toHaveLength(7);
-  expect(item.metadata.sharh[0]).toMatchObject({ id: 1, text_arabic: text, text_english: text });
+  expect(item.metadata).not.toHaveProperty('sharh');
   expect(item.ref).toBe('sample:1');
 });
 
