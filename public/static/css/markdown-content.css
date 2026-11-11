@@ -209,3 +209,73 @@ main .intro.content-markdown:lang(en) {
 .community-rich-input a[href] * {
   cursor: pointer;
 }
+
+/* Editor chrome is interface text, even inside an Arabic note or footnote. */
+.community-short-editor .community-short-tools,
+.community-short-editor .community-selection-tools {
+  font-family: var(--bs-font-sans-serif, system-ui, sans-serif);
+  font-size: .75rem;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.5;
+  text-indent: 0;
+  text-align: start;
+  letter-spacing: normal;
+}
+.community-short-editor .community-short-tools { flex-wrap: wrap; }
+.community-short-editor .community-short-tools .community-editor-hint { font-size: inherit; }
+.community-short-editor .community-editor-mode {
+  min-height: 2rem;
+  text-indent: 0;
+  margin-inline-start: auto;
+}
+.community-short-editor .community-editor-mode:is(:hover, :focus-visible) {
+  border-color: var(--community-accent);
+  background: var(--c-primary-soft-08);
+}
+.community-short-editor .community-editor-mode:focus-visible {
+  outline: 2px solid var(--community-accent);
+  outline-offset: 2px;
+}
+/* Neutralize reader-only indentation and note colors while editing. */
+.markdown-editing:has(> .community-short-editor) {
+  text-indent: 0;
+  border: 1px solid var(--bs-border-color);
+  border-radius: .375rem;
+  background: var(--bs-body-bg);
+  padding: .5rem .65rem;
+}
+.markdown-editing:has(> .community-short-editor):focus-within {
+  border-color: var(--c-accent);
+}
+.h .hadith-content-editor._e { text-indent: 0; }
+.h .hadith-content-editor._e:focus { border-color: var(--c-accent); }
+.h .hadith-content-editor.markdown-editing { border-style: solid; }
+.markdown-editing .community-short-editor .community-rich-input,
+.markdown-editing .community-short-editor textarea[data-short-editor] {
+  color: var(--bs-body-color);
+  font-size: 1rem;
+  line-height: 1.8;
+  text-indent: 0;
+}
+.h .markdown-editing .community-rich-input p {
+  color: inherit;
+  font-size: inherit;
+  text-indent: 0;
+}
+/* Reflection composers use the same quiet, clearly bounded writing surface. */
+.comment-feed .community-short-editor {
+  padding: .5rem .65rem;
+  border: 1px solid var(--community-line);
+  border-radius: .375rem;
+  background: var(--community-paper);
+}
+.comment-feed .community-short-editor:focus-within { border-color: var(--community-accent); }
+.comment-feed .comment-submit-btn {
+  width: auto;
+  min-width: 3.5rem;
+  height: auto;
+  min-height: 2rem;
+  padding: .3rem .75rem;
+  border-radius: .375rem;
+}

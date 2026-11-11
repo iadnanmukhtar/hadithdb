@@ -208,6 +208,7 @@
           source.dataset.shortEditor = '';
           source.dataset.propheticSpeech = '';
           source.className = 'form-control';
+          source.placeholder = $el.attr('data-placeholder') || '';
           source.setAttribute('aria-label', $el.attr('aria-label') || $el.attr('data-placeholder') || 'Content Markdown');
           $el.empty().attr('contenteditable', 'false').append(source);
           window.CommunityShortEditor.setPreviewRenderer(source, markdown => contentPreview($el, markdown));

@@ -495,9 +495,9 @@
     const renderContent = text => render(text, source.dataset.propheticSpeech !== undefined) || (previewRenderers.has(source) ? renderAdvanced(text,source) : null);
     function toFormatted() { mode='rich'; hydrate(); }
     const shell=document.createElement('div'); shell.className='community-short-editor'+(source.dataset.articleEditor!==undefined?' community-article-surface':'');
-    const tools=document.createElement('div'); tools.className='community-short-tools';
+    const tools=document.createElement('div'); tools.className='community-short-tools';tools.lang='en';tools.dir='ltr';
     const toggle=document.createElement('button');toggle.type='button';toggle.className='community-editor-mode';toggle.textContent='Markdown';toggle.setAttribute('aria-label','Switch to Markdown editing');
-    const format=document.createElement('div');format.className='community-selection-tools';format.hidden=true;format.setAttribute('role','group');format.setAttribute('aria-label','Text formatting');
+    const format=document.createElement('div');format.className='community-selection-tools';format.lang='en';format.dir='ltr';format.hidden=true;format.setAttribute('role','group');format.setAttribute('aria-label','Text formatting');
     const rich=document.createElement('div');rich.className='community-rich-input notebook-markdown';rich.contentEditable='true';rich.setAttribute('role','textbox');rich.setAttribute('aria-multiline','true');rich.setAttribute('aria-label',source.getAttribute('aria-label') || source.labels?.[0]?.textContent || source.placeholder || 'Post text');rich.dataset.placeholder=source.placeholder;rich.dir='auto';
     if (source.dataset.propheticSpeech !== undefined) rich.dataset.propheticSpeech = '';
     const hint=document.createElement('span');hint.className='community-editor-hint';hint.textContent=isArticle?'Use the formatting bar above':'Type Markdown or select text to format';

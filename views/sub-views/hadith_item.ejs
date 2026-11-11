@@ -282,7 +282,8 @@
 			const noteHtml = utils.markdownToHtml(langData.note, { footnoteIdPrefix: `virtual-${i.id}-${lang}-note` });
 			const noteContent = noteHtml || editPlaceholder('note');
 		%>
-			<aside lang="<%=lang%>" class="<%= editClass(`content-markdown note ${_p} l2`) %>" title="Ḥadīth Note"<% if (lang === 'en') { %> data-content-translation-actions-anchor="1"<% } %><% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="<%= editPlaceholder('note') %>" data-placeholder="<%= editPlaceholder('note') %>" aria-label="<%= editPlaceholder('note') %>"<% } %>>
+			<% if (site.editMode) { %><div lang="<%=lang%>" class="hadith-content-editor-label"><%= editPlaceholder('note') %></div><% } %>
+			<aside lang="<%=lang%>" class="<%= editClass(`content-markdown note${site.editMode ? ' hadith-content-editor' : ''} ${_p} l2`) %>" title="Ḥadīth Note"<% if (lang === 'en') { %> data-content-translation-actions-anchor="1"<% } %><% if (site.editMode) { %> data-id="<%= i.id %>" data-prop="hadith_virtual.note<%=langSuff%>" data-arabizi="true" data-markdown-source="<%= noteMarkdown %>" data-markdown-empty-html="<%= editPlaceholder('note') %>" data-placeholder="<%= editPlaceholder('note') %>" aria-label="<%= editPlaceholder('note') %>"<% } %>>
 				<%- noteContent %>
 			</aside>
 		<% }
