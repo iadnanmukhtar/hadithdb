@@ -34,6 +34,21 @@ describe('multi-worker runtime refresh', () => {
 		expect(generation).toBeTruthy();
 	});
 
+	test('content edits invalidate the publishing worker as well as its peer', async () => {
+		const first = new RuntimeRefreshCoordinator({ markerFile });
+		const second = new RuntimeRefreshCoordinator({ markerFile });
+		await first.markCurrent();
+		await second.markCurrent();
+		await first.publish({ invalidateLocal: true });
+		const refreshFirst = jest.fn().mockResolvedValue();
+		const refreshSecond = jest.fn().mockResolvedValue();
+		await expect(first.ensureCurrent(refreshFirst)).resolves.toBe(true);
+		await expect(second.ensureCurrent(refreshSecond)).resolves.toBe(true);
+		await expect(first.ensureCurrent(refreshFirst)).resolves.toBe(false);
+		expect(refreshFirst).toHaveBeenCalledTimes(1);
+		expect(refreshSecond).toHaveBeenCalledTimes(1);
+	});
+
 	test('coalesces concurrent requests while a worker refreshes', async () => {
 		const publisher = new RuntimeRefreshCoordinator({ markerFile: markerFile });
 		const worker = new RuntimeRefreshCoordinator({ markerFile: markerFile });

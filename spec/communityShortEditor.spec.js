@@ -31,7 +31,7 @@ test('formats new input, emits one input event and preserves the live rich DOM',
   const changed=jest.fn();input.addEventListener('input',changed);
   rich.innerHTML='<p><strong>Mercy</strong> and <em>رحمة</em></p><blockquote><p>A quote</p></blockquote>';
   const strong=rich.querySelector('strong');rich.dispatchEvent(new w.Event('input'));
-  expect(input.value).toBe('**Mercy** and *رحمة*\n\n> A quote');expect(changed).toHaveBeenCalledTimes(1);
+  expect(input.value).toBe('**Mercy** and _رحمة_\n\n> A quote');expect(changed).toHaveBeenCalledTimes(1);
   expect(rich.querySelector('strong')).toBe(strong);
  }finally{dom.window.close();}
 });
@@ -110,7 +110,7 @@ test('editing one column survives serialization and reopening with inline format
  const {w,input,rich}=setup('Before\n\n**Mercy** || الرحمة\n\nSecond || ثان\n\nAfter');try{
   rich.querySelector('.community-edit-parallel-cell').innerHTML='<p><strong>Kindness</strong> and <em>mercy</em></p>';
   rich.dispatchEvent(new w.Event('input'));
-  expect(input.value).toBe('Before\n\n**Kindness** and *mercy* || الرحمة\n\nSecond || ثان\n\nAfter');
+  expect(input.value).toBe('Before\n\n**Kindness** and _mercy_ || الرحمة\n\nSecond || ثان\n\nAfter');
   const reopened=w.CommunityShortEditor.render(input.value);
   expect(reopened.querySelectorAll('.community-edit-parallel')).toHaveLength(2);
   expect(reopened.querySelector('strong').textContent).toBe('Kindness');

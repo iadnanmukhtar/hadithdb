@@ -104,7 +104,7 @@
       } else {
         // Keep letter shortcuts available when an Arabic keyboard layout is active.
         const key = /^[a-z]$/i.test(event.key) ? event.key.toLowerCase() : event.code.replace(/^Key/, '').toLowerCase();
-        const marker = event.shiftKey ? { h: '==', x: '~~' }[key] : { b: '**', i: '*', u: '__' }[key];
+        const marker = event.shiftKey ? { h: '==', x: '~~' }[key] : { b: '**', i: '_', u: '__' }[key];
         if (marker) edit = replacement(editor.value, editor.selectionStart, editor.selectionEnd, marker);
       }
       if (!edit) return;

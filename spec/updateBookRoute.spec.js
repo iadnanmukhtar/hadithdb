@@ -58,6 +58,7 @@ describe('book update route', () => {
     jest.spyOn(Library, 'reloadBooks').mockResolvedValue();
     jest.spyOn(Editing, 'selectHadith').mockResolvedValue({ bookId: 61, alias: 'riyad', hadithIds: [100,200] });
     jest.spyOn(Index, 'update').mockResolvedValue();
+    jest.spyOn(require('../lib/SharhNavigationIndex'), 'syncSourceBooks').mockResolvedValue();
     global.query = jest.fn(async sql => {
       const match = sql.match(/WHERE hId=(\d+)/);
       return match ? [{ hId: Number(match[1]), book_id: 1, book_alias: 'bukhari', num: match[1], books: '{riyad}' }] : [];
@@ -98,7 +99,7 @@ describe('book update route', () => {
     expect(res.status).toHaveBeenCalledWith(500);
   });
 
-  test('returns revised fields without waiting on post-save refresh and preserves success when it fails', async () => {
+  test('waits for post-save refresh and preserves committed revision with a warning when it fails', async () => {
     const Revision = require('../lib/HadithRevision');
     const Snapshot = require('../lib/VirtualHadithSnapshot');
     jest.spyOn(Revision, 'reviseHadithById').mockResolvedValue({ item: { body: 'متن', body_en: 'Saved revision' } });
@@ -108,11 +109,14 @@ describe('book update route', () => {
     global.query = jest.fn(() => new Promise((resolve, reject) => { failRefresh = reject; }));
     global.query.mockResolvedValueOnce([{ hId:123,ref:'bukhari:1',body_en:'Original' }]);
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    await updateHandler()({ body: { value: '' }, params: { id: '123', prop: 'hadith.revise' }, user: { uid: 'admin' } }, res, jest.fn());
-    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, revised: expect.objectContaining({ body_en: 'Saved revision' }) }));
-    expect(Snapshot.queueHadith).toHaveBeenCalledWith('123');
-    expect(publish).toHaveBeenCalledWith({uid:'admin'}, 'revise', expect.objectContaining({hId:123}), expect.objectContaining({body_en:'Saved revision'}));
+    const saving = updateHandler()({ body: { value: '' }, params: { id: '123', prop: 'hadith.revise' }, user: { uid: 'admin' } }, res, jest.fn());
+    await new Promise(resolve => setImmediate(resolve));
+    expect(res.json).not.toHaveBeenCalled();
     failRefresh(new Error('cache read failed after revision was saved'));
+    await saving;
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 200, revised: expect.objectContaining({ body_en: 'Saved revision' }) }));
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ warning: true, refreshPending: true }));
+    expect(publish).toHaveBeenCalledWith({uid:'admin'}, 'revise', expect.objectContaining({hId:123}), expect.objectContaining({body_en:'Saved revision'}));
     await new Promise(resolve => setImmediate(resolve));
     expect(res.status).toHaveBeenCalledTimes(1);
     expect(res.status).toHaveBeenCalledWith(200);

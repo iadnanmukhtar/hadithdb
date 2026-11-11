@@ -780,7 +780,7 @@
     if (editor.selectionStart !== editor.selectionEnd || editor.value[newlineOffset] !== '\n') return;
     const lineStart = editor.value.lastIndexOf('\n', newlineOffset - 1) + 1;
     const line = editor.value.slice(lineStart, newlineOffset);
-    if (!/^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(line)) return;
+    if (!/^[ \t]*(?:quran:(?:\d{1,3}|[a-z][a-z0-9_-]*):\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(line)) return;
     referenceTimer = setTimeout(() => autoExpandReferences(epoch, ownGeneration, newlineOffset), 0);
   }
 

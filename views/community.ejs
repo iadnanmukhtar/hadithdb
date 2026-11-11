@@ -122,6 +122,7 @@
   <% } %>
   <% if (view === 'write') { %>
   <section class="community-editor" aria-label="Publication editor">
+    <button id="community-editor-fullscreen" type="button" class="btn btn-sm btn-outline-secondary community-editor-expand" title="Expand article" aria-label="Expand article" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
     <button type="button" class="btn-close community-editor-close" data-close-editor aria-label="Close editor"></button>
     <div class="community-editor-top"><div><span class="community-editor-eyebrow">Your next article</span><p>Write, preview, and share with the community.</p></div><button id="community-import" class="btn btn-sm btn-outline-secondary" type="button"><i class="bi bi-journal-text" aria-hidden="true"></i> From My Notebook</button></div>
     <form id="community-editor-form">
@@ -235,6 +236,6 @@
 <script src="/static/js/community-article-toc.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-media.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>
-<% if (view === 'write') { %><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>
+<% if (view === 'write') { %><script src="/static/js/community-editor-layout.js?v=<%= utils.scriptAssetVersion() %>" defer></script><script src="/static/js/community-formatting.js?v=<%= utils.scriptAssetVersion() %>" defer></script><% } %>
 <script src="/static/js/community-image-viewer.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
 </body></html>

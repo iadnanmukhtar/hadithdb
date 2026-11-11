@@ -279,3 +279,9 @@ main .intro.content-markdown:lang(en) {
   padding: .3rem .75rem;
   border-radius: .375rem;
 }
+
+/* Keep the speech action distinct from ordinary italic formatting. */
+:is(.community-format-toolbar, .community-selection-tools) :is([data-format="propheticSpeech"], [data-command="propheticSpeech"]) {
+  color: var(--c-speech, #1b7b00);
+  font-size: 1.25rem;
+}

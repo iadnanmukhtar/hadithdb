@@ -69,3 +69,9 @@ test.each([
   ctx.scheduleReferenceExpansion({ inputType }); await jest.advanceTimersByTimeAsync(1000);
   expect(ctx.api).not.toHaveBeenCalled();
 });
+
+test.each(['quran:2:255','quran:baqarah:255','quran:al-baqarah:255'])('Enter schedules reference lookup for %s', async ref=>{
+ const ctx=harness();ctx.editor.value=ref+'\n';ctx.editor.setSelectionRange(ctx.editor.value.length,ctx.editor.value.length);ctx.api.mockResolvedValue({edits:[]});
+ ctx.scheduleReferenceExpansion({inputType:'insertLineBreak'});await jest.advanceTimersByTimeAsync(0);
+ expect(ctx.api).toHaveBeenCalled();
+});

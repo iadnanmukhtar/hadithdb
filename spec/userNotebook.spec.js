@@ -49,18 +49,20 @@ test('Markdown supports independent block direction and escapes executable HTML'
   expect(html).not.toContain('href="javascript:');
 });
 test('note formatting supports highlights and both underline forms with nested emphasis', () => {
-  const html = Notebook.render('==**bold** and *italic*== __underline__ <u>**also bold**</u>');
-  expect(html).toContain('<mark><strong>bold</strong> and <em>italic</em></mark>');
+  const html = Notebook.render('==**bold** and _italic_== __underline__ <u>**also bold**</u>');
+  expect(html).toContain('<mark><strong>bold</strong> and <em class="source-italic">italic</em></mark>');
   expect(html).toContain('<u><span class="notebook-underline">underline</span></u>');
   expect(html).toContain('<u><strong><span class="notebook-underline">also bold</span></strong></u>');
-  expect(Notebook.render('_italic_')).toContain('<em>italic</em>');
+  expect(Notebook.render('_italic_')).toContain('<em class="source-italic">italic</em>');
 });
 test('Arabic including diacritics supports bold, italic, highlight and underline', () => {
   const arabic = 'العَرَبِيَّة';
   const span = `<span class="notebook-arabic">${arabic}</span>`;
-  for (const [source, tag] of [[`**${arabic}**`, 'strong'], [`*${arabic}*`, 'em'], [`==${arabic}==`, 'mark']]) {
+  for (const [source, tag] of [[`**${arabic}**`, 'strong'], [`==${arabic}==`, 'mark']]) {
     expect(Notebook.render(source)).toContain(`<${tag}>${span}</${tag}>`);
   }
+  expect(Notebook.render(`_${arabic}_`)).toContain(`<em class="source-italic">${span}</em>`);
+  expect(Notebook.render(`*${arabic}*`)).toContain(`<em class="source-prophetic-speech">${span}</em>`);
   expect(Notebook.render(`==**${arabic}**==`)).toContain(`<mark><strong>${span}</strong></mark>`);
   for (const source of [`__${arabic}__`, `<u>${arabic}</u>`]) {
     const html = Notebook.render(source);
@@ -512,7 +514,7 @@ test('parallel bilingual rows support independent headings, text and bullets', (
   expect((html.match(/class="notebook-parallel-cell"/g) || []).length).toBe(6);
   expect(html).toContain('<h2 dir="rtl">');
   expect(html).toContain('<h2 dir="ltr">English</h2>');
-  expect(html).toContain('<em>text</em>');
+  expect(html).toContain('<em class="source-prophetic-speech">text</em>');
   expect((html.match(/<ul(?: |>)/g) || []).length).toBe(2);
   expect(html).toContain('<li dir="rtl">');
   expect(html).toContain('Item');
@@ -584,4 +586,20 @@ test('content preview rejects unauthenticated and malformed requests', async () 
   expect((await fetch(`${base}/content-preview`, { method: 'POST' })).status).toBe(401);
   expect((await fetch(`${base}/content-preview`, { method: 'POST',
     headers: { Authorization: 'Bearer alice', 'Content-Type': 'application/json' }, body: JSON.stringify({ markdown: {} }) })).status).toBe(400);
+});
+
+test.each(['baqarah','al-baqarah','BAQARAH'])('surah alias %s expands to the canonical Quran quotation', async alias => {
+ const surahs=require('../lib/Surahs').surahs;
+ surahs.push({num:2,aliases:['baqarah','al-baqarah']});
+ try {
+  Item.itemFromRef.mockImplementation(async ref=>({ref,ar:{body:'العربية'},en:{body:'English'}}));
+  const ref=`quran:${alias}:255`,text=ref+'\n';
+  const result=await Notebook.autoExpandDraft({markdown:text,newlineOffset:text.length-1});
+  expect(result.edits).toHaveLength(1);
+  expect(text.slice(result.edits[0].start,result.edits[0].end)).toBe(ref);
+  expect(result.edits[0].text).toContain('/quran:2:255');
+  expect(Item.itemFromRef).toHaveBeenCalledWith('quran:2:255');
+  const manual=await Notebook.expandedDraft({markdown:ref,reference:ref});
+  expect(manual.markdown).toContain('/quran:2:255');
+ } finally {surahs.pop();}
 });

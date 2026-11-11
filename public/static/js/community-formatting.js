@@ -5,12 +5,12 @@
   function install(editor, toolbar, style) {
   if (!editor || !toolbar || installed.has(editor)) return;
   installed.add(editor);
-  const markers = {bold:'**', italic:'*', underline:'__', strike:'~~', highlight:'=='};
+  const markers = {bold:'**', italic:'_', propheticSpeech:'*', underline:'__', strike:'~~', highlight:'=='};
   function apply(action) {
     if (editor.disabled || editor.readOnly) return;
     const surface=window.CommunityShortEditor?.get(editor);
     if(surface) {
-      const commands={bold:'bold',italic:'italic',underline:'underline',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'style',link:'link',parallel:'parallel',highlight:'highlight',center:'center',clear:'removeFormat',divider:'divider',footnote:'footnote',subscript:'subscript',superscript:'superscript',wiki:'wiki'};
+      const commands={bold:'bold',italic:'italic',propheticSpeech:'propheticSpeech',underline:'underline',strike:'strikeThrough',bullets:'insertUnorderedList',numbered:'insertOrderedList',quote:'formatBlock',style:'style',link:'link',parallel:'parallel',highlight:'highlight',center:'center',clear:'removeFormat',divider:'divider',footnote:'footnote',subscript:'subscript',superscript:'superscript',wiki:'wiki'};
       if(commands[action]) {surface.format(commands[action],action==='quote'?'blockquote':action==='style'?style.value:undefined);return;}
     }
     let start=editor.selectionStart, end=editor.selectionEnd, value=editor.value;

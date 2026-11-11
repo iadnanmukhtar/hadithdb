@@ -119,7 +119,7 @@
       }
     });
   }
-  function render(markdown, propheticSpeech = false) {
+  function render(markdown, propheticSpeech = true) {
     const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
     if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
     const root = document.createElement('div');
@@ -173,10 +173,11 @@
           if (t.tokens) append(t.tokens, parent); else {const decoded=document.createElement('textarea');decoded.innerHTML=t.text.replace(/</g,'&lt;');parent.append(document.createTextNode(decoded.value));}
           continue;
         }
-        const tags = {hr:'hr',highlight:'mark',paragraph:'p',strong:'strong',em:'em',del:'s',codespan:'code',br:'br',blockquote:'blockquote',heading:'h'+t.depth,link:'a',list:t.ordered?'ol':'ul',list_item:'li'};
+        const tags = {hr:'hr',highlight:'mark',paragraph:'p',strong:'strong',em:'em',literalItalic:'em',del:'s',codespan:'code',br:'br',blockquote:'blockquote',heading:'h'+t.depth,link:'a',list:t.ordered?'ol':'ul',list_item:'li'};
         if (!tags[t.type] || t.task || t.title) throw Error('Use Markdown for this content');
         const el = document.createElement(t.type==='strong' && t.raw.startsWith('__')?'u':tags[t.type]);
         if (propheticSpeech && t.type === 'em') el.className = t.raw.startsWith('*') ? 'source-prophetic-speech' : 'source-italic';
+        if(t.type==='literalItalic')el.className='source-italic';
         if (['paragraph','heading','list_item','blockquote'].includes(t.type)) el.dir = 'auto';
         if (t.type === 'link') { const href = safeLink(t.href); if (!href) throw Error('Unsafe link'); el.setAttribute('href', href); }
         if (t.type === 'list' && t.ordered && t.start !== 1) el.start = t.start;
@@ -204,6 +205,7 @@
       if(!split && markdown.includes('||'))return null;
       parser=new window.marked.Marked({breaks:true});
       parser.use({extensions:[
+        {name:'literalItalic',level:'inline',start(src){return src.indexOf('<em>');},tokenizer(src){const m=/^<em>([^\n]*?)<\/em>/.exec(src);if(m)return {type:'literalItalic',raw:m[0],tokens:this.lexer.inlineTokens(m[1])};}},
         {name:'notebookWiki',level:'inline',start(src){return src.indexOf('[[');},tokenizer(src){
           const m=/^\[\[([^\[\]|\r\n]+)(?:\|([^\[\]\r\n]+))?\]\]/.exec(src);
           if(m && m[1].trim() && (m[2]===undefined || m[2].trim()))return {type:'notebookWiki',raw:m[0],target:m[1].trim(),label:(m[2] || m[1]).trim()};
@@ -248,6 +250,14 @@
     } catch (_) { return null; }
   }
   function serialize(root) {
+    function adjacentText(node, direction) {
+      for(let current=node;current && current!==root;current=current.parentElement){
+        const sibling=direction==='before'?current.previousSibling:current.nextSibling;
+        if(sibling)return sibling.textContent || '';
+        if(current.parentElement?.matches('p,div,li,h1,h2,h3,h4,h5,h6,blockquote'))break;
+      }
+      return '';
+    }
     const preserved = [];
     const rawPrefix = 'NOTEBOOKRAW' + Math.random().toString(36).slice(2) + 'BLOCK';
     const referenced=new Set(Array.from(root.querySelectorAll('[data-footnote-ref]'),el=>el.dataset.footnoteRef));
@@ -289,7 +299,13 @@
         case 'MARK': return wrap('==');
         case 'U': return wrap('__');
         case 'B': case 'STRONG': return wrap('**');
-        case 'I': case 'EM': return wrap(el.classList.contains('source-prophetic-speech') ? '*' : root.dataset.propheticSpeech !== undefined ? '_' : '*');
+        case 'I': case 'EM': {
+          const marker=el.classList.contains('source-prophetic-speech') ? '*' : root.dataset.propheticSpeech !== undefined ? '_' : '*';
+          // Underscores cannot delimit emphasis inside a word. Retain exact
+          // document text with the supported attribute-free italic form.
+          if(marker==='_' && (/[\p{L}\p{N}]$/u.test(adjacentText(el,'before')) || /^[\p{L}\p{N}]/u.test(adjacentText(el,'after'))))return '<em>'+text()+'</em>';
+          return wrap(marker);
+        }
         case 'S': case 'STRIKE': case 'DEL': return wrap('~~');
         case 'CODE': {const t=el.textContent; const ticks='`'.repeat(Math.max(0,...(t.match(/`+/g)||[]).map(s=>s.length))+1);return ticks+' '+t+' '+ticks;}
         case 'A': {const href=safeLink(el.getAttribute('href'));return href?'['+text()+']('+href.replace(/\(/g,'%28').replace(/\)/g,'%29')+')':text();}
@@ -491,6 +507,7 @@
   }
   function install(source) {
     if (!source || instances.has(source) || !window.marked) return;
+    source.dataset.propheticSpeech = '';
     const isArticle=source.dataset.articleEditor!==undefined;
     const renderContent = text => render(text, source.dataset.propheticSpeech !== undefined) || (previewRenderers.has(source) ? renderAdvanced(text,source) : null);
     function toFormatted() { mode='rich'; hydrate(); }
@@ -645,7 +662,7 @@
         if(cell){const range=document.createRange();range.selectNodeContents(cell);const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);selection();}
       }
     }
-    const commands=[['Bold','type-bold','bold'],['Italic','type-italic','italic'],['Underline','type-underline','underline'],['Strikethrough','type-strikethrough','strikeThrough'],['Subscript',null,'subscript'],['Superscript',null,'superscript'],['Highlight','brush','highlight'],['Align center','text-center','center'],['Numbered list','list-ol','insertOrderedList'],['Bullet list','list-ul','insertUnorderedList'],['Quotation','quote','formatBlock','blockquote'],['Insert link','link-45deg','link'],['Clear formatting','eraser','removeFormat'],['Parallel English and Arabic text',null,'parallel']];
+    const commands=[['Bold','type-bold','bold'],['Italic','type-italic','italic'],['Prophetic speech',null,'propheticSpeech'],['Underline','type-underline','underline'],['Strikethrough','type-strikethrough','strikeThrough'],['Subscript',null,'subscript'],['Superscript',null,'superscript'],['Highlight','brush','highlight'],['Align center','text-center','center'],['Numbered list','list-ol','insertOrderedList'],['Bullet list','list-ul','insertUnorderedList'],['Quotation','quote','formatBlock','blockquote'],['Insert link','link-45deg','link'],['Clear formatting','eraser','removeFormat'],['Parallel English and Arabic text',null,'parallel']];
     const textStyle=document.createElement('select');textStyle.setAttribute('aria-label','Text style');
     for(const [value,label] of [['0','Normal'],...Array.from({length:6},(_,i)=>[String(i+1),'Heading '+(i+1)]),['subtext','Subtext']]){const option=document.createElement('option');option.value=value;option.textContent=label;textStyle.append(option);}
     format.append(textStyle);textStyle.addEventListener('change',()=>formatAction('style',textStyle.value));
@@ -763,7 +780,7 @@
     for(const [label,glyph,command,arg] of commands){
       const b=document.createElement('button');b.type='button';b.title=label;b.setAttribute('aria-label',label);
       b.dataset.command=command;
-      const i=document.createElement(glyph?'i':'span');i.className=glyph?'bi bi-'+glyph:'community-parallel-icon';if(!glyph){if(command==='subscript'||command==='superscript'){i.className='community-script-icon';i.append('x');const number=document.createElement(command==='subscript'?'sub':'sup');number.textContent='2';i.append(number);}else i.textContent='a|ج';i.dir='ltr';}i.setAttribute('aria-hidden','true');b.append(i);
+      const i=document.createElement(glyph?'i':'span');i.className=glyph?'bi bi-'+glyph:'community-parallel-icon';if(!glyph){if(command==='subscript'||command==='superscript'){i.className='community-script-icon';i.append('x');const number=document.createElement(command==='subscript'?'sub':'sup');number.textContent='2';i.append(number);}else i.textContent=command==='propheticSpeech'?'ﷺ':'a|ج';i.dir='ltr';}i.setAttribute('aria-hidden','true');b.append(i);
       if(secondaryCommands.has(command)){b.append(document.createTextNode(label));secondary.append(b);}else format.append(b);
       b.addEventListener('click',()=>{const restoreFocus=secondary.contains(document.activeElement);closeMore();formatAction(command,arg);if(restoreFocus)source.focus({preventScroll:true});});
     }
@@ -897,22 +914,36 @@
         source.dispatchEvent(new Event('input',{bubbles:true}));
         if(wasRich && renderContent(source.value)){restoreFormattedSelection(selectionStart+9+indent.length,selectionEnd+9+indent.length);}return true;
       }
+      const richSpeech=command==='propheticSpeech' && mode==='rich';
+      const richItalic=command==='italic' && mode==='rich' && savedRange && !savedRange.collapsed;
       const richQuote=command==='formatBlock' && arg==='blockquote' && mode==='rich';
-      if((command==='underline' || richQuote) && mode==='rich')toSource();
+      if((command==='underline' || richQuote || richSpeech || richItalic) && mode==='rich')toSource();
       if(mode!=='rich') {
         const start=source.selectionStart,end=source.selectionEnd,value=source.value;
-        const selected=value.slice(start,end),markers={bold:'**',italic:'*',strikeThrough:'~~',code:'`',underline:'__',highlight:'=='};
+        const selected=value.slice(start,end),markers={bold:'**',italic:'_',propheticSpeech:'*',strikeThrough:'~~',code:'`',underline:'__',highlight:'=='};
         let text;
         if(markers[command] && window.NotebookShortcuts){
           const marker=markers[command];
-          const edit=start===end?{start,end,text:marker+'text'+marker,selectStart:start+marker.length,selectEnd:start+marker.length+4}:window.NotebookShortcuts.replacement(value,start,end,marker);
+          let edit=start===end?{start,end,text:marker+'text'+marker,selectStart:start+marker.length,selectEnd:start+marker.length+4}:window.NotebookShortcuts.replacement(value,start,end,marker);
+          if(command==='italic' || command==='propheticSpeech'){
+            const other=command==='italic'?'*':'_';
+            if(start>0 && value[start-1]===other && value[end]===other && value[start-2]!==other && value[end+1]!==other){
+              edit={start:start-1,end:end+1,text:marker+selected+marker,selectStart:start,selectEnd:end};
+            }
+          }
           if(!edit)return true;
           source.setRangeText(edit.text,edit.start,edit.end,'end');source.setSelectionRange(edit.selectStart,edit.selectEnd);
-          source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
+          source.dispatchEvent(new Event('input',{bubbles:true}));if(richSpeech || richItalic)restoreFormattedSelection(edit.selectStart,edit.selectEnd);else selection();return true;
         }
         if(command==='subscript'||command==='superscript'){const marker=command==='subscript'?'~':'^';text=marker+escape(selected).replace(/ /g,'\\ ')+marker;}
         else if(markers[command])text=markers[command]+selected+markers[command];
-        else if(command==='removeFormat')text=selected.replace(/(\*\*|__|~~|==)(.+?)\1/g,'$2').replace(/([*`_])([^\n]+?)\1/g,'$2');
+        else if(command==='removeFormat'){
+          const begin=start?value.lastIndexOf('\n',start-1)+1:0;
+          const next=value.indexOf('\n',end),finish=next<0?value.length:next;
+          text=value.slice(begin,finish).split('\n').map(line=>line.replace(/^(?:[ \t]*(?:#{1,6}|-#|>|[-+*]|\d+[.)])[ \t]+)+/,'')
+            .replace(/(\*\*|__|~~|==)(.+?)\1/g,'$2').replace(/([*`_])([^\n]+?)\1/g,'$2').replace(/<\/?em>/g,'')).join('\n');
+          source.setRangeText(text,begin,finish,'select');source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
+        }
         else if(command==='link') {
           const url=window.prompt('Link URL','https://');if(!url)return true;
           if(!safeLink(url)){hint.textContent='Use an http, https, or mailto link.';return true;}
@@ -940,6 +971,16 @@
       if(!savedRange){rich.focus({preventScroll:true});selection();}
       if(!savedRange)return true;
       const s=window.getSelection();rich.focus({preventScroll:true});s.removeAllRanges();s.addRange(savedRange);
+      if(command==='removeFormat' && s.isCollapsed){
+        const anchor=s.anchorNode,offset=s.anchorOffset;
+        const block=(anchor.nodeType===1?anchor:anchor.parentElement).closest('h1,h2,h3,h4,h5,h6,.notebook-subtext');
+        if(block && rich.contains(block)){
+          const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
+          const paragraph=document.createElement('p');paragraph.dir='auto';paragraph.append(...block.childNodes);block.replaceWith(paragraph);
+          const node=anchor===block?paragraph:anchor;s.setBaseAndExtent(node,offset,node,offset);
+          sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
+        }
+      }
       if(command==='removeFormat' && !s.isCollapsed){
         const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret(),range=s.getRangeAt(0).cloneRange();
         const blocks=[...rich.querySelectorAll('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6')].filter(block=>!block.querySelector('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6') && !block.closest('[data-notebook-raw]') && range.intersectsNode(block));
@@ -957,6 +998,13 @@
           middle.querySelectorAll('strong,b,em,i,u,s,strike,del,mark,code,sub,sup:not([data-footnote-ref])').forEach(node=>node.replaceWith(...node.childNodes));
           middle.querySelectorAll('[style]').forEach(node=>node.removeAttribute('style'));
           block.replaceChildren(leftContent,middle,rightContent);markers.push(middle);
+          // removeFormat only removes inline emphasis natively. Clear the
+          // selected line's heading/subtext style as well, retaining its text.
+          const styledBlock=block.closest('h1,h2,h3,h4,h5,h6,.notebook-subtext');
+          if(styledBlock && rich.contains(styledBlock)){
+            const paragraph=document.createElement('p');paragraph.dir='auto';
+            paragraph.append(...styledBlock.childNodes);styledBlock.replaceWith(paragraph);
+          }
         }
         if(markers.length){
           const selected=document.createRange();selected.setStartBefore(markers[0]);selected.setEndAfter(markers[markers.length-1]);
@@ -1009,13 +1057,72 @@
     rich.addEventListener('compositionstart',()=>{composing=true;});
     rich.addEventListener('compositionend',()=>{composing=false;sync();});
     rich.addEventListener('input',event=>{if(!composing){if(event.inputType==='insertText')convertTypedMarkdown();sync();}});
-    // Pasted HTML never enters the editable DOM. Plain-text paste preserves
-    // paragraph breaks and excludes external markup, handlers and tracking URLs.
+    // Import only document formatting. Rebuild clipboard HTML with an allowlist
+    // before serializing it; never insert external styles, handlers or embeds.
+    function clipboardDocument(html) {
+      const template=document.createElement('template');template.innerHTML=html;
+      const root=document.createElement('div');root.dataset.propheticSpeech='';
+      const allowed=new Set('P DIV BR H1 H2 H3 H4 H5 H6 BLOCKQUOTE UL OL LI STRONG B EM I U S STRIKE DEL MARK SUB SUP CODE PRE HR A CENTER SPAN'.split(' '));
+      function append(node,parent){
+        if(node.nodeType===3){parent.append(document.createTextNode(node.data));return;}
+        if(node.nodeType!==1 || /^(SCRIPT|STYLE|IFRAME|OBJECT|SVG|MATH|BUTTON|INPUT|IMG|VIDEO|AUDIO|NOSCRIPT)$/.test(node.tagName))return;
+        const el=document.createElement(allowed.has(node.tagName)?node.tagName.toLowerCase():'span');
+        if(node.tagName==='A'){const href=safeLink(node.getAttribute('href'));if(href)el.setAttribute('href',href);}
+        if(node.tagName==='OL' && /^\d+$/.test(node.getAttribute('start') || ''))el.setAttribute('start',node.getAttribute('start'));
+        for(const name of ['notebook-subtext','source-prophetic-speech','source-italic'])if(node.classList.contains(name))el.classList.add(name);
+        let target=el;
+        // Word processors commonly export span styles instead of semantic tags.
+        const style=node.style;
+        for(const [enabled,tag] of [[/^(bold|[6-9]00)$/.test(style.fontWeight),'strong'],[style.fontStyle==='italic','em'],[/underline/.test(style.textDecoration),'u'],[/line-through/.test(style.textDecoration),'s']]){
+          if(enabled){const wrapper=document.createElement(tag);target.append(wrapper);target=wrapper;}
+        }
+        for(const child of node.childNodes)append(child,target);
+        if(node.tagName==='PRE')el.dataset.notebookRaw='```\n'+node.textContent+'\n```';
+        parent.append(el);
+      }
+      for(const child of template.content.childNodes)append(child,root);
+      return root;
+    }
+    function copyFormatted(event,cut=false){
+      const selected=window.getSelection();
+      if(!event.clipboardData || !selected?.rangeCount || selected.isCollapsed || !rich.contains(selected.anchorNode) || !rich.contains(selected.focusNode))return;
+      const range=selected.getRangeAt(0),root=document.createElement('div');root.dataset.propheticSpeech='';root.append(range.cloneContents());
+      // cloneContents omits the common ancestor's formatting on partial copies.
+      let ancestor=range.commonAncestorContainer;
+      if(ancestor.nodeType===3)ancestor=ancestor.parentElement;
+      while(ancestor && ancestor!==rich){
+        const wrapper=ancestor.cloneNode(false);wrapper.append(...root.childNodes);root.append(wrapper);ancestor=ancestor.parentElement;
+      }
+      event.preventDefault();
+      event.clipboardData.setData('text/plain',selected.toString());
+      event.clipboardData.setData('text/html',clipboardDocument(root.innerHTML).innerHTML);
+      event.clipboardData.setData('text/x-hadithdb-markdown',serialize(root));
+      if(cut && !source.disabled && !source.readOnly){document.execCommand('delete');sync();selection();}
+    }
+    rich.addEventListener('copy',event=>copyFormatted(event));
+    rich.addEventListener('cut',event=>copyFormatted(event,true));
     rich.addEventListener('paste',event=>{
       event.preventDefault();
+      if(source.disabled || source.readOnly || !event.clipboardData)return;
       if(crossesColumns()){hint.textContent='Paste into one column at a time';return;}
       if(Array.from(event.clipboardData?.items || []).some(item=>item.kind==='file' && item.type.startsWith('image/'))) {
         toSource();source.dispatchEvent(new ClipboardEvent('paste',{clipboardData:event.clipboardData,bubbles:true,cancelable:true}));return;
+      }
+      const markdown=event.clipboardData.getData('text/x-hadithdb-markdown');
+      const html=event.clipboardData.getData('text/html');
+      if(markdown || html){
+        const formatted=renderContent(markdown || serialize(clipboardDocument(html)));
+        const cell=parallelCell(window.getSelection()?.anchorNode);
+        if(formatted?.childNodes.length && !(cell && formatted.querySelector('.community-edit-parallel,[data-notebook-raw],table'))){
+          const holder=document.createElement('div');holder.append(...formatted.childNodes);
+          if(cell){
+            holder.querySelectorAll('br,hr').forEach(node=>node.replaceWith(document.createTextNode(' ')));
+            [...holder.querySelectorAll('p,div,h1,h2,h3,h4,h5,h6,blockquote,ul,ol,li,center')].reverse().forEach(node=>node.replaceWith(...node.childNodes,document.createTextNode(' ')));
+          }
+          const single=holder.children.length===1 && holder.firstElementChild.matches('p:not(.notebook-subtext)');
+          document.execCommand('insertHTML',false,single?holder.firstElementChild.innerHTML:holder.innerHTML);
+          sync();selection();return;
+        }
       }
       const text=event.clipboardData.getData('text/plain');
       document.execCommand('insertText',false,parallelCell(window.getSelection()?.anchorNode)?text.replace(/\r?\n/g,' '):text);sync();

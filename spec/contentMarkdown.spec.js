@@ -61,6 +61,16 @@ test('virtual footnotes receive independent link targets', () => {
     expect($('em.source-prophetic-speech').text()).toBe('Quotation حديث ﷺ');
     expect($('em.source-italic').text()).toBe('Italics نص');
   }
-  expect(Content.render(markdown)).not.toContain('source-prophetic-speech');
-  expect(Notebook.render(markdown)).not.toContain('source-prophetic-speech');
+  expect(Content.render(markdown)).toContain('source-prophetic-speech');
+  expect(Notebook.render(markdown)).toContain('source-prophetic-speech');
+});
+
+test('attribute-free italic boundaries preserve adjacent text without enabling arbitrary HTML',()=>{
+ const $=load(Content.render('before<em>inside</em>after'));
+ expect($('em.source-italic').text()).toBe('inside');
+ expect($('p').text()).toBe('beforeinsideafter');
+ const unsafe=load(Content.render('<em onclick="alert(1)">unsafe</em>'));
+ expect(unsafe('[onclick]').length).toBe(0);
+ expect(load(Content.render('`<em>literal</em>`'))('code').text()).toBe('<em>literal</em>');
+ expect(Content.render('*ordinary*',{propheticSpeech:false})).not.toContain('source-prophetic-speech');
 });

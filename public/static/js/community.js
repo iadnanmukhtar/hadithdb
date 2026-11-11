@@ -123,7 +123,7 @@
       const text = editor.value, newlineOffset = editor.selectionStart - 1;
       if (editor.selectionStart !== editor.selectionEnd || text[newlineOffset] !== '\n') return;
       const line = text.slice(text.lastIndexOf('\n', newlineOffset - 1) + 1, newlineOffset);
-      if (!/^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(line)) return;
+      if (!/^[ \t]*(?:quran:(?:\d{1,3}|[a-z][a-z0-9_-]*):\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(line)) return;
       try {
         const result = await api('/auto-expand', 'POST', { markdown: text, newlineOffset }, '/notebook');
         if (own !== revision || account !== epoch || editor.value !== text || composing || editor.disabled || editor.readOnly || !available()) return;

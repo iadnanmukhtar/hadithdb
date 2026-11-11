@@ -1110,3 +1110,17 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
   .community-editor-actions .community-editor-bottom-row { margin-top: .4rem; padding-top: .25rem; gap: .25rem; }
   .community-editor-actions .community-editor-preferences { gap: .25rem .5rem; }
 }
+
+.community-editor-expand { position: absolute; inset-block-start: .65rem; inset-inline-end: 3rem; min-width: 2rem; min-height: 2rem; }
+.community-editor .community-editor-top { padding-inline-end: 5rem; }
+.community-editor.community-editor-fullscreen {
+  position: fixed; inset: 0; z-index: 1040;
+  box-sizing: border-box; width: 100%; max-width: none; height: 100dvh;
+  margin: 0; border: 0; border-radius: 0; overflow: auto;
+  background: var(--bs-body-bg); color: var(--bs-body-color);
+  padding: clamp(1rem, 3vw, 2.25rem);
+}
+.community-editor-fullscreen > form,
+.community-editor-fullscreen > .community-editor-top { max-width: 1100px; margin-inline: auto; }
+.community-editor-fullscreen .community-article-surface .community-rich-input,
+.community-editor-fullscreen .community-article-surface textarea[data-short-editor] { min-height: 55dvh; }

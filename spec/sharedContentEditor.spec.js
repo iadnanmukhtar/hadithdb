@@ -648,3 +648,104 @@ for(const kind of ['post','article','note'])describe('divider input paths in '+k
   await page.keyboard.type('New paragraph');expect(await page.evaluate(()=>source.value)).toContain('New paragraph');
  });
 });
+
+for(const kind of ['post','article','note']) {
+ test('clear formatting removes heading structure in '+kind,async()=>{
+  await setup(kind,'Before\n\n## **Target words**\n\nAfter');
+  await page.evaluate(()=>{const r=document.createRange();r.selectNodeContents(rich.querySelector('h2'));getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('removeFormat');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget words\n\nAfter');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n## **Target words**\n\nAfter');
+ });
+ test.each(['Enter','Shift+Enter'])('typed subtext inside a quote formats immediately after %s in '+kind,async key=>{
+  await setup(kind,'> Existing');
+  await page.keyboard.press(key);await page.keyboard.type('-# Small');
+  expect(await page.locator('blockquote .notebook-subtext').innerText()).toBe('Small');
+  expect(await page.evaluate(()=>source.value)).toContain('> -# Small');
+ });
+}
+
+for(const kind of ['post','article','note']) {
+ test('formatted copy and paste retain emphasis and support native undo in '+kind,async()=>{
+  await setup(kind,'Before\n\n**Bold** and _italic_ and *speech*\n\nDestination');
+  await page.evaluate(()=>{
+   const r=document.createRange();r.selectNodeContents(rich.querySelectorAll('p')[1]);getSelection().removeAllRanges();getSelection().addRange(r);
+   const data=new DataTransfer();rich.dispatchEvent(new ClipboardEvent('copy',{clipboardData:data,bubbles:true,cancelable:true}));
+   window.copied={html:data.getData('text/html'),markdown:data.getData('text/x-hadithdb-markdown')};
+   r.selectNodeContents(rich.querySelector('p:last-child'));getSelection().removeAllRanges();getSelection().addRange(r);rich.focus();
+   rich.dispatchEvent(new ClipboardEvent('paste',{clipboardData:data,bubbles:true,cancelable:true}));
+  });
+  expect(await page.evaluate(()=>copied.markdown)).toBe('**Bold** and _italic_ and *speech*');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n**Bold** and _italic_ and *speech*\n\n**Bold** and _italic_ and *speech*');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).toContain('Destination');
+ });
+ test('external formatted paste retains document styles and strips active content in '+kind,async()=>{
+  await setup(kind,'Before');
+  await page.evaluate(()=>{
+   const data=new DataTransfer();data.setData('text/html','<strong>Bold</strong> <span style="font-style:italic" onclick="alert(1)">Italic</span><script>alert(1)</script><img src="x" onerror="alert(1)"><a href="javascript:alert(1)">Link</a>');data.setData('text/plain','Bold Italic Link');
+   rich.dispatchEvent(new ClipboardEvent('paste',{clipboardData:data,bubbles:true,cancelable:true}));
+  });
+  expect(await page.evaluate(()=>source.value)).toContain('**Bold** <em>Italic</em>Link');
+  expect(await page.locator('.community-rich-input em.source-italic').innerText()).toBe('Italic');
+  expect(await page.locator('.community-rich-input script,.community-rich-input img,.community-rich-input [onclick],.community-rich-input a[href^="javascript:"]').count()).toBe(0);
+ });
+ test('prophetic speech button distinguishes green speech from ordinary italics in '+kind,async()=>{
+  await setup(kind,'Before\n\nTarget');
+  await page.evaluate(()=>{const r=document.createRange();r.selectNodeContents(rich.querySelector('p:last-child'));getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('propheticSpeech');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n*Target*');
+  expect(await page.locator('.community-rich-input em.source-prophetic-speech').innerText()).toBe('Target');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget');
+  await page.evaluate(()=>{const r=document.createRange();r.selectNodeContents(rich.querySelector('p:last-child'));getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('italic');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n_Target_');
+  expect(await page.getByRole('button',{name:'Prophetic speech',exact:true}).first().textContent()).toBe('ﷺ');
+ });
+}
+
+for(const kind of ['post','article','note']) {
+ test('clear heading at a collapsed caret preserves its position in '+kind,async()=>{
+  await setup(kind,'Before\n\n## Target');
+  await page.evaluate(()=>{selectBlock('h2');surface.format('removeFormat');});
+  await page.keyboard.type(' continued');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nTarget continued');
+ });
+ test('switches ordinary italic and prophetic speech without nested styles in '+kind,async()=>{
+  await setup(kind,'Before\n\n_Italic_');
+  await page.evaluate(()=>{const range=document.createRange();range.selectNodeContents(rich.querySelector('em'));getSelection().removeAllRanges();getSelection().addRange(range);surface.selection();surface.format('propheticSpeech');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n*Italic*');
+  await page.evaluate(()=>surface.format('italic'));
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n_Italic_');
+ });
+ test('formatted paste preserves headings, lists and quotations in '+kind,async()=>{
+  await setup(kind,'Before\n\nDestination');
+  await page.evaluate(()=>{
+   const range=document.createRange();range.selectNodeContents(rich.querySelector('p:last-child'));getSelection().removeAllRanges();getSelection().addRange(range);
+   const data=new DataTransfer();data.setData('text/html','<h2>Heading</h2><ul><li><strong>One</strong></li><li>Two</li></ul><blockquote><p>Quoted</p></blockquote>');
+   rich.dispatchEvent(new ClipboardEvent('paste',{clipboardData:data,bubbles:true,cancelable:true}));
+  });
+  expect(await page.locator('.community-rich-input h2').innerText()).toBe('Heading');
+  expect(await page.locator('.community-rich-input li').allTextContents()).toEqual(['One','Two']);
+  expect(await page.locator('.community-rich-input blockquote').innerText()).toBe('Quoted');
+  expect(await page.evaluate(()=>source.value)).toContain('## Heading');
+  expect(await page.evaluate(()=>source.value)).toContain('- **One**\n- Two');
+  expect(await page.evaluate(()=>source.value)).toContain('> Quoted');
+ });
+}
+
+test('source clear formatting removes heading and subtext line styles',async()=>{
+ await setup('article','Before\n\n## **Heading**\n-# Small');
+ await page.evaluate(()=>{surface.toSource();source.focus();const start=source.value.indexOf('##');source.setSelectionRange(start,source.value.length);surface.format('removeFormat');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nHeading\nSmall');
+});
+
+test('formatted paste retains inline emphasis within a bilingual column',async()=>{
+ await setup('article','Before\n\nEnglish || العربية');
+ await page.evaluate(()=>{
+  const cell=rich.querySelector('.community-edit-parallel-cell');const range=document.createRange();range.selectNodeContents(cell);getSelection().removeAllRanges();getSelection().addRange(range);
+  const data=new DataTransfer();data.setData('text/html','<p><strong>Bold</strong> and <em>italic</em></p>');data.setData('text/plain','Bold and italic');
+  rich.dispatchEvent(new ClipboardEvent('paste',{clipboardData:data,bubbles:true,cancelable:true}));
+ });
+ expect(await page.evaluate(()=>source.value)).toContain('**Bold** and _italic_ || العربية');
+ expect(await page.locator('.community-edit-parallel-cell').count()).toBe(2);
+});

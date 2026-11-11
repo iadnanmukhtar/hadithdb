@@ -45,7 +45,7 @@ beforeEach(async () => {
 });
 afterEach(async () => { await page?.close(); });
 test.each([
-  ['b', '**'], ['i', '*'], ['u', '__'], ['Shift+h', '=='], ['Shift+x', '~~']
+  ['b', '**'], ['i', '_'], ['u', '__'], ['Shift+h', '=='], ['Shift+x', '~~']
 ])('%s formats, retains selection, toggles, and supports native undo', async (key, marker) => {
   for (const modifier of ['Meta', 'Control']) {
     await page.keyboard.press(`${modifier}+${key}`);

@@ -29,3 +29,18 @@ test('reports failed post-refresh invalidation', async () => {
   jest.spyOn(Utils, 'flushBookDiskCache').mockRejectedValue(new Error('cache write failed'));
   await expect(Snapshot.refreshBook(61)).rejects.toThrow('cache write failed');
 });
+
+
+test('refreshes all virtual books containing an edited physical hadith before resolving', async () => {
+  global.query = jest.fn(async sql => {
+    if (sql.includes('FROM hadiths_virtual')) return [{ bookId: 61 }, { bookId: 62 }];
+    if (sql.includes('SELECT alias')) return [{ alias: sql.includes('61') ? 'riyad' : 'mishkat' }];
+    return [];
+  });
+  const flush = jest.spyOn(Utils, 'flushBookDiskCache').mockResolvedValue({});
+  await Snapshot.refreshHadith(123);
+  expect(global.query).toHaveBeenCalledWith('SELECT DISTINCT bookId FROM hadiths_virtual WHERE hadithId IN (123)');
+  expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(61)');
+  expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(62)');
+  expect(flush).toHaveBeenCalledTimes(2);
+});

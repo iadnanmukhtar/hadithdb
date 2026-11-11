@@ -284,14 +284,15 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       }
       status.code = 200;
       status.message = result.message;
-      if (col === 'revise') {
-        VirtualHadithSnapshot.queueHadith(ids[0]);
-        void safeBackground(`refreshing saved hadith revision ${ids[0]}`, () => runHadithPostUpdateTasks(ids[0]));
-      } else if (col !== 'similar') {
-        await runHadithPostUpdateTasks(ids[0], {
-          forceKnowledge: isArabicKnowledgeSourceColumn(col)
-        });
-        VirtualHadithSnapshot.queueHadith(ids[0]);
+      if (col !== 'similar') {
+        try {
+          await runHadithPostUpdateTasks(ids[0]);
+        } catch (err) {
+          debug.error(`Hadith ${ids[0]} saved but refresh failed: ${err.stack || err}`);
+          status.warning = true;
+          status.refreshPending = true;
+          status.message = 'Hadith saved, but search/cache refresh failed. Do not repeat the edit; refresh the affected book before relying on reader results.';
+        }
       }
 
     } else if (type === 'legacy_grader') {
@@ -1308,13 +1309,7 @@ async function latestHadithContentTranslation(hadithId, languageCode) {
 }
 
 async function updateHadithSearchAfterContentTranslation(hadithId) {
-  var item = await hadithSearchRowById(hadithId);
-  if (!item)
-    return;
-  await Books.touchBookContentLastmodById(item.book_id);
-  await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
-  await Index.update(Item.INDEX, item);
-  await Index.refresh(Item.INDEX);
+  await runHadithPostUpdateTasks(hadithId);
 }
 
 async function flushBookCaches(bookAliases) {
@@ -3129,20 +3124,18 @@ async function reindexSearchScope(whereClause, options) {
   debug(`reindex search scope done in ${Date.now() - started}ms: ${whereClause}`);
 }
 
-async function runHadithPostUpdateTasks(hadithId, options) {
-  options = options || {};
+async function runHadithPostUpdateTasks(hadithId, options = {}) {
   var item = await hadithSearchRowById(hadithId);
   if (!item)
     return;
   await Books.touchBookContentLastmodById(item.book_id);
+  // Make every reader source current before deleting rendered pages, otherwise
+  // the next request can immediately repopulate them from the old search result.
+  await Index.update(Item.INDEX, item, { force: true, refresh: true });
+  if (options.refreshSnapshot !== false)
+    await VirtualHadithSnapshot.refreshHadith(hadithId);
   await Utils.flushCacheContaining(`${item.book_alias}:${item.num}`);
-  if (options.awaitIndex) {
-    await Index.update(Item.INDEX, item, { force: true, refresh: true });
-    return;
-  }
-  safeBackground(`reindexing hadith ${item.ref}`, async () => {
-    await Index.update(Item.INDEX, item);
-  });
+  await RuntimeRefresh.publish({ invalidateLocal: true });
 }
 
 async function hadithSearchRowById(hadithId) {
@@ -3229,7 +3222,7 @@ async function refreshVirtualHadithEdit(selected) {
   await RuntimeRefresh.publish();
   await require('../lib/SharhNavigationIndex').syncSourceBooks([selected.bookId]);
   for (const hadithId of selected.hadithIds)
-    await safeBackground(`indexing saved virtual hadith source ${hadithId}`, () => runHadithPostUpdateTasks(hadithId, { awaitIndex: true }));
+    await safeBackground(`indexing saved virtual hadith source ${hadithId}`, () => runHadithPostUpdateTasks(hadithId, { refreshSnapshot: false }));
 }
 
 async function reindexEnrichedHadithIds(hadithIds) {
