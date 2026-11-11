@@ -58,6 +58,13 @@
 :is(.notebook-markdown, .content-markdown) p { margin-block: 0 1rem; }
 :is(.notebook-markdown, .content-markdown) img { height: auto; }
 :is(.notebook-markdown, .content-markdown) :is(ul, ol) { margin-block: 0 1rem; }
+/* Loose Markdown lists wrap text in paragraphs; editable lists may not.
+   Both forms must have the same compact rhythm, including nested lists. */
+:is(.notebook-markdown, .content-markdown) li { margin-block: 0; }
+:is(.notebook-markdown, .content-markdown) li > p { margin-block: 0; }
+:is(.notebook-markdown, .content-markdown) li > :is(ul, ol) { margin-block: 0; }
+:is(.notebook-markdown, .content-markdown) li > p + p { margin-block-start: 1rem; }
+.notebook-markdown > p:last-child { margin-bottom: 0; }
 :is(.notebook-markdown, .content-markdown) .community-toc { border: 1px solid #ccc; padding: 1rem; margin-block: 1rem; }
 
 /* Raw Markdown and newly typed text use the same Hafs glyphs and 1.2 scale

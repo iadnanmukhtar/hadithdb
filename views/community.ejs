@@ -122,10 +122,9 @@
   <% } %>
   <% if (view === 'write') { %>
   <section class="community-editor" aria-label="Publication editor">
-    <button id="community-editor-fullscreen" type="button" class="btn btn-sm btn-outline-secondary community-editor-expand" title="Expand article" aria-label="Expand article" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
-    <button type="button" class="btn-close community-editor-close" data-close-editor aria-label="Close editor"></button>
-    <div class="community-editor-top"><div><span class="community-editor-eyebrow">Your next article</span><p>Write, preview, and share with the community.</p></div><button id="community-import" class="btn btn-sm btn-outline-secondary" type="button"><i class="bi bi-journal-text" aria-hidden="true"></i> From My Notebook</button></div>
+    <div class="community-editor-top"><div class="community-editor-heading"><span class="community-editor-eyebrow">Your next article</span><p>Write, preview, and share with the community.</p></div><div class="community-editor-window-actions"><button id="community-import" class="btn btn-sm btn-outline-secondary" type="button"><i class="bi bi-journal-text" aria-hidden="true"></i> From My Notebook</button><button id="community-editor-fullscreen" type="button" class="btn btn-sm btn-outline-secondary community-editor-expand" title="Expand article" aria-label="Expand article" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button><button type="button" class="btn-close community-editor-close" data-close-editor aria-label="Close editor"></button></div></div>
     <form id="community-editor-form">
+      <div class="community-editor-fields">
       <input id="community-kind" type="hidden" value="article">
       <div id="community-import-panel" class="community-card" hidden><label class="form-label" for="community-notebook-search">Find a saved note</label><input id="community-notebook-search" class="form-control mb-2" type="search" dir="auto"><div id="community-notebook-results"></div><button id="community-notebook-more" class="btn btn-sm btn-outline-secondary mt-2" type="button" hidden>More notes</button></div>
       <label class="visually-hidden" for="community-title">Article title (optional)</label><input id="community-title" class="form-control community-article-title mb-4" maxlength="240" dir="auto" placeholder="Article title (optional)">
@@ -146,14 +145,15 @@
         <div class="col-sm-8"><label class="form-label" for="community-tags">Tags</label><input id="community-tags" class="form-control" maxlength="500" dir="auto" placeholder="e.g. prayer, Ramadan, family" aria-describedby="community-tags-help"><div id="community-tags-help" class="form-text">Separate tags with commas.</div></div>
       </div>
       <div class="mb-4"><label class="form-label" for="community-related-article">Related article</label><input id="community-related-article" class="form-control" maxlength="2000" placeholder="Paste a Community or Blog article link" aria-describedby="community-related-help"><div id="community-related-help" class="form-text">Link another published article. Related posts also include articles with matching categories or tags.</div></div>
+      </div>
       <div class="community-editor-actions">
         <button id="community-editor-actions-toggle" class="community-editor-actions-toggle" type="button" aria-expanded="false" aria-controls="community-editor-actions-panel"><span>Article actions</span><i class="bi bi-chevron-up" aria-hidden="true"></i></button>
         <div id="community-editor-actions-panel">
         <div class="community-publishing-actions"><button id="community-publish" class="btn btn-primary" type="submit" data-action="publish">Publish</button><button class="btn btn-sm btn-outline-secondary" type="submit" data-action="draft">Save draft</button><button id="community-preview-button" class="btn btn-sm btn-outline-secondary" type="button">Preview</button><button type="button" class="btn btn-sm btn-link community-secondary-action" data-close-editor>Cancel</button></div>
         <div class="community-editor-bottom-row"><div class="community-maintenance-actions"><button id="community-convert-note" type="button" class="btn btn-sm btn-link community-secondary-action" hidden>Convert to Post</button><button id="community-unpublish" class="btn btn-sm btn-link text-danger" type="button" hidden>Unpublish</button><button id="community-delete" class="btn btn-sm btn-link text-danger" type="button" hidden><i class="bi bi-trash" aria-hidden="true"></i> Delete post</button></div><div class="community-editor-preferences"><div id="community-blog-control" class="form-check form-switch" hidden><input id="community-blog-toggle" class="form-check-input" type="checkbox" role="switch"><label class="form-check-label" for="community-blog-toggle">Blog post</label><small id="community-blog-help" class="d-block text-muted">Publish the article first to add it to the Blog.</small></div><div data-article-editor-mode></div></div></div>
-      </div>
-      </div>
       <p class="small text-muted mt-2" id="community-editor-status" role="status">Drafts save automatically as you write. Your first publication will be reviewed by a moderator.</p>
+      </div>
+      </div>
     </form><dialog id="community-preview-panel" class="community-article-preview-dialog" aria-labelledby="community-preview-heading"><header class="community-article-preview-header"><h2 id="community-preview-heading" class="h5">Article preview</h2><button id="community-preview-close" type="button" class="btn-close" aria-label="Close preview" autofocus></button></header><div class="community-article-preview-body"><h3 id="community-preview-title" dir="auto"></h3><p id="community-preview-subtitle" class="community-article-subtitle" dir="auto"></p><div id="community-preview" class="notebook-markdown"></div></div></dialog>
   </section>
   <% } %>

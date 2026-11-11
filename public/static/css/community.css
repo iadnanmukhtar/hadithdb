@@ -390,8 +390,8 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 #community-wall-bio a, #community-author-bio a { font-size: inherit; }
 
 .community-editor { position: relative; }
-.community-editor-close { position: absolute; top: 1rem; right: 1rem; }
-.community-editor-top { padding-inline-end: 2rem; }
+.community-editor-close { flex: 0 0 auto; margin: 0; }
+
 
 /* Keep publication prominent and maintenance visually secondary. */
 .community-publishing-actions, .community-posting-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; width: 100%; }
@@ -474,7 +474,7 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 .community .community-editor .community-article-title { font-size: clamp(1.25rem, 2vw, 1.6rem); }
 .community-editor #community-markdown { height: clamp(18rem, 45vh, 32rem); min-height: 18rem; }
 .community-editor .btn-close { min-width: 44px; min-height: 44px; padding: 0; background-size: .85rem; }
-.community-editor-top { padding-inline-end: 2.5rem; }
+
 /* Keep profile actions compact across headers, author/contributor rails, and cover cards. */
 .btn:is(#community-edit-profile, [data-author-follow], .community-cover-follow, .community-author-profile-link, .community-contributor-follow) {
   display: inline-flex;
@@ -503,7 +503,7 @@ textarea[data-short-editor][hidden], .community-short-editor [hidden] { display:
 .community-short-editor { position: relative; min-width: 0; color: var(--community-ink); }
 .community-rich-input { min-height: 5rem; max-height: 45dvh; overflow: auto; padding: .75rem 0; outline: none; white-space: pre-wrap; overflow-wrap: anywhere; }
 .community-rich-input:empty::before { content: attr(data-placeholder); color: var(--community-muted); pointer-events: none; }
-.community-rich-input p:last-child { margin-bottom: 0; }
+.community-rich-input > p:last-child { margin-bottom: 0; }
 .community-rich-input center [dir] { text-align: center; }
 .community-rich-input[aria-disabled="true"] { opacity: .6; }
 .community-rich-input[aria-invalid="true"] { outline: 1px solid var(--bs-danger); }
@@ -1111,16 +1111,26 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
   .community-editor-actions .community-editor-preferences { gap: .25rem .5rem; }
 }
 
-.community-editor-expand { position: absolute; inset-block-start: .65rem; inset-inline-end: 3rem; min-width: 2rem; min-height: 2rem; }
-.community-editor .community-editor-top { padding-inline-end: 5rem; }
+.community-editor-window-actions { display: flex; align-items: center; justify-content: flex-end; gap: .65rem; flex: 0 0 auto; }
+.community-editor-heading { min-width: 0; }
+.community-editor-expand { display: inline-flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; padding: 0; }
+.community-editor-window-actions .community-editor-close { width: 2.25rem; height: 2.25rem; box-sizing: border-box; padding: .5rem; background-size: 1rem; }
+@media(max-width:575px) { .community-editor-window-actions { align-self: stretch; gap: .5rem; } .community-editor-window-actions #community-import { margin-inline-end: auto; } }
 .community-editor.community-editor-fullscreen {
   position: fixed; inset: 0; z-index: 1040;
   box-sizing: border-box; width: 100%; max-width: none; height: 100dvh;
-  margin: 0; border: 0; border-radius: 0; overflow: auto;
+  margin: 0; border: 0; border-radius: 0; overflow: hidden;
+  display: flex; flex-direction: column;
   background: var(--bs-body-bg); color: var(--bs-body-color);
-  padding: clamp(1rem, 3vw, 2.25rem);
+  padding: clamp(1rem, 3vw, 2.25rem) clamp(1rem, 3vw, 2.25rem) 0;
 }
 .community-editor-fullscreen > form,
-.community-editor-fullscreen > .community-editor-top { max-width: 1100px; margin-inline: auto; }
+.community-editor-fullscreen > .community-editor-top { width: 100%; max-width: 1100px; margin-inline: auto; }
 .community-editor-fullscreen .community-article-surface .community-rich-input,
 .community-editor-fullscreen .community-article-surface textarea[data-short-editor] { min-height: 55dvh; }
+
+.community-editor-fullscreen > .community-editor-top { flex: 0 0 auto; }
+.community-editor-fullscreen > form { margin-block: 0; flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.community-editor-fullscreen .community-editor-fields { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.community-editor-fullscreen .community-editor-actions { flex: 0 0 auto; position: static; margin-top: 0; }
+.community-editor-actions #community-editor-status { margin-bottom: 0; }

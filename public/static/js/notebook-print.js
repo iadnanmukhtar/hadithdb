@@ -2,6 +2,10 @@
   'use strict';
   window.NotebookPrint = {
     async open(note, render, isCurrent) {
+      const surfaces = Array.from(document.querySelectorAll('#notebook-preview, #notebook-surface .community-rich-input'));
+      const surface = surfaces.find(element => element.getClientRects().length) || surfaces[0];
+      const appearance = surface ? getComputedStyle(surface) : null;
+      const linkColor = surface?.querySelector('a') ? getComputedStyle(surface.querySelector('a')).color : appearance?.getPropertyValue('--note-link').trim();
       // Open during the click, before authentication/rendering can consume user activation.
       const popup = window.open('', '_blank');
       if (!popup) throw new Error('Allow pop-ups for this site to print or save as a PDF.');
@@ -71,6 +75,24 @@
         const article = doc.createElement('article');
         article.className = 'notebook-markdown';
         article.dir = 'auto';
+        // Print the document's current typography and palette, not a separate
+        // black-link/12pt variant. Page margins and pagination remain print-only.
+        if (appearance) {
+          doc.documentElement.style.fontSize = getComputedStyle(document.documentElement).fontSize;
+          article.style.fontSize = appearance.fontSize;
+          article.style.fontFamily = appearance.fontFamily;
+          article.style.lineHeight = appearance.lineHeight;
+          article.style.setProperty('--note-ink', appearance.color);
+          if (linkColor) article.style.setProperty('--note-link', linkColor);
+          for (const name of ['--note-edge', '--c-speech']) {
+            const value = appearance.getPropertyValue(name).trim();
+            if (value) article.style.setProperty(name, value);
+          }
+          const paper = appearance.getPropertyValue('--note-paper').trim();
+          if (paper) doc.body.style.backgroundColor = paper;
+          doc.body.style.color = appearance.color;
+          doc.body.style.printColorAdjust = 'exact';
+        }
         // Use sanitized output from the shared Markdown renderer.
         article.innerHTML = result.html;
         article.querySelectorAll('.notebook-expand-reference, .footnote-backref').forEach(node => node.remove());
