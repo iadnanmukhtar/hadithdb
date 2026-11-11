@@ -183,7 +183,7 @@
       </div>
       <fieldset id="community-email-categories" class="border-top pt-3">
         <legend class="visually-hidden">Email me about</legend>
-        <% for (const [key,label] of Object.entries({likes:'Likes',reflections:'Reflections and comments',replies:'Replies',reactions:'Reactions',articles:'Articles from authors I follow'})) { %>
+        <% for (const [key,label] of Object.entries({likes:'Likes',reflections:'Reflections and comments',replies:'Replies',reactions:'Reactions',articles:'Notes and articles from authors I follow'})) { %>
         <div class="d-flex align-items-center justify-content-between gap-3 py-2">
           <label class="form-check-label" for="community-email-<%= key %>"><%= label %></label>
           <div class="form-check form-switch m-0"><input id="community-email-<%= key %>" class="form-check-input" type="checkbox" role="switch" name="<%= key %>"></div>
@@ -198,7 +198,7 @@
     </section>
     <section>
       <div class="mb-3"><h2 class="fs-5 fw-bold mb-1">Author subscriptions</h2>
-      <p class="small text-muted mb-0">Choose whose articles arrive by email. Enable article notifications above to receive them.</p></div>
+      <p class="small text-muted mb-0">Choose whose notes and articles arrive by email. Enable notes and articles notifications above to receive them.</p></div>
       <div id="community-email-authors" class="d-flex flex-column gap-2"></div>
     </section>
   </form>

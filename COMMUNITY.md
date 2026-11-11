@@ -31,7 +31,7 @@ The application creates the eight new InnoDB tables from `data/migrations/commun
 
 When moderation is enabled, site administrators automatically have access to the Moderation menu, queue, approval actions, and moderation controls through the existing verified admin check. For additional moderators, set `COMMUNITY_MODERATOR_UIDS` to a comma-separated list of verified account UIDs in the application's environment. Use the UID from the existing account/session system, not a display name or email address. The first publication from an author enters `pending`; a moderator's approval trusts that author for subsequent publications. If neither an administrator nor a configured moderator approves them, first publications remain pending. Approval is moderation, not verification of religious claims. Moderator authorization never uses the existing edit-mode cookie.
 
-Mail delivery uses the existing `global.settings.smtp` configuration and `global.settings.site.url`. Configure an authenticated SMTP sender with a valid `from` address and the normal SPF/DKIM setup for that sender. Articles are emailed only when the author explicitly checks **Email this article to subscribers when first published**. Short notes, edits, comments, and follows alone do not send subscription mail.
+Mail delivery uses the existing `global.settings.smtp` configuration and `global.settings.site.url`. Configure an authenticated SMTP sender with a valid `from` address and the normal SPF/DKIM setup for that sender. Notes and articles automatically queue subscription email on first publication, including moderator approval. Delivery requires the follower’s author email subscription and enabled global and notes/articles email preferences. Edits and republication do not queue duplicate emails. In-app alerts include both types for followers independently of email preferences. The existing `articles` preference key now covers notes and articles, preserving previous opt-outs and unsubscribe links; the legacy publisher `notify_email` field no longer controls delivery.
 
 Run the queue worker periodically from the application directory with the same environment as the web app:
 
@@ -51,7 +51,7 @@ Public responses contain public author names and handles, never account email ad
 
 Writing, commenting, reporting, following, profile edits, and moderation require verified bearer authentication. Mutation rate limits are per verified UID. Replies must reference a comment belonging to the same published post. Deleted comments retain a thread placeholder with no body. Reports are deduplicated per reporter and target.
 
-This first version provides immediate email delivery for selected new articles. Digest scheduling, paid subscriptions, uploaded cover images, follower lists, search, and a public revision browser are outside this release. The Community wall includes Community discussions; existing contextual Quran/hadith reflections continue to use their existing views and storage.
+This first version provides queued email delivery for new notes and articles. Digest scheduling, paid subscriptions, uploaded cover images, follower lists, search, and a public revision browser are outside this release. The Community wall includes Community discussions; existing contextual Quran/hadith reflections continue to use their existing views and storage.
 
 ## Verification
 

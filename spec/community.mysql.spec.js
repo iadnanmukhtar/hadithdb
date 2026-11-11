@@ -1368,4 +1368,32 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
     expect((await json('/posts/'+post.id,'GET','bob')).post.status).toBe('published');
   });
 
+  test.each(['note','article'])('%s first publication alerts followers and queues email once without publisher opt-in', async kind => {
+    const writer={uid:'publication-'+kind,name:'Writer',admin:true};
+    const reader={uid:'publication-reader-'+kind,name:'Reader',email:kind+'@private.test'};
+    const silent={uid:'publication-silent-'+kind,name:'Silent reader'};
+    const profile=await Community.authorFor(writer);
+    await Community.follow(reader,profile.handle,true,true);
+    await Community.follow(silent,profile.handle,true,false);
+    let post=await Community.savePost(writer,postInput({kind,action:'draft',notifyEmail:false}));
+    const queued=()=>q(`SELECT * FROM ${prefix}email_outbox WHERE post_id=?`,[post.id]);
+    expect(await queued()).toHaveLength(0);
+    const Alerts=require('../lib/CommunityAlerts');
+    expect((await Alerts.unread(reader)).count).toBe(0);
+    post=await Community.savePost(writer,postInput({kind,action:'publish',notifyEmail:false,version:post.version}),post.id);
+    expect(await queued()).toEqual([expect.objectContaining({follower_uid:reader.uid})]);
+    for(const follower of [reader,silent]) expect((await Alerts.unread(follower)).items).toEqual([expect.objectContaining({kind:'post'})]);
+    expect((await Alerts.unread(writer)).count).toBe(0);
+    const through=(await Alerts.unread(reader)).through;
+    await Alerts.markRead(reader,through);
+    post=await Community.savePost(writer,postInput({kind,action:'publish',version:post.version,markdown:'Edited publication'}),post.id);
+    expect(await queued()).toHaveLength(1);
+    expect((await Alerts.unread(reader)).count).toBe(0);
+    post=await Community.savePost(writer,postInput({kind,action:'unpublish',version:post.version}),post.id);
+    expect((await Alerts.unread(silent)).count).toBe(0);
+    post=await Community.savePost(writer,postInput({kind,action:'publish',version:post.version}),post.id);
+    expect(await queued()).toHaveLength(1);
+    expect((await Alerts.unread(reader)).count).toBe(0);
+  });
+
 });

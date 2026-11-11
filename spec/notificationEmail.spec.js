@@ -1,7 +1,7 @@
 'use strict';
 const {render} = require('../lib/NotificationEmail');
 const source={subject:'Kindness <script>alert(1)</script>',url:'https://example.com/bukhari:1#comments'};
-test.each(['like','unlike','reflection','reply','up','down','article'])('%s is concise, escaped and contains no account or device metadata',kind=>{
+test.each(['like','unlike','reflection','reply','up','down','article','note'])('%s is concise, escaped and contains no account or device metadata',kind=>{
   const message=render({kind,actor:{name:'Amina Smith',email:'private@example.com',provider:'google.com'},source,preview:'word '.repeat(200),ip:'192.0.2.1',ua:'Secret browser'});
   expect(message.html).not.toContain('<script>');
   expect(message.html).toContain('&lt;script&gt;');

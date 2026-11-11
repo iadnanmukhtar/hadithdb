@@ -1173,7 +1173,7 @@
       control.setAttribute('aria-label', (author.email ? 'Unsubscribe from ' : 'Subscribe to ') + author.name);
       row.append(control); $('email-authors').append(row);
     }
-    if (!me.subscriptions?.length) $('email-authors').append(node('p', 'Follow an author to subscribe to their articles.', 'small text-muted mb-0'));
+    if (!me.subscriptions?.length) $('email-authors').append(node('p', 'Follow an author to subscribe to their notes and articles.', 'small text-muted mb-0'));
     $('email-form').hidden = false;
   }
   $('email-form')?.elements.enabled.addEventListener('change', () => {
