@@ -13,6 +13,7 @@ test('a complete snapshot uses only the fast snapshot query', async () => {
   global.query = jest.fn().mockResolvedValue([row]);
   expect(await Reader.getItems(chapter, 0, 51)).toEqual([row]);
   expect(global.query).toHaveBeenCalledTimes(1);
+  expect(global.query.mock.calls[0][0]).toContain('ORDER BY num0, ordinal, hId LIMIT 0,51');
 });
 
 test.each([1, 2, 3])('recovers an empty level-%i snapshot from source data with the same scope and pagination', async level => {

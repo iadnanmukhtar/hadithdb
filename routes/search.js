@@ -3023,7 +3023,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       if (!book.virtual)
         results = await global.query(`SELECT * from v_hadiths WHERE book_id=${book.id} ORDER BY ordinal`);
       else
-        results = await global.query(`SELECT * from v_hadiths_virtual_snapshot WHERE book_id=${book.id} ORDER BY ordinal`);
+        results = await global.query(`SELECT * from v_hadiths_virtual_snapshot WHERE book_id=${book.id} ORDER BY ${require('../lib/VirtualHadithReader').ORDER_BY}`);
     } else {
       results = await Library.instance.findBook(book.alias).getChapters();
       var quranJuzRows = book.alias === 'quran' ? await QuranTocSubdivisions.juzRows() : [];
