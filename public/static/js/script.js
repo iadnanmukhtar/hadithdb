@@ -2739,6 +2739,18 @@ function initQuranTafsirTabs(root) {
 					seen.add(signature);
 					return true;
 				});
+				var hasTafsirText = entries.some(function (entry) {
+					return Boolean(entry.payload.html || entry.payload.data);
+				});
+				// Keep the Quran heading even when this book has no commentary here.
+				if (!entries.length && ayahs.length) {
+					var emptyStart = Math.min.apply(Math, ayahs);
+					entries = [{ ayah: emptyStart, payload: {
+						ayahs_start: emptyStart,
+						count: Math.max.apply(Math, ayahs) - emptyStart,
+						html: ''
+					} }];
+				}
 				if (entries.length > 0) {
 					var rangeStarts = entries.map(function (entry) { return Number(entry.payload.ayahs_start || entry.ayah); });
 					var rangeEnds = entries.map(function (entry, index) { return rangeStarts[index] + Number(entry.payload.count || 0); });
@@ -2868,8 +2880,8 @@ function initQuranTafsirTabs(root) {
 				}
 				if (window.bindInlineEditors)
 					window.bindInlineEditors(text[0]);
-				status.toggleClass('d-none', entries.length > 0);
-				if (entries.length < 1)
+				status.toggleClass('d-none', hasTafsirText);
+				if (!hasTafsirText)
 					status.text('No tafsir text is available for this passage.');
 				panel.data('tafsirLoaded', true);
 				initReaderLanguageColumnToggles(container[0]);

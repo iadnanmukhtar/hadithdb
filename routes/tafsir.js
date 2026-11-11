@@ -259,7 +259,8 @@ async function renderTafsirPassage(req, res, next) {
   try {
     trace('loading entries');
     entries = await Tafsir.tafsirEntries(tafsir, surahNum, ayahNum, {
-      editMode: editMode
+      editMode: editMode,
+      includeEmpty: true
     });
     trace('loaded entries');
   } catch (err) {
@@ -269,7 +270,7 @@ async function renderTafsirPassage(req, res, next) {
   }
 
   const entryStart = entries.length ? Math.min(...entries.map(entry => entry.startAyah)) : ayahNum;
-  const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : ayahNum;
+  const entryEnd = entries.length ? Math.max(...entries.map(entry => entry.endAyah)) : requestedEnd;
   const focusMatch = String(req.query.ayah || '').match(/^(\d+):(\d+)$/);
   const focusAyah = focusMatch && Number(focusMatch[1]) === surahNum && Number(focusMatch[2]) >= entryStart && Number(focusMatch[2]) <= entryEnd
     ? Number(focusMatch[2]) : ayahNum;

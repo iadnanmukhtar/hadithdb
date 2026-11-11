@@ -15,8 +15,8 @@
 	var tafsirPassageTitleAr = tafsirTitleAr.replace(/^تفسير\s+/u, '');
 	var tafsirPath = `/quran/tafsir/${encodeURIComponent(tafsir.slug || tafsir.alias)}`;
     var ref = `${surah.num}:${ayah}`;
-    var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : ayah;
-    var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : tafsirEntryStart;
+    var tafsirEntryStart = entries && entries.length ? Math.min.apply(null, entries.map(function (entry) { return Number(entry.startAyah); })) : (ayahs.length ? Number(ayahs[0].ayah) : ayah);
+    var tafsirEntryEnd = entries && entries.length ? Math.max.apply(null, entries.map(function (entry) { return Number(entry.endAyah); })) : (ayahs.length ? Number(ayahs[ayahs.length - 1].ayah) : tafsirEntryStart);
     var tafsirMetaRef = `${surah.num}:${tafsirEntryStart}${tafsirEntryEnd > tafsirEntryStart ? `-${tafsirEntryEnd}` : ''}`;
     var tafsirSectionIdentifier = section && section.h1 && section.h2 ? ` §${section.h1}.${section.h2}` : '';
     var tafsirMetaTitle = utils.socialMetadata().tafsirReaderTitle({name:tafsirTitle, section:section && section.h1 && section.h2 ? `${section.h1}.${section.h2}` : '', reference:tafsirMetaRef});
