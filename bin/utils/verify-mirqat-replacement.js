@@ -21,12 +21,13 @@ async function verify(alias='suyuti',bookId=100419){
     await assert.rejects(q('UPDATE hadiths_virtual SET ref_num=NULL,hadithId=NULL WHERE id=?',[v.id]),/must select an original hadith/);
     await q('SAVEPOINT before_delete');
     await q('DELETE FROM hadiths_virtual WHERE id=?',[v.id]);
-    assert.equal((await q('SELECT id FROM hdith_hadith_sharh WHERE id IN (?)',[before.map(r=>r.id)])).length,0);
+    assert.deepEqual(await q('SELECT * FROM hdith_hadith_sharh WHERE id IN (?) ORDER BY id',[before.map(r=>r.id)]),after.slice().sort((a,b)=>a.id-b.id));
+    assert.equal((await q('SELECT sharh_id FROM hdith_virtual_sharh_links WHERE virtual_id=?',[v.id])).length,0);
     assert.deepEqual(await q('SELECT * FROM hdith_hadith_sharh WHERE hadith_id IN (?,?) AND id NOT IN (?) ORDER BY id',[v.hadithId,target.id,before.map(r=>r.id)]),unrelated);
     await q('ROLLBACK TO SAVEPOINT before_delete');
     await q('ROLLBACK');
     assert.deepEqual(await q('SELECT hs.* FROM hdith_hadith_sharh hs JOIN hdith_virtual_sharh_links vl ON vl.sharh_id=hs.id WHERE vl.virtual_id=?',[v.id]),before);
-    console.log(JSON.stringify({placeholder:alias,virtualId:v.id,reference:v.num,oldReference:v.ref_num,oldHadithId:v.hadithId,targetHadithId:target.id,moved:before.length,unrelatedPreserved:unrelated.length,nullRejected:true,deletionScoped:true,rolledBack:true}));
+    console.log(JSON.stringify({placeholder:alias,virtualId:v.id,reference:v.num,oldReference:v.ref_num,oldHadithId:v.hadithId,targetHadithId:target.id,moved:before.length,unrelatedPreserved:unrelated.length,nullRejected:true,commentariesPreservedOnDelete:true,rolledBack:true}));
   } finally {await q('ROLLBACK');db.end();}
 }
 if(require.main===module)verify('suyuti').then(()=>verify('misc')).then(()=>verify(null,61)).then(()=>verify(null,57)).catch(e=>{console.error(e.stack);process.exitCode=1;});

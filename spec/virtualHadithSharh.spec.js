@@ -30,3 +30,22 @@ test('source-scoped uniqueness permits independent commentaries with the same en
  await ensureSchema(q);
  expect(q.mock.calls[1][0]).toContain('(hadith_id,source_id,source_entry_id)');
 });
+
+test('legacy deletion trigger is removed without deleting commentary or ownership data', async () => {
+ const {preserveCommentaryOnDelete,legacyDeleteStatement}=require('../lib/VirtualHadithSharh');
+ const q=jest.fn().mockResolvedValue({});
+ expect(await preserveCommentaryOnDelete(q,[{Trigger:'virtual_sharh_before_delete',Statement:legacyDeleteStatement}])).toBe(true);
+ expect(q.mock.calls).toEqual([['DROP TRIGGER virtual_sharh_before_delete']]);
+ expect(await preserveCommentaryOnDelete(q,[])).toBe(false);
+});
+test('unknown deletion triggers cannot be silently replaced', async () => {
+ const {preserveCommentaryOnDelete}=require('../lib/VirtualHadithSharh');
+ const q=jest.fn();
+ await expect(preserveCommentaryOnDelete(q,[{Trigger:'virtual_sharh_before_delete',Statement:'BEGIN SELECT 1; END'}])).rejects.toThrow('Unexpected existing trigger');
+ expect(q).not.toHaveBeenCalled();
+});
+test('new schemas detach ownership while preserving the original commentary', () => {
+ const {triggers}=require('../lib/VirtualHadithSharh');
+ expect(triggers.virtual_sharh_before_delete).toContain('DELETE FROM hdith_virtual_sharh_links WHERE virtual_id=OLD.id');
+ expect(triggers.virtual_sharh_before_delete).not.toContain('hdith_hadith_sharh');
+});

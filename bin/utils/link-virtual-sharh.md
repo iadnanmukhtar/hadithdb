@@ -1,6 +1,6 @@
 # Virtual-book commentary ownership
 
-`hdith_virtual_sharh_links` identifies the stable virtual entry owning each commentary. The database update trigger moves the actual commentary row when the selected original changes, retaining its ID, text, metadata, and annotations. Commentary belonging to the original hadith or another virtual entry stays put. Linked entries cannot lose their selected original; deleting an entry removes only its owned commentary.
+`hdith_virtual_sharh_links` identifies the stable virtual entry owning each commentary. The database update trigger moves the actual commentary row when the selected original changes, retaining its ID, text, metadata, and annotations. Commentary belonging to the original hadith or another virtual entry stays put. Linked entries cannot lose their selected original; deleting an entry removes only its ownership links. All attached commentary remains on the selected original hadith, with its identity and content intact.
 
 The selected-match editor and reference-field editor use `VirtualHadithEditing` and refresh both old and new original hadiths, including their commentary search documents and caches. Direct SQL changes move database rows through the trigger but require the caller to refresh indexes/caches.
 
