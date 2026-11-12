@@ -11,7 +11,7 @@ const express = require('express');
 const http = require('http');
 const path = require('path');
 let server, base, rows, notes, authors;
-const fixture = { source_key: 'item:42', title: 'My <private> reflection', markdown: '# العربية\n\n==**نص**== __العربية__\n\n[[Secret note|Another note]]\n\nbukhari:100\n\n<script>bad()</script>',
+const fixture = { source_key: 'item:42', title: 'My <private> reflection', markdown: '# العربية\n\n==**نص**== __العربية__\n\n[[Secret note|Another note]]\n\nbukhari:100\n\n<script>bad()</script>\n\n%%\nPRIVATE HIDDEN SENTINEL\n# Private heading\n%%\n\n%% PRIVATE ONE-LINE SENTINEL %%',
   version: 1, driveFileUrl: 'https://drive.google.com/file/d/private-file/view', tags: ['hidden-tag'], revision: 'private-revision' };
 const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, {
   method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' },
@@ -68,7 +68,7 @@ test('public page is read-only, exposes only title and rendered content, and pre
     expect(html).toContain('My &lt;private&gt; reflection');
     expect(html).toContain('<mark><strong>'); expect(html).toContain('data-notebook-overline');
     expect(html).toContain('Another note'); expect(html).not.toContain('Secret note');
-    for (const privateText of ['hidden-tag', 'private-file', 'private-revision', 'alice', 'data-notebook-reference', 'data-notebook-wiki', '<textarea', '<script>']) expect(html).not.toContain(privateText);
+    for (const privateText of ['PRIVATE ONE-LINE SENTINEL', 'PRIVATE HIDDEN SENTINEL', 'Private heading', 'hidden-tag', 'private-file', 'private-revision', 'alice', 'data-notebook-reference', 'data-notebook-wiki', '<textarea', '<script>']) expect(html).not.toContain(privateText);
     for (const method of ['POST', 'PUT', 'DELETE']) expect((await request(prefix + '/notebook/shared/' + token, method, null, { markdown: 'overwrite' })).status).toBe(404);
   }
 });

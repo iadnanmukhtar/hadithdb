@@ -16,7 +16,7 @@ async function setup(width = 900) {
   await page.addStyleTag({ path: 'public/static/css/community.css' });
   await page.addStyleTag({ content: await page.locator('style').allTextContents().then(styles => styles.join('\n')) });
   await page.addScriptTag({ content: fs.readFileSync('node_modules/marked/lib/marked.umd.js','utf8') });
-  for (const file of ['notebook-shortcuts','notebook-wiki','community-parallel-text','community-short-editor','community-formatting','notebook-rich-editor']) await page.addScriptTag({ path: 'public/static/js/'+file+'.js' });
+  for (const file of ['notebook-shortcuts','notebook-wiki','community-parallel-text','community-short-editor','community-formatting','notebook-sections','notebook-rich-editor']) await page.addScriptTag({ path: 'public/static/js/'+file+'.js' });
   await page.evaluate(() => {
     NotebookRichEditor.setPreviewRenderer(async () => '<p>Rendered advanced block</p>');
     window.source = document.getElementById('notebook-editor');
@@ -395,4 +395,73 @@ test('forward deletion and keyboard formatting preserve the selected text and ca
   expect(await page.locator('#notebook-editor').inputValue()).toBe('First **second**');
   await page.keyboard.type('replacement');
   expect(await page.locator('#notebook-editor').inputValue()).toBe('First **replacement**');
+});
+
+test.each(['quran:2:255','quran:baqarah:255','quran:al-baqarah:255-256','bukhari:100'])('formatted reference Enter retains rich mode for %s',async ref=>{
+ await setup();
+ await page.evaluate(text=>{source.value=text;edit(true);window.referenceEvents=[];source.addEventListener('input',e=>{if(e.inputType)referenceEvents.push({type:e.inputType,text:source.value,offset:source.selectionStart});});},ref);
+ const rich=page.locator('.community-rich-input');await rich.evaluate(el=>{el.focus();const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);});await page.keyboard.press('Enter');
+ const events=await page.evaluate(()=>referenceEvents);
+ expect(events).toHaveLength(1);expect(events[0].type).toBe('insertParagraph');expect(events[0].text).toBe(ref+'\n');
+ expect(await page.locator('#notebook-editor').isVisible()).toBe(false);
+ expect(await rich.isVisible()).toBe(true);
+ await page.keyboard.type('Next line');
+ expect(await page.locator('#notebook-editor').inputValue()).toContain(ref+'\n\nNext line');
+});
+test('nested heading folds preserve Markdown and work in preview',async()=>{
+ await setup();await page.addStyleTag({path:'public/static/css/markdown-content.css'});
+ const text='# First\n\nFirst body\n\n## Child\n\nChild body\n\n# Next\n\nNext body';
+ await page.evaluate(text=>{source.value=text;edit(true);},text);
+ const rich=page.locator('.community-rich-input');
+ await rich.getByRole('button',{name:'Collapse Child',exact:true}).click();
+ await rich.getByRole('button',{name:'Collapse First',exact:true}).click();
+ expect(await rich.getByText('First body',{exact:true}).isVisible()).toBe(false);
+ expect(await rich.getByText('Next body',{exact:true}).isVisible()).toBe(true);
+ await rich.getByRole('button',{name:'Expand First',exact:true}).click();
+ expect(await rich.getByText('First body',{exact:true}).isVisible()).toBe(true);
+ expect(await rich.getByText('Child body',{exact:true}).isVisible()).toBe(false);
+ expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
+ await page.evaluate(()=>{preview.innerHTML='<h1>Preview section</h1><p>Preview body</p><h1>Next</h1><p>Visible</p>';edit(false);});
+ await page.locator('#notebook-preview').getByRole('button',{name:'Collapse Preview section',exact:true}).click();
+ expect(await page.getByText('Preview body',{exact:true}).isVisible()).toBe(false);
+ await page.screenshot({path:'/tmp/notebook-fold-preview.png'});
+});
+test.each([390,900])('private blocks remain grey and round trip at %i px',async width=>{
+ await setup(width);await page.addStyleTag({path:'public/static/css/markdown-content.css'});
+ const text='# Public heading\n\nPublic text\n\n%%\nPrivate reminder\nAnother private line\n%%\n\nPublic ending';
+ await page.evaluate(text=>{source.value=text;edit(true);},text);
+ expect(await page.locator('.community-rich-input [data-note-hidden]').textContent()).toBe('Private reminder\nAnother private line');
+ expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
+ await page.screenshot({path:`/tmp/notebook-hidden-edit-${width}.png`});
+});
+test('Quran alias expansion updates the formatted draft and leaves the caret editable',async()=>{
+ await setup();
+ const script=fs.readFileSync('public/static/js/notebook.js','utf8');
+ const functions=['scheduleReferenceExpansion','autoExpandReferences'].map(name=>script.match(new RegExp(`  (?:async )?function ${name}\\([^]*?\\n  }`))[0]).join('\n');
+ await page.evaluate(functions=>{
+  source.value='quran:baqarah:255';edit(true);
+  const editor=source,current={},busy=false,locked=false,editing=true,generation=1,composingReference=false;
+  let referenceEpoch=0,referenceTimer=null;
+  const api=async()=>({edits:[{start:0,end:17,text:'\n\n> Arabic verse\n> Translation\n\n'}]}),scheduleSave=()=>{};
+  eval(functions+'\n editor.addEventListener("input",scheduleReferenceExpansion);');
+ },functions);
+ const rich=page.locator('.community-rich-input');
+ await rich.evaluate(el=>{el.focus();const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);});
+ await page.keyboard.press('Enter');
+ await page.waitForFunction(()=>document.querySelector('.community-rich-input').textContent.includes('Translation'));
+ expect(await page.locator('#notebook-editor').isVisible()).toBe(false);
+ await page.keyboard.type(' More notes');
+ expect(await page.locator('#notebook-editor').inputValue()).toContain('More notes');
+});
+test('one-line hidden comments retain their syntax through formatted editing',async()=>{
+ await setup();await page.addStyleTag({path:'public/static/css/markdown-content.css'});
+ const text='Before\n\n%% Private quran:baqarah:255 {draft} %%\n\nAfter';
+ await page.evaluate(text=>{source.value=text;edit(true);},text);
+ const comment=page.locator('.community-rich-input [data-note-hidden]');
+ expect(await comment.textContent()).toBe('Private quran:baqarah:255 {draft}');
+ expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
+ await comment.evaluate(el=>{el.focus();const range=document.createRange();range.selectNodeContents(el);range.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(range);});
+ await page.keyboard.type(' edited');
+ expect(await page.locator('#notebook-editor').inputValue()).toContain('%% Private quran:baqarah:255 {draft} edited %%');
+ await page.screenshot({path:'/tmp/notebook-single-hidden.png'});
 });

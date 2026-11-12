@@ -6,7 +6,7 @@ function harness() {
   const { JSDOM } = require('jsdom');
   const editor = new JSDOM('<textarea></textarea>').window.document.querySelector('textarea');
   editor.value = 'Before\nbukhari:100\n'; editor.setSelectionRange(editor.value.length, editor.value.length);
-  const ctx = vm.createContext({ editor, current: {}, busy: false, locked: false, editing: true, generation: 1,
+  const ctx = vm.createContext({ window: {}, editor, current: {}, busy: false, locked: false, editing: true, generation: 1,
     referenceEpoch: 0, referenceTimer: null, composingReference: false, setTimeout, clearTimeout,
     api: jest.fn(), scheduleSave: jest.fn() });
   vm.runInContext(functions, ctx); return ctx;

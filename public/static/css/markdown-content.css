@@ -292,3 +292,16 @@ main .intro.content-markdown:lang(en) {
   color: var(--c-speech, #1b7b00);
   font-size: 1.25rem;
 }
+
+/* Folding is a local reading/editing preference, never part of saved Markdown. */
+.notebook-markdown :is(h1,h2,h3,h4,h5,h6):has(> [data-heading-fold]) { position: relative; padding-inline-start: 1.5rem; }
+[data-heading-fold] { position: absolute; inset-inline-start: 0; top: 0; width: 1.4rem; height: 1.5em; padding: 0; border: 0; background: transparent; color: var(--c-muted, #6c757d); font: inherit; cursor: pointer; }
+[data-heading-fold]::before { content: '⌄'; }
+[data-heading-fold][aria-expanded="false"]::before { content: '›'; }
+[data-heading-fold]:focus-visible { outline: 2px solid var(--c-accent, #299de0); border-radius: .2rem; }
+.notebook-section-folded { display: none !important; }
+@media print { [data-heading-fold] { display: none !important; } .notebook-section-folded { display: revert !important; } }
+
+.notebook-hidden-text { white-space: pre-wrap; color: var(--c-muted, #6c757d); background: var(--bs-tertiary-bg, #f4f5f6); border-inline-start: 3px solid var(--bs-border-color, #ccc); padding: .65rem .85rem; margin-block: 1rem; }
+.notebook-hidden-text::before { content: 'Hidden from sharing and printing'; display: block; font: .75rem/1.5 system-ui, sans-serif; margin-bottom: .4rem; }
+@media print { [data-note-hidden] { display: none !important; } }

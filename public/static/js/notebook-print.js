@@ -95,7 +95,7 @@
         }
         // Use sanitized output from the shared Markdown renderer.
         article.innerHTML = result.html;
-        article.querySelectorAll('.notebook-expand-reference, .footnote-backref').forEach(node => node.remove());
+        article.querySelectorAll('.notebook-expand-reference, .footnote-backref, [data-note-hidden], [data-heading-fold]').forEach(node => node.remove());
         article.querySelectorAll('a[href]').forEach(link => {
           const href = link.getAttribute('href');
           if (href.startsWith('#')) link.removeAttribute('target');

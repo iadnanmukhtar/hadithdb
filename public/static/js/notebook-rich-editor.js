@@ -6,6 +6,8 @@
   if (!source || !preview || !toolbar) return;
   const surface = window.CommunityShortEditor?.get(source) || window.CommunityShortEditor?.install(source);
   if (!surface) return;
+  window.NotebookSections?.install(surface.rich);
+  window.NotebookSections?.install(preview);
   window.CommunityFormatting.install(source, toolbar, document.getElementById('notebook-format-style'));
   const viewport = document.createElement('div');
   viewport.className = 'notebook-numbered-surface';

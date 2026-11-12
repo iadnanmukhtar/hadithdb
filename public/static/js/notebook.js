@@ -792,7 +792,9 @@
       if (epoch !== referenceEpoch || ownGeneration !== generation || editor.value !== text || composingReference || busy || locked || !editing) return;
       if (!result.edits.length) return;
       // Map the live selection, including caret movement while the lookup was running.
-      const start = editor.selectionStart, end = editor.selectionEnd, direction = editor.selectionDirection;
+      const surface = window.CommunityShortEditor?.get(editor);
+      const [start,end] = surface?.sourceSelection() || [editor.selectionStart,editor.selectionEnd];
+      const direction = editor.selectionDirection;
       const scrollTop = editor.scrollTop, scrollLeft = editor.scrollLeft;
       const map = position => {
         let delta = 0;
@@ -805,6 +807,7 @@
       };
       for (const edit of [...result.edits].reverse()) editor.setRangeText(edit.text, edit.start, edit.end, 'preserve');
       editor.setSelectionRange(map(start), map(end), direction);
+      if(surface?.mode==='rich'){surface.hydrate();surface.restoreSourceSelection(map(start),map(end));}
       editor.scrollTop = scrollTop; editor.scrollLeft = scrollLeft;
       scheduleSave();
     } catch (_err) {
@@ -1136,6 +1139,7 @@
       button.style.setProperty('--outline-depth', Number(heading.tagName.slice(1)) - baseLevel);
       button.addEventListener('click', () => {
         const surface=outlineSurface();if(!surface)return;
+        window.NotebookSections?.reveal(surface,heading);
         surface.scrollTop += heading.getBoundingClientRect().top - surface.getBoundingClientRect().top - 8;
         if(surface===preview){heading.setAttribute('tabindex','-1');heading.focus({preventScroll:true});}
         else {surface.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(heading);range.collapse(true);const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);}

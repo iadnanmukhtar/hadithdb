@@ -46,7 +46,7 @@ test('prints the current draft with safe metadata, Arabic, links and complete pa
     window.printButton = document.getElementById('print'); window.status = { textContent: '' };
     window.api = async (path, method, body) => { window.request = { path, method, body }; return { html }; };
     (0, eval)(printNote); printButton.addEventListener('click', window.printNote);
-  }, { printNote, markdown, html: Notebook.render(markdown) });
+  }, { printNote, markdown, html: Notebook.render(markdown+'\n\n%%\nPRIVATE PRINT SENTINEL\n%%\n\n%% PRIVATE ONE-LINE PRINT %%') });
   const popupPromise = page.waitForEvent('popup');
   await page.click('#print');
   const popup = await popupPromise;
@@ -58,6 +58,8 @@ test('prints the current draft with safe metadata, Arabic, links and complete pa
   expect(await popup.locator('article').textContent()).toContain('END OF NOTE');
   expect(await popup.locator('article').textContent()).not.toContain('Old saved body');
   expect(await popup.locator('.notebook-expand-reference').count()).toBe(0);
+  expect(await popup.locator('body').textContent()).not.toContain('PRIVATE PRINT SENTINEL');
+  expect(await popup.locator('body').textContent()).not.toContain('PRIVATE ONE-LINE PRINT');
   expect(await popup.evaluate(() => document.fonts.check('16px Hafs'))).toBe(true);
   expect(await popup.locator('article p[dir="rtl"]').nth(0).evaluate(el => getComputedStyle(el).direction)).toBe('rtl');
   await popup.emulateMedia({ media: 'print' });

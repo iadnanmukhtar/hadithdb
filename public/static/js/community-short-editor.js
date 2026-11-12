@@ -120,12 +120,16 @@
     });
   }
   function render(markdown, propheticSpeech = true) {
-    const guarded=markdown.replace(/\[\^[^\]\s]+\]/g,'footnote');
+    const guarded=markdown.replace(/^ {0,3}%%[ \t]*\n[\s\S]*?(?:^ {0,3}%%[ \t]*(?:\n|$)|(?![\s\S]))/gm,'hidden note\n').replace(/^ {0,3}%%[^\n]*?%%[ \t]*$/gm,'hidden note').replace(/\[\^[^\]\s]+\]/g,'footnote').replace(/quran:[a-z][a-z0-9_-]*:\d/gi,'quran:1:1');
     if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
     const root = document.createElement('div');
     let parser;const definitions=new Map();
     function append(tokens, parent) {
       for (const t of tokens) {
+        if(t.type==='hiddenNote'){
+          const block=document.createElement('div');block.className='notebook-hidden-text';block.dataset.noteHidden='true';if(t.singleLine)block.dataset.hiddenSingleLine='true';
+          block.setAttribute('aria-label','Hidden from sharing and printing');block.textContent=t.text;parent.append(block);continue;
+        }
         if (t.type === 'space') continue;
         if(t.type==='blockquote' && t.tokens?.[0]?.type==='paragraph' && (/^\[![a-z][a-z0-9_-]*\]/i.test(t.text) || /\{\.callout\}/.test(t.text))){
           const marker=/^\[!([a-z][a-z0-9_-]*)\][ \t]*/i.exec(t.text),kind=marker?marker[1].toLowerCase():'note';
@@ -205,6 +209,13 @@
       if(!split && markdown.includes('||'))return null;
       parser=new window.marked.Marked({breaks:true});
       parser.use({extensions:[
+        {name:'hiddenNote',level:'block',start(src){return /^ {0,3}%%(?:[^\n]*?%%)?[ \t]*(?:\n|$)/m.exec(src)?.index;},tokenizer(src){
+          const single=/^ {0,3}%%([^\n]*?)%%[ \t]*(?:\n|$)/.exec(src);
+          if(single)return {type:'hiddenNote',raw:single[0],text:single[1].trim(),singleLine:true};
+          const open=/^ {0,3}%%[ \t]*(?:\n|$)/.exec(src);if(!open)return;
+          const rest=src.slice(open[0].length),close=/^ {0,3}%%[ \t]*(?:\n|$)/m.exec(rest);
+          return {type:'hiddenNote',raw:open[0]+(close?rest.slice(0,close.index+close[0].length):rest),text:(close?rest.slice(0,close.index):rest).replace(/\n$/,'')};
+        }},
         {name:'literalItalic',level:'inline',start(src){return src.indexOf('<em>');},tokenizer(src){const m=/^<em>([^\n]*?)<\/em>/.exec(src);if(m)return {type:'literalItalic',raw:m[0],tokens:this.lexer.inlineTokens(m[1])};}},
         {name:'notebookWiki',level:'inline',start(src){return src.indexOf('[[');},tokenizer(src){
           const m=/^\[\[([^\[\]|\r\n]+)(?:\|([^\[\]\r\n]+))?\]\]/.exec(src);
@@ -272,9 +283,13 @@
     function read(el) {
       if (el.nodeType === 3) return escape(el.nodeValue.replace(/\u00a0/g, ' '));
       if (el.nodeType !== 1) return '';
+      if(el.hasAttribute('data-note-hidden')){
+        const text=el.innerText.replace(/\n+$/,'');
+        return el.dataset.hiddenSingleLine && !text.includes('\n') && !text.includes('%%') ? '%% '+text+' %%\n\n' : '%%\n'+text+'\n%%\n\n';
+      }
       if(el.dataset.wikiTarget !== undefined)return el.textContent===el.dataset.wikiLabel && el.dataset.wikiRaw ? el.dataset.wikiRaw : '[['+el.dataset.wikiTarget+'|'+el.textContent+']]';
       if(el.dataset.notebookRaw !== undefined){const index=preserved.push(el.dataset.notebookRaw.trimEnd())-1;return rawPrefix+index+'END\n\n';}
-      if(el.classList.contains('community-footnote-label'))return '';
+      if(el.classList.contains('community-footnote-label') || el.hasAttribute('data-heading-fold'))return '';
       if(el.dataset.footnoteRef)return '[^'+el.dataset.footnoteRef+']';
       if(el.dataset.footnote){
         const body=el.querySelector('.community-footnote-body') || el,text=contents(body).trim();
@@ -1390,10 +1405,17 @@
           block.after(next);
           const caret=document.createRange();caret.selectNodeContents(next);caret.collapse(true);active.removeAllRanges();active.addRange(caret);sync();selection();return;
         }
-        if(!event.shiftKey && active.isCollapsed && !listItem && !quote && block && rich.contains(block) && /^[ \t]*(?:quran:\d{1,3}:\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(block.textContent)) {
+        if(!event.shiftKey && active.isCollapsed && !listItem && !quote && block && rich.contains(block) && /^[ \t]*(?:quran:(?:\d{1,3}|[a-z][a-z0-9_-]*):\d{1,3}(?:-\d{1,3})?|[a-z][a-z0-9_-]*:\d+[a-z]?)[ \t]*$/i.test(block.textContent)) {
           event.preventDefault();selection();toSource();source.focus();
           source.setRangeText('\n',source.selectionStart,source.selectionEnd,'end');
-          source.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertParagraph',data:'\n'}));return;
+          source.dispatchEvent(new InputEvent('input',{bubbles:true,inputType:'insertParagraph',data:'\n'}));
+          const caret=source.selectionStart;toFormatted();
+          if(caret===source.value.length){
+            const next=document.createElement('p');next.append(document.createElement('br'));rich.append(next);
+            rich.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(next);range.collapse(true);
+            const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);selection();
+          }else restoreSourceSelection(caret,caret);
+          return;
         }
       }
       if((event.metaKey||event.ctrlKey) && !event.altKey && !event.isComposing){
@@ -1451,7 +1473,20 @@
       new MutationObserver(()=>{if(!frame)frame=requestAnimationFrame(rebuild);}).observe(rich,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden']});
       rebuild();
     }
-    instances.set(source,{selection,hydrate,toSource,toFormatted,shell,rich,sync,format:formatAction,get mode(){return mode;}});hydrate();
+    function sourceSelection() {
+      const selected=window.getSelection();
+      if(mode!=='rich' || !selected?.rangeCount || !rich.contains(selected.anchorNode) || !rich.contains(selected.focusNode))return [source.selectionStart,source.selectionEnd];
+      const range=selected.getRangeAt(0);
+      return [caretOffset(source,rich,null,undefined,{node:range.startContainer,offset:range.startOffset}),caretOffset(source,rich,null,undefined,{node:range.endContainer,offset:range.endOffset})];
+    }
+    function restoreSourceSelection(start,end) {
+      if(mode!=='rich')return;
+      const first=caretOffset(source,rich,null,start),last=caretOffset(source,rich,null,end);
+      if(!first || !last)return;
+      const range=document.createRange();range.setStart(first.startContainer,first.startOffset);range.setEnd(last.startContainer,last.startOffset);
+      rich.focus({preventScroll:true});const selected=window.getSelection();selected.removeAllRanges();selected.addRange(range);selection();
+    }
+    instances.set(source,{selection,hydrate,toSource,toFormatted,shell,rich,sync,sourceSelection,restoreSourceSelection,format:formatAction,get mode(){return mode;}});hydrate();
     return instances.get(source);
   }
   document.addEventListener('selectionchange',()=>document.querySelectorAll('[data-short-editor]').forEach(el=>instances.get(el)?.selection()));
