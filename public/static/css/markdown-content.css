@@ -6,7 +6,7 @@
 /* Each item chooses its own direction; reserve marker space on that side. */
 :is(.notebook-markdown, .content-markdown) :is(ul, ol) { padding-inline: 0; }
 :is(.notebook-markdown, .content-markdown) li { margin-inline-start: 1.6em; }
-:is(.notebook-markdown, .content-markdown) :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; padding-block-end: .25em; border-block-end: 1px solid var(--markdown-heading-rule, #d5d7da); }
+:is(.notebook-markdown, .content-markdown) :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; text-decoration-line: underline; text-decoration-color: var(--markdown-heading-underline, #d5d7da); text-decoration-thickness: 1px; text-underline-offset: .16em; text-decoration-skip-ink: auto; }
 :is(.notebook-markdown, .content-markdown) > :first-child { margin-top: 0; }
 /* Larger sections get more breathing room; the first block stays flush. */
 :is(.notebook-markdown, .content-markdown) hr { margin-block: 2rem; }
@@ -315,4 +315,4 @@ main .intro.content-markdown:lang(en) {
 /* Two or more blank source lines add one deliberate reading pause. */
 :is(.notebook-markdown, .content-markdown) .markdown-spacer { min-height: 1.8em; margin-block: 0; }
 
-[data-bs-theme="dark"] :is(.notebook-markdown, .content-markdown) { --markdown-heading-rule: #565c64; }
+[data-bs-theme="dark"] :is(.notebook-markdown, .content-markdown) { --markdown-heading-underline: #565c64; }
