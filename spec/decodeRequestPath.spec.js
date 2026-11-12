@@ -10,6 +10,9 @@ describe('application request path decoding', () => {
   beforeAll(done => {
     const app = express();
     app.use(decodeRequestPath);
+    app.get('/:book/:chapter', (req, res) => {
+      res.json({ params: req.params, query: req.query, originalUrl: req.originalUrl, path: req.path });
+    });
     app.get('/quran/tafsir/:tafsir/quran\\::surah\\::ayah', (req, res) => {
       res.json({ params: req.params, query: req.query, originalUrl: req.originalUrl });
     });
@@ -35,7 +38,9 @@ describe('application request path decoding', () => {
         let body = '';
         res.setEncoding('utf8');
         res.on('data', chunk => { body += chunk; });
-        res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(body) }));
+        res.on('end', () => resolve(res.headers.location
+          ? { status: res.statusCode, location: res.headers.location }
+          : { status: res.statusCode, body: JSON.parse(body) }));
       });
       req.on('error', reject);
       req.end();
@@ -55,6 +60,44 @@ describe('application request path decoding', () => {
 
   test('decodes fixed route names and hadith references across the app', async () => {
     expect(await request('/%62ukhari%3A1')).toEqual({ status: 200, body: { id: '1' } });
+  });
+
+  test.each([
+    '/nasai-kubra/29/null',
+    '/nasai-kubra/29/null/null',
+    '/null/nasai-kubra/null/29/null',
+    '/nasai-kubra/29/%6E%75%6C%6C'
+  ])('redirects null segments before route matching: %s', async pathname => {
+    const path = `${pathname}?value=null&next=%2Fnull`;
+    expect(await request(path)).toEqual({
+      status: 308,
+      location: '/nasai-kubra/29?value=null&next=%2Fnull'
+    });
+  });
+
+  test.each(['nullable', 'annulled', 'null-value'])('preserves non-null segments: %s', async value => {
+    expect((await request(`/api/value/${value}`)).body.value).toBe(value);
+  });
+
+  test('normalizes an all-null path to the root', () => {
+    const req = { url: '/null/null?value=null' };
+    const next = jest.fn();
+    const res = { redirect: jest.fn() };
+    decodeRequestPath(req, res, next);
+    expect(res.redirect).toHaveBeenCalledWith(308, '/?value=null');
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('keeps the redirect on the same host', async () => {
+    expect(await request('/null//example.com/null')).toEqual({
+      status: 308, location: '/example.com'
+    });
+  });
+
+  test.each(['POST', 'PUT', 'DELETE'])('uses a method-preserving redirect for %s', async method => {
+    expect(await request('/api/value/null/hello', method)).toEqual({
+      status: 308, location: '/api/value/hello'
+    });
   });
 
   test.each(['GET', 'POST', 'PUT', 'DELETE'])('decodes API paths for %s', async method => {
