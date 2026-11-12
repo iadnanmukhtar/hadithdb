@@ -119,16 +119,24 @@
       }
     });
   }
-  function render(markdown, propheticSpeech = true) {
+  function render(markdown, propheticSpeech = true, privateBody = false) {
     const guarded=markdown.replace(/^ {0,3}%%[ \t]*\n[\s\S]*?(?:^ {0,3}%%[ \t]*(?:\n|$)|(?![\s\S]))/gm,'hidden note\n').replace(/^ {0,3}%%[^\n]*?%%[ \t]*$/gm,'hidden note').replace(/\[\^[^\]\s]+\]/g,'footnote').replace(/quran:[a-z][a-z0-9_-]*:\d/gi,'quran:1:1');
-    if (!window.marked || /(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,''))) return null;
+    if (!window.marked || !privateBody && (/(?<!\\)\^\[/.test(markdown) || /^---[ \t]*\r?\n/.test(markdown) || /[{}]|:[a-z_+-]+:|^\s*[:~] |^\s*\[[^\]]+\]:/m.test(guarded.replace(/\{\.callout\}/g,'').replace(/^ {0,3}(?:_[ \t]*){3,}$/gm,'')))) return null;
     const root = document.createElement('div');
     let parser;const definitions=new Map();
     function append(tokens, parent) {
+      let blankTail=0,seenBlock=false;
       for (const t of tokens) {
+        if(t.type==='space'){blankTail+=(t.raw.match(/\n/g)||[]).length;continue;}
+        if(seenBlock && blankTail>=3){
+          const spacer=document.createElement('p');spacer.className='markdown-spacer';spacer.dataset.markdownSpacer='true';spacer.append(document.createElement('br'));parent.append(spacer);
+        }
+        seenBlock=true;blankTail=(t.raw?.match(/(?:\n[ \t]*)+$/)?.[0].match(/\n/g)||[]).length;
         if(t.type==='hiddenNote'){
           const block=document.createElement('div');block.className='notebook-hidden-text';block.dataset.noteHidden='true';if(t.singleLine)block.dataset.hiddenSingleLine='true';
-          block.setAttribute('aria-label','Hidden from sharing and printing');block.textContent=t.text;parent.append(block);continue;
+          block.setAttribute('aria-label','Hidden from sharing and printing');
+          const formatted=render(t.text,propheticSpeech,true);if(!formatted)throw Error('Unsupported private Markdown');
+          block.append(...formatted.childNodes);parent.append(block);continue;
         }
         if (t.type === 'space') continue;
         if(t.type==='blockquote' && t.tokens?.[0]?.type==='paragraph' && (/^\[![a-z][a-z0-9_-]*\]/i.test(t.text) || /\{\.callout\}/.test(t.text))){
@@ -251,7 +259,7 @@
           return {type:'parallel',raw:line+(src[line.length]==='\n'?'\n':''),left:line.slice(0,at),right:line.slice(at+2)};}
       }]});
       append(parser.lexer(markdown),root);
-      for(const marker of root.querySelectorAll('[data-footnote-ref]'))if(!definitions.has(marker.dataset.footnoteRef)){
+      for(const marker of root.querySelectorAll('[data-footnote-ref]'))if(!marker.closest('[data-note-hidden]') && !definitions.has(marker.dataset.footnoteRef)){
         const content=document.createElement('p');content.textContent='Footnote text';const holder=document.createElement('div');holder.append(content);definitions.set(marker.dataset.footnoteRef,footnoteRow(marker.dataset.footnoteRef,holder));
       }
       root.append(...definitions.values());reconcileFootnotes(root);styleContent(root);
@@ -283,8 +291,9 @@
     function read(el) {
       if (el.nodeType === 3) return escape(el.nodeValue.replace(/\u00a0/g, ' '));
       if (el.nodeType !== 1) return '';
+      if(el.hasAttribute('data-markdown-spacer') && !el.textContent.trim())return rawPrefix+'SPACER';
       if(el.hasAttribute('data-note-hidden')){
-        const text=el.innerText.replace(/\n+$/,'');
+        const text=serialize(el).trim();
         return el.dataset.hiddenSingleLine && !text.includes('\n') && !text.includes('%%') ? '%% '+text+' %%\n\n' : '%%\n'+text+'\n%%\n\n';
       }
       if(el.dataset.wikiTarget !== undefined)return el.textContent===el.dataset.wikiLabel && el.dataset.wikiRaw ? el.dataset.wikiRaw : '[['+el.dataset.wikiTarget+'|'+el.textContent+']]';
@@ -324,7 +333,9 @@
         case 'S': case 'STRIKE': case 'DEL': return wrap('~~');
         case 'CODE': {const t=el.textContent; const ticks='`'.repeat(Math.max(0,...(t.match(/`+/g)||[]).map(s=>s.length))+1);return ticks+' '+t+' '+ticks;}
         case 'A': {const href=safeLink(el.getAttribute('href'));return href?'['+text()+']('+href.replace(/\(/g,'%28').replace(/\)/g,'%29')+')':text();}
-        case 'P': case 'DIV': return text()+'\n\n';
+        case 'P': case 'DIV':
+          if(el.parentElement===root && el.previousElementSibling && el.nextElementSibling && !el.textContent.trim() && !el.querySelector('img,hr,table,[data-notebook-raw]'))return rawPrefix+'SPACER';
+          return text()+'\n\n';
         case 'H1': case 'H2': case 'H3': case 'H4': case 'H5': case 'H6': return '#'.repeat(Number(el.tagName[1]))+' '+text()+'\n\n';
         case 'BLOCKQUOTE': {
           if(el.dataset.calloutKind){
@@ -360,6 +371,7 @@
       }
     }
     let result = contents(root).replace(/\n{3,}/g,'\n\n').trim();
+    result=result.replace(new RegExp('\\n*'+rawPrefix+'SPACER\\n*','g'),'\n\n\n').trim();
     preserved.forEach((raw,index) => { result=result.replace(rawPrefix+index+'END', () => raw); });
     return result;
   }
@@ -370,8 +382,11 @@
     // Reference definitions and footnotes depend on the full document context.
     const dependent = /\[\^|^ {0,3}\[[^\]]+\]:/m.test(markdown);
     const tokens = dependent ? [{raw: markdown}] : window.marked.lexer(markdown);
+    let blankTail=0,seenBlock=false;
     for (const token of tokens) {
-      if (token.type === 'space') continue;
+      if(token.type==='space'){blankTail+=(token.raw.match(/\n/g)||[]).length;continue;}
+      if(seenBlock && blankTail>=3){const spacer=document.createElement('p');spacer.className='markdown-spacer';spacer.dataset.markdownSpacer='true';spacer.append(document.createElement('br'));root.append(spacer);}
+      seenBlock=true;blankTail=(token.raw?.match(/(?:\n[ \t]*)+$/)?.[0].match(/\n/g)||[]).length;
       const formatted = !dependent && render(token.raw, source.dataset.propheticSpeech !== undefined);
       if (formatted) { root.append(...formatted.childNodes); continue; }
       const block = document.createElement('div');
@@ -548,6 +563,7 @@
         const first=boundary.firstChild;if(first?.nodeType===3 && first.data.startsWith('\u200b'))first.deleteData(0,1);
         boundary.removeAttribute('data-markdown-boundary');
       });
+      rich.querySelectorAll('[data-markdown-spacer]').forEach(el=>{if(el.textContent.trim()){el.removeAttribute('data-markdown-spacer');el.classList.remove('markdown-spacer');}});
       styleContent(rich,true);
       reconcileFootnotes(rich);
       const markdown=serialize(rich);

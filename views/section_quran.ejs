@@ -204,6 +204,7 @@
     }
   %>
   
+  <% page.dateModified = utils.pageFreshness().readers(results.concat(selectedAyahs)); %>
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
   
 </head>
@@ -218,6 +219,7 @@
       
       <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
 
+      <%- include('sub-views/page_updated.ejs', { page }); %>
       <% if (selectedTranslationBook) { %>
         <%- include('sub-views/quran_commentary_surah_intro.ejs', {
           site: site,

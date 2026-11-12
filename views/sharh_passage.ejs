@@ -13,6 +13,7 @@ const headingNumber = owner && kind === 'heading' ? [owner.h1, Number(owner.leve
 const referenceLabel = owner ? (kind === 'hadith' ? `${referenceBookName} ${owner.num}` : `${referenceBookName} §${headingNumber}`) : '';
 const headingTitle = owner && kind === 'heading' ? (owner.title_en || (context.chapter && context.chapter.title_en) || owner.title || '') : '';
 const page = { menu: 'Sharh', title_en: utils.socialMetadata().join([referenceLabel, headingTitle, title]), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
+page.dateModified = utils.pageFreshness().latest((locals.entries || [entry]).map(item => item.content_updated_at));
 page.description_en = utils.socialMetadata().description([title, referenceLabel].filter(Boolean).join(" — "), (locals.entries || [entry]).map(item => item.text_en || item.text), page.description_en);
 Object.assign(page, locals.readerNavigation || {});
 const outlines = locals.hadithHeadingOutlines || {};
@@ -29,6 +30,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 <div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
 <div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
 <main class="chapter mt-10 tafsir-only-page sharh-only-page" data-reader-infinite="hadith-sharh" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-sharh-book="<%= book.alias %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
+  <%- include('sub-views/page_updated.ejs', { page }); %>
   <% if (locals.availableSharhs && availableSharhs.length > 1) { %>
   <nav class="h-menu-wrap mb-3" aria-label="Available explanations">
     <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Swipe to browse explanations</div>

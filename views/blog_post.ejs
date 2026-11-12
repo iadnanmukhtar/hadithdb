@@ -10,6 +10,7 @@
 
     var page = {
       menu: 'Blog Post',
+      dateModified: utils.pageFreshness().latest([attr.publicUpdatedAt, attr.published]),
       title_en: `Pearls | ${attr.title}${attr.authorName ? ' — ' + attr.authorName : ''}`,
       description_en: attr.description || attr.subtitle || site.desc,
       subtitle_en: attr.subtitle || 'Blog Post',
@@ -39,6 +40,7 @@
         <div class="community-wall">
           <article>
             <%- include('sub-views/blog_cover.ejs', { entry: attr, detail: true }); %>
+            <%- include('sub-views/page_updated.ejs', { page }); %>
             <section class="notebook-markdown community-reflection-body" dir="auto" data-article-body>
              <%- body %>
             </section>

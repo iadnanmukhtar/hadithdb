@@ -10,6 +10,7 @@ const response = () => ({ setHeader: jest.fn(), end: jest.fn(), redirect: jest.f
 describe('sitemap delivery', () => {
   const saved = { settings: global.settings, surahs: global.surahs, query: global.query };
   beforeEach(() => {
+    jest.spyOn(require('../lib/CommunityBlogImport'), 'publicUrls').mockResolvedValue([]);
     global.settings = { site: { quranUrl: base, url: 'https://hadithunlocked.com' } };
     global.surahs = [];
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue('/cache/quran.txt');
@@ -31,7 +32,8 @@ describe('sitemap delivery', () => {
     await handler('/sitemap.xml')(req(), res, jest.fn());
     const xml = res.end.mock.calls[0][0];
     expect(xml).toContain('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">');
-    expect((xml.match(/<sitemap>/g) || []).length).toBe(pages);
+    expect((xml.match(/<sitemap>/g) || []).length).toBe(pages + 1);
+    expect(xml).toContain(`${base}/sitemap-updates.xml`);
     expect(xml).toContain(`${base}/sitemap-${pages}.txt`);
     expect(xml).not.toContain('/quran:test:');
   });
@@ -63,6 +65,21 @@ describe('sitemap delivery', () => {
     await handler('/sitemap.xml')({ hostname: 'hadithunlocked.com', query: {} }, res, jest.fn());
     expect(res.end.mock.calls[0][0]).toContain(`${domain}/sitemap-1.txt`);
     expect(res.end.mock.calls[0][0]).not.toContain(base);
+  });
+  test('published article membership refreshes even when the corpus sitemap is cached', async () => {
+    const domain = global.settings.site.url;
+    jest.spyOn(Utils, 'readCachedTextFile').mockReturnValue([
+      '', '/books', ...['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].map(type => '/books?' + type),
+      '/community', '/requests', '/blog', '/mcp-server', '/blog/removed', '/community/p/removed', '/history:1'
+    ].map(path => domain + path).join('\n'));
+    require('../lib/CommunityBlogImport').publicUrls.mockResolvedValue(['/community/p/published']);
+    const route = router.stack.find(layer => layer.route && String(layer.route.path).startsWith('/sitemap-:page')).route.stack[0].handle;
+    const res = response();
+    await route({ hostname: 'hadithunlocked.com', query: {}, params: {page:'1'} }, res, jest.fn());
+    const text = res.end.mock.calls[0][0];
+    expect(text).toContain('/history:1');
+    expect(text).toContain('/community/p/published');
+    expect(text).not.toContain('/removed');
   });
   test('rebuilds stale caches missing untitled core verses, without duplicating translations', async () => {
     global.surahs = [{ num: 1, ayahs: 2 }];

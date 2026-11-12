@@ -28,6 +28,24 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
   const request = (url, method = 'GET', uid = 'alice', body) => fetch(base + url, { method, headers: { ...(uid ? { Authorization: 'Bearer ' + uid } : {}), 'Content-Type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const json = async (url, method, uid, body, expected = 200) => { const response = await request(url, method, uid, body); const data = await response.json(); expect({ status: response.status, error: data.error }).toEqual({ status: expected, error: expected >= 400 ? expect.any(String) : undefined }); return data; };
   const postInput = overrides => ({ kind: 'article', title: 'A reflection العربية', markdown: 'Original published body', tags: 'learning', action: 'draft', ...overrides });
+  test('public freshness advances only when changed content is published', async () => {
+    const user = {uid:'moderator',name:'Moderator',email:'moderator@private.test',admin:true};
+    let post = await Community.savePost(user, postInput({action:'publish',title:'Freshness fixture'}));
+    let visible = await Community.post(post.id);
+    expect(visible.publicUpdatedAt).toBeNull();
+    const published = visible.publishedAt;
+    post = await Community.savePost(user, postInput({version:post.version,title:'Freshness fixture',markdown:'Unpublished revision'}), post.id);
+    visible = await Community.post(post.id);
+    expect(visible.publicUpdatedAt).toBeNull();
+    expect(visible.publishedAt).toEqual(published);
+    post = await Community.savePost(user, postInput({action:'publish',version:post.version,title:'Freshness fixture',markdown:'Published revision'}), post.id);
+    const revision = (await Community.post(post.id)).publicUpdatedAt;
+    expect(revision).toBeInstanceOf(Date);
+    post = await Community.savePost(user, postInput({action:'publish',version:post.version,title:'Freshness fixture',markdown:'Published revision'}), post.id);
+    expect((await Community.post(post.id)).publicUpdatedAt).toEqual(revision);
+    await Community.savePost(user, postInput({version:post.version,title:'Freshness fixture',markdown:'Another private revision'}), post.id);
+    expect((await Community.post(post.id)).publicUpdatedAt).toEqual(revision);
+  });
   test('related links publish separately from drafts and recommend in both directions', async () => {
     const user={uid:'moderator',name:'Moderator',email:'moderator@private.test',admin:true};
     const target=await Community.savePost(user,postInput({action:'publish',title:'Related target',category:'Fiqh',tags:'unique-related-tag'}));

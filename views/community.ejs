@@ -16,6 +16,7 @@
     </div>
   </div>
   <% } %>
+  <%- include('sub-views/page_updated.ejs', { page }); %>
   <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
   <% if (view === 'mine') { %>
   <section id="community-wall-profile" class="community-profile mb-4" aria-label="My profile" hidden>

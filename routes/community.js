@@ -108,7 +108,7 @@ function page(res, req, view, extra = {}) {
     moderationEnabled: Community.moderationEnabled(),
     articleCategories: require('../lib/CommunityTaxonomy').categories,
     feedCategory: typeof req.query.category === 'string' ? req.query.category : '',
-    page: { menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
+    page: { dateModified: view === 'everyone' ? require('../lib/PageFreshness').community(extra.initial) : view === 'post' ? require('../lib/PageFreshness').latest([extra.post?.publicUpdatedAt, extra.post?.publishedAt]) : undefined, menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
       noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe', 'email-preferences', 'email-unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
       ...require('../lib/CommunitySocialMetadata')(view,extra) } });

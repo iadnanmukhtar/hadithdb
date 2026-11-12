@@ -430,7 +430,7 @@ test.each([390,900])('private blocks remain grey and round trip at %i px',async 
  await setup(width);await page.addStyleTag({path:'public/static/css/markdown-content.css'});
  const text='# Public heading\n\nPublic text\n\n%%\nPrivate reminder\nAnother private line\n%%\n\nPublic ending';
  await page.evaluate(text=>{source.value=text;edit(true);},text);
- expect(await page.locator('.community-rich-input [data-note-hidden]').textContent()).toBe('Private reminder\nAnother private line');
+ expect(await page.locator('.community-rich-input [data-note-hidden]').innerText()).toBe('Private reminder\nAnother private line');
  expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
  await page.screenshot({path:`/tmp/notebook-hidden-edit-${width}.png`});
 });
@@ -455,13 +455,53 @@ test('Quran alias expansion updates the formatted draft and leaves the caret edi
 });
 test('one-line hidden comments retain their syntax through formatted editing',async()=>{
  await setup();await page.addStyleTag({path:'public/static/css/markdown-content.css'});
- const text='Before\n\n%% Private quran:baqarah:255 {draft} %%\n\nAfter';
+ const text='Before\n\n%% Private quran:baqarah:255 \\{draft\\} %%\n\nAfter';
  await page.evaluate(text=>{source.value=text;edit(true);},text);
  const comment=page.locator('.community-rich-input [data-note-hidden]');
  expect(await comment.textContent()).toBe('Private quran:baqarah:255 {draft}');
  expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
  await comment.evaluate(el=>{el.focus();const range=document.createRange();range.selectNodeContents(el);range.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(range);});
  await page.keyboard.type(' edited');
- expect(await page.locator('#notebook-editor').inputValue()).toContain('%% Private quran:baqarah:255 {draft} edited %%');
+ expect(await page.locator('#notebook-editor').inputValue()).toContain('%% Private quran:baqarah:255 \\{draft\\} edited %%');
  await page.screenshot({path:'/tmp/notebook-single-hidden.png'});
+});
+test('hidden formatted headings, lists and emphasis survive editing and Markdown round trips',async()=>{
+ await setup();await page.addStyleTag({path:'public/static/css/markdown-content.css'});
+ const text='Before\n\n%%\n## Private heading\n\n**Bold** and *italic*\n\n- First\n- Second\n\n> Quotation\n%%\n\n%% **One-line bold** %%\n\nAfter';
+ await page.evaluate(text=>{source.value=text;edit(true);},text);
+ const hidden=page.locator('.community-rich-input [data-note-hidden]').first();
+ expect(await hidden.locator('h2').textContent()).toBe('Private heading');
+ expect(await hidden.locator('strong').textContent()).toBe('Bold');
+ expect(await hidden.locator('li').count()).toBe(2);
+ expect(await hidden.locator('blockquote').textContent()).toBe('Quotation');
+ expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
+ await hidden.locator('li').last().evaluate(el=>{const r=document.createRange();r.selectNodeContents(el);r.collapse(false);const s=window.getSelection();s.removeAllRanges();s.addRange(r);el.closest('[contenteditable=true]').focus();});
+ await page.keyboard.type(' edited');
+ expect(await page.locator('#notebook-editor').inputValue()).toContain('- Second edited');
+ await page.screenshot({path:'/tmp/notebook-hidden-formatting.png'});
+ await page.evaluate(()=>{const surface=CommunityShortEditor.get(source);surface.toSource();surface.toFormatted();});
+ expect(await hidden.locator('li').last().textContent()).toBe('Second edited');
+ expect(await page.locator('.community-rich-input [data-note-hidden]').last().locator('strong').textContent()).toBe('One-line bold');
+});
+test('private footnotes stay within their hidden block after formatted editing',async()=>{
+ await setup();
+ const text='Public\n\n%%\nPrivate text[^p]\n\n[^p]: Private footnote\n%%\n\nAfter';
+ await page.evaluate(text=>{source.value=text;edit(true);},text);
+ const rich=page.locator('.community-rich-input');
+ expect(await rich.locator('[data-note-hidden] [data-footnote]').count()).toBe(1);
+ expect(await rich.locator(':scope > [data-footnote]').count()).toBe(0);
+ const markdown=await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich));
+ expect(markdown).toBe(text);
+});
+test.each(['First paragraph','# Heading','- List item'])('two blank lines after %s survive formatted editing',async first=>{
+ await setup();await page.addStyleTag({path:'public/static/css/markdown-content.css'});
+ const text=first+'\n\n\nNext paragraph';
+ await page.evaluate(text=>{source.value=text;edit(true);},text);
+ const spacer=page.locator('.community-rich-input [data-markdown-spacer]');
+ expect(await spacer.count()).toBe(1);
+ expect((await spacer.boundingBox()).height).toBeGreaterThan(20);
+ expect(await page.evaluate(()=>CommunityShortEditor.serialize(CommunityShortEditor.get(source).rich))).toBe(text);
+ await page.evaluate(()=>{const surface=CommunityShortEditor.get(source);surface.toSource();surface.toFormatted();});
+ expect(await spacer.count()).toBe(1);
+ await page.screenshot({path:'/tmp/notebook-extra-spacing.png'});
 });

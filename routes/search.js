@@ -662,11 +662,24 @@ router.get('/sitemap\.xml', async function (req, res, next) {
     : global.settings.site.url.replace(/\/+$/, '');
   const children = Array.from({ length: Math.ceil(urls.length / SITEMAP_PAGE_SIZE) },
     (_, index) => `${domain}/sitemap-${index + 1}.txt`);
+  children.push(`${domain}/sitemap-updates.xml`);
   res.end(sitemapXml(children));
 });
 
 router.get('/quran/sitemap\.xml', function (req, res) {
   res.redirect(301, quranSitemapUrl(req, '/sitemap.xml'));
+});
+
+router.get('/sitemap-updates\.xml', async function (req, res, next) {
+  try {
+    const quranOnly = Utils.isQuranSubdomainRequest(req);
+    const base = (quranOnly ? quranSitemapBaseUrl(req) : global.settings.site.url).replace(/\/+$/, '');
+    const sitemap = require('../lib/FreshnessSitemap');
+    const entries = await sitemap.entries({ quranOnly, base });
+    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(sitemap.xml(entries));
+  } catch (error) { next(error); }
 });
 
 router.get('/sitemap-:page(\\d+)\.txt', async function (req, res, next) {
@@ -688,6 +701,16 @@ router.get('/quran/sitemap-:page(\\d+)\.txt', function (req, res) {
 });
 
 async function sitemapUrls(req) {
+  const urls = await corpusSitemapUrls(req);
+  if (Utils.isQuranSubdomainRequest(req)) return urls;
+  // Publication/unpublication must not depend on the corpus disk cache lifetime.
+  const base = global.settings.site.url.replace(/\/+$/, '');
+  const articles = await require('../lib/CommunityBlogImport').publicUrls();
+  const corpus = urls.filter(url => !/^\/(?:blog\/|community\/(?:p\/|@))/.test(new URL(url).pathname));
+  return [...new Set(corpus.concat(articles.map(path => base + path)))];
+}
+
+async function corpusSitemapUrls(req) {
   const quranOnly = Utils.isQuranSubdomainRequest(req);
   const cachedFile = sitemapCacheFile(quranOnly);
   const flushCache = Utils.shouldFlushCache(req);
@@ -753,7 +776,7 @@ async function buildAndCacheSitemap(req, cachedFile) {
 }
 
 function sitemapCacheFile(quranOnly) {
-  return Utils.cacheFileFromFilename(quranOnly ? 'quran' : 'hadith', 'txt');
+  return Utils.cacheFileFromFilename(quranOnly ? 'quran' : 'hadith-v2', 'txt');
 }
 
 function sitemapText(urls) {
@@ -812,7 +835,7 @@ async function buildSitemapText(req) {
   var quranOnly = Utils.isQuranSubdomainRequest(req);
   var bookSitemapFilter = quranOnly
     ? `b.alias = 'quran'`
-    : `b.alias <> 'quran' AND COALESCE(b.type, 'hadith') = 'hadith'`;
+    : `b.alias <> 'quran' AND COALESCE(b.type, 'hadith') IN ('hadith', 'sirah', 'history')`;
   var sitemapUrl = function (alias, h1, h2) {
     if (alias === 'quran' && h1 && !h2)
       return ''; // Bare surah URLs redirect to their first passage.
@@ -824,8 +847,7 @@ async function buildSitemapText(req) {
   };
   if (!quranOnly) {
     txt += hadithPublicSitemapUrls(domain);
-    const blogUrls = await require('../lib/CommunityBlogImport').publicUrls();
-    for (const url of blogUrls) txt += `${domain}${url}\n`;
+
   }
   var results = await global.query(`
     select b.alias, null as h1, null as h2 from books b
@@ -835,7 +857,7 @@ async function buildSitemapText(req) {
     where t.bookId = b.id and t.level < 3 and ${bookSitemapFilter}
     union
     select concat(b.alias, ':', num) as alias, null h1, null as h2 from hadiths h, books b
-    where h.bookId = b.id and h.title_en is not null and ${bookSitemapFilter}
+    where h.bookId = b.id and (h.title_en is not null OR b.type IN ('sirah', 'history')) and ${bookSitemapFilter}
     -- union
     -- select distinct 'tag' as alias,t.text_en as h1, null as h2 from tags t, hadiths_tags ht
     -- where t.id = ht.tagId

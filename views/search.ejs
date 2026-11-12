@@ -67,6 +67,7 @@
       page.context.chapter = results[0].chapter;
       page.context.section = results[0].section;
       page.context.hadiths = results;
+      page.dateModified = utils.pageFreshness().readers(results);
       if (results[0].prev_ref)
           page.prev = `/${results[0].prev_ref}`;
       if (results[results.length-1].next_ref)
@@ -112,6 +113,7 @@
     
     <% if (sirahDetailItem) { %><%- include('sub-views/bookNav.ejs'); %><% } %>
     <main class="search-results"<% if (isSearchResultsPage) { %> data-search-infinite="1" data-search-current-url="<%= req.originalUrl || req.url || searchAction %>"<% if (page.prev) { %> data-search-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-search-next-url="<%= page.next %>"<% } %><% } %>>
+      <%- include('sub-views/page_updated.ejs', { page }); %>
       <% var showSearchFilterPills = q && (locals.searchFilterPills || []).length > 0; %>
       <% if (isSearchResultsPage) { %>
       <div class="search-results-summary">

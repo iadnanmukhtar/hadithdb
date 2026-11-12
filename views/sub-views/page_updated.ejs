@@ -1,0 +1,3 @@
+<% if (page.dateModified) { %>
+<p class="small text-muted page-updated">Last updated <time datetime="<%= page.dateModified %>"><%= utils.pageFreshness().label(page.dateModified) %></time></p>
+<% } %>

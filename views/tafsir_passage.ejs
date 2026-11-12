@@ -25,6 +25,7 @@
     tafsirMetaDescription = utils.socialMetadata().description(`${tafsirTitle} — ${surah.name_en} ${tafsirMetaRef}`, entries.map(entry => entry.translationHtml || entry.html || entry.arabicHtml), tafsirMetaDescription);
     var page = {
       menu: 'Section',
+      dateModified: utils.pageFreshness().latest(entries.map(entry => entry.lastmod)),
       title_en: tafsirMetaTitle,
       description_en: tafsirMetaDescription,
       subtitle_en: tafsirTitle,
@@ -94,6 +95,7 @@
 	        quranCommentaryPassage: { surah: surah.num, ayah: tafsirEntryStart, endAyah: tafsirEntryEnd },
 	        Tafsir: Tafsir
 	      }); %>
+	      <%- include('sub-views/page_updated.ejs', { page }); %>
 	      <heading class="row major">
 	        <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= quranChapterHref %>"<% if (!site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= surah.num %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
 	          <%= surah.num %>. <span<%- quranChapter ? ` class="_e" data-id="${quranChapter.id}" data-prop="toc.title_en" data-arabizi="true"` : '' %>><%- quranChapterTitleEn %></span>

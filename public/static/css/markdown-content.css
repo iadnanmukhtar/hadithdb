@@ -8,12 +8,14 @@
 :is(.notebook-markdown, .content-markdown) li { margin-inline-start: 1.6em; }
 :is(.notebook-markdown, .content-markdown) :is(h1, h2, h3, h4, h5, h6) { line-height: 1.35; font-weight: 600; margin-block: 1em .4em; }
 :is(.notebook-markdown, .content-markdown) > :first-child { margin-top: 0; }
-:is(.notebook-markdown, .content-markdown) h1 { font-size: 1.4em; }
-:is(.notebook-markdown, .content-markdown) h2 { font-size: 1.25em; }
-:is(.notebook-markdown, .content-markdown) h3 { font-size: 1.15em; }
-:is(.notebook-markdown, .content-markdown) h4 { font-size: 1.08em; }
-:is(.notebook-markdown, .content-markdown) h5 { font-size: 1.04em; }
-:is(.notebook-markdown, .content-markdown) h6 { font-size: 1em; }
+/* Larger sections get more breathing room; the first block stays flush. */
+:is(.notebook-markdown, .content-markdown) hr { margin-block: 2rem; }
+:is(.notebook-markdown, .content-markdown) h1 { font-size: 1.4em; margin-block-start: 2em; }
+:is(.notebook-markdown, .content-markdown) h2 { font-size: 1.25em; margin-block-start: 1.8em; }
+:is(.notebook-markdown, .content-markdown) h3 { font-size: 1.15em; margin-block-start: 1.6em; }
+:is(.notebook-markdown, .content-markdown) h4 { font-size: 1.08em; margin-block-start: 1.4em; }
+:is(.notebook-markdown, .content-markdown) h5 { font-size: 1.04em; margin-block-start: 1.25em; }
+:is(.notebook-markdown, .content-markdown) h6 { font-size: 1em; margin-block-start: 1.1em; }
 :is(.notebook-markdown, .content-markdown) [dir="rtl"] { direction: rtl; unicode-bidi: isolate; text-align: right; }
 :is(.notebook-markdown, .content-markdown) [dir="ltr"] { direction: ltr; unicode-bidi: isolate; text-align: left; }
 :is(.notebook-markdown, .content-markdown) .notebook-text-line { display: block; }
@@ -302,6 +304,11 @@ main .intro.content-markdown:lang(en) {
 .notebook-section-folded { display: none !important; }
 @media print { [data-heading-fold] { display: none !important; } .notebook-section-folded { display: revert !important; } }
 
-.notebook-hidden-text { white-space: pre-wrap; color: var(--c-muted, #6c757d); background: var(--bs-tertiary-bg, #f4f5f6); border-inline-start: 3px solid var(--bs-border-color, #ccc); padding: .65rem .85rem; margin-block: 1rem; }
+.notebook-hidden-text { --c-speech: var(--c-muted, #6c757d); --note-link: var(--c-muted, #6c757d); white-space: normal; color: var(--c-muted, #6c757d); background: var(--bs-tertiary-bg, #f4f5f6); border-inline-start: 3px solid var(--bs-border-color, #ccc); padding: .65rem .85rem; margin-block: 1rem; }
 .notebook-hidden-text::before { content: 'Hidden from sharing and printing'; display: block; font: .75rem/1.5 system-ui, sans-serif; margin-bottom: .4rem; }
 @media print { [data-note-hidden] { display: none !important; } }
+
+.notebook-hidden-text :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,a,strong,em) { color: inherit; }
+
+/* Two or more blank source lines add one deliberate reading pause. */
+:is(.notebook-markdown, .content-markdown) .markdown-spacer { min-height: 1.8em; margin-block: 0; }
