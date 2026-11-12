@@ -92,3 +92,28 @@ describe('Quran TOC Juz loading', () => {
     await expect(subdivisions.juzRows()).resolves.toHaveLength(1);
   });
 });
+
+describe('Mushaf passage colors', () => {
+  test('alternates at passage and subsection boundaries, including passages without subsections', () => {
+    const { mushafPassageTonesBySurah } = require('../lib/QuranTocSubdivisions');
+    const tones = mushafPassageTonesBySurah({
+      1: [{ start: 1, end: 7 }],
+      2: [{ start: 1, end: 7 }, { start: 8, end: 20 }, { start: 21, end: 27 }]
+    }, {
+      2: [{ start: 1, end: 5 }, { start: 6, end: 7 }, { start: 21, end: 25 }, { start: 26, end: 27 }]
+    });
+    expect(tones).toEqual({
+      1: [{ start: 1, end: 7, tone: 0 }],
+      2: [
+        { start: 1, end: 5, tone: 1 },
+        { start: 6, end: 7, tone: 0 },
+        { start: 8, end: 20, tone: 1 },
+        { start: 21, end: 25, tone: 0 },
+        { start: 26, end: 27, tone: 1 }
+      ]
+    });
+    // The same range supplies the color on either side of a Mushaf page break.
+    const toneAt = ayah => tones[2].find(range => ayah >= range.start && ayah <= range.end).tone;
+    expect(toneAt(10)).toBe(toneAt(11));
+  });
+});

@@ -2645,23 +2645,15 @@ async function renderQuranMushafPage(req, res, next, options) {
   });
   var sectionRangesBySurah = await QuranTocSubdivisions.quranSectionRangesBySurah();
   var subsectionRangesBySurah = await QuranTocSubdivisions.quranSubsectionRangesBySurah();
-  var passageToneBySubsection = {};
-  var subsectionIndex = 0;
-  Object.keys(subsectionRangesBySurah).map(Number).sort(function (a, b) { return a - b; }).forEach(function (surah) {
-    subsectionRangesBySurah[surah].forEach(function (range) {
-      passageToneBySubsection[`${surah}:${range.section}:${range.subsection}`] = subsectionIndex % 2;
-      subsectionIndex += 1;
-    });
-  });
+  var passageTonesBySurah = QuranTocSubdivisions.mushafPassageTonesBySurah(sectionRangesBySurah, subsectionRangesBySurah);
   [mushaf, previousMushaf].filter(Boolean).flatMap(function (page) {
     return page.lines.flatMap(line => line.words || []);
   }).forEach(function (word) {
-    var ranges = subsectionRangesBySurah[Number(word.surah)] || [];
+    var ranges = passageTonesBySurah[Number(word.surah)] || [];
     var range = ranges.find(function (candidate) {
       return Number(word.ayah) >= candidate.start && Number(word.ayah) <= candidate.end;
     });
-    if (range)
-      word.passageTone = passageToneBySubsection[`${word.surah}:${range.section}:${range.subsection}`];
+    word.passageTone = range ? range.tone : 0;
   });
   var firstWord = mushaf.lines.flatMap(line => line.words || []).find(word => !word.is_ayah_marker);
   var mushafSurahs = mushaf.lines.flatMap(line => line.words || []).map(function (word) {

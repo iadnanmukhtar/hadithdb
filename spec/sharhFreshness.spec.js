@@ -35,14 +35,15 @@ test('Hadith updates sitemap includes both sharh page kinds', async () => {
 const integration = process.env.HADITHDB_MYSQL_INTEGRATION === '1' ? test : test.skip;
 integration('migration preserves unknown history and tracks future SQL inserts and edits', async () => {
   const mysql=require('mysql'), {promisify}=require('util');
-  const connection=mysql.createConnection({...require('../bin/initializeHadithAttributions').connectionSettings(),timezone:'Z'});
+  const connection=mysql.createPool({...require('../bin/initializeHadithAttributions').connectionSettings(),timezone:'Z',connectionLimit:4});
   const q=promisify(connection.query).bind(connection);
   const table='sharh_freshness_test_'+process.pid+'_'+Date.now();
   try {
     await q(`CREATE TABLE ${table} (id INT PRIMARY KEY, text TEXT)`);
     await q(`INSERT INTO ${table} VALUES (1,'Historical')`);
-    await require('../lib/SharhFreshness').migrate(q,table);
-    await require('../lib/SharhFreshness').migrate(q,table);
+    const migrations = await Promise.allSettled(Array.from({length:4}, () => require('../lib/SharhFreshness').migrate(connection,table)));
+    for (const result of migrations) if (result.status === 'rejected') throw result.reason;
+    await require('../lib/SharhFreshness').migrate(connection,table);
     expect((await q(`SELECT * FROM ${table} WHERE id=1`))[0].content_updated_at).toBeNull();
     await q(`INSERT INTO ${table} (id,text) VALUES (2,'New')`);
     expect((await q(`SELECT * FROM ${table} WHERE id=2`))[0].content_updated_at).toBeInstanceOf(Date);
@@ -51,7 +52,7 @@ integration('migration preserves unknown history and tracks future SQL inserts a
     expect((await q(`SELECT * FROM ${table} WHERE id=2`))[0].content_updated_at.toISOString()).toBe('2025-01-01T00:00:00.000Z');
     await q(`UPDATE ${table} SET text='Changed' WHERE id=2`);
     expect((await q(`SELECT * FROM ${table} WHERE id=2`))[0].content_updated_at.getTime()).toBeGreaterThan(Date.parse(stamp));
-  } finally { await q(`DROP TABLE IF EXISTS ${table}`); connection.destroy(); }
+  } finally { await q(`DROP TABLE IF EXISTS ${table}`); await promisify(connection.end).call(connection); }
 },30000);
 test.each(['hadith','heading'])('%s template uses the latest rendered entry revision for both date signals', kind => {
   const ejs=require('ejs'), fs=require('fs'), path=require('path');
