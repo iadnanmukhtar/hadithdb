@@ -10,6 +10,30 @@ describe('static assets', () => {
 		expect(Utils.styleAssetVersion()).toMatch(/^v\d+-[a-f0-9]{12}$/);
 	});
 
+  test('folding script changes invalidate its URL, including cached deferred script tags', () => {
+    const saved = Utils.SCRIPT_ASSET_VERSION;
+    const read = fs.readFileSync;
+    try {
+      Utils.SCRIPT_ASSET_VERSION = null;
+      const before = Utils.scriptAssetVersion();
+      jest.spyOn(fs, 'readFileSync').mockImplementation((file, ...args) => {
+        const contents = read(file, ...args);
+        return String(file).endsWith('/notebook-sections.js') ? Buffer.concat([Buffer.from(contents), Buffer.from('\n// changed folding icon')]) : contents;
+      });
+      Utils.SCRIPT_ASSET_VERSION = null;
+      const after = Utils.scriptAssetVersion();
+      expect(after).not.toBe(before);
+      const html = '<script src="/static/js/notebook-sections.js?v=old" defer></script>';
+      const updated = Utils.injectCachedAssetVersions(html);
+      expect(updated).toContain('/static/js/notebook-sections.js?v=' + after);
+      expect(updated).toContain(' defer>');
+      expect(Utils.injectCachedAssetVersions(updated)).toBe(updated);
+    } finally {
+      jest.restoreAllMocks();
+      Utils.SCRIPT_ASSET_VERSION = saved;
+    }
+  });
+
   test.each([
     ['/images/logo.png', '/static/img/logo.png'],
     ['/fonts/kitab-base.woff2', '/static/fonts/kitab-base.woff2'],
