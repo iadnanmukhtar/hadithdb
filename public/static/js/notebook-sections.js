@@ -20,6 +20,7 @@
         let button=heading.querySelector(':scope > [data-heading-fold]');
         if(!button){
           button=document.createElement('button');button.type='button';button.dataset.headingFold='';button.contentEditable='false';
+          const icon=document.createElement('i');icon.className='bi bi-chevron-right';icon.setAttribute('aria-hidden','true');button.append(icon);
           button.addEventListener('mousedown',event=>event.preventDefault());
           button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();collapsed.has(heading)?collapsed.delete(heading):collapsed.add(heading);refresh();});
           heading.prepend(button);

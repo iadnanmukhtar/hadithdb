@@ -296,10 +296,12 @@ main .intro.content-markdown:lang(en) {
 }
 
 /* Folding is a local reading/editing preference, never part of saved Markdown. */
-.notebook-markdown :is(h1,h2,h3,h4,h5,h6):has(> [data-heading-fold]) { position: relative; padding-inline-start: 1.5rem; }
-[data-heading-fold] { position: absolute; inset-inline-start: 0; top: 0; width: 1.4rem; height: 1.5em; padding: 0; border: 0; background: transparent; color: var(--c-muted, #6c757d); font: inherit; cursor: pointer; }
-[data-heading-fold]::before { content: '⌄'; }
-[data-heading-fold][aria-expanded="false"]::before { content: '›'; }
+.notebook-markdown :is(h1,h2,h3,h4,h5,h6):has(> [data-heading-fold]) { position: relative; padding-inline-start: 1.75rem; }
+[data-heading-fold] { position: absolute; inset-inline-start: 0; top: 0; width: 1.4rem; height: 1lh; display: inline-flex; align-items: center; justify-content: center; padding: 0; border: 0; background: transparent; color: var(--c-muted, #6c757d); font: inherit; cursor: pointer; }
+[data-heading-fold] > .bi { display: block; font-size: min(.65em, 1rem); line-height: 1; }
+[data-heading-fold] > .bi::before { display: block; vertical-align: 0; }
+[data-heading-fold][aria-expanded="true"] > .bi { transform: rotate(90deg); }
+[dir="rtl"] [data-heading-fold][aria-expanded="false"] > .bi { transform: rotate(180deg); }
 [data-heading-fold]:focus-visible { outline: 2px solid var(--c-accent, #299de0); border-radius: .2rem; }
 .notebook-section-folded { display: none !important; }
 @media print { [data-heading-fold] { display: none !important; } .notebook-section-folded { display: revert !important; } }
