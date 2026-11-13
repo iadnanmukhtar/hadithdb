@@ -13972,3 +13972,87 @@ center [dir] { text-align: center !important; }
 }
 
 .home-article-category { display: inline-block; width: fit-content; border-radius: 999px; padding: .02rem .35rem; border: 1px solid var(--bs-border-color); font-size: .6rem; line-height: 1.35; font-weight: 600; background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+
+/* Browser Print / Save as PDF: retain source headings and footnotes, not site chrome. */
+@media print {
+  @page { margin: 15mm; }
+
+  .site-navbar,
+  .site-footer,
+  .mobile-bottom-nav,
+  .hadith-heading-toc,
+  .quran-heading-toc,
+  .toc-heading-rail,
+  .h-menu-wrap,
+  .chapter-toc,
+  .reader-language-toolbar,
+  .reader-social-actions,
+  .personal-note-actions,
+  .content-item-actions,
+  .hadith-sharh-toolbar,
+  .hadith-sharh-admin-actions,
+  .quran-section-heading-actions,
+  .quran-section-reading-actions,
+  .content-translation-actions-row,
+  .reflection-disclosure,
+  .comment-widget,
+  .reader-infinite-status,
+  .reader-infinite-sentinel,
+  .modal,
+  .modal-backdrop,
+  .offcanvas,
+  .offcanvas-backdrop,
+  .toast-container,
+  #toast-container,
+  .adsbygoogle,
+  .library-chat-launcher,
+  .library-chat-panel,
+  main button:not(.quran-ayah-end-marker),
+  main select {
+    display: none !important;
+  }
+
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    --bs-body-color: #000;
+    --bs-body-bg: #fff;
+    --bs-secondary-color: #444;
+  }
+
+  /* Remove the space reserved for fixed navigation and desktop side rails. */
+  body > .container,
+  .hadith-heading-layout,
+  .quran-heading-layout,
+  .hadith-heading-content,
+  .quran-heading-content,
+  main {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    position: static !important;
+  }
+
+  main :is(article, section, .content-markdown, .quran-tafsir-text) {
+    max-height: none !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+  }
+
+  /* Long bilingual passages must flow across sheets without clipping. */
+  main .row { display: block !important; margin-inline: 0 !important; }
+  main .row > [class*="col-"] { width: 100% !important; max-width: none !important; }
+  main :is(h1, h2, h3, h4, h5, h6) { break-after: avoid; }
+  main p { orphans: 3; widows: 3; }
+  main img { max-width: 100% !important; height: auto; }
+  main pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  main a { color: inherit !important; text-decoration: none !important; }
+}
