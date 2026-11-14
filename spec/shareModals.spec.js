@@ -242,6 +242,7 @@ describe('Print from the shared reader share dialog', () => {
       w.contentShareUrl = () => 'https://hadithunlocked.com/bukhari:1';
       w.contentSocialShareOptions = () => [];
       w.requestAnimationFrame = callback => callback();
+      w.openBookPrintRange = () => false;
       w.print = jest.fn(() => expect(w.document.querySelector('dialog').open).toBe(false));
       const client = source('public/static/js/script.js');
       w.eval(client.slice(client.indexOf('function openContentSharePane('), client.indexOf('function shareCardToCommunity(')));

@@ -132,7 +132,9 @@ router.get('/:tafsir/introduction', async function (req, res, next) {
 });
 
 async function introductionNextH1(book) {
-  const passage = { surah: 1, ayah: 0, endAyah: 0 };
+  const passage = Number(book.surah_dir) === 1
+    ? await Tafsir.firstPassage(book)
+    : { surah: 1, ayah: 0, endAyah: 0 };
   const surah = passage && (global.surahs || []).find(item => Number(item.num) === Number(passage.surah));
   if (!passage)
     return null;
@@ -514,9 +516,9 @@ function isSearchBackendUnavailable(err) {
 
 async function tafsirNavigation(tafsir, entries, tafsirs, surah, ayah, introductionHref) {
   const currentRef = { surah: surah, ayah: ayah };
-  const prev = Tafsir.invocationBoundary(entries, surah, ayah, -1, introductionHref)
+  const prev = Tafsir.invocationBoundary(entries, surah, ayah, -1, introductionHref, tafsir)
     || await Tafsir.adjacentPassage(tafsir, entries, -1, currentRef);
-  const next = Tafsir.invocationBoundary(entries, surah, ayah, 1, introductionHref)
+  const next = Tafsir.invocationBoundary(entries, surah, ayah, 1, introductionHref, tafsir)
     || await Tafsir.adjacentPassage(tafsir, entries, 1, currentRef);
   return {
     prev: prev ? prev.href || navigationTarget(tafsir, prev.surah, prev.ayah, prev.endAyah, tafsirs) : '',

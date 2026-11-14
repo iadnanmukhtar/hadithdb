@@ -15,7 +15,7 @@
           <% (global.surahs || []).forEach(function (surah) { %><option value="<%= surah.num %>" data-ayahs="<%= surah.ayahs %>"><%= surah.num %>. <%= surah.name_en %></option><% }); %>
         </select>
         <label class="visually-hidden" for="quran-audio-<%= position %>-ayah"><%= position === 'start' ? 'Starting ayah' : 'Ending ayah (optional)' %></label>
-        <input class="form-control form-control-sm" type="number" min="1" step="1" id="quran-audio-<%= position %>-ayah" required>
+        <select class="form-select form-select-sm" id="quran-audio-<%= position %>-ayah" required></select>
         <% }); %>
       </div>
       <p class="text-danger small mb-0" role="alert" data-audio-range-error></p>

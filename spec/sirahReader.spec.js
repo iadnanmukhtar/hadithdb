@@ -92,3 +92,23 @@ test.each(['history', 'ibnhisham'])('%s uses the shared hadith typography for bo
   expect($(`.h[lang=${lang}] footer.footnote.content-markdown p`)).toHaveLength(1);
  }
 });
+
+test('English-only Sirah uses full width and resolves separately stored footnotes with passage-specific IDs', () => {
+ const $ = render({ id: 22, book_alias: 'yqsirah', body: '', text: 'A note[^p44n1].', title: '', body_en: 'A note[^p44n1].', footnote_en: '[^p44n1]: Source explanation.' });
+ expect($('section[data-reader-language-column=arabic]')).toHaveLength(0);
+ expect($('section[data-reader-language-column=english]').hasClass('col-12')).toBe(true);
+ const target=$('.footnote-ref a').attr('href');
+ expect(target).toContain('sirah-22-en');
+ expect($(target).text()).toContain('Source explanation.');
+ expect($('.footnote-backref').attr('href')).toContain('sirah-22-en');
+ expect($('.hadith-body-content').text()).not.toContain('[^p44n1]');
+ const other=render({id:23,body:'',body_en:'Another note[^p44n1].',footnote_en:'[^p44n1]: Another explanation.'});
+ expect(other('.footnote-ref a').attr('href')).not.toBe(target);
+});
+
+test('English footnotes beginning with an Arabic honorific keep English reading direction', () => {
+ const $=render({body:'',body_en:'Note[^n].',footnote_en:'[^n]: ﷺ (Salla-llahu alayhi wa sallam) - peace be upon him.'});
+ expect($('.footnote-item').attr('dir')).toBe('ltr');
+ expect($('.footnote-item p').attr('dir')).toBe('ltr');
+ expect($('.footnote-item').text()).toContain('ﷺ');
+});

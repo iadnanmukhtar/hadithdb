@@ -95,3 +95,16 @@ describe('Hadith and Tafsir language columns', () => {
     expect(script).toContain('if (!next.translation && !next.arabic)\n\t\t\t\treturn;');
   });
 });
+
+test('an Arabic-only saved preference cannot hide an English-only Sirah passage', () => {
+ const { JSDOM } = require('jsdom');
+ const dom = new JSDOM('<main><article class="sirah-item" data-reader-language-item="hadith"><section data-reader-language-column="english">English text</section></article></main>', {runScripts:'outside-only'});
+ const script=source('public/static/js/script.js');
+ dom.window.eval(script.slice(script.indexOf('function readerLanguageColumnRoots('),script.indexOf('function initReaderLanguageColumnToggles(')));
+ const root=dom.window.readerLanguageColumnRoots(dom.window.document)[0];
+ dom.window.ensureReaderLanguageColumnToolbar(root);
+ dom.window.applyReaderLanguageColumns({english:false,arabic:true});
+ expect(root.classList.contains('reader-hide-english')).toBe(false);
+ expect(root._readerLanguageColumnToolbar.hidden).toBe(true);
+ dom.window.close();
+});

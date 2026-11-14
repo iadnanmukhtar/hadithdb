@@ -1,6 +1,18 @@
 <%
   const sirahHasEnglish = Boolean(utils.emptyIfNull(i.body_en).replace(/<[^>]*>/g, '').trim());
-  const sirahColumns = sirahHasEnglish ? 'col-md-6 col-sm-12' : 'col-12';
+  // v_hadiths uses `text` as an English search field; it is not an Arabic fallback
+  // when an English body is present.
+  const sirahArabicBody = i.body || (!sirahHasEnglish ? i.text : '');
+  const sirahHasArabic = Boolean(utils.emptyIfNull(sirahArabicBody).replace(/<[^>]*>/g, '').trim());
+  const sirahColumns = sirahHasEnglish && sirahHasArabic ? 'col-md-6 col-sm-12' : 'col-12';
+  const sirahMarkdown = (body, notes, lang) => {
+    // An English explanation can open with an Arabic honorific. Keep its reading
+    // direction English without changing the stored source text.
+    const html = utils.markdownToHtml([body, notes].filter(Boolean).join('\n\n'), { footnoteIdPrefix: `sirah-${i.id}-${lang}` });
+    return lang === 'en' ? html.replace(/<section class="footnotes">[\s\S]*?<\/section>/g, section => section.replace(/dir="(?:rtl|auto)"/g, 'dir="ltr"')) : html;
+  };
+  const sirahEnglishLinkedNotes = /\[\^[^\]]+\]:/.test(i.footnote_en || '');
+  const sirahArabicLinkedNotes = /\[\^[^\]]+\]:/.test(i.footnote || '');
 %>
 <a id="<%= String(i.num || i.id).replace(/:/g, '-') %>"></a>
 <article class="row mt-3 sirah-item hadith-language-item" data-content-type="sirah" data-reader-language-item="hadith" data-sirah-translated="<%= sirahHasEnglish ? '1' : '0' %>">
@@ -15,17 +27,19 @@
   </header>
   <% } %>
   <% if (sirahHasEnglish) { %>
-  <section class="col-md-6 col-sm-12 h" lang="en" dir="ltr" data-reader-language-column="english">
+  <section class="<%= sirahColumns %> h" lang="en" dir="ltr" data-reader-language-column="english">
     <b><a href="/<%= i.ref %>"><%= i.book_alias || i.book_shortName_en %>:<%= i.num %></a></b>
-    <section class="body l5"><div class="hadith-body-content content-markdown"><%- utils.markdownToHtml(i.body_en || '') %></div></section>
-    <% if (i.footnote_en) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
+    <section class="body l5"><div class="hadith-body-content content-markdown"><%- sirahMarkdown(i.body_en, sirahEnglishLinkedNotes ? i.footnote_en : '', 'en') %></div></section>
+    <% if (i.footnote_en && !sirahEnglishLinkedNotes) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
   </section>
   <% } %>
+  <% if (sirahHasArabic) { %>
   <section class="<%= sirahColumns %> h" lang="ar" dir="rtl" data-reader-language-column="arabic">
     <b><a href="/<%= i.ref %>"><%= i.book_shortName || i.book_shortName_en %>:<%= arabic.toArabicDigits(String(i.num || '')) %></a></b>
-    <section class="body l5"><div class="hadith-body-content content-markdown"><%- utils.markdownToHtml(i.body || i.text || '') %></div></section>
-    <% if (i.footnote) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
+    <section class="body l5"><div class="hadith-body-content content-markdown"><%- sirahMarkdown(sirahArabicBody, sirahArabicLinkedNotes ? i.footnote : '', 'ar') %></div></section>
+    <% if (i.footnote && !sirahArabicLinkedNotes) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
   </section>
+  <% } %>
   <footer class="col-12 h"><aside class="tags reader-social-actions sirah-item-actions">
     <button type="button" class="hadith-bookmark-btn btn btn-sm p-0 border-0 bg-transparent d-inline-flex align-items-center" data-hadith-id="<%= i.id %>" data-bookmark-type="sirah" data-bookmark-ref="<%= i.ref %>" data-bookmark-title="<%= i.title_en || `${i.book_alias || i.book_shortName_en || 'sirah'}:${i.num}` %>" data-bookmark-title-ar="<%= i.title || '' %>" data-bookmark-url="/<%= i.ref %>" title="Bookmark this passage" aria-label="Bookmark this passage">
       <span class="hadith-bookmark-icon bi bi-bookmark text-accent" data-hadith-id="<%= i.id %>"></span>

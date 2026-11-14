@@ -163,6 +163,7 @@ $(function () {
 	initQuranReaderBar();
 	initQuranMushafLastPageLinks(document);
 	initQuranMushafInfinite(document);
+	initReaderPrintSelection();
 	initQuranMushafLineFitting(document);
 	initQuranMushafSearchAyahScroll(document);
 	initQuranMemorizeView(document);
@@ -4685,6 +4686,12 @@ function applyReaderLanguageColumns(state) {
 	readerLanguageColumnRoots(document).forEach(function (root) {
 		root.classList.toggle('reader-hide-english', !state.english);
 		root.classList.toggle('reader-hide-arabic', !state.arabic);
+		var englishOnlySirah = !!root.querySelector('.sirah-item [data-reader-language-column="english"]')
+			&& !root.querySelector('[data-reader-language-column="arabic"], [data-reader-language-item="hadith"]:not(.sirah-item)');
+		if (englishOnlySirah)
+			root.classList.remove('reader-hide-english');
+		if (root._readerLanguageColumnToolbar)
+			root._readerLanguageColumnToolbar.hidden = englishOnlySirah;
 	});
 	document.querySelectorAll('[data-reader-language-toggle]').forEach(function (button) {
 		var target = button.getAttribute('data-reader-language-toggle');
@@ -5537,12 +5544,21 @@ function openQuranAudioRangeModal(control, options) {
 	if (!modal) return;
 	var start = quranPassageAudioStartRef(control, options);
 	var field = function (name) { return modal.querySelector('#quran-audio-' + name); };
-	var update = function (position) {
+	var update = function (position, selectedAyah) {
 		var select = field(position + '-surah');
 		var ayah = field(position + '-ayah');
+		var count = Number(select.selectedOptions[0].dataset.ayahs) || 1;
+		var value = Math.max(1, Math.min(Number(selectedAyah || ayah.value) || 1, count));
+		ayah.replaceChildren();
 		ayah.disabled = !select.value;
-		ayah.max = select.selectedOptions[0].dataset.ayahs || 1;
-		ayah.value = select.value ? Math.min(Number(ayah.value) || 1, Number(ayah.max)) : '';
+		if (!select.value) return;
+		for (var number = 1; number <= count; number += 1) {
+			var option = document.createElement('option');
+			option.value = number;
+			option.textContent = number;
+			ayah.appendChild(option);
+		}
+		ayah.value = value;
 	};
 	['start', 'end'].forEach(function (position) {
 		field(position + '-surah').onchange = function () { update(position); };
@@ -5557,9 +5573,8 @@ function openQuranAudioRangeModal(control, options) {
 		if (['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) defaultEndingSurah();
 	};
 	field('start-surah').value = start.surah;
-	field('start-ayah').value = start.ayah;
 	field('end-surah').value = '';
-	update('start');
+	update('start', start.ayah);
 	update('end');
 	field('range-loop').checked = quranPassageAudioRepeatEnabled(control);
 	modal.querySelector('[data-audio-range-error]').textContent = '';
@@ -12415,6 +12430,82 @@ function scheduleQuranMushafLineFit(root) {
 	});
 }
 
+function initReaderPrintSelection() {
+	if (document.documentElement.dataset.readerPrintBound === '1') return;
+	document.documentElement.dataset.readerPrintBound = '1';
+	var clear = function () {
+		document.querySelectorAll('[data-reader-print-selection]').forEach(function (node) { node.removeAttribute('data-reader-print-selection'); });
+		document.querySelectorAll('[data-reader-print-exclude], [data-reader-print-current]').forEach(function (node) {
+			node.removeAttribute('data-reader-print-exclude');
+			node.removeAttribute('data-reader-print-current');
+		});
+		document.querySelectorAll('[data-reader-print-context]').forEach(function (node) { node.remove(); });
+		delete document.documentElement.dataset.readerPrinting;
+	};
+	var prepare = function () {
+		if (document.documentElement.dataset.readerPrinting === '1') return;
+		document.documentElement.dataset.readerPrinting = '1';
+		var current = new URL(window.location.href);
+		var key = function (value) {
+			try { return decodeURIComponent(new URL(value, current).pathname).replace(/\/$/, ''); }
+			catch (_err) { return ''; }
+		};
+		var currentKey = key(current.href);
+		var chunkSelector = '[data-reader-infinite-page="1"], [data-quran-infinite-page="1"]';
+		document.querySelectorAll('main[data-reader-infinite], main[data-quran-infinite-passage], main[data-quran-mushaf-reader]').forEach(function (main) {
+			var chunks = Array.from(main.children).filter(function (node) { return node.matches(chunkSelector); });
+			var target = null;
+			var pageMatch = currentKey.match(/\/quran\/page\/(\d+)$/);
+			if (main.hasAttribute('data-quran-mushaf-reader') && pageMatch) {
+				target = chunks.find(function (node) { return node.getAttribute('data-quran-mushaf-page') === pageMatch[1]; });
+			} else {
+				target = chunks.find(function (node) {
+					var url = node.getAttribute('data-reader-url') || node.getAttribute('data-quran-url');
+					return url && key(url) === currentKey;
+				});
+				var initialUrl = main.getAttribute('data-reader-current-url') || main.getAttribute('data-quran-current-url');
+				if (!target && initialUrl && key(initialUrl) === currentKey) target = main;
+				// Selecting another ayah updates history without replacing its passage.
+				var ayahMatch = currentKey.match(/\/quran:(\d+:\d+)(?:-\d+)?$/);
+				if (!target && ayahMatch) {
+					target = chunks.concat(main).find(function (scope) {
+						return Array.from(scope.querySelectorAll('[data-quran-ref]')).some(function (node) {
+							return node.getAttribute('data-quran-ref') === ayahMatch[1]
+								&& !node.closest('.modal') && (node.closest(chunkSelector) || main) === scope;
+						});
+					});
+				}
+			}
+			if (!target) return;
+			main.setAttribute('data-reader-print-selection', target === main ? 'initial' : 'chunk');
+			if (target !== main) {
+				target.setAttribute('data-reader-print-current', '1');
+				// Infinite readers omit repeated chapter titles on screen. Retain the
+				// applicable title when printing a later passage by itself.
+				if (!target.hasAttribute('data-quran-mushaf-page') && !target.querySelector('heading.row.major')) {
+					var headings = Array.from(main.querySelectorAll('heading.row.major')).filter(function (node) {
+						return node.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING;
+					});
+					if (headings.length) {
+						var heading = headings[headings.length - 1].cloneNode(true);
+						heading.setAttribute('data-reader-print-context', '1');
+						heading.removeAttribute('id');
+						heading.querySelectorAll('[id]').forEach(function (node) { node.removeAttribute('id'); });
+						target.prepend(heading);
+					}
+				}
+			}
+			Array.from(main.children).forEach(function (node) {
+				if (target === main ? chunks.includes(node) : node !== target)
+					node.setAttribute('data-reader-print-exclude', '1');
+			});
+		});
+	};
+	window.addEventListener('beforeprint', prepare);
+	window.addEventListener('afterprint', clear);
+	window.matchMedia('print').addEventListener('change', function (event) { if (event.matches) prepare(); else clear(); });
+}
+
 function initQuranMushafLineFitting(root) {
 	scheduleQuranMushafLineFit(root || document);
 	if (document.documentElement.dataset.quranMushafLineFittingBound === '1')
@@ -12508,6 +12599,7 @@ function initQuranMushafInfinite(root) {
 			window.clearTimeout(pageUrlTimer);
 		pageUrlTimer = window.setTimeout(function () {
 			pageUrlTimer = null;
+			if (document.documentElement.dataset.readerPrinting === '1') return;
 			var activeSelection = visibleQuranMushafSelection();
 			var selectedPage = activeSelection && activeSelection.closest('[data-quran-mushaf-page]');
 			if (selectedPage) pendingPageNumber = selectedPage.getAttribute('data-quran-mushaf-page');
@@ -12524,6 +12616,7 @@ function initQuranMushafInfinite(root) {
 	};
 	if ('IntersectionObserver' in window) {
 		pageObserver = new IntersectionObserver(function (entries) {
+			if (document.documentElement.dataset.readerPrinting === '1') return;
 			entries.filter(function (entry) { return entry.isIntersecting; }).sort(function (a, b) {
 				return b.intersectionRatio - a.intersectionRatio;
 			}).slice(0, 1).forEach(function (entry) {
@@ -12968,6 +13061,7 @@ function initQuranInfinitePassageNavigation(root) {
 		setMobileBottomNavLink('next', nextHref, marker.getAttribute('data-quran-next-title') || 'Next');
 	};
 	var updateInfiniteUrl = function () {
+		if (document.documentElement.dataset.readerPrinting === '1') return;
 		var marker = pageMarkers()[currentPageIndex()];
 		var url = marker && marker.getAttribute('data-quran-url');
 		var normalized = normalizeQuranInfiniteUrl(url);
@@ -13229,6 +13323,7 @@ function initQuranInfinitePassageNavigation(root) {
 	};
 
 	var ensureLoadedAhead = function () {
+		if (document.documentElement.dataset.readerPrinting === '1') return;
 		if (ensuring || exhausted || !nextUrl || pagesAhead() >= prefetchAhead)
 			return;
 		ensuring = true;
@@ -13455,6 +13550,7 @@ function initReaderInfiniteNavigation(root) {
 			setMobileBottomNavLink('next', nextHref, marker.getAttribute('data-reader-next-title') || 'Next');
 		};
 		var updateInfiniteUrl = function () {
+			if (document.documentElement.dataset.readerPrinting === '1') return;
 			var marker = pageMarkers()[currentPageIndex()];
 			var url = marker && marker.getAttribute('data-reader-url');
 			var normalized = normalizeReaderInfiniteUrl(url);
@@ -13608,6 +13704,10 @@ function initReaderInfiniteNavigation(root) {
 				'data-reader-next-url': remoteMain.getAttribute('data-reader-next-url') || '',
 				'data-reader-next-title': remoteMain.getAttribute('data-reader-next-title') || 'Next'
 			});
+			['path', 'chapter', 'section', 'reverse'].forEach(function (key) {
+				var value = remoteMain.getAttribute('data-book-print-' + key);
+				if (value !== null) chunk[0].setAttribute('data-book-print-' + key, value);
+			});
 			copyQuranReaderModeHrefs(parsed, chunk[0]);
 			if (mode === 'tafsir')
 				appendTafsirPage(remoteMain, chunk);
@@ -13667,6 +13767,7 @@ function initReaderInfiniteNavigation(root) {
 			return loadingPromise;
 		};
 		var ensureLoadedAhead = function () {
+			if (document.documentElement.dataset.readerPrinting === '1') return;
 			// Long sharh passages should not fetch another full page until it is near the viewport.
 			if (mode === 'hadith-sharh' && sentinel[0].getBoundingClientRect().top > window.innerHeight + 2400)
 				return;
@@ -18060,6 +18161,210 @@ function contentSocialShareOptions(title, url) {
 	];
 }
 
+// Book ranges are assembled separately so browser Print still uses the current URL.
+function bookPrintContext(root, href) {
+	var url = new URL(href, window.location.href);
+	var main = root.querySelector('main[data-reader-infinite], main[data-quran-infinite-passage]');
+	if (!main) return null;
+	var reverseChapters = main.getAttribute('data-book-print-reverse') === 'true';
+	var path = decodeURIComponent(url.pathname).replace(/\/$/, '');
+	var numeric = path.match(/^\/([^/:]+)\/(\d+(?:\.\d+)?)(?:\/(\d+(?:\.\d+)?))?$/);
+	if (numeric && /^(hadith-|quran)/.test(main.getAttribute('data-reader-infinite') || 'quran'))
+		return { path: '/' + numeric[1], chapter: Number(numeric[2]), section: Number(numeric[3]) || null, reverseChapters: reverseChapters };
+	var node = Array.from(main.querySelectorAll('[data-reader-infinite-page][data-reader-url]')).find(function (chunk) {
+		return new URL(chunk.getAttribute('data-reader-url'), url).pathname === url.pathname;
+	}) || main;
+	var tafsir = path.match(/^(\/quran\/tafsir\/[^/]+)\/(?:quran:)?(\d+)(?::(\d+)(?:-\d+)?)?$/);
+	var bookPath = tafsir ? tafsir[1] : node.getAttribute('data-book-print-path');
+	// Cached readers already carry the catalog's order even before print metadata exists.
+	if (tafsir && !main.hasAttribute('data-book-print-reverse')) {
+		root.querySelectorAll('.quran-tafsir-books-data').forEach(function (script) {
+			try {
+				var book = JSON.parse(script.textContent).find(function (item) { return tafsir[1] === '/quran/tafsir/' + (item.slug || item.alias); });
+				if (book) reverseChapters = Number(book.surah_dir) === 1;
+			} catch (_err) {}
+		});
+	}
+	// Never apply metadata from the original page to a different history entry.
+	var source = node.getAttribute('data-reader-url') || node.getAttribute('data-reader-current-url');
+	if (!bookPath || (!tafsir && source && new URL(source, url).pathname !== url.pathname)) return null;
+	var chapter = tafsir ? Number(tafsir[2]) : Number(node.getAttribute('data-book-print-chapter'));
+	var sections = [];
+	root.querySelectorAll('[data-quran-heading-outlines]').forEach(function (script) {
+		try { var outline = JSON.parse(script.textContent)[chapter]; if (outline) sections = outline.sections || []; } catch (_err) {}
+	});
+	var selected = tafsir && sections.find(function (heading) { return Number(tafsir[3]) >= heading.start && Number(tafsir[3]) <= heading.end; });
+	return { path: bookPath, chapter: chapter, section: selected ? Number(selected.section) : Number(node.getAttribute('data-book-print-section')) || null, sections: sections, reverseChapters: reverseChapters };
+}
+
+async function collectBookPrintRange(context, range, load, signal, progress) {
+	var reverse = range.kind === 'chapters' && context.reverseChapters;
+	if (!Number.isFinite(range.start) || !Number.isFinite(range.end) || range.start < 0 || range.end < 0 || (reverse ? range.end > range.start : range.end < range.start)
+		|| (range.start !== range.end && (!Number.isInteger(range.start) || !Number.isInteger(range.end))))
+		throw new Error(reverse ? 'Enter a valid start and end, with the ending chapter at or below the starting chapter.' : 'Enter a valid start and end, with the end at or after the start.');
+	var pages = [], seen = new Set();
+	var first = range.start;
+	var last = range.end;
+	var step = reverse ? -1 : 1;
+	for (var number = first; reverse ? number >= last : number <= last; number += step) {
+		var chapter = range.kind === 'chapters' ? number : context.chapter;
+		var section = range.kind === 'sections' ? number : null;
+		var url = context.path + '/' + chapter + (section !== null ? '/' + section : '');
+		if (section !== null && context.path.startsWith('/quran/tafsir/')) {
+			var heading = (context.sections || []).find(function (item) { return Number(item.section) === section; });
+			if (!heading) throw new Error('Section ' + section + ' was not found in this chapter.');
+			url = context.path + '/quran:' + chapter + ':' + heading.start;
+		}
+		// The download query retains the complete chapter route instead of redirecting to section one.
+		if (section === null && !context.path.startsWith('/quran/tafsir/')) url += '?download';
+		while (url) {
+			if (signal.aborted) throw new DOMException('Cancelled', 'AbortError');
+			var absolute = new URL(url, window.location.href);
+			if (absolute.origin !== window.location.origin) throw new Error('This range points to another site. Open the book on that site to print it.');
+			if (seen.has(absolute.href)) throw new Error('The book pagination repeated a page. Please try a smaller range.');
+			seen.add(absolute.href);
+			progress('Loading ' + (range.kind === 'chapters' ? 'chapter ' : 'section ') + number + '… (' + pages.length + ' pages loaded)');
+			var page = await load(absolute.href, signal);
+			var identity = page.context;
+			if (!identity || identity.path !== context.path) throw new Error('Unable to load the selected book.');
+			if (identity.chapter !== chapter || (section !== null && identity.section !== section)) {
+				throw new Error('The selected chapter or section was not found.');
+			}
+			pages.push(page.main);
+			var next = page.next && new URL(page.next, absolute);
+			if (!next) break;
+			// Numeric readers expose page offsets and section destinations directly.
+			if (!context.path.startsWith('/quran/tafsir/')) {
+				var prefix = context.path + '/' + chapter;
+				if (next.pathname !== prefix && !next.pathname.startsWith(prefix + '/')) break;
+				if (section !== null && next.pathname !== prefix + '/' + section) break;
+				if (section === null && identity.section === null && next.pathname !== prefix
+					&& page.main.getAttribute('data-book-print-chapter-opening') !== 'true') break;
+				if (next.pathname === prefix) next.searchParams.set('download', '');
+			}
+			url = next.href;
+			// Tafsir navigation uses ayah URLs; inspect the next page's section metadata.
+			if (context.path.startsWith('/quran/tafsir/')) {
+				var nextPage = await load(url, signal);
+				if (!nextPage.context || nextPage.context.path !== context.path) throw new Error('Unable to read the next passage.');
+				if (nextPage.context.chapter !== chapter || (section !== null && nextPage.context.section !== section)) break;
+			}
+		}
+	}
+	return pages;
+}
+
+function openBookPrintRange() {
+	var context = bookPrintContext(document, window.location.href);
+	if (!context) return false;
+	var old = document.getElementById('book-print-range');
+	if (old) old.remove();
+	var pane = document.createElement('dialog');
+	pane.id = 'book-print-range';
+	pane.className = 'content-share-pane';
+	pane.setAttribute('aria-labelledby', 'book-print-heading');
+	pane.innerHTML = '<form><header><h2 id="book-print-heading">Print book</h2><button type="button" data-cancel class="content-share-close" aria-label="Close">×</button></header>'
+		+ '<p>Choose an inclusive range to print.</p><label class="d-block mb-3">Print <select name="kind" class="form-select"><option value="sections">Sections in this chapter</option><option value="chapters">Chapters</option></select></label>'
+		+ '<p data-chapter></p><div class="d-flex gap-3 mb-3"><label>Start <input class="form-control" name="start" type="number" min="0" step="any" required></label><label>End <input class="form-control" name="end" type="number" min="0" step="any" required></label></div>'
+		+ '<p role="status" aria-live="polite"></p><div class="d-flex flex-wrap gap-2"><button class="btn btn-primary" type="submit">Print range</button><button class="btn btn-outline-secondary" type="button" data-current>Print current page</button><button class="btn btn-outline-secondary" type="button" data-cancel>Cancel</button></div></form>';
+	document.body.appendChild(pane);
+	var form = pane.querySelector('form'), status = pane.querySelector('[role="status"]');
+	var controller = null;
+	var updateBounds = function () {
+		var reverse = form.elements.kind.value === 'chapters' && context.reverseChapters;
+		form.elements.end.min = reverse ? '0' : form.elements.start.value;
+		if (reverse) form.elements.end.max = form.elements.start.value;
+		else form.elements.end.removeAttribute('max');
+	};
+	form.elements.start.addEventListener('input', updateBounds);
+	var reset = function () {
+		var sections = form.elements.kind.value === 'sections';
+		form.elements.start.value = form.elements.end.value = sections ? (context.section || 1) : context.chapter;
+		pane.querySelector('[data-chapter]').textContent = sections ? 'Sections in chapter ' + context.chapter : (context.reverseChapters ? 'Chapters print in descending order (for example, 114 → 113 → 112). Choose an ending chapter at or below the starting chapter.' : '');
+		updateBounds();
+	};
+	form.elements.kind.value = context.section ? 'sections' : 'chapters';
+	form.elements.kind.addEventListener('change', reset);
+	reset();
+	pane.querySelectorAll('[data-cancel]').forEach(function (button) { button.onclick = function () { pane.close(); }; });
+	pane.addEventListener('close', function () { if (controller) controller.abort(); });
+	pane.querySelector('[data-current]').onclick = function () { pane.close(); window.requestAnimationFrame(function () { window.print(); }); };
+	form.addEventListener('submit', async function (event) {
+		event.preventDefault();
+		controller = new AbortController();
+		var signal = controller.signal;
+		var controls = Array.from(form.querySelectorAll('input, select, button:not([data-cancel])'));
+		controls.forEach(function (node) { node.disabled = true; });
+		var cache = new Map();
+		try {
+			var pages = await collectBookPrintRange(context, {
+				kind: form.elements.kind.value, start: Number(form.elements.start.value), end: Number(form.elements.end.value)
+			}, async function (url) {
+				if (cache.has(url)) return cache.get(url);
+				var response = await fetch(url, { signal: signal, credentials: 'same-origin' });
+				if (!response.ok) throw new Error('Could not load ' + new URL(url).pathname + '. Check the range and try again.');
+				var parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+				var main = parsed.querySelector('main[data-reader-infinite], main[data-quran-infinite-passage]');
+				if (!main) throw new Error('This chapter or section could not be loaded.');
+				var result = { main: main, context: bookPrintContext(parsed, main.getAttribute('data-reader-current-url') || main.getAttribute('data-quran-current-url') || response.url || url), next: main.getAttribute('data-reader-next-url') || main.getAttribute('data-quran-next-url') };
+				cache.set(url, result);
+				return result;
+			}, signal, function (message) { status.textContent = message; });
+			status.textContent = 'Preparing print preview…';
+			var previous = document.getElementById('book-print-document');
+			if (previous) previous.remove();
+			var frame = document.createElement('iframe');
+			frame.id = 'book-print-document'; frame.title = 'Book print preview';
+			frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:1000px;height:800px;border:0';
+			document.body.appendChild(frame);
+			var doc = frame.contentDocument;
+			doc.open(); doc.write('<!doctype html><html><head><meta charset="utf-8"><title>Print book</title></head><body></body></html>'); doc.close();
+			doc.title = document.title + ' — ' + form.elements.kind.value + ' ' + form.elements.start.value + '–' + form.elements.end.value;
+			var base = doc.createElement('base'); base.href = window.location.href; doc.head.appendChild(base);
+			var styles = Array.from(document.querySelectorAll('link[rel="stylesheet"], style')).map(function (node) {
+				var copy = doc.importNode(node, true);
+				var ready = copy.tagName === 'LINK' ? new Promise(function (resolve, reject) { copy.onload = resolve; copy.onerror = function () { reject(new Error('Print styles could not load. Please retry.')); }; }) : Promise.resolve();
+				doc.head.appendChild(copy); return ready;
+			});
+			for (var main of pages) {
+				var copy = doc.importNode(main, true);
+				copy.querySelectorAll('[data-reader-infinite-page], [data-quran-infinite-page], .modal, dialog, script:not([type="application/json"])').forEach(function (node) { node.remove(); });
+				// Dedicated tafsir payloads contain the complete source HTML, including footnotes.
+				copy.querySelectorAll('.quran-tafsir-initial-data').forEach(function (data) {
+					var payload = JSON.parse(data.textContent), container = data.closest('.quran-tafsirs'), body = container.querySelector('.quran-tafsir-content');
+					var ayahs = JSON.parse(container.querySelector('.quran-tafsir-ayah-data').textContent || '{}');
+					if (body && !body.textContent.trim()) payload.entries.forEach(function (entry) {
+						var article = doc.createElement('article'); article.className = 'quran-tafsir-entry';
+						for (var ayah = Number(entry.ayahs_start); ayah <= Number(entry.ayahs_start) + Number(entry.count || 0); ayah++) {
+							if (!ayahs[ayah]) continue;
+							var heading = doc.createElement('h3'); heading.className = 'quran-tafsir-ayah'; heading.lang = 'ar'; heading.dir = 'rtl';
+							var ref = doc.createElement('span'); ref.className = 'quran-tafsir-ayah-ref'; ref.dir = 'ltr'; ref.textContent = container.dataset.surah + ':' + ayah;
+							var text = doc.createElement('span'); text.className = 'quran-tafsir-ayah-text'; text.textContent = ayahs[ayah];
+							var marker = doc.createElement('span'); marker.className = 'quran-ayah-end-marker'; marker.textContent = '۝' + String(ayah).replace(/\d/g, function (digit) { return '٠١٢٣٤٥٦٧٨٩'[digit]; });
+							heading.append(ref, ' ', text, ' ', marker); article.appendChild(heading);
+						}
+						var content = doc.createElement('div'); content.className = 'quran-tafsir-entry-body quran-tafsir-html';
+						content.lang = payload.lang || 'en'; content.dir = payload.lang === 'ar' ? 'rtl' : 'ltr';
+						content.innerHTML = entry.html || '';
+						article.appendChild(content); body.appendChild(article);
+					});
+				});
+				copy.querySelectorAll('script').forEach(function (node) { node.remove(); });
+				doc.body.appendChild(copy);
+			}
+			await Promise.all(styles); await doc.fonts.ready;
+			await Promise.all(Array.from(doc.images).map(function (img) { img.loading = 'eager'; return img.decode().catch(function () { throw new Error('A print image could not load. Please retry.'); }); }));
+			if (signal.aborted) throw new DOMException('Cancelled', 'AbortError');
+			controller = null; pane.close();
+			frame.contentWindow.focus(); frame.contentWindow.print();
+		} catch (err) {
+			if (err.name !== 'AbortError') status.textContent = err.message || 'Unable to prepare this range. Please try again.';
+		} finally { controls.forEach(function (node) { node.disabled = false; }); }
+	});
+	pane.showModal();
+	return true;
+}
+
 function openContentSharePane(modalRoot, card) {
 	var pane = document.getElementById('content-share-pane');
 	if (!pane) {
@@ -18092,7 +18397,9 @@ function openContentSharePane(modalRoot, card) {
 		['Print', 'printer', function () {
 			pane.close();
 			// Leave the dialog's top layer before opening the browser print preview.
-			window.requestAnimationFrame(function () { window.print(); });
+			window.requestAnimationFrame(function () {
+				if (!openBookPrintRange()) window.print();
+			});
 		}],
 		['More…', 'three-dots', async function () { if (!navigator.share) { status.textContent = 'Native sharing is unavailable in this browser. Use Text or Copy link instead.'; return; } await navigator.share({ title: shareTitle, url: contentShareUrl(card) }); }],
 		...contentSocialShareOptions(shareTitle, contentShareUrl(card))
