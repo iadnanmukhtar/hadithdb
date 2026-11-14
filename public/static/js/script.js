@@ -12420,6 +12420,14 @@ function initQuranMushafLineFitting(root) {
 	if (document.documentElement.dataset.quranMushafLineFittingBound === '1')
 		return;
 	document.documentElement.dataset.quranMushafLineFittingBound = '1';
+	window.addEventListener('beforeprint', function () { fitQuranMushafLines(document); });
+	window.addEventListener('afterprint', function () { scheduleQuranMushafLineFit(document); });
+	// Chromium fires beforeprint while screen styles are still active. Fit again
+	// when print media actually applies, so every loaded sheet uses paper width.
+	window.matchMedia('print').addEventListener('change', function (event) {
+		if (event.matches) fitQuranMushafLines(document);
+		else scheduleQuranMushafLineFit(document);
+	});
 	window.addEventListener('resize', function () {
 		scheduleQuranMushafLineFit(document);
 	}, { passive: true });
@@ -18075,12 +18083,17 @@ function openContentSharePane(modalRoot, card) {
 	var primaryRow = document.createElement('div'); primaryRow.className = 'content-share-primary-row';
 	var socialRow = document.createElement('div'); socialRow.className = 'content-share-social-row';
 	options.append(primaryRow, socialRow);
-	options.style.setProperty('--share-option-count', imageAllowed ? '5' : '4');
+	options.style.setProperty('--share-option-count', imageAllowed ? '6' : '5');
 	[
 		['Image', 'image', function () { pane.close(); modalRoot.dataset.shareImageRequested = 'true'; bootstrap.Modal.getOrCreateInstance(modalRoot).show(); }],
 		['Post', 'people', function () { return shareCardToCommunity(card); }],
 		['Text', 'card-text', async function () { await copyTextToClipboard(hadithShareCardText(card)); status.textContent = 'Text copied'; }],
 		['Copy link', 'link-45deg', async function () { await copyTextToClipboard(contentShareUrl(card)); status.textContent = 'Link copied'; }],
+		['Print', 'printer', function () {
+			pane.close();
+			// Leave the dialog's top layer before opening the browser print preview.
+			window.requestAnimationFrame(function () { window.print(); });
+		}],
 		['More…', 'three-dots', async function () { if (!navigator.share) { status.textContent = 'Native sharing is unavailable in this browser. Use Text or Copy link instead.'; return; } await navigator.share({ title: shareTitle, url: contentShareUrl(card) }); }],
 		...contentSocialShareOptions(shareTitle, contentShareUrl(card))
 	].filter(function (option) { return option[0] !== 'Image' || imageAllowed; }).forEach(function (option) {

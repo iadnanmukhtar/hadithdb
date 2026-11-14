@@ -13979,7 +13979,15 @@ center [dir] { text-align: center !important; }
 
   .site-navbar,
   .site-footer,
+  /* Older cached page fragments may predate the site-footer class. */
+  footer:has(> nav[aria-label="Footer"]),
+  [data-buy-me-coffee],
+  #bmc-wbtn,
+  #bmc-iframe,
   .mobile-bottom-nav,
+  .quran-audio-translation-marquee,
+  .fixed-bottom,
+  .sticky-bottom,
   .hadith-heading-toc,
   .quran-heading-toc,
   .toc-heading-rail,
@@ -13998,6 +14006,21 @@ center [dir] { text-align: center !important; }
   .comment-widget,
   .reader-infinite-status,
   .reader-infinite-sentinel,
+  .reader-infinite-page,
+  .quran-infinite-status,
+  .quran-infinite-sentinel,
+  .reflection-section,
+  main section:has(> .comment-feed),
+  .quran-translation-chevron,
+  .quran-translation-drag-handle,
+  .hadith-mushabihah-section,
+  .hadith-metadata-section[id$="-sharh"],
+  main details:not([open]),
+  main .quran-ayah-select-toolbar,
+  .page-updated,
+  .quran-tafsir-enable-toggle,
+  .quran-translation-enable-toggle,
+  .content-share-pane,
   .modal,
   .modal-backdrop,
   .offcanvas,
@@ -14012,6 +14035,16 @@ center [dir] { text-align: center !important; }
     display: none !important;
   }
 
+  .content-share-pane::backdrop { display: none !important; }
+  .quran-surah-navigation-title::after { display: none !important; }
+
+  /* Match the specificity of the screen rule that reserves chapter-menu space. */
+  body:has(.site-navbar .chapter-toc) main:not(.search-results-layout > main),
+  main.quran-review-top-offset,
+  main.quran-mushaf-reader {
+    margin-top: 0 !important;
+  }
+
   html, body {
     height: auto !important;
     overflow: visible !important;
@@ -14022,6 +14055,7 @@ center [dir] { text-align: center !important; }
     --bs-body-color: #000;
     --bs-body-bg: #fff;
     --bs-secondary-color: #444;
+    --c-footnote-muted: #444;
   }
 
   /* Remove the space reserved for fixed navigation and desktop side rails. */
@@ -14048,11 +14082,91 @@ center [dir] { text-align: center !important; }
   }
 
   /* Long bilingual passages must flow across sheets without clipping. */
-  main .row { display: block !important; margin-inline: 0 !important; }
+  main .row { flex-direction: column; margin-inline: 0 !important; }
   main .row > [class*="col-"] { width: 100% !important; max-width: none !important; }
+  /* Keep short bilingual source headings compact; only the long text stacks. */
+  main :is(heading.row, header.row, .hadith-sharh-entry-heading) {
+    display: flex !important;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin-block: 0 0.5rem !important;
+    padding-block: 0 !important;
+    break-inside: avoid;
+  }
+  main :is(heading.row, header.row, .hadith-sharh-entry-heading) > [class*="col-"] {
+    width: 50% !important;
+  }
   main :is(h1, h2, h3, h4, h5, h6) { break-after: avoid; }
   main p { orphans: 3; widows: 3; }
   main img { max-width: 100% !important; height: auto; }
   main pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  main .quran-translation-source { break-after: avoid; }
+  main .quran-translation-entry { break-inside: avoid; }
+  main .quran-translation-source-title,
+  main .quran-translation-source .quran-translation-source-full-author,
+  main .quran-translation-source .quran-translation-source-book-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
   main a { color: inherit !important; text-decoration: none !important; }
+}
+
+/* Mushaf sheets retain their line layout instead of using flowing reader text. */
+@media print {
+  .quran-mushaf-print-actions,
+  .quran-mushaf-page-toolbar,
+  .quran-mushaf-page-footer,
+  .quran-mushaf-sentinel,
+  .quran-selected-ayah-hero,
+  .quran-review-page-continuity,
+  .quran-memorization-state-legend,
+  [data-quran-memorize-get-started],
+  .quran-mushaf-navigation-chevron,
+  .quran-mushaf-ayah-highlight-bg { display: none !important; }
+
+  main.quran-mushaf-reader .quran-mushaf-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    break-inside: avoid;
+  }
+  .quran-mushaf-page ~ .quran-mushaf-page { break-before: page; }
+  main.quran-mushaf-reader .quran-mushaf-sheet.quran-hafs:lang(ar) {
+    --quran-mushaf-page-font-size: 27px;
+    --quran-mushaf-mobile-font-size: 27px;
+    --quran-mushaf-line-height: 1.6;
+    --quran-mushaf-line-min-height: 1.72em;
+    width: 170mm;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0;
+    margin: 0 auto;
+    border: 0;
+    border-radius: 0;
+    background: white !important;
+    color: black;
+    font-size: 27px !important;
+  }
+  main.quran-mushaf-reader button.quran-mushaf-navigation-label {
+    display: inline !important;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: black;
+  }
+  .quran-mushaf-page-heading { break-after: avoid; }
+  .quran-mushaf-line { break-inside: avoid; }
+  /* The general reader image rule must not enlarge the basmallah. */
+  main.quran-mushaf-reader img.quran-mushaf-basmallah-svg {
+    height: calc(var(--quran-mushaf-page-font-size) * var(--quran-mushaf-line-height));
+    max-width: 70% !important;
+    opacity: 1;
+  }
+  .quran-mushaf-surah-cartouche,
+  .quran-mushaf-surah-title { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  main .quran-memorize-page:not(.quran-memorize-show-all) .quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word:not(.quran-memorize-word-revealed):not(.quran-memorize-ayah-revealed) {
+    color: black !important;
+    background: transparent !important;
+    text-decoration: none;
+  }
 }

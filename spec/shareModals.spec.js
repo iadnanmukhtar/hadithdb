@@ -93,8 +93,8 @@ describe('Share pane actions', () => {
       const modal = w.document.getElementById('image-modal'), card = modal.querySelector('article');
       w.openContentSharePane(modal, card);
       const pane = w.document.getElementById('content-share-pane'), buttons = pane.querySelectorAll('.content-share-options button');
-      expect([...buttons].map(b => b.textContent)).toEqual(['Image', 'Post', 'Text', 'Copy link', 'More…']);
-      expect([...pane.querySelectorAll('.content-share-options > * span')].map(el => el.textContent)).toEqual(['Image', 'Post', 'Text', 'Copy link', 'More…', 'Facebook', 'WhatsApp', 'Telegram', 'Threads', 'X', 'Reddit']);
+      expect([...buttons].map(b => b.textContent)).toEqual(['Image', 'Post', 'Text', 'Copy link', 'Print', 'More…']);
+      expect([...pane.querySelectorAll('.content-share-options > * span')].map(el => el.textContent)).toEqual(['Image', 'Post', 'Text', 'Copy link', 'Print', 'More…', 'Facebook', 'WhatsApp', 'Telegram', 'Threads', 'X', 'Reddit']);
       for (const a of pane.querySelectorAll('.content-share-options a')) {
         expect(decodeURIComponent(a.href)).toContain('https://quranunlocked.com/quran/2:255-257');
         expect(a.rel).toBe('noopener noreferrer');
@@ -103,18 +103,18 @@ describe('Share pane actions', () => {
       w.openContentSharePane(modal, card);
       const actions = pane.querySelectorAll('.content-share-options button');
       actions[1].click(); expect(post).toHaveBeenCalledWith(card);
-      actions[2].click(); actions[3].click(); actions[4].click();
+      actions[2].click(); actions[3].click(); actions[5].click();
       await new Promise(resolve => setImmediate(resolve));
       expect(copy.mock.calls).toEqual([['Arabic and English text'], ['https://quranunlocked.com/quran/2:255-257']]);
       expect(native).toHaveBeenCalledWith({ title: 'Baqarah 2:255–257', url: 'https://quranunlocked.com/quran/2:255-257' });
       expect(w.document.querySelectorAll('#content-share-pane')).toHaveLength(1);
       card.dataset.shareImageAllowed = 'false';
       w.openContentSharePane(modal, card);
-      expect([...pane.querySelectorAll('.content-share-options button')].map(b=>b.textContent)).toEqual(['Post', 'Text', 'Copy link', 'More…']);
+      expect([...pane.querySelectorAll('.content-share-options button')].map(b=>b.textContent)).toEqual(['Post', 'Text', 'Copy link', 'Print', 'More…']);
       delete card.dataset.shareImageAllowed;
       w.openContentSharePane(modal, card);
       w.navigator.share = undefined;
-      actions[4].click(); await new Promise(resolve => setImmediate(resolve));
+      actions[5].click(); await new Promise(resolve => setImmediate(resolve));
       expect(pane.querySelector('[role=status]').textContent).toContain('unavailable');
     } finally { dom.window.close(); }
   });
@@ -229,4 +229,29 @@ test('Post waits for the scoped translation and shares its text, attribution and
   await expect(w.shareCardToCommunity(w.document.querySelector('article'))).rejects.toThrow('Unavailable');
   expect(open).toHaveBeenCalledTimes(1);
  }finally{dom.window.close();}
+});
+
+describe('Print from the shared reader share dialog', () => {
+  test.each([true, false])('closes the dialog before printing (image available: %s)', imageAllowed => {
+    const { JSDOM } = require('jsdom');
+    const dom = new JSDOM('<article data-share-ref="bukhari:1"></article>', { runScripts: 'outside-only' });
+    const w = dom.window;
+    try {
+      w.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
+      w.HTMLDialogElement.prototype.close = function () { this.open = false; };
+      w.contentShareUrl = () => 'https://hadithunlocked.com/bukhari:1';
+      w.contentSocialShareOptions = () => [];
+      w.requestAnimationFrame = callback => callback();
+      w.print = jest.fn(() => expect(w.document.querySelector('dialog').open).toBe(false));
+      const client = source('public/static/js/script.js');
+      w.eval(client.slice(client.indexOf('function openContentSharePane('), client.indexOf('function shareCardToCommunity(')));
+      w.openContentSharePane(imageAllowed ? w.document.createElement('aside') : null, w.document.querySelector('article'));
+      const pane = w.document.querySelector('dialog');
+      expect(pane.open).toBe(true);
+      const button = Array.from(pane.querySelectorAll('button')).find(button => button.textContent === 'Print');
+      expect(button).toBeDefined();
+      button.click();
+      expect(w.print).toHaveBeenCalledTimes(1);
+    } finally { w.close(); }
+  });
 });

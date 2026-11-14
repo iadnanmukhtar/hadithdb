@@ -4,6 +4,12 @@ HadithDB (Hadith Unlocked) is a website for reading, searching, and citing the Q
 
 Every record keeps the original Arabic text alongside an English translation where one is available, together with chapter listings and grading information. For ḥadīth, the chain of narrators (isnād) and the report itself (matn) are stored separately so each can be read and searched on its own.
 
+## Memory diagnostics
+
+Set `MEMORY_LOG=false` in `.env` to disable runtime memory logging,
+its diagnostic hooks, and allocation profiling. Restart the app after changing
+the flag. Logging remains enabled when the flag is unset; `true` enables it again.
+
 ## MCP server
 
 HadithDB exposes a read-only, stateless Streamable HTTP MCP transport at
