@@ -1,0 +1,21 @@
+'use strict';
+const router=require('../routes/update');
+const Books=require('../lib/Books'),Index=require('../lib/Index'),Utils=require('../lib/Utils'),Snapshot=require('../lib/VirtualHadithSnapshot'),RuntimeRefresh=require('../lib/RuntimeRefresh');
+const handler=router.stack.find(l=>l.route?.path==='/:id/:prop').route.stack.at(-1).handle;
+afterEach(()=>{jest.restoreAllMocks();delete global.query;});
+test.each(['yqsirah','ibnhisham','history'])('%s body edits update search text before refreshing the index',async alias=>{
+ const row={id:123,hId:123,book_id:100427,book_alias:alias,book_type:'sirah',doctype:'sirah',num:'1',ref:alias+':1',body_en:'Edited text[^n].',footnote_en:'[^n]: Preserved note.'};
+ global.query=jest.fn(async sql=>sql.includes('FROM v_hadiths')?[row]:{affectedRows:1,message:'updated'});
+ jest.spyOn(Books,'touchBookContentLastmodById').mockResolvedValue();
+ jest.spyOn(Index,'update').mockResolvedValue();
+ jest.spyOn(Snapshot,'refreshHadith').mockResolvedValue();
+ jest.spyOn(Utils,'flushCacheContaining').mockResolvedValue();
+ jest.spyOn(RuntimeRefresh,'publish').mockResolvedValue();
+ const res={status:jest.fn().mockReturnThis(),json:jest.fn()};const next=jest.fn();
+ await handler({params:{id:'123',prop:'hadith.body_en'},body:{value:row.body_en},user:{uid:'admin'}},res,next);
+ expect(next).not.toHaveBeenCalled();expect(res.status).toHaveBeenCalledWith(200);
+ const queries=global.query.mock.calls.map(c=>c[0]);expect(queries.some(s=>/^UPDATE hadiths SET text_en=/.test(s))).toBe(true);
+ expect(queries.some(s=>/^UPDATE hadiths SET.*footnote_en=/.test(s))).toBe(false);
+ expect(Index.update).toHaveBeenCalledWith(expect.anything(),expect.objectContaining({book_alias:alias}),expect.objectContaining({refresh:true}));
+ expect(Utils.flushCacheContaining).toHaveBeenCalledWith(alias+':1');
+});

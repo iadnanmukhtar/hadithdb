@@ -152,6 +152,16 @@
 
         const contentPreview = async ($el, markdown) => {
           const prop = $el.attr('data-prop') || '';
+          const sirahKind = $el.attr('data-sirah-editor');
+          const sirahLang = $el.attr('data-edit-lang') || 'en';
+          const sirahSource = kind => {
+            const sibling = $el.closest('.sirah-item').find('[data-sirah-editor="' + kind + '"][data-edit-lang="' + sirahLang + '"]').first();
+            return sibling.data('contentMarkdownEditor')?.source.value ?? sibling.attr('data-markdown-source') ?? '';
+          };
+          const sirahNotes = sirahKind === 'footnotes' ? markdown : sirahSource('footnotes');
+          const sirahLinkedNotes = !!sirahKind && /\[\^[^\]]+\]:/.test(sirahNotes);
+          if (sirahLinkedNotes)
+            markdown = (sirahKind === 'body' ? markdown : sirahSource('body')) + '\n\n' + sirahNotes;
           const commentary = /^(commentary|hdith_sharh|hdith_toc_sharh|toc)\./.test(prop);
           const english = /_en$/.test(prop) || $el.attr('data-edit-lang') === 'en';
           const footnoteProp = prop.replace(/^commentary\.text/, 'commentary.footnotes');
@@ -164,10 +174,17 @@
             method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
             body: JSON.stringify({ markdown, commentary, footnotes, englishQuotationMarks: prop === 'toc.intro_en',
               quranBackticks: isEnglishTafsirMarkdown($el) || isEnglishCommentaryIntroMarkdown($el),
-              bracketedFootnotes: commentary && !english, prefix: `preview-${$el.attr('data-id')}-${prop}` })
+              bracketedFootnotes: commentary && !english, prefix: sirahKind ? `sirah-${$el.attr('data-id')}-${sirahLang}` : `preview-${$el.attr('data-id')}-${prop}` })
           });
           if (!response.ok) throw new Error('Unable to render content preview.');
-          return (await response.json()).html;
+          const html = (await response.json()).html;
+          if (!sirahKind) return html;
+          const rendered = $('<div>').html(html);
+          if (sirahLang === 'en') rendered.find('.footnotes [dir]').attr('dir', 'ltr');
+          if (sirahKind === 'footnotes' && sirahLinkedNotes)
+            return rendered.find('.footnotes').prop('outerHTML') || 'No referenced footnotes.';
+          if (sirahKind === 'body') rendered.find('.footnotes, .footnotes-sep').remove();
+          return rendered.html();
         };
 
 	    const setMarkdownPreview = (el, value) => {

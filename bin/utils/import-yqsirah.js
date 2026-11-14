@@ -9,6 +9,7 @@ const CACHE=path.resolve('var/imports/yqsirah');
 const SHA='e9efc5e4b78d184c7d74c5d25733f2692ee029939c927e86d9be2f296106bce4';
 const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
 const {repairEntry}=require('./yqsirah-arabic-repairs');
+const {normalizeAllahSpelling}=require('./yqsirah-allah-spelling');
 const bookMetadata=require('../../data/yqsirah-metadata.json');
 const canonical=title=>title.replace(/^\(Cont\.\)\s*/i,'').replace(/\s+/g,' ').trim();
 function build(source,topics) {
@@ -58,6 +59,7 @@ function build(source,topics) {
   entry.provenance={source_sha256:SHA,blocks:entry.blocks.map(b=>b.index),pages:[...new Set(entry.blocks.map(b=>b.page))],videos:[...new Set(entry.blocks.map(b=>b.video))],source_headings:entry.blocks.filter(b=>b.heading).map(b=>b.heading),notes:keys};
   entry.sha256=hash(JSON.stringify([entry.title,entry.body,entry.footnotes,entry.h1,entry.h2]));
   Object.assign(entry,repairEntry(entry));
+  Object.assign(entry,normalizeAllahSpelling(entry));
  });
  assert.equal(imported.size,notes.size,'Lost footnotes');
  assert.equal(new Set(entries.flatMap(e=>e.provenance.videos)).size,101);

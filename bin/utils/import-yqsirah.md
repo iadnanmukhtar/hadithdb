@@ -110,3 +110,10 @@ The acknowledgment thanks him for his work and retains the introductory note's
 request for du‘a for the contributors and their families. The guarded migration
 `node bin/utils/update-yqsirah-metadata.js --apply` updates only `author_en` and
 `description`, with a server-side backup and exact readback verification.
+
+The subsequent `هللا` → `الله` spelling correction covers 134 remaining
+occurrences in 101 passages (including one presentation-form spelling), including names, prose, and footnotes. The importer
+applies `yqsirah-allah-spelling.js` after the reviewed quotation overlay.
+`repair-yqsirah-allah-spelling.js` checks provenance, backs up affected rows on the
+server, updates body/search text and notes transactionally, and verifies no
+literal occurrences remain. No other spelling or wording is changed.

@@ -4,10 +4,10 @@ const fs = require('fs');
 const path = require('path');
 const cheerio = require('cheerio');
 const template = fs.readFileSync(path.join(__dirname, '../views/sub-views/sirah_item.ejs'), 'utf8');
-function render(overrides = {}, title = true) {
+function render(overrides = {}, title = true, editMode = false) {
  return cheerio.load(ejs.render(template, {
   i: { id: 1, num: '813787', ref: 'ibnhisham:813787', book_shortName_en: 'Sirat Ibn Hisham', book_shortName: 'سيرة ابن هشام', body: 'النص العربي', title: 'العنوان', ...overrides },
-  utils: require('../lib/Utils'), arabic: require('../lib/Arabic'), title
+  site: {editMode}, utils: require('../lib/Utils'), arabic: require('../lib/Arabic'), title
  }, { filename: path.join(__dirname, '../views/sub-views/sirah_item.ejs') }));
 }
 test.each(['history', 'ibnhisham'])('%s shows passage titles and individual links in scrolling and detail views', alias => {
@@ -112,3 +112,16 @@ test('English footnotes beginning with an Arabic honorific keep English reading 
  expect($('.footnote-item p').attr('dir')).toBe('ltr');
  expect($('.footnote-item').text()).toContain('ﷺ');
 });
+
+ test.each(['yqsirah', 'ibnhisham', 'history'])('%s has separate inline Markdown body and footnote editors in admin mode', alias => {
+ const $=render({book_alias:alias,body:'نص عربي',body_en:'Text[^n1].',footnote_en:'[^n1]: A note.'},true,true);
+ expect($('[data-prop="hadith.body_en"]').attr('data-markdown-source')).toBe('Text[^n1].');
+ expect($('[data-prop="hadith.footnote_en"]').attr('data-markdown-source')).toBe('[^n1]: A note.');
+ expect($('[data-prop="hadith.body_en"] .footnotes')).toHaveLength(0);
+ expect($('[data-prop="hadith.footnote_en"] .footnote-item')).toHaveLength(1);
+ const target=$('.footnote-ref a').first().attr('href');
+ expect($(target)).toHaveLength(1);
+ expect($('[data-prop="hadith.title_en"]')).toHaveLength(1);
+ expect($('[data-prop="hadith.body"]')).toHaveLength(1);
+ });
+ test('public sirah reader has no edit controls',()=>{const $=render({body_en:'Text',footnote_en:'Note'});expect($('._e, [data-sirah-editor]')).toHaveLength(0);});

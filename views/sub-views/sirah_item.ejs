@@ -1,4 +1,5 @@
 <%
+  const sirahEditMode = typeof site !== 'undefined' && site.editMode;
   const sirahHasEnglish = Boolean(utils.emptyIfNull(i.body_en).replace(/<[^>]*>/g, '').trim());
   // v_hadiths uses `text` as an English search field; it is not an Arabic fallback
   // when an English body is present.
@@ -11,33 +12,40 @@
     const html = utils.markdownToHtml([body, notes].filter(Boolean).join('\n\n'), { footnoteIdPrefix: `sirah-${i.id}-${lang}` });
     return lang === 'en' ? html.replace(/<section class="footnotes">[\s\S]*?<\/section>/g, section => section.replace(/dir="(?:rtl|auto)"/g, 'dir="ltr"')) : html;
   };
+  const sirahRendered = (body, notes, lang) => {
+    const html = sirahMarkdown(body, notes, lang);
+    const match = html.match(/<section class="footnotes">[\s\S]*?<\/section>/);
+    return { body: sirahEditMode ? html.replace(/<hr class="footnotes-sep"[^>]*>/g, '').replace(/<section class="footnotes">[\s\S]*?<\/section>/g, '') : html, notes: match ? match[0] : '' };
+  };
   const sirahEnglishLinkedNotes = /\[\^[^\]]+\]:/.test(i.footnote_en || '');
   const sirahArabicLinkedNotes = /\[\^[^\]]+\]:/.test(i.footnote || '');
 %>
 <a id="<%= String(i.num || i.id).replace(/:/g, '-') %>"></a>
 <article class="row mt-3 sirah-item hadith-language-item" data-content-type="sirah" data-reader-language-item="hadith" data-sirah-translated="<%= sirahHasEnglish ? '1' : '0' %>">
-  <% if (i.title_en) { %>
+  <% if (i.title_en || (sirahEditMode && sirahHasEnglish)) { %>
   <header class="col-12" lang="en" data-reader-language-column="english">
-    <h1 lang="en" class="fs-5"><%- i.title_en %></h1>
+    <h1 lang="en" class="fs-5<%= sirahEditMode ? ' _e' : '' %>"<% if (sirahEditMode) { %> data-id="<%= i.id %>" data-prop="hadith.title_en" data-placeholder="English title"<% } %>><%- i.title_en %></h1>
   </header>
   <% } %>
-  <% if (i.title) { %>
+  <% if (i.title || (sirahEditMode && sirahHasArabic)) { %>
   <header class="col-12" lang="ar" data-reader-language-column="arabic">
-    <h1 lang="ar" class="fs-5"><%- i.title %></h1>
+    <h1 lang="ar" class="fs-5<%= sirahEditMode ? ' _e' : '' %>"<% if (sirahEditMode) { %> data-id="<%= i.id %>" data-prop="hadith.title" data-placeholder="العنوان"<% } %>><%- i.title %></h1>
   </header>
   <% } %>
   <% if (sirahHasEnglish) { %>
   <section class="<%= sirahColumns %> h" lang="en" dir="ltr" data-reader-language-column="english">
     <b><a href="/<%= i.ref %>"><%= i.book_alias || i.book_shortName_en %>:<%= i.num %></a></b>
-    <section class="body l5"><div class="hadith-body-content content-markdown"><%- sirahMarkdown(i.body_en, sirahEnglishLinkedNotes ? i.footnote_en : '', 'en') %></div></section>
-    <% if (i.footnote_en && !sirahEnglishLinkedNotes) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote_en) %></footer><% } %>
+    <% const rendereden = sirahRendered(i.body_en, sirahEnglishLinkedNotes ? i.footnote_en : '', 'en'); %>
+    <section class="body l5"><div class="hadith-body-content content-markdown<%= sirahEditMode ? ' _e' : '' %>"<% if (sirahEditMode) { %> data-id="<%= i.id %>" data-prop="hadith.body_en" data-edit-format="md" data-sirah-editor="body" data-edit-lang="en" data-markdown-source="<%= i.body_en || '' %>" data-markdown-empty-html="…"<% } %>><%- rendereden.body %></div></section>
+    <% if (sirahEditMode || (i.footnote_en && !sirahEnglishLinkedNotes)) { %><footer class="footnote l2 content-markdown<%= sirahEditMode ? ' _e' : '' %>"<% if (sirahEditMode) { %> data-id="<%= i.id %>" data-prop="hadith.footnote_en" data-edit-format="md" data-sirah-editor="footnotes" data-edit-lang="en" data-markdown-source="<%= i.footnote_en || '' %>" data-markdown-empty-html="Edit footnotes…" data-placeholder="Footnotes" aria-label="Edit en footnotes"<% } %>><%- sirahEnglishLinkedNotes ? (rendereden.notes || 'Edit footnotes…') : (utils.markdownToHtml(i.footnote_en || '') || (sirahEditMode ? 'Edit footnotes…' : '')) %></footer><% } %>
   </section>
   <% } %>
   <% if (sirahHasArabic) { %>
   <section class="<%= sirahColumns %> h" lang="ar" dir="rtl" data-reader-language-column="arabic">
     <b><a href="/<%= i.ref %>"><%= i.book_shortName || i.book_shortName_en %>:<%= arabic.toArabicDigits(String(i.num || '')) %></a></b>
-    <section class="body l5"><div class="hadith-body-content content-markdown"><%- sirahMarkdown(sirahArabicBody, sirahArabicLinkedNotes ? i.footnote : '', 'ar') %></div></section>
-    <% if (i.footnote && !sirahArabicLinkedNotes) { %><footer class="footnote l2 content-markdown"><%- utils.markdownToHtml(i.footnote) %></footer><% } %>
+    <% const renderedar = sirahRendered(sirahArabicBody, sirahArabicLinkedNotes ? i.footnote : '', 'ar'); %>
+    <section class="body l5"><div class="hadith-body-content content-markdown<%= sirahEditMode ? ' _e' : '' %>"<% if (sirahEditMode) { %> data-id="<%= i.id %>" data-prop="hadith.body" data-edit-format="md" data-sirah-editor="body" data-edit-lang="ar" data-markdown-source="<%= sirahArabicBody || '' %>" data-markdown-empty-html="…"<% } %>><%- renderedar.body %></div></section>
+    <% if (sirahEditMode || (i.footnote && !sirahArabicLinkedNotes)) { %><footer class="footnote l2 content-markdown<%= sirahEditMode ? ' _e' : '' %>"<% if (sirahEditMode) { %> data-id="<%= i.id %>" data-prop="hadith.footnote" data-edit-format="md" data-sirah-editor="footnotes" data-edit-lang="ar" data-markdown-source="<%= i.footnote || '' %>" data-markdown-empty-html="Edit footnotes…" data-placeholder="Footnotes" aria-label="Edit ar footnotes"<% } %>><%- sirahArabicLinkedNotes ? (renderedar.notes || 'Edit footnotes…') : (utils.markdownToHtml(i.footnote || '') || (sirahEditMode ? 'Edit footnotes…' : '')) %></footer><% } %>
   </section>
   <% } %>
   <footer class="col-12 h"><aside class="tags reader-social-actions sirah-item-actions">

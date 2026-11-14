@@ -226,6 +226,9 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         } else {
           result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
           var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
+          // Sirah transcripts store their searchable English text alongside the body.
+          if (col === 'body_en' && (item.doctype === 'sirah' || ['sirah', 'history'].includes(item.book_type)))
+            await global.query(`UPDATE hadiths SET text_en=${sql(status.value)} WHERE id=${ids[0]}`);
           if (col === 'body_en' && Utils.isFalsey(status.value)) {
           if (Utils.isFalsey(item.body_en) && Utils.isTruthy(item.body)) {
             item.body_en = await Utils.openai(buildHadithContextTranslationPrompt(item, 'Arabic hadith matn', item.body));

@@ -21,6 +21,8 @@
 :is(.notebook-markdown, .content-markdown) .notebook-text-line { display: block; }
 :is(.notebook-markdown, .content-markdown) [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
 :is(.notebook-markdown, .content-markdown) .notebook-arabic { font-family: Hafs, serif; line-height: 1lh; font-synthesis: weight style; }
+/* Sirah uses ordinary Unicode Arabic, including names and transcript notes. */
+.sirah-item .content-markdown .notebook-arabic { font-family: var(--content-language-arabic-font, "Noto Naskh Arabic", serif); }
 :is(.notebook-markdown, .content-markdown) strong, :is(.notebook-markdown, .content-markdown) strong .notebook-arabic { font-weight: 700; }
 :is(.notebook-markdown, .content-markdown) em, :is(.notebook-markdown, .content-markdown) em .notebook-arabic { font-style: italic; }
 :is(.notebook-markdown, .content-markdown) mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
