@@ -11,6 +11,19 @@ describe('Book.getChapters', () => {
     global.query = originalQuery;
   });
 
+  test('Sirah TOC includes H3 titles and stable passage starts under their H2 parent', async () => {
+    const search = jest.spyOn(Index, 'docsFromQueryFields')
+      .mockResolvedValueOnce([{level:1,book_alias:'yqsirah',h1:11,h1_title_en:'Opposition'}])
+      .mockResolvedValueOnce([{level:2,book_alias:'yqsirah',h1:11,h2:3,h2_title_en:'Proposing a Bargain',h2_start:'89',h2_count:4}])
+      .mockResolvedValueOnce([{level:3,book_alias:'yqsirah',h1:11,h2:3,h3:1,h3_title_en:'The Phenomenon of Abu Talib',h3_start:'90',h3_count:1}]);
+    const chapters = await new Book({alias:'yqsirah',type:'sirah'}).getChapters();
+    const children = chapters[0].sections[0].subsections;
+    expect(children).toHaveLength(1);
+    expect(children[0]).toBeInstanceOf(Subsection);
+    expect(children[0]).toMatchObject({level:3,h3:1,title_en:'The Phenomenon of Abu Talib',start:'90',count:1});
+    expect(search.mock.calls[2][2]).toEqual(expect.arrayContaining(['h3_title_en','h3_start','h3_count']));
+  });
+
   test('loads the TOC chapter rail source from Elasticsearch without querying the DB', async () => {
     global.query = jest.fn(() => {
       throw new Error('TOC heading rails must not query the DB');

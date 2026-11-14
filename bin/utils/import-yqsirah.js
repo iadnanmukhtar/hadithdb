@@ -12,7 +12,7 @@ const {repairEntry}=require('./yqsirah-arabic-repairs');
 const {normalizeAllahSpelling}=require('./yqsirah-allah-spelling');
 const bookMetadata=require('../../data/yqsirah-metadata.json');
 const canonical=title=>title.replace(/^\(Cont\.\)\s*/i,'').replace(/\s+/g,' ').trim();
-function build(source,topics) {
+function build(source,topics,options={}) {
  assert.equal(source.source_sha256,SHA,'Unexpected source PDF');
  assert.equal(Object.keys(source.videos).length,101);
  assert.equal(source.notes.length,1866);
@@ -65,7 +65,8 @@ function build(source,topics) {
  assert.equal(new Set(entries.flatMap(e=>e.provenance.videos)).size,101);
  assert.deepEqual(entries.flatMap(e=>e.provenance.blocks),source.blocks.map((_,i)=>i),'Source order or coverage changed');
  chapters.forEach(c=>{c.start=c.sections[0].num;c.end=c.sections.at(-1).num;});
- return {source_sha256:SHA,chapters,entries,merges};
+ const plan = {source_sha256:SHA,chapters,entries,merges};
+ return options.flat ? plan : require('./yqsirah-hierarchy').arrange(plan);
 }
 async function apply(plan) {
  const db=mysql.createConnection(require(path.join(require('os').homedir(),'.hadithdb/settings.json')).mysql.connection);
@@ -78,10 +79,10 @@ async function apply(plan) {
    const book=existing[0];assert.equal(book.type,'sirah');assert.equal(book.lang,'en');assert.equal(book.source,SOURCE);
    const rows=await query('SELECT h.*, s.content_sha256 FROM hadiths h JOIN yqsirah_source_entries s ON s.item_id=h.id AND s.book_id=h.bookId WHERE h.bookId=? ORDER BY h.ordinal',[book.id]);
    assert.equal(rows.length,plan.entries.length,'Incomplete existing import');
-   rows.forEach((row,i)=>{const e=plan.entries[i];assert.equal(row.content_sha256,e.sha256,'Changed import plan');assert.equal(hash(JSON.stringify([row.title_en,row.body_en,row.footnote_en,Number(row.h1),Number(row.h2)])),e.sha256,'Existing user edits: refusing replacement');});
+   rows.forEach((row,i)=>{const e=plan.entries[i];assert.equal(Number(row.h3)||null,e.h3,'Changed subsection');assert.equal(row.content_sha256,e.sha256,'Changed import plan');assert.equal(hash(JSON.stringify([row.title_en,row.body_en,row.footnote_en,Number(row.h1),Number(row.h2)])),e.sha256,'Existing user edits: refusing replacement');});
    const toc=await query('SELECT * FROM toc WHERE bookId=? ORDER BY ordinal',[book.id]);
    assert.equal(toc.length,plan.chapters.length+plan.entries.length);
-   for(const row of toc){const expected=Number(row.level)===1?plan.chapters[Number(row.h1)-1]:plan.entries.find(e=>e.h1===Number(row.h1)&&e.h2===Number(row.h2));assert.equal(row.title_en,expected.title,'Existing heading edits');}
+   for(const row of toc){const expected=Number(row.level)===1?plan.chapters[Number(row.h1)-1]:plan.entries.find(e=>e.h1===Number(row.h1)&&e.h2===Number(row.h2)&&(e.h3||null)===(Number(row.h3)||null));assert.equal(row.title_en,expected.title,'Existing heading edits');}
    await query('COMMIT');return {bookId:book.id,unchanged:true,passages:rows.length};
   }
   const bookId=Number((await query('SELECT MAX(id) AS id FROM books FOR UPDATE'))[0].id)+1;
@@ -94,8 +95,8 @@ async function apply(plan) {
    const h1=chapter.sections[0].h1;
    await query('INSERT INTO toc SET ?', {ordinal:++ordinal,bookId,level:1,h1,title_en:chapter.title,start:String(chapter.start),end:String(chapter.end),start0:chapter.start,end0:chapter.end,count:chapter.sections.length});
    for(const entry of chapter.sections) {
-    const toc=await query('INSERT INTO toc SET ?', {ordinal:++ordinal,bookId,level:2,h1,h2:entry.h2,title_en:entry.title,start:String(entry.num),end:String(entry.num),start0:entry.num,end0:entry.num,count:1});
-    const inserted=await query('INSERT INTO hadiths SET ?', {ordinal:entry.num,bookId,tocId:toc.insertId,h1,h2:entry.h2,num:String(entry.num),num0:entry.num,numInChapter:entry.h2,title_en:entry.title,body_en:entry.body,text_en:entry.body,footnote_en:entry.footnotes,available_translation_languages:JSON.stringify(['en'])});
+    const toc=await query('INSERT INTO toc SET ?', {ordinal:++ordinal,bookId,level:entry.level,h1,h2:entry.h2,h3:entry.h3,title_en:entry.title,start:String(entry.start),end:String(entry.end),start0:entry.start,end0:entry.end,count:entry.count});
+    const inserted=await query('INSERT INTO hadiths SET ?', {ordinal:entry.num,bookId,tocId:toc.insertId,h1,h2:entry.h2,h3:entry.h3,num:String(entry.num),num0:entry.num,numInChapter:entry.numInChapter,title_en:entry.title,body_en:entry.body,text_en:entry.body,footnote_en:entry.footnotes,available_translation_languages:JSON.stringify(['en'])});
     await query('INSERT INTO yqsirah_source_entries SET ?', {book_id:bookId,passage_number:entry.num,item_id:inserted.insertId,content_sha256:entry.sha256,source_json:JSON.stringify(entry.provenance)});
    }
   }
@@ -109,7 +110,7 @@ async function main(){
  const source=JSON.parse(fs.readFileSync(path.join(CACHE,'extracted.json')));
  const plan=build(source,require('../../data/yqsirah-topics.json'));
  fs.writeFileSync(path.join(CACHE,'plan.json'),JSON.stringify(plan,null,2));
- fs.writeFileSync(path.join(CACHE,'contents.md'),plan.chapters.map((c,i)=>`## ${i+1}. ${c.title}\n\n`+c.sections.map(e=>`- ${e.title} — passage ${e.num}; videos ${e.provenance.videos.join(', ')}; PDF pages ${e.provenance.pages[0]}–${e.provenance.pages.at(-1)}`).join('\n')).join('\n\n')+'\n');
+ fs.writeFileSync(path.join(CACHE,'contents.md'),plan.chapters.map((c,i)=>`## ${i+1}. ${c.title}\n\n`+c.sections.map(e=>`${e.level===3 ? "  " : ""}- ${e.title} — passage ${e.num}; videos ${e.provenance.videos.join(', ')}; PDF pages ${e.provenance.pages[0]}–${e.provenance.pages.at(-1)}`).join('\n')).join('\n\n')+'\n');
  console.log(JSON.stringify({chapters:plan.chapters.length,passages:plan.entries.length,footnotes:source.notes.length,mergedContinuations:plan.merges,crossVideoPassages:plan.entries.filter(e=>e.provenance.videos.length>1).map(e=>({number:e.num,title:e.title,videos:e.provenance.videos}))},null,2));
  if(process.argv.includes('--apply'))console.log(await apply(plan));
 }

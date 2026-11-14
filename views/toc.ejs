@@ -395,6 +395,8 @@
     }
     function quranTocHref(heading) {
       if (!quranCommentaryBook) {
+        if ((book.type === 'sirah' || book.type === 'history') && Number(heading.level) === 3 && heading.start)
+          return utils.urlFor(req, `/${book.alias}:${heading.start}`);
         var targetPath = heading && heading.firstSection ? heading.firstSection.path : heading.path;
         if (isQuranToc)
           return utils.urlFor(req, quranTocNormalizeQuranPath(targetPath));
@@ -628,7 +630,7 @@
         }
         function tocSectionNumberLabel(section) {
           if (!isQuranToc)
-            return `S${section.h1}.${section.h2}`;
+            return `S${section.h1}.${section.h2}${Number(section.level) === 3 ? '.' + formatHeadingNumber(section.h3) : ''}`;
           var rangeLabel = quranHeadingAyahRangeLabel(section);
           return `P${section.h2}${rangeLabel ? ` ${rangeLabel}` : ''}`;
         }
@@ -714,6 +716,7 @@
           var title_en = truncateTitle(toc[i].title_en, 75);
           var title = truncateTitle(toc[i].title, 150);
           var sections = Array.isArray(toc[i].sections) ? toc[i].sections : [];
+          sections = sections.flatMap(function (section) { return [section].concat(section.subsections || []); });
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
@@ -757,7 +760,7 @@
                     <% if (showTocStartNumbers) { %>
                     <td><%- section.start %></td>
                     <% } %>
-                    <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
+                    <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
                     <% if (section.path) { %>
                     <td>
 					  <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a><span data-note-key="<%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? `tafsir-heading:${quranCommentaryBookSlug}:${section.h1}.${section.h2}` : `heading:${section.id}` %>" data-note-title="<%= (quranCommentaryBookLabel || book.shortName_en) + ' — ' + (section.title_en || section.title || 'Passage') %>" data-note-url="<%= quranTocHref(section) %>"></span>
@@ -846,6 +849,7 @@
           var sections = (Array.isArray(toc[i].sections) ? toc[i].sections : []).filter(function (section) {
             return !hadithIntroductionArticles.some(function (article) { return String(article.id) === String(section.id); });
           });
+          sections = sections.flatMap(function (section) { return [section].concat(section.subsections || []); });
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
@@ -882,13 +886,13 @@
               var sectionTitleEn = truncateTitle(section.title_en, 75);
               var sectionTitle = truncateTitle(section.title, 150);
             %>
-            <tr class="title toc-section-row d-none" data-toc-parent="<%= chapterRowId %>">
+            <tr class="title toc-section-row<%= Number(section.level) === 3 ? ' toc-subsection-row' : '' %> d-none" data-toc-parent="<%= chapterRowId %>" data-toc-level="<%= section.level %>">
               <% if (showTocStartNumbers) { %>
               <td><%- section.start %></td>
               <% } %>
-              <td><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
+              <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
               <% if (section.path) { %>
-              <td>
+              <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>">
 				<a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a><span data-note-key="<%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? `tafsir-heading:${quranCommentaryBookSlug}:${section.h1}.${section.h2}` : `heading:${section.id}` %>" data-note-title="<%= (quranCommentaryBookLabel || book.shortName_en) + ' — ' + (section.title_en || section.title || 'Passage') %>" data-note-url="<%= quranTocHref(section) %>"></span>
               </td>
               <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
