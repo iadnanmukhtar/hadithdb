@@ -31,7 +31,7 @@ Examples: rebuilding the Ka‘bah spans videos 9–10; the second revelation spa
 
 Reader tests cover Arabic-only, bilingual, and English-only sīrah, separately stored linked notes, and distinct note targets across adjacent passages. A full-corpus render audit checks all 1,866 note targets. After import, rerun the importer to prove no changes; index only the imported book, and verify catalog, chapter, passage, search, and footnote output locally.
 
-The English-only/linked-footnote template change requires deployment before the production reader has the same rendering behavior as the local reader. Database import and search indexing are separate from application deployment.
+The English-only/linked-footnote template and language-preference changes were published after explicit user approval on 2026-11-14. Database import and search indexing are separate from application deployment.
 
 ## Recorded result
 
@@ -49,3 +49,64 @@ against the committed HEAD stylesheet. No stylesheet change was made for this im
 Local evidence: `var/imports/yqsirah/{applied.log,rerun.log,index.log,browser-audit.json}`.
 The reader-only deployment patch is `var/imports/yqsirah/reader-only.patch`; it
 excludes the workspace's pre-existing print and tafsir edits.
+
+## Production publication
+
+Published on 2026-11-14 after the user said “publish”. Applied only
+`var/imports/yqsirah/reader-only.patch` to the clean production checkout at
+`93f10baf8c1256a4d799cc29b148688c9c31110d`. Backed up the two modified files to
+`/tmp/yqsirah-reader-before-20261114.tgz` on the server, compiled the EJS template,
+checked JavaScript syntax, refreshed the book cache/catalog generation, and
+reloaded both HadithDB workers. Both ports 3004 and 3005 returned HTTP 200 with
+one full-width English column, nine linked notes on the opening passage, and
+English direction for the honorific-led footnote.
+
+Public verification artifacts are under `var/imports/yqsirah/production/`.
+The public page loads `script.js?v=v524-3debb9de74d1`, including the English-only
+language-preference correction. Public checks wait for asynchronous script
+initialization before asserting visibility.
+
+## Arabic quotation repair
+
+The supplied PDF's layout extraction split and reordered Arabic words, sometimes
+displacing Arabic into English translations. On 2026-11-14, the user explicitly
+requested correction in production. `data/yqsirah-arabic-repairs.json` records
+483 exact replacements in 171 passages, with Quran references or PDF evidence.
+Quran text comes from the canonical Quran corpus, retaining the originally
+quoted partial-ayah and multi-ayah boundaries. Other quotation repairs restore
+the PDF wording without substituting another narration or inventing vowels.
+Names, poetry, and unrelated Arabic prose are outside this repair's scope.
+
+`yqsirah-arabic-repairs.js` applies the same checked overlay to future imports.
+It checks the original passage hash, rejects missing/overlapping replacements,
+preserves footnote identities and English words, and records original and repair
+hashes in provenance. The Ta'awwudh footnote also restores the position of the
+English word "I", which the PDF had displaced. Standalone Arabic quotations and
+their English translations are separate paragraphs for correct text direction.
+
+The production migration is dry-run by default:
+
+```sh
+node bin/utils/repair-yqsirah-arabic.js
+node bin/utils/repair-yqsirah-arabic.js --apply
+node bin/buildSearchIndex.js --book-id 100427 --skip-commentaries
+node bin/utils/flush-book-disk-cache.js yqsirah
+```
+
+Applied transactionally; exact readback passed for all 171 passages. A second
+run reported zero pending changes. The before-state, including provenance,
+remains on the production server at
+`var/imports/yqsirah-arabic-repair/before-1794687685680.json`.
+The book was reindexed and its disk/runtime caches refreshed. Local audit
+artifacts and public browser checks are in
+`var/imports/yqsirah/arabic-repair/`. Reference-link enrichment remains deferred.
+
+## Author and transcription credits
+
+`data/yqsirah-metadata.json` supplies the author credit and description for future
+imports. The description includes Shaykh Dr. Yasir Qadhi's biography, sourced to
+Miftaah Institute, and credits Muhammad Abdul Rahman for transcribing the videos.
+The acknowledgment thanks him for his work and retains the introductory note's
+request for du‘a for the contributors and their families. The guarded migration
+`node bin/utils/update-yqsirah-metadata.js --apply` updates only `author_en` and
+`description`, with a server-side backup and exact readback verification.

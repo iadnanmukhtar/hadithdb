@@ -8,6 +8,8 @@ const ALIAS='yqsirah', SOURCE='yqsirah.pdf';
 const CACHE=path.resolve('var/imports/yqsirah');
 const SHA='e9efc5e4b78d184c7d74c5d25733f2692ee029939c927e86d9be2f296106bce4';
 const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
+const {repairEntry}=require('./yqsirah-arabic-repairs');
+const bookMetadata=require('../../data/yqsirah-metadata.json');
 const canonical=title=>title.replace(/^\(Cont\.\)\s*/i,'').replace(/\s+/g,' ').trim();
 function build(source,topics) {
  assert.equal(source.source_sha256,SHA,'Unexpected source PDF');
@@ -55,6 +57,7 @@ function build(source,topics) {
   entry.footnotes=keys.map(key=>{assert(notes.has(key),`Missing ${key}`);imported.add(key);return `[^${key}]: ${notes.get(key).text}`;}).join('\n\n');
   entry.provenance={source_sha256:SHA,blocks:entry.blocks.map(b=>b.index),pages:[...new Set(entry.blocks.map(b=>b.page))],videos:[...new Set(entry.blocks.map(b=>b.video))],source_headings:entry.blocks.filter(b=>b.heading).map(b=>b.heading),notes:keys};
   entry.sha256=hash(JSON.stringify([entry.title,entry.body,entry.footnotes,entry.h1,entry.h2]));
+  Object.assign(entry,repairEntry(entry));
  });
  assert.equal(imported.size,notes.size,'Lost footnotes');
  assert.equal(new Set(entries.flatMap(e=>e.provenance.videos)).size,101);
@@ -83,7 +86,7 @@ async function apply(plan) {
   // New-identity import: an empty before-state plus a full immutable plan is the rollback record.
   fs.writeFileSync(path.join(CACHE,`before-${Date.now()}.json`),JSON.stringify({alias:ALIAS,bookId,existing,planHash:hash(JSON.stringify(plan))},null,2));
   const properties={reader:{referenceView:'item'},sirah:{source_file:SOURCE,source_sha256:SHA,source_pages:1181,transcript_pages:[44,1165],toc_pages:[3,43],videos:101,reference:'Sequential topical passages; source video and PDF pages retained in yqsirah_source_entries'}};
-  await query('INSERT INTO books SET ?', {id:bookId,ordinal:bookId,alias:ALIAS,type:'sirah',lang:'en',shortName_en:'Yasir Qadhi’s Sirah',shortName:'',name_en:'The Sirah of Prophet Muhammad',title_en:'The Sirah of Prophet Muhammad — Yasir Qadhi',author_en:'Yasir Qadhi',source:SOURCE,hidden:0,format:'md',description:'English transcript of Yasir Qadhi’s 101-part Seerah Series, imported from the supplied PDF. Chapters are arranged topically, with original transcript wording and editorial footnotes preserved.',properties:JSON.stringify(properties)});
+  await query('INSERT INTO books SET ?', {id:bookId,ordinal:bookId,alias:ALIAS,type:'sirah',lang:'en',shortName_en:'Yasir Qadhi’s Sirah',shortName:'',name_en:'The Sirah of Prophet Muhammad',title_en:'The Sirah of Prophet Muhammad — Yasir Qadhi',author_en:bookMetadata.author_en,source:SOURCE,hidden:0,format:'md',description:bookMetadata.description,properties:JSON.stringify(properties)});
   let ordinal=0;
   for(const chapter of plan.chapters) {
    const h1=chapter.sections[0].h1;
