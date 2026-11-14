@@ -33,10 +33,10 @@ describe('History catalog navigation', () => {
   expect(route).toContain("NULLIF(TRIM(body_en), '') IS NOT NULL");
  });
 
- test('both historical books appear in the Hadith carousel and homepage list', () => {
+ test('the historical books and YQ Sirah appear in the Hadith carousel and homepage list', () => {
   const nav = source('views/sub-views/bookNav.ejs');
   const home = source('views/index.ejs');
-  expect(nav).toContain("['ibnhisham', 'history']");
+  expect(nav).toContain("['ibnhisham', 'history', 'yqsirah']");
   expect(nav).toContain("books.find(function (book) { return book && book.hidden == 0 && book.alias === alias; })");
   expect(home).toContain("include('sub-views/bookNav.ejs', { inlineHadithBooks: true })");
  });

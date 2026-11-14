@@ -17,7 +17,7 @@
 				&& (book.type || book.book_type || book.book_model || 'hadith') === 'hadith';
 		};
 		var hadithNavBooks = books.filter(isHadithBook);
-		['ibnhisham', 'history'].forEach(function (alias) {
+		['ibnhisham', 'history', 'yqsirah'].forEach(function (alias) {
 			var historyBook = books.find(function (book) { return book && book.hidden == 0 && book.alias === alias; });
 			if (historyBook)
 				hadithNavBooks.push(historyBook);

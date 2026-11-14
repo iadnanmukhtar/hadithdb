@@ -213,7 +213,7 @@
                   && Number(book.hidden) === 0
                   && book.alias !== 'quran'
                   && ((book.type || book.book_type || book.book_model || 'hadith') === 'hadith'
-                    || ['ibnhisham', 'history'].includes(book.alias));
+                    || ['ibnhisham', 'history', 'yqsirah'].includes(book.alias));
               }).slice().sort(function (a, b) {
                 return (a.shortName_en || a.name_en || a.alias || '').localeCompare(
                   b.shortName_en || b.name_en || b.alias || '',
