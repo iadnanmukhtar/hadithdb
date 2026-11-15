@@ -11079,6 +11079,24 @@
           "before": "I cannot\n\nrestrain myself",
           "after": "I cannot restrain myself"
         }
+      ],
+      "footnotes": [
+        {
+          "kind": "spacing",
+          "before": "This hadith brings out certain important facts worthy of careful note by one and all: 1.",
+          "after": "This hadith brings out certain important facts worthy of careful note by one and all:\n\n    1."
+        },
+        {
+          "kind": "spacing",
+          "before": "more important for her. 2.",
+          "after": "more important for her.\n\n    2."
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "abudawud:2459 and transcriber footnote",
+          "reason": "All three added Prophetic clauses match the checked report. The long footnote is explicitly the transcriber’s tangent; its night-work explanation, reconstructed circumstances, and legal applications are not wording of the Arabic report. Preserve that attribution and all text."
+        }
       ]
     },
     "380": {
@@ -11127,6 +11145,26 @@
           "kind": "spacing",
           "before": "Prophet\n\nﷺ,",
           "after": "Prophet ﷺ,"
+        },
+        {
+          "kind": "spacing",
+          "before": "\"Let\n\ngo of me.\"",
+          "after": "\"Let go of me.\""
+        },
+        {
+          "kind": "spacing",
+          "before": "bring about\n\n[your] victory",
+          "after": "bring about [your] victory"
+        },
+        {
+          "kind": "punctuation",
+          "before": " 51. O believers! Take neither Jews nor Christians as awliya",
+          "after": " 51\\. O believers! Take neither Jews nor Christians as awliya"
+        },
+        {
+          "kind": "punctuation",
+          "before": " 52. You see those with sickness in their hearts racing for ",
+          "after": " 52\\. You see those with sickness in their hearts racing for "
         }
       ],
       "footnotes": [
@@ -11146,6 +11184,12 @@
           "before": "ﷺ\"Rasulullah",
           "after": "ﷺ \"Rasulullah"
         }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Banu Qaynuqa source accounts",
+          "reason": "Retain al-Waqidi’s attribution and the lecturer’s express limits on available detail. Match the market incident and extended dialogue to exact sources. The passage quotes 5:51,52,55-56; do not insert unquoted verses 53-54 merely because the introduction names the wider range."
+        }
       ]
     },
     "385": {
@@ -11162,6 +11206,12 @@
             "additional": [],
             "scope": "Exact Quran clauses quoted in the transcript; original English and interpretive narrative preserved."
           }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Qarada expedition dialogue and figures",
+          "reason": "The Quran excerpt is verified separately. The expanded Safwan dialogue, expedition date, caravan value and troop figures require historical-source verification; the lecture interpretation connecting this expedition with the Badr promise is retained as commentary."
         }
       ]
     },
@@ -11229,6 +11279,31 @@
           "kind": "spacing",
           "before": "ﷺ(if",
           "after": "ﷺ (if"
+        },
+        {
+          "kind": "spacing",
+          "before": "Abu Na'ila\n\nand",
+          "after": "Abu Na'ila and"
+        },
+        {
+          "kind": "spacing",
+          "before": "those were\n\ndifferent times",
+          "after": "those were different times"
+        },
+        {
+          "kind": "spacing",
+          "before": "realized I\n\nmight",
+          "after": "realized I might"
+        },
+        {
+          "kind": "evidence",
+          "before": "\"Who will take care of Ka'b ibn al-Ashraf? For he has transgressed[73.5] against Allah and His Messenger.\"",
+          "after": "\"Who will take care of Ka'b ibn al-Ashraf? For he has transgressed[73.5] against Allah and His Messenger.\"\n\n> *«مَنْ لِكَعْبِ بْنِ الأَشْرَفِ فَإِنَّهُ قَدْ آذَى اللَّهَ وَرَسُولَهُ»* ([البخاري ٤٠٣٧](https://hadithunlocked.com/bukhari:4037)، صحيح)\n\n<!-- -->\n\n> Who will deal with Ka'b b. al-Ashraf? He has indeed harmed Allah and His Messenger. ([Bukhari 4037](https://hadithunlocked.com/bukhari:4037))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:4037",
+            "independent": "https://sunnah.com/bukhari:4037",
+            "scope": "Exact opening Prophetic statement in Jabir’s report. The surrounding expanded historical narrative and its dialogue are not authenticated by this excerpt."
+          }
         }
       ],
       "citationFlags": [
@@ -11241,7 +11316,22 @@
             "https://quran.com/4/36",
             "https://quran.com/4/37"
           ]
+        },
+        {
+          "reference": "bukhari:4037 and expanded historical versions",
+          "reason": "Bukhari assigns the perfume question to Muhammad b. Maslamah; this lecture assigns it to Abu Naila. Preserve both identities as presented in their respective sources; do not splice the Arabic into the expanded dialogue. The three-day fast, wound healing, expedition prayer, exact date and alternative poison-plot chronology need separate source verification."
+        },
+        {
+          "reference": "Unresolved marker [73.5]",
+          "reason": "Visually verified on PDF page 519: [73.5] is printed as a hyperlink, whose PDF annotation targets http://yqbooks.com, not an internal footnote. Only notes 72 and 73 are present on that page. Preserve the printed marker pending identification of its intended external note; do not invent missing footnote text."
+        },
+        {
+          "reference": "Historical commentary and Stillman quotation",
+          "reason": "Retain the explicitly labeled theory about Sawiq and the lecturer’s contextual discussion. Verify the Stillman quotation against its publication before adding any source endorsement."
         }
+      ],
+      "reviewNotes": [
+        "Applied the user-requested bilingual quotation layout: separate Arabic/English blocks with inline references and no translation labels."
       ]
     },
     "390": {
@@ -11256,6 +11346,22 @@
           "url": "https://quran.islamunlocked.com/quran:8:36",
           "sourceOffset": 685,
           "sourceMapping": "data/yqsirah-arabic-repairs.json"
+        },
+        {
+          "kind": "spacing",
+          "before": "that contributed\n\nto the caravan",
+          "after": "that contributed to the caravan"
+        },
+        {
+          "kind": "spacing",
+          "before": "ﷺ(i.e.,",
+          "after": "ﷺ (i.e.,"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Uhud dates and Quran 8:36 application",
+          "reason": "Preserve the lecture’s dates, numerical details and interpretation of the verse. The application to Uhud is commentary rather than wording supplied by the verse; the stated departure and arrival chronology requires source comparison before finalization."
         }
       ]
     },
@@ -11266,7 +11372,7 @@
         {
           "kind": "evidence",
           "before": "i.e., the way of dealing with matters is to have shura.",
-          "after": "i.e., the way of dealing with matters is to have shura.\n\n> ﴿وَمَا عِندَ ٱللَّهِ خَيْرٌ وَأَبْقَىٰ لِلَّذِينَ ءَامَنُوا۟ وَعَلَىٰ رَبِّهِمْ يَتَوَكَّلُونَ وَٱلَّذِينَ يَجْتَنِبُونَ كَبَٰٓئِرَ ٱلْإِثْمِ وَٱلْفَوَٰحِشَ … وَأَمْرُهُمْ شُورَىٰ بَيْنَهُمْ﴾\n>\n> [الشورى ٣٦–٣٨](https://quran.islamunlocked.com/quran:42:36)\n\n",
+          "after": "i.e., the way of dealing with matters is to have shura.\n\n    > ﴿وَمَا عِندَ ٱللَّهِ خَيْرٌ وَأَبْقَىٰ لِلَّذِينَ ءَامَنُوا۟ وَعَلَىٰ رَبِّهِمْ يَتَوَكَّلُونَ وَٱلَّذِينَ يَجْتَنِبُونَ كَبَٰٓئِرَ ٱلْإِثْمِ وَٱلْفَوَٰحِشَ … وَأَمْرُهُمْ شُورَىٰ بَيْنَهُمْ﴾ ([الشورى ٣٦–٣٨](https://quran.islamunlocked.com/quran:42:36))\n\n    <!-- -->\n\n    > What is with Allah is better and more lasting for those who believe and put their trust in their Lord, and those who avoid major sins and indecencies … and whose affairs are conducted by consultation among themselves. ([al-Shura 42:36–38](https://quran.islamunlocked.com/quran:42:36))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:42:36",
             "independent": "https://quran.com/42/36",
@@ -11280,57 +11386,57 @@
                 "independent": "https://quran.com/42/38"
               }
             ],
-            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text. Added an adjacent English meaning with inline bilingual references and preserved numbered-list nesting."
           }
         },
         {
           "kind": "evidence",
           "before": "they were the ones who did the 'prank' on the She-Camel of God.",
-          "after": "they were the ones who did the 'prank' on the She-Camel of God.\n\n> ﴿وَكَانَ فِى ٱلْمَدِينَةِ تِسْعَةُ رَهْطٍ يُفْسِدُونَ فِى ٱلْأَرْضِ وَلَا يُصْلِحُونَ﴾\n>\n> [النمل ٤٨](https://quran.islamunlocked.com/quran:27:48)\n\n",
+          "after": "they were the ones who did the 'prank' on the She-Camel of God.\n\n    > ﴿وَكَانَ فِى ٱلْمَدِينَةِ تِسْعَةُ رَهْطٍ يُفْسِدُونَ فِى ٱلْأَرْضِ وَلَا يُصْلِحُونَ﴾ ([النمل ٤٨](https://quran.islamunlocked.com/quran:27:48))\n\n    <!-- -->\n\n    > There were nine men in the city who spread corruption in the land and did not set things right. ([al-Naml 27:48](https://quran.islamunlocked.com/quran:27:48))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:27:48",
             "independent": "https://quran.com/27/48",
             "additional": [],
-            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text. Added an adjacent English meaning with inline bilingual references and preserved numbered-list nesting."
           }
         },
         {
           "kind": "evidence",
           "before": "they were a group of young men who had strong Iman in Allah SWT.",
-          "after": "they were a group of young men who had strong Iman in Allah SWT.\n\n> ﴿إِنَّهُمْ فِتْيَةٌ ءَامَنُوا۟ بِرَبِّهِمْ وَزِدْنَٰهُمْ هُدًى﴾\n>\n> [الكهف ١٣](https://quran.islamunlocked.com/quran:18:13)\n\n",
+          "after": "they were a group of young men who had strong Iman in Allah SWT.\n\n    > ﴿إِنَّهُمْ فِتْيَةٌ ءَامَنُوا۟ بِرَبِّهِمْ وَزِدْنَٰهُمْ هُدًى﴾ ([الكهف ١٣](https://quran.islamunlocked.com/quran:18:13))\n\n    <!-- -->\n\n    > They were young men who believed in their Lord, and We increased them in guidance. ([al-Kahf 18:13](https://quran.islamunlocked.com/quran:18:13))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:18:13",
             "independent": "https://quran.com/18/13",
             "additional": [],
-            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text. Added an adjacent English meaning with inline bilingual references and preserved numbered-list nesting."
           }
         },
         {
           "kind": "evidence",
           "before": "[73:2]; whereas for the rest of us, it is not wajib.",
-          "after": "[73:2]; whereas for the rest of us, it is not wajib.\n\n> ﴿قُمِ ٱلَّيْلَ إِلَّا قَلِيلًا﴾\n>\n> [المزمل ٢](https://quran.islamunlocked.com/quran:73:2)\n\n",
+          "after": "[73:2]; whereas for the rest of us, it is not wajib.\n\n    > ﴿قُمِ ٱلَّيْلَ إِلَّا قَلِيلًا﴾ ([المزمل ٢](https://quran.islamunlocked.com/quran:73:2))\n\n    <!-- -->\n\n    > Stand in prayer at night, except for a little. ([al-Muzzammil 73:2](https://quran.islamunlocked.com/quran:73:2))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:73:2",
             "independent": "https://quran.com/73/2",
             "additional": [],
-            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text. Added an adjacent English meaning with inline bilingual references and preserved numbered-list nesting."
           }
         },
         {
           "kind": "evidence",
           "before": "[3:159].",
-          "after": "[3:159].\n\n> ﴿وَشَاوِرْهُمْ فِى ٱلْأَمْرِ ۖ فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى ٱللَّهِ﴾\n>\n> [آل عمران ١٥٩](https://quran.islamunlocked.com/quran:3:159)\n\n",
+          "after": "[3:159].\n\n    > ﴿وَشَاوِرْهُمْ فِى ٱلْأَمْرِ ۖ فَإِذَا عَزَمْتَ فَتَوَكَّلْ عَلَى ٱللَّهِ﴾ ([آل عمران ١٥٩](https://quran.islamunlocked.com/quran:3:159))\n\n    <!-- -->\n\n    > Consult them in the matter; then, when you have decided, put your trust in Allah. ([Al Imran 3:159](https://quran.islamunlocked.com/quran:3:159))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:3:159",
             "independent": "https://quran.com/3/159",
             "additional": [],
-            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text. Added an adjacent English meaning with inline bilingual references and preserved numbered-list nesting."
           }
         },
         {
           "kind": "evidence",
           "before": "[2:197].",
-          "after": "[2:197].\n\n> ﴿خُذُوا۟ حِذْرَكُمْ﴾\n>\n> [النساء ٧١](https://quran.islamunlocked.com/quran:4:71)\n\n> ﴿وَتَزَوَّدُوا۟﴾\n>\n> [البقرة ١٩٧](https://quran.islamunlocked.com/quran:2:197)\n\n",
+          "after": "[2:197].\n\n    > ﴿خُذُوا۟ حِذْرَكُمْ﴾ ([النساء ٧١](https://quran.islamunlocked.com/quran:4:71))\n\n    <!-- -->\n\n    > Take your precautions. ([al-Nisa 4:71](https://quran.islamunlocked.com/quran:4:71))\n\n    <!-- -->\n\n    > ﴿وَتَزَوَّدُوا۟﴾ ([البقرة ١٩٧](https://quran.islamunlocked.com/quran:2:197))\n\n    <!-- -->\n\n    > Take provisions. ([al-Baqarah 2:197](https://quran.islamunlocked.com/quran:2:197))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:4:71",
             "independent": "https://quran.com/4/71",
@@ -11340,13 +11446,33 @@
                 "independent": "https://quran.com/2/197"
               }
             ],
-            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+            "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text. Added an adjacent English meaning with inline bilingual references and preserved numbered-list nesting."
           }
         },
         {
           "kind": "spacing",
           "before": "ﷺ?They",
           "after": "ﷺ? They"
+        },
+        {
+          "kind": "evidence",
+          "before": "\"None of you should say, 'If only I had done this, then such-and-such would have happened.' Rather, say, 'Whatever Allah has willed has occurred.' Because saying 'what if' opens up the door to shaytan.\"",
+          "after": "\"None of you should say, 'If only I had done this, then such-and-such would have happened.' Rather, say, 'Whatever Allah has willed has occurred.' Because saying 'what if' opens up the door to shaytan.\"\n\n    > *«وَإِنْ أَصَابَكَ شَىْءٌ فَلاَ تَقُلْ لَوْ أَنِّي فَعَلْتُ كَانَ كَذَا وَكَذَا، وَلَكِنْ قُلْ قَدَرُ اللَّهِ وَمَا شَاءَ فَعَلَ فَإِنَّ لَوْ تَفْتَحُ عَمَلَ الشَّيْطَانِ»* ([مسلم ٢٦٦٤](https://hadithunlocked.com/muslim:2664)، صحيح)\n\n    <!-- -->\n\n    > If something befalls you, do not say, “If only I had done this, such-and-such would have happened.” Instead say, “Allah decreed it, and He did what He willed,” for “if only” opens the work of Satan. ([Muslim 2664](https://hadithunlocked.com/muslim:2664))\n\n    ",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/muslim:2664",
+            "independent": "https://sunnah.com/muslim:2664",
+            "scope": "Verified contiguous excerpt, with its own English meaning and bilingual inline references. Preserves the complete source narrative and does not authenticate details outside the quoted excerpt."
+          }
+        },
+        {
+          "kind": "evidence",
+          "before": "\"I am not like one of you.\"",
+          "after": "\"I am not like one of you.\"\n\n    > *«إِنِّي لَسْتُ مِثْلَكُمْ»* ([البخاري ١٩٦٢](https://hadithunlocked.com/bukhari:1962)، صحيح)\n\n    <!-- -->\n\n    > I am not like you. ([Bukhari 1962](https://hadithunlocked.com/bukhari:1962))\n\n    ",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:1962",
+            "independent": "https://sunnah.com/bukhari:1962",
+            "scope": "Exact opening clause of the reply in Ibn Umar’s report on continuous fasting. The lecture’s duration and fainting details are not supplied by this excerpt."
+          }
         }
       ],
       "citationFlags": [
@@ -11357,7 +11483,14 @@
             "https://quran.islamunlocked.com/quran:27:48",
             "https://quran.com/27/48"
           ]
+        },
+        {
+          "reference": "Continuous fasting and armor applications",
+          "reason": "The continuous-fasting reply is now verified in Bukhari 1962 (Ibn Umar). That route does not supply the lecture’s three-day duration or fainting detail. Preserve these and the legal interpretations as the original lecture, without implying the added excerpt verifies them."
         }
+      ],
+      "reviewNotes": [
+        "Reformatted all six Quran additions into paired RTL/LTR blocks within their original numbered lessons. Original lecture text is preserved independently of the added English meanings."
       ]
     },
     "398": {
@@ -11415,13 +11548,19 @@
         {
           "kind": "evidence",
           "before": "[Quran, 3:160].",
-          "after": "[Quran, 3:160].\n\n> ﴿إِن يَنصُرْكُمُ ٱللَّهُ فَلَا غَالِبَ لَكُمْ﴾\n>\n> [آل عمران ١٦٠](https://quran.islamunlocked.com/quran:3:160)\n\n",
+          "after": "[Quran, 3:160].\n\n> ﴿إِن يَنصُرْكُمُ ٱللَّهُ فَلَا غَالِبَ لَكُمْ﴾ ([آل عمران ١٦٠](https://quran.islamunlocked.com/quran:3:160))\n\n<!-- -->\n\n> If Allah helps you, no one can overcome you. ([Al Imran 3:160](https://quran.islamunlocked.com/quran:3:160))\n\n",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:3:160",
             "independent": "https://quran.com/3/160",
             "additional": [],
             "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
           }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Historical estimates and lecture-era population",
+          "reason": "Keep the stated world Muslim population estimate, campaign timelines and modern 1.8-billion figure as the lecture’s claims, not updated statistics. The asserted Andalusia timeline and extrapolation from army size require historical verification; the verified Quran excerpt does not authenticate them."
         }
       ]
     },
@@ -17985,11 +18124,11 @@
         {
           "kind": "evidence",
           "before": "removed them and cursed upon the Quraysh on their faces. When Rasulullah ﷺ completed his prayer, he said, 'O Allah! Take revenge on Quraysh.' He said so thrice and added, 'O Allah! take revenge on Amr ibn Hisham (Abu Jahal), Utbah ibn Rabi'ah, Shaybah ibn Rabi'ah, al-Walid ibn Utbah, Umayya ibn Khalaf, Uqba ibn Abi Mu'ayt, and Umara ibn al-Walid.'\" Abdullah ibn Mas'ud added, \"By Allah! I saw all of them dead in the battlefield on the Day of Badr and they were dragged and thrown in the Qalib (القليب) (a well) at Badr. Rasulullah ﷺ then said, 'Allah's curse has descended upon the people of the Qalib.'\"",
-          "after": "removed them and cursed upon the Quraysh on their faces. When Rasulullah ﷺ completed his prayer, he said, 'O Allah! Take revenge on Quraysh.' He said so thrice and added, 'O Allah! take revenge on Amr ibn Hisham (Abu Jahal), Utbah ibn Rabi'ah, Shaybah ibn Rabi'ah, al-Walid ibn Utbah, Umayya ibn Khalaf, Uqba ibn Abi Mu'ayt, and Umara ibn al-Walid.'\" Abdullah ibn Mas'ud added, \"By Allah! I saw all of them dead in the battlefield on the Day of Badr and they were dragged and thrown in the Qalib (القليب) (a well) at Badr. Rasulullah ﷺ then said, 'Allah's curse has descended upon the people of the Qalib.'\"\n\n> *«اللَّهُمَّ عَلَيْكَ بِقُرَيْشٍ اللَّهُمَّ عَلَيْكَ بِقُرَيْشٍ اللَّهُمَّ عَلَيْكَ بِقُرَيْشٍ»* ثُمَّ سَمَّى *«اللَّهُمَّ عَلَيْكَ بِعَمْرِو بْنِ هِشَامٍ وَعُتْبَةَ بْنِ رَبِيعَةَ وَشَيْبَةَ بْنِ رَبِيعَةَ وَالْوَلِيدِ بْنِ عُتْبَةَ وَأُمَيَّةَ بْنِ خَلَفٍ وَعُقْبَةَ بْنِ أَبِي مُعَيْطٍ وَعُمَارَةَ بْنِ الْوَلِيدِ»*\n>\n> *«وَأُتْبِعَ أَصْحَابُ الْقَلِيبِ لَعْنَةً»*\n>\n> [Bukhari 520](https://hadithunlocked.com/bukhari:520) — Sahih (al-Bukhari).\n\n",
+          "after": "removed them and cursed upon the Quraysh on their faces. When Rasulullah ﷺ completed his prayer, he said, 'O Allah! Take revenge on Quraysh.' He said so thrice and added, 'O Allah! take revenge on Amr ibn Hisham (Abu Jahal), Utbah ibn Rabi'ah, Shaybah ibn Rabi'ah, al-Walid ibn Utbah, Umayya ibn Khalaf, Uqba ibn Abi Mu'ayt, and Umara ibn al-Walid.'\" Abdullah ibn Mas'ud added, \"By Allah! I saw all of them dead in the battlefield on the Day of Badr and they were dragged and thrown in the Qalib (القليب) (a well) at Badr. Rasulullah ﷺ then said, 'Allah's curse has descended upon the people of the Qalib.'\"\n\n> *«اللَّهُمَّ عَلَيْكَ بِقُرَيْشٍ اللَّهُمَّ عَلَيْكَ بِقُرَيْشٍ اللَّهُمَّ عَلَيْكَ بِقُرَيْشٍ»* ثُمَّ سَمَّى *«اللَّهُمَّ عَلَيْكَ بِعَمْرِو بْنِ هِشَامٍ وَعُتْبَةَ بْنِ رَبِيعَةَ وَشَيْبَةَ بْنِ رَبِيعَةَ وَالْوَلِيدِ بْنِ عُتْبَةَ وَأُمَيَّةَ بْنِ خَلَفٍ وَعُقْبَةَ بْنِ أَبِي مُعَيْطٍ وَعُمَارَةَ بْنِ الْوَلِيدِ»* ([البخاري ٥٢٠](https://hadithunlocked.com/bukhari:520)، صحيح)\n\n<!-- -->\n\n> O Allah, punish Quraysh. O Allah, punish Quraysh. O Allah, punish Quraysh.” Then he named them: “O Allah, punish Amr b. Hisham, Utbah b. Rabi'ah, Shaybah b. Rabi'ah, al-Walid b. Utbah, Umayya b. Khalaf, Uqba b. Abi Mu'ayt, and Umara b. al-Walid. ([Bukhari 520](https://hadithunlocked.com/bukhari:520))\n\n<!-- -->\n\n> *«وَأُتْبِعَ أَصْحَابُ الْقَلِيبِ لَعْنَةً»* ([البخاري ٥٢٠](https://hadithunlocked.com/bukhari:520)، صحيح)\n\n<!-- -->\n\n> And a curse followed the people of the well. ([Bukhari 520](https://hadithunlocked.com/bukhari:520))\n\n",
           "verification": {
             "hadithdb": "https://hadithunlocked.com/bukhari:520",
             "independent": "https://sunnah.com/bukhari:520",
-            "scope": "Exact supplication and closing Prophetic statement from the explicitly cited report. Old Vol. 1, Book 9, no. 499 maps to 520. Keep narrator phrase thumma samma plain, preserve every English sentence and all names from this route."
+            "scope": "Exact supplication and closing Prophetic statement from the explicitly cited report. Old Vol. 1, Book 9, no. 499 maps to 520. Keep narrator phrase thumma samma plain, preserve every English sentence and all names from this route. Explicit editorial translations now accompany both Arabic excerpts, including the narrator transition; the original English narrative is unchanged."
           }
         },
         {
@@ -18000,7 +18139,9 @@
       ],
       "reviewNotes": [
         "Read complete source narrative and matched its explicitly cited Bukhari version, including the named seventh individual, against HadithDB and Sunnah.com. Arabic additions quote the Prophetic supplication and closing statement; English narration remains intact. This identifies this route without harmonizing historical details with other routes.",
-        "Rendered citation and three Prophetic speech spans checked; narrator transition stays plain. Reversible-edit and footnote checks passed."
+        "Rendered citation and three Prophetic speech spans checked; narrator transition stays plain. Reversible-edit and footnote checks passed.",
+        "Added adjacent English translations to both Arabic excerpts after the user reported missing translations. Checked the Arabic and meanings against Bukhari 520 in HadithDB and Sunnah.com; preserved the original narrative.",
+        "Applied the user-requested bilingual quotation layout: separate Arabic/English blocks with inline references and no translation labels."
       ]
     },
     "327": {
@@ -18566,6 +18707,321 @@
       "body": [],
       "reviewNotes": [
         "Read the full two-sentence transition. No quotation or missing Arabic evidence; preserve the seven-lesson recap and both AH dates without expansion. No footnotes or editorial changes required."
+      ]
+    },
+    "377": {
+      "status": "in-review",
+      "source_body_sha256": "bb618e9724e7456ba44341628929be72c0d5ad4828831e400a58049022a19465",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "even here the\n\nProphet",
+          "after": "even here the Prophet"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Ibn Hisham assassination narrative",
+          "reason": "Match the extended dialogue, especially who instructed vigilance and the later Safwan conversion chronology, to the exact sirah account. Preserve the explicit uncertainty about Umayr’s Hijrah date and the lecturer’s inference concerning Jibril."
+        }
+      ]
+    },
+    "379": {
+      "status": "in-review",
+      "source_body_sha256": "6eb59d4f55e4e9967801a7d439af72addcbc83b4cc6d9a0ccd33508e584c5100",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "Muslims\n\nand Jews",
+          "after": "Muslims and Jews"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Historical claims and Arabic names",
+          "reason": "Retain this as the lecturer’s argument, not editorial history. The dates for Israel and Saadia Gaon, refuge generalizations, Maimonides conversion claims, and numerical law comparison need source review. Arabic Saladin name extraction requires visual checking."
+        }
+      ]
+    },
+    "381": {
+      "status": "in-review",
+      "source_body_sha256": "7c7c827134dd84513fdaafd8541e48a04ad92bb49240b23b801f711d54fab02a",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "(أولياء)'does",
+          "after": "(أولياء)' does"
+        },
+        {
+          "kind": "spacing",
+          "before": "he just\n\nsaid it",
+          "after": "he just said it"
+        },
+        {
+          "kind": "evidence",
+          "before": "\"Wallahi, the Prophet ﷺ never took revenge for something personal\"",
+          "after": "\"Wallahi, the Prophet ﷺ never took revenge for something personal\"\n\n    > «وَمَا انْتَقَمَ رَسُولُ اللَّهِ ﷺ لِنَفْسِهِ إِلاَّ أَنْ تُنْتَهَكَ حُرْمَةُ اللَّهِ فَيَنْتَقِمَ لِلَّهِ بِهَا»\n    >\n    > [Bukhari 3560](https://hadithunlocked.com/bukhari:3560) — Agreed upon (Muhammad Fuad Abd al-Baqi).\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:3560",
+            "independent": "https://sunnah.com/bukhari:3560",
+            "scope": "Aisha’s description, not Prophetic speech. Preserve the report’s exception concerning Allah’s sanctity; the lecture’s oath is not added to the Arabic."
+          }
+        },
+        {
+          "kind": "spacing",
+          "before": "\n\n — and this is truly evident",
+          "after": "\n\n    — and this is truly evident"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Aisha report and interpretation",
+          "reason": "Bukhari 3560 verifies Aisha’s description; the chronology and applications remain the lecturer’s interpretation. Preserve the explicit uncertainty about the intended verdict."
+        }
+      ]
+    },
+    "383": {
+      "status": "in-review",
+      "source_body_sha256": "8096a89fcb12405f54db1c5efd1ed4ee6b259ac5064be1d9c5245fefdfbd797b",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "Prophet ﷺ;that",
+          "after": "Prophet ﷺ; that"
+        },
+        {
+          "kind": "evidence",
+          "before": "\"I have been helped by Allah that my enemies are terrified of me even if I am at a month journey away\"",
+          "after": "\"I have been helped by Allah that my enemies are terrified of me even if I am at a month journey away\"\n\n> *«نُصِرْتُ بِالرُّعْبِ مَسِيرَةَ شَهْرٍ»*\n>\n> [Bukhari 335](https://hadithunlocked.com/bukhari:335) — Sahih (al-Bukhari).\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:335",
+            "independent": "https://sunnah.com/bukhari:335",
+            "scope": "Exact clause concerning victory through awe. Does not date the utterance to this expedition or verify its surrounding details."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Qarqarat al-Kudr chronology; bukhari:335",
+          "reason": "Bukhari 335 verifies the quoted awe clause without tying it to this expedition. Verify the date, tribe spelling, troop count, Yasar account, and the broad claim about male slaves separately."
+        }
+      ]
+    },
+    "382": {
+      "status": "in-review",
+      "source_body_sha256": "8ed6b347a6c7b22a65428546c9eea9fd0790070982b2b00b9a141673ddf9a0cd",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "Verily, the worst people in the Eyes of Allah are those whom the people are forced to smile at even as their hearts curse.\"",
+          "after": "Verily, the worst people in the Eyes of Allah are those whom the people are forced to smile at even as their hearts curse.\"\n\n    > *«يَا عَائِشَةُ مَتَى عَهِدْتِنِي فَحَّاشًا إِنَّ شَرَّ النَّاسِ عِنْدَ اللَّهِ مَنْزِلَةً يَوْمَ الْقِيَامَةِ مَنْ تَرَكَهُ النَّاسُ اتِّقَاءَ شَرِّهِ»*\n    >\n    > [Bukhari 6032](https://hadithunlocked.com/bukhari:6032) — Sahih (al-Bukhari).\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:6032",
+            "independent": "https://sunnah.com/bukhari:6032",
+            "scope": "Exact concluding reply; this version describes avoiding a person’s evil, not hearts cursing, and places the initial criticism before the visit."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "bukhari:6032",
+          "reason": "The source places the criticism before the man sat down, while the transcript places it after departure. It says people avoid his evil, not that their hearts curse him. Preserve the original English while keeping the verified Arabic version distinct."
+        }
+      ]
+    },
+    "384": {
+      "status": "in-review",
+      "source_body_sha256": "bcd0f002ccf3b562a6e7e51dc018c31f32340ee42956fc77677b5db7c9776c2b",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Sawiq expedition and treaty wording",
+          "reason": "Preserve the lecture account. Exact source verification remains needed for the date, troop count, oath and treaty paraphrases; the footnote on janaba and Ibrahim is an inference, not an independently verified quotation."
+        }
+      ]
+    },
+    "387": {
+      "status": "in-review",
+      "source_body_sha256": "fe129881b35576b625464447c426cf7d8b0f5ab0aac54a3db6734a2a3dd516eb",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Ibn Ishaq attribution",
+          "reason": "The closing historical attribution and stated purpose are preserved as the lecture’s account. No new Arabic quotation has been attached without identifying the exact passage in Ibn Ishaq."
+        }
+      ]
+    },
+    "388": {
+      "status": "reviewed",
+      "source_body_sha256": "16fadf90f8951598a6df94fe0cdd9b1355668922dc0c5092ea5606408f140a0d",
+      "body": [],
+      "reviewNotes": [
+        "Read the complete source entry. No Quran or hadith quotation requires added Arabic. Original wording retained; this is the lecturer’s recap or explanatory framing, not a newly authenticated historical claim."
+      ]
+    },
+    "389": {
+      "status": "reviewed",
+      "source_body_sha256": "aeb51dc015f15ec14496b6a60963e9624b10ff2710045dc213f121b53a895670",
+      "body": [],
+      "reviewNotes": [
+        "Read the complete source entry. No Quran or hadith quotation requires added Arabic. Original wording retained; this is the lecturer’s recap or explanatory framing, not a newly authenticated historical claim."
+      ]
+    },
+    "391": {
+      "status": "in-review",
+      "source_body_sha256": "eb641ad1dfda56e62cf397cab5061baea340613aaf36e9b9fe89925352f9010a",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "tirmidhi:2012; footnote 79",
+          "reason": "The deliberateness/haste wording matches Tirmidhi 2012, whose displayed grading is weak in HadithDB and Sunnah.com. Do not label the lecture’s broad claim “many ahadith” as verified by this single route. Leave the existing quotation intact pending assessment of other routes."
+        },
+        {
+          "reference": "Abbas report and operational chronology",
+          "reason": "The conversion date is explicitly presented as an inference. Preserve that qualification, the alternative theories for delay, and the uncertain arrival dates. Exact sources remain needed for the reported letter instruction and dialogue in footnote 78."
+        }
+      ]
+    },
+    "392": {
+      "status": "in-review",
+      "source_body_sha256": "dccfd693494e96a4e24807f31e24bf1b4e2ebbd7328a479ae2caa2e0449584e4",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "\"I saw in a dream that I had struck with my sword, but my sword broke — and this is what afflicted the Muslims at Uhud. Then I hit it again, and it came back as good as it ever was — and this was the victory that Allah gave to the Muslims and the coming together of the believers,\"",
+          "after": "\"I saw in a dream that I had struck with my sword, but my sword broke — and this is what afflicted the Muslims at Uhud. Then I hit it again, and it came back as good as it ever was — and this was the victory that Allah gave to the Muslims and the coming together of the believers,\"\n\n> *«رَأَيْتُ فِي رُؤْيَاىَ أَنِّي هَزَزْتُ سَيْفًا فَانْقَطَعَ صَدْرُهُ فَإِذَا هُوَ مَا أُصِيبَ مِنَ الْمُؤْمِنِينَ يَوْمَ أُحُدٍ ثُمَّ هَزَزْتُهُ أُخْرَى فَعَادَ أَحْسَنَ مَا كَانَ فَإِذَا هُوَ مَا جَاءَ بِهِ اللَّهُ مِنَ الْفَتْحِ وَاجْتِمَاعِ الْمُؤْمِنِينَ»* ([البخاري ٤٠٨١](https://hadithunlocked.com/bukhari:4081)، صحيح)\n\n<!-- -->\n\n> I saw in my dream that I shook a sword and its blade broke; this represented what befell the believers at Uhud. Then I shook it again, and it returned to its best state; this represented the victory Allah brought and the believers coming together. ([Bukhari 4081](https://hadithunlocked.com/bukhari:4081))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:4081",
+            "independent": "https://sunnah.com/bukhari:4081",
+            "scope": "Exact contiguous clauses of Abu Musa’s report, with an adjacent editorial translation. Original English and the lecturer’s interpretation remain unchanged."
+          }
+        },
+        {
+          "kind": "evidence",
+          "before": "\"I saw cows —and Allah is good— and this was the believers on the Day of Uhud.\"",
+          "after": "\"I saw cows —and Allah is good— and this was the believers on the Day of Uhud.\"\n\n> *«وَرَأَيْتُ فِيهَا بَقَرًا وَاللَّهُ خَيْرٌ فَإِذَا هُمُ الْمُؤْمِنُونَ يَوْمَ أُحُدٍ»* ([البخاري ٤٠٨١](https://hadithunlocked.com/bukhari:4081)، صحيح)\n\n<!-- -->\n\n> I saw cows in it—and Allah is good—and they represented the believers on the day of Uhud. ([Bukhari 4081](https://hadithunlocked.com/bukhari:4081))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:4081",
+            "independent": "https://sunnah.com/bukhari:4081",
+            "scope": "Exact contiguous clauses of Abu Musa’s report, with an adjacent editorial translation. Original English and the lecturer’s interpretation remain unchanged."
+          }
+        },
+        {
+          "kind": "evidence",
+          "before": "\"I saw myself wearing a protective armor, so I interpreted that to be Madinah\"",
+          "after": "\"I saw myself wearing a protective armor, so I interpreted that to be Madinah\"\n\n> *«رَأَيْتُ كَأَنِّي فِي دِرْعٍ حَصِينَةٍ، وَرَأَيْتُ بَقَرًا مُنَحَّرَةً، فَأَوَّلْتُ أَنَّ الدِّرْعَ الْحَصِينَةَ الْمَدِينَةُ»* ([أحمد ١٤٧٨٧](https://hadithunlocked.com/ahmad:14787)، صحيح لغيره عند شعيب الأرناؤوط)\n\n<!-- -->\n\n> I saw myself in a strong coat of armor, and I saw cows being slaughtered. I interpreted the strong coat of armor as Madinah. ([Ahmad 14787](https://hadithunlocked.com/ahmad:14787))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/ahmad:14787",
+            "independent": "https://dorar.net/h/uyRtuntN?osoul=1",
+            "scope": "Verified contiguous excerpt, with its own English meaning and bilingual inline references. Preserves the complete source narrative and does not authenticate details outside the quoted excerpt."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Dream chronology, armor report and Ibn Hajar interpretation",
+          "reason": "The armor quotation is now matched to Jabir’s report in Ahmad 14787, separately from Abu Musa’s Bukhari report. Bukhari 4081 does not explicitly date the telling of the dream; preserve the lecturer’s chronology argument as interpretation. The attributed Ibn Hajar explanation still needs an exact commentary source. The differing cow wording in editions of Ahmad is outside the added excerpt."
+        }
+      ],
+      "reviewNotes": [
+        "Applied the user-requested bilingual quotation layout: separate Arabic/English blocks with inline references and no translation labels."
+      ]
+    },
+    "393": {
+      "status": "in-review",
+      "source_body_sha256": "0af5a2bcf0c388d03a4e6a30fec0d866ea12dc9d2d0277fd9e0b19cbbc3e868d",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "once a\n\nprophet",
+          "after": "once a prophet"
+        },
+        {
+          "kind": "evidence",
+          "before": "[Musnad Imam Ahmad et al.]",
+          "after": "[Musnad Imam Ahmad et al.]\n\n> *«إِنَّهُ لَيْسَ لِنَبِيٍّ إِذَا لَبِسَ لَأْمَتَهُ أَنْ يَضَعَهَا حَتَّى يُقَاتِلَ»* ([أحمد ١٤٧٨٧](https://hadithunlocked.com/ahmad:14787)، صحيح لغيره عند شعيب الأرناؤوط)\n\n<!-- -->\n\n> It is not for a prophet, once he has put on his armor, to take it off until he fights. ([Ahmad 14787](https://hadithunlocked.com/ahmad:14787))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/ahmad:14787",
+            "independent": "https://dorar.net/h/uyRtuntN?osoul=1",
+            "scope": "Verified contiguous excerpt, with its own English meaning and bilingual inline references. Preserves the complete source narrative and does not authenticate details outside the quoted excerpt."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Musnad Ahmad armor quotation",
+          "reason": "The concluding armor statement is verified in Ahmad 14787 (Jabir; sahih li-ghayrihi, Shuayb al-Arnaut). That route mentions the Ansar’s reversal, but does not identify Hamzah as a messenger or supply the lecture’s entire consultation dialogue. Preserve the narrative without implying the excerpt verifies all its details."
+        }
+      ]
+    },
+    "395": {
+      "status": "reviewed",
+      "source_body_sha256": "58c88e570c3a4fdcef1a0dd36a2a332ad3194aa040e52cdeead579f277cf8ae7",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "(مصعب بن عمير) 2.",
+          "after": "(مصعب بن عمير)\n\n2."
+        },
+        {
+          "kind": "spacing",
+          "before": "(أسيد بن حضير) 3.",
+          "after": "(أسيد بن حضير)\n\n3."
+        }
+      ],
+      "reviewNotes": [
+        "Read the complete short preparation passage. Restored three numbered groups that were run together in PDF extraction, preserving all names and narrative. No direct Quran or hadith quotation appears in this entry."
+      ]
+    },
+    "396": {
+      "status": "in-review",
+      "source_body_sha256": "eb4baedff05c9d870cc72eb4ab161a2c6d862e6d31b9a5996e8c75c3acfa2395",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "\"Uhud is a mountain that loves us, and we love it\" [Bukhari].",
+          "after": "\"Uhud is a mountain that loves us, and we love it\" [Bukhari].\n\n    > *«هَذَا جَبَلٌ يُحِبُّنَا وَنُحِبُّهُ»* ([البخاري ٢٨٨٩](https://hadithunlocked.com/bukhari:2889)، صحيح)\n\n    <!-- -->\n\n    > This is a mountain that loves us, and we love it. ([Bukhari 2889](https://hadithunlocked.com/bukhari:2889))\n\n    ",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:2889",
+            "independent": "https://sunnah.com/bukhari:2889",
+            "scope": "Exact Prophetic statement in Anas’s report of returning from Khaybar. The lecture’s subsequent inference about faith is kept separate."
+          }
+        },
+        {
+          "kind": "evidence",
+          "before": "\"Calm down, Uhud! For really there's only a nabi, a siddiq, and two shaheeds on you.\"",
+          "after": "\"Calm down, Uhud! For really there's only a nabi, a siddiq, and two shaheeds on you.\"\n\n    > *«اثْبُتْ أُحُدُ فَإِنَّمَا عَلَيْكَ نَبِيٌّ وَصِدِّيقٌ وَشَهِيدَانِ»* ([البخاري ٣٦٧٥](https://hadithunlocked.com/bukhari:3675)، صحيح)\n\n    <!-- -->\n\n    > Be firm, Uhud! Upon you are only a prophet, a steadfastly truthful man, and two martyrs. ([Bukhari 3675](https://hadithunlocked.com/bukhari:3675))\n\n    ",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:3675",
+            "independent": "https://sunnah.com/bukhari:3675",
+            "scope": "Exact statement in Anas’s Bukhari route. The transcript attributes its account to Muslim; preserve that wording and flag the collection/version mismatch separately."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Uhud virtues and source attribution",
+          "reason": "The love quotation is verified in Bukhari 2889 and the trembling-mountain reply in Bukhari 3675. The latter does not include tapping with the foot and is not the Muslim citation stated in the transcript. Verify that route, the “mountain of Jannah” report and the named sanctuary boundaries separately; do not splice versions."
+        }
+      ]
+    },
+    "397": {
+      "status": "in-review",
+      "source_body_sha256": "5be6977da36f129112dcb37038e7401846d112cd85dce721b6139acf3f28aaa3",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Uhud diagram and tactical reconstruction",
+          "reason": "Visually confirmed two missing maps on PDF pages 533–534, the second labeled sides I–IV. Extracted the original embedded JPEGs without modification into var/imports/yqsirah/formatting/source-images; manifest records hashes, page numbers and the PDF’s attribution link. Both illustrations still need embedding through the supported content-media path before this passage can be finalized."
+        }
+      ]
+    },
+    "400": {
+      "status": "reviewed",
+      "source_body_sha256": "ac38ca0ee687fdee80aa2304688ccbb80b7787e200cd1616e5ba4af714a0b2e0",
+      "body": [],
+      "reviewNotes": [
+        "Read complete introductory discussion. Preserve all qualifications about reconstruction, inference, competing chronologies and uncertainty. No Quran or hadith quotation requires an Arabic addition."
       ]
     }
   },

@@ -18,7 +18,7 @@ test.each(['history', 'ibnhisham', 'another-history-book'])('%s references rende
     router: { get: (_path, callback) => { handler = callback; } },
     Books, Arabic, global: { books: [book] },
     visibleBookByAlias: value => Books.findByAlias(value, [book]),
-    SirahReader: { sourceReference: jest.fn().mockResolvedValue(null) },
+    SirahReader: { sourceReference: jest.fn().mockResolvedValue(null), itemNavigation: jest.fn().mockResolvedValue({ next: `/${alias}:2` }) },
     redirectVirtualHadithReference: jest.fn().mockResolvedValue(false),
     Index: { docsFromKeyValue: jest.fn().mockResolvedValue([item]) },
     Item: class { constructor(row) { Object.assign(this, row); } },
@@ -35,8 +35,9 @@ test.each(['history', 'ibnhisham', 'another-history-book'])('%s references rende
     await handler(req, res, next);
     expect(next).not.toHaveBeenCalled();
     expect(res.redirect).not.toHaveBeenCalled();
-    expect(res.render).toHaveBeenCalledWith('search', expect.objectContaining({
-      results: [expect.objectContaining({ ref: `${alias}:1`, single: true, title_en: 'Passage title' })]
+    expect(res.render).toHaveBeenCalledWith('sirah_passage', expect.objectContaining({
+      item: expect.objectContaining({ ref: `${alias}:1`, single: true, title_en: 'Passage title' }),
+      readerNavigation: { next: `/${alias}:2` }
     }));
   }
 });

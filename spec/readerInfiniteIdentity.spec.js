@@ -10,12 +10,12 @@ test('public, API and flushed URLs identify the same reader page',()=>{
  for(const url of ['/shuab/0/1','/shuab/0/1?flush=1','/api/shuab/0/1?flush=1#H617604'])expect(normalize(url)).toBe('/shuab/0/1');
  expect(normalize('/shuab/0/1?page=2&flush=1')).toBe('/shuab/0/1?page=2');
 });
-test('rejects a response whose canonical page is already in the reader before appending content',()=>{
+test.each(['hadith-section', 'hadith-sirah-item'])('%s rejects a duplicate canonical page before appending content',(mode)=>{
  const appendStart=source.indexOf('var appendReaderPage = function');
  const appendEnd=source.indexOf('var loadNext = function',appendStart);
- const scope={...context,mode:'hadith-section',loadedUrls:new Set(['/shuab/0/1']),exhausted:false,nextUrl:'/shuab/alias',
+ const scope={...context,mode,loadedUrls:new Set(['/shuab/0/1']),exhausted:false,nextUrl:'/shuab/alias',
   registerHadithHeadingOutlines:jest.fn(),main:{removeAttr:jest.fn()},$:jest.fn(),
-  DOMParser:class {parseFromString(){return {querySelectorAll:()=>[{getAttribute:name=>({'data-reader-infinite':'hadith-section','data-reader-current-url':'/api/shuab/0/1?flush=1'})[name]}]};}}
+  DOMParser:class {parseFromString(){return {querySelectorAll:()=>[{getAttribute:name=>({'data-reader-infinite':mode,'data-reader-current-url':'/api/shuab/0/1?flush=1'})[name]}]};}}
  };
  vm.createContext(scope);vm.runInContext(source.slice(appendStart,appendEnd),scope);
  expect(scope.appendReaderPage('<html/>','/shuab/alias')).toBeNull();

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<%
+const site = Object.assign({}, global.settings.site, { admin: !locals.noadmin && req.admin, editMode: !locals.noadmin && req.admin && req.editMode });
+const context = { book, chapter: item.chapter, section: item.section, subsection: item.subsection };
+const canonical = `/${item.ref}`;
+const page = Object.assign({ menu: 'History', canonical, context,
+  title_en: utils.socialMetadata().qualifiedTitle(`${book.name_en || book.shortName_en} ${item.num}`, item.title_en || item.title),
+  description_en: utils.socialMetadata().description(`${book.shortName_en || book.name_en} ${item.num}`, [item.body_en || item.body], 'Read this history passage.')
+}, readerNavigation);
+page.dateModified = utils.pageFreshness().latest([item.content_updated_at, item.lastmod]);
+const outlineContext = Object.keys(hadithHeadingOutlines)[0] || '';
+const outline = hadithHeadingOutlines[outlineContext];
+const showHeadingRail = Boolean(outline?.sections?.length);
+const currentHeading = item.subsection || item.section || item.chapter;
+const outlineKey = currentHeading ? `${book.alias}:${currentHeading.h1}${Number(currentHeading.level) >= 2 ? `.${currentHeading.h2}` : ''}${Number(currentHeading.level) >= 3 ? `.${currentHeading.h3}` : ''}` : '';
+%>
+<%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+<%- include('sub-views/header.ejs', { site, page }); %>
+<div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
+<div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
+<main class="chapter mt-10 sirah-only-page" data-reader-infinite="hadith-sirah-item" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
+  <%- include('sub-views/page_updated.ejs', { page }); %>
+  <header class="quran-tafsir-source row text-muted">
+    <section class="col-6 text-start" lang="en">
+      <strong><a class="quran-tafsir-book-modal-trigger" href="/<%= book.alias %>"><%= book.name_en || book.shortName_en %></a></strong>
+      <span><%= [book.author_en || book.author, book.death ? `d. ${book.death} AH` : ''].filter(Boolean).join(', ') %></span>
+    </section>
+    <section class="col-6 text-end" lang="ar" dir="rtl">
+      <strong><a class="quran-tafsir-book-modal-trigger" href="/<%= book.alias %>"><%= book.title || book.shortName || '' %></a></strong>
+      <span><%= [book.author, book.death ? `ت. ${arabic.toArabicDigits(String(book.death))} هـ` : ''].filter(Boolean).join('، ') %></span>
+    </section>
+  </header>
+  <% if (item.chapter) { %>
+    <%- include('sub-views/chapterTitle.ejs', { site, page, contextOnly: true, collapseIntro: true, hadithFlatHeadingRail: Boolean(outline?.flat), hadithFlatHeadingContext: outlineContext, hadithFlatHeadingKey: outlineKey }); %>
+    <% [item.section, item.subsection].filter(Boolean).forEach(function (heading) { %>
+      <%- include('sub-views/heading.ejs', { site, page, heading, contextOnly: true, collapseIntro: true, passageHasHeadline: Boolean(item.title_en || item.title) }); %>
+    <% }); %>
+  <% } %>
+  <%- include('sub-views/sirah_item.ejs', { i: item, title: true }); %>
+</main>
+</div>
+<% if (showHeadingRail) { %>
+<%- include('sub-views/hadith_heading_toc.ejs', { hadithHeadingOutlines, hadithHeadingInitialContext: outlineContext, hadithHeadingInitialKey: outlineKey }); %>
+<% } %>
+</div>
+<%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
+<%- include('sub-views/footer.ejs', { site, page }); %>
+<%- include('sub-views/scripts.ejs', { site, page }); %>
+</body>
+</html>

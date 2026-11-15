@@ -1759,6 +1759,15 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     && req.query.share === undefined) {
     return await renderQuranAyahPassage(results[0], req, res);
   }
+  if (['sirah', 'history'].includes(results[0].book?.type)
+    && !['json', 'tsv', 'md', 'sharepreview', 'share'].some(key => key in req.query)) {
+    const item = results[0];
+    const [readerNavigation, hadithHeadingOutlines] = await Promise.all([
+      SirahReader.itemNavigation(item),
+      item.chapter ? HadithHeadingOutlines.forChapter(item.chapter) : {}
+    ]);
+    return res.render('sirah_passage', { item, book: item.book, readerNavigation, hadithHeadingOutlines });
+  }
   var admin = (req.admin);
   var editMode = (admin && req.editMode);
   await addVirtualReferences(results);

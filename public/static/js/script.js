@@ -252,6 +252,8 @@ function initSearchInfiniteScroll(root) {
 		};
 
 		var reinitializeChunk = function (chunk) {
+			if (mode === 'hadith-sirah-item')
+				chunk.querySelectorAll('.reflection-section[data-reflection-section]').forEach(executeInlineScripts);
 			initReadOnlyInlineEditorGuards(chunk);
 			initMarkdownEditablePreviews(chunk);
 			initHadithSharhLinks(chunk);
@@ -13387,7 +13389,7 @@ function initReaderInfiniteNavigation(root) {
 		var mode = main.attr('data-reader-infinite') || '';
 		var startsAtTafsirIntroduction = mode === 'tafsir' && main.attr('data-reader-context-key') === '0';
 		var startsAtReaderIntroduction = startsAtTafsirIntroduction || main.attr('data-reader-starts-introduction') === '1';
-		var prefetchAhead = startsAtReaderIntroduction ? 2 : (['tafsir', 'hadith-sharh'].includes(mode) ? 1 : 3);
+		var prefetchAhead = startsAtReaderIntroduction ? 2 : (['tafsir', 'hadith-sharh', 'hadith-sirah-item'].includes(mode) ? 1 : 3);
 		var ensuring = false;
 		var loadingPromise = null;
 		var retryAfter = 0;

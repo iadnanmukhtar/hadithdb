@@ -11437,6 +11437,13 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	font-size: var(--f-size-ar-note);
 }
 
+.h blockquote,
+.h blockquote p,
+.h .note blockquote p,
+.h .note:lang(ar) blockquote p {
+	text-indent: 0;
+}
+
 .highlight {
 	background-color: var(--c-highlight);
 }
