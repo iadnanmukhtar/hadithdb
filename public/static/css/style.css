@@ -8037,6 +8037,16 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	padding-top: 1rem;
 }
 
+.sirah-only-page .reader-infinite-page {
+	border-top: 0;
+	margin-top: 0;
+	padding-top: 0;
+}
+
+.sirah-only-page .quran-tafsir-source {
+	border-bottom: 0;
+}
+
 .quran-infinite-status,
 .reader-infinite-status,
 .search-infinite-status {

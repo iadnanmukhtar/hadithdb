@@ -1,5 +1,29 @@
 'use strict';
 const {formatField,undo}=require('../bin/utils/format-yqsirah');
+test('pairs existing Quran and English quotations without rewriting either language',()=>{
+ const changes=require('../data/yqsirah-formatting.json').passages['398'].body;
+ const arabic=changes.find(x=>x.kind==='quran-layout');
+ const english=changes.find(x=>x.kind==='quran-translation-layout');
+ const source=arabic.before+'\n\n'+english.before;
+ const result=formatField(source,[{...arabic,sourceOffset:undefined},english]);
+ expect(undo(result.text,result.ledger)).toBe(source);
+ expect(result.text).toContain('<!-- -->');
+ expect(()=>formatField(source,[{...arabic,sourceOffset:undefined,after:arabic.after.replace(arabic.before,'نص آخر')}])).toThrow('only wrap');
+ expect(()=>formatField(source,[{...english,after:english.after.replace('what you suffered','a shortened account')}])).toThrow('cannot rewrite');
+});
+test('restores only visually verified source images without rewriting narrative',()=>{
+ const image=require('../data/yqsirah-formatting-source-images.json')[0];
+ const change={kind:'source-image',imageId:image.id,before:image.anchor,after:`${image.anchor}\n\n![${image.alt}](${image.url})\n\n`};
+ const source=`Original narrative. ${image.anchor}\n\nOriginal attribution.`;
+ const result=formatField(source,[change]);
+ expect(result.text).toContain(`![${image.alt}](${image.url})`);
+ expect(undo(result.text,result.ledger)).toBe(source);
+ expect(()=>formatField(source,[{...change,imageId:'unverified-image'}])).toThrow('visual PDF verification');
+ expect(()=>formatField(source,[{...change,after:change.after+'New narrative.'}])).toThrow('only append');
+ const fs=require('fs'),read=fs.readFileSync;
+ const spy=jest.spyOn(fs,'readFileSync').mockImplementation((file,...args)=>String(file).endsWith(image.publicPath)?Buffer.from('changed image'):read(file,...args));
+ try{expect(()=>formatField(source,[change])).toThrow('Source image bytes changed');}finally{spy.mockRestore();}
+});
 test('keeps long indented list continuations intact at prose transitions',()=>{
  const continuation='    '+('The account continues with details. '.repeat(25))+'And '+('the remaining narrative stays within this list item. '.repeat(15));
  const source='1. First point.\n\n2. Second point.\n\n'+continuation;

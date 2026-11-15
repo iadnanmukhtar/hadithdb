@@ -19,12 +19,12 @@ test('item navigation crosses headings but stops at book boundaries and missing 
  expect(item.getNext).toHaveBeenCalledTimes(1);
 });
 
-test.each(['sirah', 'history'])('%s reader renders the source, headings, rail, and individual passage', type => {
+test.each([['sirah', true], ['history', true], ['sirah', false], ['history', false]])('%s reader headings with passage headline=%s', (type, hasHeadline) => {
  const book = { alias: 'history', type, name_en: 'History Book', title: 'التاريخ', shortName_en: 'History', shortName: 'التاريخ', author_en: 'Author', author: 'المؤلف', death: 218 };
  const chapter = { book, id: 1, h1: 1, level: 1, path: 'history/1', title_en: 'Chapter title', title: 'الفصل' };
  const section = { book, id: 2, h1: 1, h2: 2, level: 2, path: 'history/1/2', title_en: 'Section title', title: 'القسم' };
  const subsection = { book, id: 3, h1: 1, h2: 2, h3: 3, level: 3, path: 'history/1/2/3', title_en: 'Subsection title' };
- const item = { id: 5, num: '5', ref: 'history:5', book_alias: book.alias, chapter, section, subsection, title_en: 'Passage title', body_en: 'Passage body' };
+ const item = { id: 5, num: '5', ref: 'history:5', book_alias: book.alias, chapter, section, subsection, title_en: hasHeadline ? 'Passage title' : '', body_en: 'Passage body' };
  const outlines = require('../lib/HadithHeadingOutlines').buildOutline(chapter, [section, subsection]);
  const base = { global: { settings: { site: {} } }, req: {}, book, item, utils, arabic,
   readerNavigation: { next: '/history:6' }, hadithHeadingOutlines: { 'history:1': outlines } };
@@ -42,5 +42,26 @@ test.each(['sirah', 'history'])('%s reader renders the source, headings, rail, a
  expect($('[data-hadith-heading-key="history:1.2.3"][data-hadith-heading-target]')).toHaveLength(1);
  expect($('.sirah-item')).toHaveLength(1);
  expect($('.sirah-item').text()).toContain('Passage body');
- expect($('main').text()).not.toContain('Subsection title');
+ expect($('[data-hadith-heading-level="3"] .heading')).toHaveLength(0);
+ if (hasHeadline) expect($('main').text()).not.toContain('Subsection title');
+ else expect($('.sirah-subsection-heading').text()).toContain('Subsection title');
+});
+
+test('scrolling keeps only new heading boundaries and omits repeated book metadata', () => {
+ const { JSDOM } = require('jsdom');
+ const vm = require('vm');
+ const document = new JSDOM('<main><div data-sirah-heading-path="history/1"></div><div data-sirah-heading-path="history/1/2"></div></main>').window.document;
+ const remote = document.createElement('main');
+ remote.innerHTML = '<p class="page-updated">Updated</p><header class="quran-tafsir-source">Book</header><div data-sirah-heading-path="history/1">Chapter</div><div data-sirah-heading-path="history/1/2">Repeated section</div><div data-sirah-heading-path="history/1/2/4">New subsection</div><article class="sirah-item">Next passage</article>';
+ const script = fs.readFileSync(require.resolve('../public/static/js/script.js'), 'utf8');
+ const start = script.indexOf('var appendHadithPage = function');
+ const end = script.indexOf('var reinitializeChunk = function', start);
+ const scope = { document, mode: 'hadith-sirah-item', main: [document.querySelector('main')] };
+ vm.createContext(scope);
+ vm.runInContext(script.slice(start, end), scope);
+ const chunk = document.createElement('section');
+ scope.appendHadithPage(remote, [chunk]);
+ expect(chunk.querySelector('.quran-tafsir-source, .page-updated')).toBeNull();
+ expect(Array.from(chunk.querySelectorAll('[data-sirah-heading-path]')).map(node => node.dataset.sirahHeadingPath)).toEqual(['history/1/2/4']);
+ expect(chunk.querySelector('.sirah-item').textContent).toBe('Next passage');
 });

@@ -11500,16 +11500,17 @@
         {
           "kind": "quran-layout",
           "before": "وَمَآ أَصَٰبَكُمْ يَوْمَ ٱلْتَقَى ٱلْجَمْعَانِ فَبِإِذْنِ ٱللَّهِ وَلِيَعْلَمَ ٱلْمُؤْمِنِينَ وَلِيَعْلَمَ ٱلَّذِينَ نَافَقُوا۟ۚ وَقِيلَ لَهُمْ تَعَالَوْا۟ قَٰتِلُوا۟ فِي سَبِيلِ ٱللَّهِ أَوِ ٱدْفَعُوا۟ۖ قَالُوا۟ لَوْ نَعْلَمُ قِتَالࣰا لَّٱتَّبَعْنَٰكُمْۗ هُمْ لِلْكُفْرِ يَوْمَئِذٍ أَقْرَبُ مِنْهُمْ لِلْإِيمَٰنِۚ يَقُولُونَ بِأَفْوَٰهِهِم مَّا لَيْسَ فِي قُلُوبِهِمْۚ وَٱللَّهُ أَعْلَمُ بِمَا يَكْتُمُونَ",
-          "after": "\n\n> ﴿وَمَآ أَصَٰبَكُمْ يَوْمَ ٱلْتَقَى ٱلْجَمْعَانِ فَبِإِذْنِ ٱللَّهِ وَلِيَعْلَمَ ٱلْمُؤْمِنِينَ وَلِيَعْلَمَ ٱلَّذِينَ نَافَقُوا۟ۚ وَقِيلَ لَهُمْ تَعَالَوْا۟ قَٰتِلُوا۟ فِي سَبِيلِ ٱللَّهِ أَوِ ٱدْفَعُوا۟ۖ قَالُوا۟ لَوْ نَعْلَمُ قِتَالࣰا لَّٱتَّبَعْنَٰكُمْۗ هُمْ لِلْكُفْرِ يَوْمَئِذٍ أَقْرَبُ مِنْهُمْ لِلْإِيمَٰنِۚ يَقُولُونَ بِأَفْوَٰهِهِم مَّا لَيْسَ فِي قُلُوبِهِمْۚ وَٱللَّهُ أَعْلَمُ بِمَا يَكْتُمُونَ﴾\n>\n> [آل عمران ١٦٦–١٦٧](https://quran.islamunlocked.com/quran:3:166)\n\n",
+          "after": "\n\n> ﴿وَمَآ أَصَٰبَكُمْ يَوْمَ ٱلْتَقَى ٱلْجَمْعَانِ فَبِإِذْنِ ٱللَّهِ وَلِيَعْلَمَ ٱلْمُؤْمِنِينَ وَلِيَعْلَمَ ٱلَّذِينَ نَافَقُوا۟ۚ وَقِيلَ لَهُمْ تَعَالَوْا۟ قَٰتِلُوا۟ فِي سَبِيلِ ٱللَّهِ أَوِ ٱدْفَعُوا۟ۖ قَالُوا۟ لَوْ نَعْلَمُ قِتَالࣰا لَّٱتَّبَعْنَٰكُمْۗ هُمْ لِلْكُفْرِ يَوْمَئِذٍ أَقْرَبُ مِنْهُمْ لِلْإِيمَٰنِۚ يَقُولُونَ بِأَفْوَٰهِهِم مَّا لَيْسَ فِي قُلُوبِهِمْۚ وَٱللَّهُ أَعْلَمُ بِمَا يَكْتُمُونَ﴾ ([آل عمران ١٦٦–١٦٧](https://quran.islamunlocked.com/quran:3:166))\n\n",
           "label": "آل عمران ١٦٦–١٦٧",
           "url": "https://quran.islamunlocked.com/quran:3:166",
           "sourceOffset": 2015,
-          "sourceMapping": "data/yqsirah-arabic-repairs.json"
+          "sourceMapping": "data/yqsirah-arabic-repairs.json",
+          "inlineReference": true
         },
         {
           "kind": "evidence",
           "before": "[see Quran, 3:179].",
-          "after": "[see Quran, 3:179].\n\n> ﴿مَّا كَانَ ٱللَّهُ لِيَذَرَ ٱلْمُؤْمِنِينَ عَلَىٰ مَآ أَنتُمْ عَلَيْهِ حَتَّىٰ يَمِيزَ ٱلْخَبِيثَ مِنَ ٱلطَّيِّبِ﴾\n>\n> [آل عمران ١٧٩](https://quran.islamunlocked.com/quran:3:179)\n\n",
+          "after": "[see Quran, 3:179].\n\n> ﴿مَّا كَانَ ٱللَّهُ لِيَذَرَ ٱلْمُؤْمِنِينَ عَلَىٰ مَآ أَنتُمْ عَلَيْهِ حَتَّىٰ يَمِيزَ ٱلْخَبِيثَ مِنَ ٱلطَّيِّبِ﴾ ([آل عمران ١٧٩](https://quran.islamunlocked.com/quran:3:179))\n\n<!-- -->\n\n> Allah would not leave the believers in the state you are in until He distinguishes the impure from the pure. ([Al Imran 3:179](https://quran.islamunlocked.com/quran:3:179))\n\n",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:3:179",
             "independent": "https://quran.com/3/179",
@@ -11520,7 +11521,7 @@
         {
           "kind": "evidence",
           "before": "i.e., 'Don't disunite in your attitude towards the hypocrites.'",
-          "after": "i.e., 'Don't disunite in your attitude towards the hypocrites.'\n\n> ﴿فَمَا لَكُمْ فِى ٱلْمُنَٰفِقِينَ فِئَتَيْنِ وَٱللَّهُ أَرْكَسَهُم بِمَا كَسَبُوٓا۟﴾\n>\n> [النساء ٨٨](https://quran.islamunlocked.com/quran:4:88)\n\n",
+          "after": "i.e., 'Don't disunite in your attitude towards the hypocrites.'\n\n    > ﴿فَمَا لَكُمْ فِى ٱلْمُنَٰفِقِينَ فِئَتَيْنِ وَٱللَّهُ أَرْكَسَهُم بِمَا كَسَبُوٓا۟﴾ ([النساء ٨٨](https://quran.islamunlocked.com/quran:4:88))\n\n    <!-- -->\n\n    > Why are you divided into two groups concerning the hypocrites, when Allah has caused them to regress because of what they have earned? ([al-Nisa 4:88](https://quran.islamunlocked.com/quran:4:88))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:4:88",
             "independent": "https://quran.com/4/88",
@@ -11531,12 +11532,51 @@
         {
           "kind": "evidence",
           "before": "[see Quran, 3:122].",
-          "after": "[see Quran, 3:122].\n\n> ﴿إِذْ هَمَّت طَّآئِفَتَانِ مِنكُمْ أَن تَفْشَلَا وَٱللَّهُ وَلِيُّهُمَا ۗ وَعَلَى ٱللَّهِ فَلْيَتَوَكَّلِ ٱلْمُؤْمِنُونَ﴾\n>\n> [آل عمران ١٢٢](https://quran.islamunlocked.com/quran:3:122)\n\n",
+          "after": "[see Quran, 3:122].\n\n    > ﴿إِذْ هَمَّت طَّآئِفَتَانِ مِنكُمْ أَن تَفْشَلَا وَٱللَّهُ وَلِيُّهُمَا ۗ وَعَلَى ٱللَّهِ فَلْيَتَوَكَّلِ ٱلْمُؤْمِنُونَ﴾ ([آل عمران ١٢٢](https://quran.islamunlocked.com/quran:3:122))\n\n    <!-- -->\n\n    > When two groups among you were about to lose heart, Allah was their protector. In Allah, then, let the believers put their trust. ([Al Imran 3:122](https://quran.islamunlocked.com/quran:3:122))\n\n    ",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:3:122",
             "independent": "https://quran.com/3/122",
             "additional": [],
             "scope": "Exact quoted clauses; original English and interpretation preserved. Ellipses mark omitted Quran text."
+          }
+        },
+        {
+          "kind": "quran-translation-layout",
+          "before": " \"So what you suffered on the day the two armies met was by Allah’s Will, so that He might distinguish the [true] believers and expose the hypocrites. When it was said to them, 'Come fight in the cause of Allah, or [at least] defend yourselves,' they replied, 'If we had known there was fighting, we would have definitely gone with you.' They were closer to disbelief than to belief on that day — for saying with their mouths what was not in their hearts. Allah is All-Knowing of what they hide\" [3:166-167].",
+          "after": "<!-- -->\n\n> \"So what you suffered on the day the two armies met was by Allah’s Will, so that He might distinguish the [true] believers and expose the hypocrites. When it was said to them, 'Come fight in the cause of Allah, or [at least] defend yourselves,' they replied, 'If we had known there was fighting, we would have definitely gone with you.' They were closer to disbelief than to belief on that day — for saying with their mouths what was not in their hearts. Allah is All-Knowing of what they hide\" ([Al Imran 3:166–167](https://quran.islamunlocked.com/quran:3:166))",
+          "sourceReference": "[3:166-167].",
+          "label": "Al Imran 3:166–167",
+          "url": "https://quran.islamunlocked.com/quran:3:166",
+          "verification": {
+            "hadithdb": "https://quran.islamunlocked.com/quran:3:166",
+            "independent": "https://quran.com/3/166",
+            "scope": "Existing transcript translation unchanged; only its citation and block layout are formatted."
+          }
+        },
+        {
+          "kind": "spacing",
+          "before": "(we\n\nwould not leave)",
+          "after": "(we would not leave)"
+        }
+      ],
+      "reviewNotes": [
+        "Read the entire withdrawal account and footnote. Preserved the original English of 3:166–167, applying paired block directions and inline references; nested the two later Quran additions in their numbered items."
+      ],
+      "citationFlags": [
+        {
+          "reference": "Withdrawal dialogue and tribal boast",
+          "reason": "Bukhari 4050 confirms two groups disputing whether to fight the withdrawing men; it does not state the transcript’s expanded sequence “fight them, then Uhud” versus “Quraysh first, then them.” Bukhari 4051 verifies Jabir’s statement about Banu Salama and Banu Haritha, but not the lecture’s claim that their descendants boast to this day. Preserve the expanded dialogue and contemporary extrapolation as the lecture’s wording."
+        }
+      ],
+      "footnotes": [
+        {
+          "kind": "evidence",
+          "before": "Because of this, these tribes to this day boast regarding this verse.",
+          "after": "Because of this, these tribes to this day boast regarding this verse.\n\n    > «نَزَلَتْ هَذِهِ الآيَةُ فِينَا ﴿إِذْ هَمَّتْ طَائِفَتَانِ مِنْكُمْ أَنْ تَفْشَلاَ﴾ بَنِي سَلِمَةَ وَبَنِي حَارِثَةَ وَمَا أُحِبُّ أَنَّهَا لَمْ تَنْزِلْ وَاللَّهُ يَقُولُ ﴿وَاللَّهُ وَلِيُّهُمَا﴾» ([البخاري ٤٠٥١](https://hadithunlocked.com/bukhari:4051)، صحيح)\n\n    <!-- -->\n\n    > Jabir said: This verse, “When two groups among you were about to lose heart,” was revealed about us—Banu Salama and Banu Haritha. I would not wish that it had not been revealed, for Allah says, “Allah is their protector.” ([Bukhari 4051](https://hadithunlocked.com/bukhari:4051))\n\n    ",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:4051",
+            "independent": "https://sunnah.com/bukhari:4051",
+            "scope": "Exact contiguous excerpt matched to the identified report. English meaning accompanies the Arabic; narrator speech stays plain. Surrounding expanded dialogue is preserved separately."
           }
         }
       ]
@@ -11571,22 +11611,38 @@
         {
           "kind": "evidence",
           "before": "[Quran, 3:152].",
-          "after": "[Quran, 3:152].\n\n> ﴿وَلَقَدْ صَدَقَكُمُ ٱللَّهُ وَعْدَهُۥٓ إِذْ تَحُسُّونَهُم بِإِذْنِهِۦ ۖ حَتَّىٰٓ إِذَا فَشِلْتُمْ وَتَنَٰزَعْتُمْ فِى ٱلْأَمْرِ وَعَصَيْتُم مِّنۢ بَعْدِ مَآ أَرَىٰكُم مَّا تُحِبُّونَ ۚ مِنكُم مَّن يُرِيدُ ٱلدُّنْيَا وَمِنكُم مَّن يُرِيدُ ٱلْـَٔاخِرَةَ ۚ ثُمَّ صَرَفَكُمْ عَنْهُمْ لِيَبْتَلِيَكُمْ ۖ وَلَقَدْ عَفَا عَنكُمْ ۗ وَٱللَّهُ ذُو فَضْلٍ عَلَى ٱلْمُؤْمِنِينَ﴾\n>\n> [آل عمران ١٥٢](https://quran.islamunlocked.com/quran:3:152)\n\n",
+          "after": "[Quran, 3:152].\n\n> ﴿وَلَقَدْ صَدَقَكُمُ ٱللَّهُ وَعْدَهُۥٓ إِذْ تَحُسُّونَهُم بِإِذْنِهِۦ ۖ حَتَّىٰٓ إِذَا فَشِلْتُمْ وَتَنَٰزَعْتُمْ فِى ٱلْأَمْرِ وَعَصَيْتُم مِّنۢ بَعْدِ مَآ أَرَىٰكُم مَّا تُحِبُّونَ ۚ مِنكُم مَّن يُرِيدُ ٱلدُّنْيَا وَمِنكُم مَّن يُرِيدُ ٱلْـَٔاخِرَةَ ۚ ثُمَّ صَرَفَكُمْ عَنْهُمْ لِيَبْتَلِيَكُمْ ۖ وَلَقَدْ عَفَا عَنكُمْ ۗ وَٱللَّهُ ذُو فَضْلٍ عَلَى ٱلْمُؤْمِنِينَ﴾ ([آل عمران ١٥٢](https://quran.islamunlocked.com/quran:3:152))\n\n<!-- -->\n\n> Indeed, Allah fulfilled His promise to you when you [initially] swept them away by His Will, then your courage weakened and you disputed about the command and disobeyed after Allah had brought victory within your reach. Some of you were after worldly gain while others desired a heavenly reward. He denied you victory over them as a test, yet He has pardoned you. And Allah is Gracious to the believers ([Al Imran 3:152](https://quran.islamunlocked.com/quran:3:152))\n\n",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:3:152",
             "independent": "https://quran.com/3/152",
-            "scope": "Exact Quran quotation or quoted clause only. Original lecture wording and interpretation retained."
+            "scope": "Exact Quran quotation or quoted clause only. Original lecture wording and interpretation retained. Adjacent English repeats the source transcript quotation verbatim; no translation label is added."
           }
         },
         {
           "kind": "evidence",
           "before": "[Quran, 3:153].",
-          "after": "[Quran, 3:153].\n\n> ﴿إِذْ تُصْعِدُونَ وَلَا تَلْوُۥنَ عَلَىٰٓ أَحَدٍ وَٱلرَّسُولُ يَدْعُوكُمْ فِىٓ أُخْرَىٰكُمْ﴾\n>\n> [آل عمران ١٥٣](https://quran.islamunlocked.com/quran:3:153)\n\n",
+          "after": "[Quran, 3:153].\n\n> ﴿إِذْ تُصْعِدُونَ وَلَا تَلْوُۥنَ عَلَىٰٓ أَحَدٍ وَٱلرَّسُولُ يَدْعُوكُمْ فِىٓ أُخْرَىٰكُمْ﴾ ([آل عمران ١٥٣](https://quran.islamunlocked.com/quran:3:153))\n\n<!-- -->\n\n> [Remember] when you were running far away [in panic] —not looking at anyone— while the Messenger was calling to you from behind! ([Al Imran 3:153](https://quran.islamunlocked.com/quran:3:153))\n\n",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:3:153",
             "independent": "https://quran.com/3/153",
-            "scope": "Exact Quran quotation or quoted clause only. Original lecture wording and interpretation retained."
+            "scope": "Exact Quran quotation or quoted clause only. Original lecture wording and interpretation retained. Adjacent English repeats the source transcript quotation verbatim; no translation label is added."
           }
+        },
+        {
+          "kind": "spacing",
+          "before": "the bickering\n\nmust have gone",
+          "after": "the bickering must have gone"
+        },
+        {
+          "kind": "spacing",
+          "before": "ﷺ;and therefore",
+          "after": "ﷺ; and therefore"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Reconstruction, booty rules and warning dialogue",
+          "reason": "Keep all explicit estimates (“perhaps,” “rough estimate,” “we can imagine”), competing route theories and lecture-era legal explanation intact. The exact warning dialogue, elapsed times, remaining ten archers and Khalid’s stated age require separate source verification; the Quran quotations do not establish those details."
         }
       ]
     },
@@ -11597,12 +11653,28 @@
         {
           "kind": "evidence",
           "before": "[Quran, 12:92].",
-          "after": "[Quran, 12:92].\n\n> ﴿يَغْفِرُ ٱللَّهُ لَكُمْ ۖ وَهُوَ أَرْحَمُ ٱلرَّٰحِمِينَ﴾\n>\n> [يوسف ٩٢](https://quran.islamunlocked.com/quran:12:92)\n\n",
+          "after": "[Quran, 12:92].\n\n> ﴿يَغْفِرُ ٱللَّهُ لَكُمْ ۖ وَهُوَ أَرْحَمُ ٱلرَّٰحِمِينَ﴾ ([يوسف ٩٢](https://quran.islamunlocked.com/quran:12:92))\n\n<!-- -->\n\n> May Allah forgive you; He is the most merciful of those who show mercy. ([Yusuf 12:92](https://quran.islamunlocked.com/quran:12:92))\n\n",
           "verification": {
             "hadithdb": "https://quran.islamunlocked.com/quran:12:92",
             "independent": "https://quran.com/12/92",
             "scope": "Exact Quran quotation or quoted clause only. Original lecture wording and interpretation retained."
           }
+        },
+        {
+          "kind": "evidence",
+          "before": "\"Fulfill your promise. Go back to Madinah.\"",
+          "after": "\"Fulfill your promise. Go back to Madinah.\"\n\n> *«انْصَرِفَا نَفِي لَهُمْ بِعَهْدِهِمْ وَنَسْتَعِينُ اللَّهَ عَلَيْهِمْ»* ([مسلم ١٧٨٧](https://hadithunlocked.com/muslim:1787)، صحيح)\n\n<!-- -->\n\n> Go back, both of you. We will fulfill our covenant with them and seek Allah’s help against them. ([Muslim 1787](https://hadithunlocked.com/muslim:1787))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/muslim:1787",
+            "independent": "https://sunnah.com/muslim:1787",
+            "scope": "Exact Prophetic statement from the identified report, with adjacent English meaning. The original lecture and any version-specific additions remain unchanged."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Al-Yaman biography, forgiveness and blood money",
+          "reason": "Muslim 1787 verifies the covenant instruction. Bukhari 6890/6668 are matching candidates for the accidental killing and Hudhayfa’s forgiveness, but their phrase is “May Allah forgive you,” not the entire Quran 12:92 clause. The Ansari/Muhajir reply, blood-money details and causal claim about appointment as keeper of secrets still need separate verification; keep the lecture wording."
         }
       ]
     },
@@ -11613,20 +11685,78 @@
         {
           "kind": "quran-layout",
           "before": "وَإِنْ عَاقَبْتُمْ فَعَاقِبُوا۟ بِمِثْلِ مَا عُوقِبْتُم بِهِۦۖ وَلَئِن صَبَرْتُمْ لَهُوَ خَيْرࣱ لِّلصَّٰبِرِينَ",
-          "after": "\n\n> ﴿وَإِنْ عَاقَبْتُمْ فَعَاقِبُوا۟ بِمِثْلِ مَا عُوقِبْتُم بِهِۦۖ وَلَئِن صَبَرْتُمْ لَهُوَ خَيْرࣱ لِّلصَّٰبِرِينَ﴾\n>\n> [النحل ١٢٦](https://quran.islamunlocked.com/quran:16:126)\n\n",
+          "after": "\n\n> ﴿وَإِنْ عَاقَبْتُمْ فَعَاقِبُوا۟ بِمِثْلِ مَا عُوقِبْتُم بِهِۦۖ وَلَئِن صَبَرْتُمْ لَهُوَ خَيْرࣱ لِّلصَّٰبِرِينَ﴾ ([النحل ١٢٦](https://quran.islamunlocked.com/quran:16:126))\n\n",
           "label": "النحل ١٢٦",
           "url": "https://quran.islamunlocked.com/quran:16:126",
           "sourceOffset": 6373,
-          "sourceMapping": "data/yqsirah-arabic-repairs.json"
+          "sourceMapping": "data/yqsirah-arabic-repairs.json",
+          "inlineReference": true
         },
         {
           "kind": "quran-layout",
           "before": "أَمْ خُلِقُوا۟ مِنْ غَيْرِ شَيْءٍ أَمْ هُمُ ٱلْخَٰلِقُونَ",
-          "after": "\n\n> ﴿أَمْ خُلِقُوا۟ مِنْ غَيْرِ شَيْءٍ أَمْ هُمُ ٱلْخَٰلِقُونَ﴾\n>\n> [الطور ٣٥](https://quran.islamunlocked.com/quran:52:35)\n\n",
+          "after": "\n\n> ﴿أَمْ خُلِقُوا۟ مِنْ غَيْرِ شَيْءٍ أَمْ هُمُ ٱلْخَٰلِقُونَ﴾ ([الطور ٣٥](https://quran.islamunlocked.com/quran:52:35))\n\n",
           "label": "الطور ٣٥",
           "url": "https://quran.islamunlocked.com/quran:52:35",
           "sourceOffset": 2265,
-          "sourceMapping": "data/yqsirah-arabic-repairs.json"
+          "sourceMapping": "data/yqsirah-arabic-repairs.json",
+          "inlineReference": true
+        },
+        {
+          "kind": "evidence",
+          "before": "\"Hide yourself from me; let me not see your face.\"",
+          "after": "\"Hide yourself from me; let me not see your face.\"\n\n> *«فَهَلْ تَسْتَطِيعُ أَنْ تُغَيِّبَ وَجْهَكَ عَنِّي»* ([البخاري ٤٠٧٢](https://hadithunlocked.com/bukhari:4072)، صحيح)\n\n<!-- -->\n\n> Can you keep your face out of my sight? ([Bukhari 4072](https://hadithunlocked.com/bukhari:4072))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:4072",
+            "independent": "https://sunnah.com/bukhari:4072",
+            "scope": "Exact Prophetic statement from the identified report, with adjacent English meaning. The original lecture and any version-specific additions remain unchanged."
+          }
+        },
+        {
+          "kind": "quran-translation-layout",
+          "before": " \"And if you punish [an enemy, O believers], punish with an equivalent of that with which you were harmed. But if you are patient — it is better for those who are patient\" [16:126].",
+          "after": "<!-- -->\n\n> \"And if you punish [an enemy, O believers], punish with an equivalent of that with which you were harmed. But if you are patient — it is better for those who are patient\" ([al-Nahl 16:126](https://quran.islamunlocked.com/quran:16:126))",
+          "sourceReference": "[16:126].",
+          "label": "al-Nahl 16:126",
+          "url": "https://quran.islamunlocked.com/quran:16:126",
+          "verification": {
+            "hadithdb": "https://quran.islamunlocked.com/quran:16:126",
+            "independent": "https://quran.com/16/126",
+            "scope": "Existing English translation preserved verbatim; only block layout and reference presentation change."
+          }
+        },
+        {
+          "kind": "punctuation",
+          "before": " \"Or were they created by nothing, or were they the creators [of themselves]?\" [52:35]",
+          "after": " \"Or were they created by nothing, or were they the creators [of themselves]?\" [52:35]."
+        },
+        {
+          "kind": "quran-translation-layout",
+          "before": " \"Or were they created by nothing, or were they the creators [of themselves]?\" [52:35].",
+          "after": "<!-- -->\n\n> \"Or were they created by nothing, or were they the creators [of themselves]?\" ([al-Tur 52:35](https://quran.islamunlocked.com/quran:52:35))",
+          "sourceReference": "[52:35].",
+          "label": "al-Tur 52:35",
+          "url": "https://quran.islamunlocked.com/quran:52:35",
+          "verification": {
+            "hadithdb": "https://quran.islamunlocked.com/quran:52:35",
+            "independent": "https://quran.com/52/35",
+            "scope": "Existing English translation preserved verbatim; only block layout and reference presentation change."
+          }
+        },
+        {
+          "kind": "spacing",
+          "before": "Hamzah with\n\nher dagger",
+          "after": "Hamzah with her dagger"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Bukhari 4072 and expanded Wahshi narrative",
+          "reason": "Bukhari 4072 says Tuayma was killed at Badr, whereas the transcript says Uhud. It describes a spear entering from the front, unlike the transcript’s back-to-front account. It relates arrival with the Taif envoys and does not supply the pre-conversion Syrian exile or all the extended dialogue. Preserve the transcript and mark differences; do not splice Arabic across versions."
+        },
+        {
+          "reference": "Jubayr visit, mutilation and subsequent reports",
+          "reason": "Verify the claim that Jubayr was a captive, the specific al-Tur hearing reports, Wahshi’s punishments, Hind’s actions, the proposed thirty-body retaliation, the exposed-body statement, and the final Muslim attribution. These are distinct reports with potentially different grades; the Bukhari excerpt does not authenticate them."
         }
       ]
     },
@@ -19008,11 +19138,24 @@
     "397": {
       "status": "in-review",
       "source_body_sha256": "5be6977da36f129112dcb37038e7401846d112cd85dce721b6139acf3f28aaa3",
-      "body": [],
+      "body": [
+        {
+          "kind": "source-image",
+          "imageId": "uhud-map-533",
+          "before": "How so?",
+          "after": "How so?\n\n![Battle of Uhud: army positions](/static/images/yqsirah/uhud-p533.jpg)\n\n"
+        },
+        {
+          "kind": "source-image",
+          "imageId": "uhud-map-534",
+          "before": "(Modified from Dr. Zubair Rashid's detailing)",
+          "after": "(Modified from Dr. Zubair Rashid's detailing)\n\n![Battle of Uhud: sides I–IV and the archers’ position](/static/images/yqsirah/uhud-p534.jpg)\n\n"
+        }
+      ],
       "citationFlags": [
         {
           "reference": "Uhud diagram and tactical reconstruction",
-          "reason": "Visually confirmed two missing maps on PDF pages 533–534, the second labeled sides I–IV. Extracted the original embedded JPEGs without modification into var/imports/yqsirah/formatting/source-images; manifest records hashes, page numbers and the PDF’s attribution link. Both illustrations still need embedding through the supported content-media path before this passage can be finalized."
+          "reason": "Both original maps from PDF pages 533–534 are now embedded in the local draft at their source positions, with the original attribution retained. The local static assets must become available through the production Git-pull workflow before publishing passage 397. No production files were copied."
         }
       ]
     },
@@ -19022,6 +19165,174 @@
       "body": [],
       "reviewNotes": [
         "Read complete introductory discussion. Preserve all qualifications about reconstruction, inference, competing chronologies and uncertainty. No Quran or hadith quotation requires an Arabic addition."
+      ]
+    },
+    "401": {
+      "status": "in-review",
+      "source_body_sha256": "336c69c337e249f37a855a0e2adba734c89d666f357834f9b786f9757d49a4f8",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "One of the sahaba\n\nwanted",
+          "after": "One of the sahaba wanted"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Blind landowner report and chronology",
+          "reason": "Preserve the explicitly qualified reconstruction and all approximate times. The reported statement about blindness of eyes and heart needs an exact source/grade. The Friday-prayer legal aside is the lecturer’s discussion, not established by the chronology alone."
+        }
+      ]
+    },
+    "402": {
+      "status": "in-review",
+      "source_body_sha256": "720570142a3629802305fe707c013b614c29c20e1d7fc721ff8ee8e07f100182",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "Abu Sa'id al-Khudri (أبو سعيد الخدري), and Zayd ibn Arqam (زيد بن أرقم).",
+          "after": "Abu Sa'id al-Khudri (أبو سعيد الخدري), and Zayd ibn Arqam (زيد بن أرقم).\n\n> «أَنَّ رَسُولَ اللَّهِ ﷺ عَرَضَهُ يَوْمَ أُحُدٍ، وَهْوَ ابْنُ أَرْبَعَ عَشْرَةَ سَنَةً، فَلَمْ يُجِزْنِي» ([البخاري ٢٦٦٤](https://hadithunlocked.com/bukhari:2664)، صحيح)\n\n<!-- -->\n\n> Ibn Umar reported that Allah’s Messenger ﷺ inspected him on the day of Uhud when he was fourteen years old, and did not permit him to participate. ([Bukhari 2664](https://hadithunlocked.com/bukhari:2664))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:2664",
+            "independent": "https://sunnah.com/bukhari:2664",
+            "scope": "Exact contiguous excerpt matched to the identified report. English meaning accompanies the Arabic; narrator speech stays plain. Surrounding expanded dialogue is preserved separately."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Young Companions and wrestling account",
+          "reason": "Bukhari 2664 verifies Ibn Umar’s exclusion at fourteen; it does not establish the full list, Usama’s estimated age, or the extended Rafi/Samura wrestling dialogue. Preserve those details and footnotes pending exact historical-source matching."
+        }
+      ]
+    },
+    "403": {
+      "status": "in-review",
+      "source_body_sha256": "1c31d42de3bad48950ddec8fea726c94b42cf5297e5bec474adbc7c59a41cefc",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "\"Even if you see the birds eating our bodies, do not leave your places until I send for you.\"",
+          "after": "\"Even if you see the birds eating our bodies, do not leave your places until I send for you.\"\n\n> *«إِنْ رَأَيْتُمُونَا تَخْطَفُنَا الطَّيْرُ فَلاَ تَبْرَحُوا مَكَانَكُمْ هَذَا حَتَّى أُرْسِلَ إِلَيْكُمْ»* ([البخاري ٣٠٣٩](https://hadithunlocked.com/bukhari:3039)، صحيح)\n\n<!-- -->\n\n> Even if you see birds snatching us away, do not leave this position until I send for you. ([Bukhari 3039](https://hadithunlocked.com/bukhari:3039))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:3039",
+            "independent": "https://sunnah.com/bukhari:3039",
+            "scope": "Exact contiguous excerpt matched to the identified report. English meaning accompanies the Arabic; narrator speech stays plain. Surrounding expanded dialogue is preserved separately."
+          }
+        },
+        {
+          "kind": "source-image",
+          "imageId": "uhud-map-540",
+          "before": "(Modified from Dr. Zubair Rashid's detailing)",
+          "after": "![Battle of Uhud: army positions](/static/images/yqsirah/uhud-p533.jpg)\n\n(Modified from Dr. Zubair Rashid's detailing)"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Archers instructions and source illustration",
+          "reason": "Bukhari 3039 verifies the birds/position instruction and fifty archers. It does not supply the separate horses-and-arrows quotation; verify that wording and the broad Bukhari-and-Muslim attribution separately. The PDF page 540 map is now restored locally, reusing its byte-identical page 533 image; publication awaits that asset through the production Git workflow."
+        }
+      ]
+    },
+    "404": {
+      "status": "in-review",
+      "source_body_sha256": "395a35791b55e78e3a0e9995b69547842f62a72ab5fc3f61d124430371965bd7",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "\"Who will take this sword from me and fight?\"[^p541n93]",
+          "after": "\"Who will take this sword from me and fight?\"[^p541n93]\n\n> *«مَنْ يَأْخُذُ مِنِّي هَذَا»* ([مسلم ٢٤٧٠](https://hadithunlocked.com/muslim:2470)، صحيح)\n\n<!-- -->\n\n> Who will take this from me? ([Muslim 2470](https://hadithunlocked.com/muslim:2470))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/muslim:2470",
+            "independent": "https://sunnah.com/muslim:2470",
+            "scope": "Exact separate Prophetic questions from Anas’s report. Preserve original footnote markers attached to their English sentences. The report does not establish the lecture’s expanded sword-right definition or swaggering-gait quotation."
+          }
+        },
+        {
+          "kind": "evidence",
+          "before": "\"Who will take it from me with its haq[^p541n94]?\"",
+          "after": "\"Who will take it from me with its haq[^p541n94]?\"\n\n> *«فَمَنْ يَأْخُذُهُ بِحَقِّهِ»* ([مسلم ٢٤٧٠](https://hadithunlocked.com/muslim:2470)، صحيح)\n\n<!-- -->\n\n> Who will take it while fulfilling its right? ([Muslim 2470](https://hadithunlocked.com/muslim:2470))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/muslim:2470",
+            "independent": "https://sunnah.com/muslim:2470",
+            "scope": "Exact separate Prophetic questions from Anas’s report. Preserve original footnote markers attached to their English sentences. The report does not establish the lecture’s expanded sword-right definition or swaggering-gait quotation."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Abu Dujana expanded account",
+          "reason": "Muslim 2470 verifies the two questions and Abu Dujana accepting the sword. It does not include the definition about fighting until the sword breaks, the red turban, Zubayr’s role, or the swaggering-gait statement. Preserve those details pending exact source matching."
+        }
+      ]
+    },
+    "405": {
+      "status": "in-review",
+      "source_body_sha256": "3d3b0658afc5e86eb891e34b098d01a8954323d91290b95a28faf7377a9fd68d",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "means\n\n'the Monk'",
+          "after": "means 'the Monk'"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Abu Amir dialogue and footnotes",
+          "reason": "Preserve the messenger’s offer, the Ansar’s replies, Abu Amir’s name and attributed dialogue without inventing Arabic. Exact historical sources are still needed. The battlefield-language ruling in footnote 96 and the Hanzala report in footnote 98 are separate claims, not authenticated by the dialogue."
+        }
+      ]
+    },
+    "406": {
+      "status": "in-review",
+      "source_body_sha256": "02de3a22c4d5773d69e0e5e5e550de427f1d180a4e5c928d4a35b4abc9c44aa1",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Ali and Talha duel",
+          "reason": "The detailed exchange, armor, kinship and spared final blow require exact historical-source matching before adding Arabic. Preserve the lecture’s account and chivalry interpretation; do not conflate this Talha with Talha b. Ubayd Allah."
+        }
+      ]
+    },
+    "407": {
+      "status": "reviewed",
+      "source_body_sha256": "7fea6e8cc24549a7b41ac4ee75307d16ac556c0fce47da257762bf178cc2e7c5",
+      "body": [],
+      "reviewNotes": [
+        "Read the complete short passage. The initial assault is explicitly presented as a reconstruction from sparse details. Preserve every qualification and the lecturer’s tactical interpretation; no direct Quran or hadith quotation requires an addition."
+      ]
+    },
+    "408": {
+      "status": "in-review",
+      "source_body_sha256": "e4a6c487c5aac0564c76e0c205f1686500d89ac21a1e862584823012e1387571",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Banu Abd al-Dar flag dialogue",
+          "reason": "Preserve Abu Sufyan’s attributed challenge, the response and the number ten. Exact historical-source matching is still needed before supplying Arabic; do not infer a verified quotation from the general account of flag bearers."
+        }
+      ]
+    },
+    "409": {
+      "status": "in-review",
+      "source_body_sha256": "c6706ea20fcbc1fbd6f26549941d1f343d3f43fcafc8447f8f8b196c40ecddba",
+      "body": [
+        {
+          "kind": "evidence",
+          "before": "\"When we fought them at Uhud, they turned and fled, until I saw with my own eyes the legs of the women as they lifted their skirts, running up the mountains, and I could see their ankle bracelets.\"",
+          "after": "\"When we fought them at Uhud, they turned and fled, until I saw with my own eyes the legs of the women as they lifted their skirts, running up the mountains, and I could see their ankle bracelets.\"\n\n> «فَهَزَمُوهُمْ قَالَ فَأَنَا وَاللَّهِ رَأَيْتُ النِّسَاءَ يَشْتَدِدْنَ قَدْ بَدَتْ خَلاَخِلُهُنَّ وَأَسْوُقُهُنَّ رَافِعَاتٍ ثِيَابَهُنَّ» ([البخاري ٣٠٣٩](https://hadithunlocked.com/bukhari:3039)، صحيح)\n\n<!-- -->\n\n> They defeated them. Al-Bara said: By Allah, I saw the women running, with their anklets and legs exposed as they lifted their garments. ([Bukhari 3039](https://hadithunlocked.com/bukhari:3039))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:3039",
+            "independent": "https://sunnah.com/bukhari:3039",
+            "scope": "Contiguous narrator passage from al-Bara’s report; not Prophetic speech. This wording does not name Hind or specify running uphill, so those lecture details remain separately attributed."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Abu Dujana accounts and flag-bearer details",
+          "reason": "Bukhari 3039 verifies al-Bara’s report of fleeing women. Verify the Zubayr and Abu Dujana dialogues, Hind identification, exact ten flag bearers and attribution of their deaths separately; preserve the original narrative."
+        }
       ]
     }
   },

@@ -1,0 +1,51 @@
+[
+  {
+    "passage": 397,
+    "pdfPage": 533,
+    "file": "var/imports/yqsirah/formatting/source-images/uhud-000.jpg",
+    "sha256": "dc112795f449db21377f26a4e8ca98b42ec9364202c8a907fb90392549519e28",
+    "description": "Original battle map",
+    "attribution": "Modified from Dr. Zubair Rashid’s detailing",
+    "sourceLink": "https://en.wikipedia.org/wiki/Battle_of_Uhud#/media/File:Battle_of_Uhud_624_CE.png",
+    "status": "embedded in local draft; awaiting asset availability through production Git workflow",
+    "id": "uhud-map-533",
+    "visuallyVerified": true,
+    "publicPath": "public/static/images/yqsirah/uhud-p533.jpg",
+    "url": "/static/images/yqsirah/uhud-p533.jpg",
+    "alt": "Battle of Uhud: army positions",
+    "anchor": "How so?"
+  },
+  {
+    "passage": 397,
+    "pdfPage": 534,
+    "file": "var/imports/yqsirah/formatting/source-images/uhud-001.jpg",
+    "sha256": "83188fabe70e881efe9aa1c6895a87bbff097e5ad041cb20bbb94197c4253915",
+    "description": "Annotated battle map with sides I-IV",
+    "attribution": "Modified from Dr. Zubair Rashid’s detailing",
+    "sourceLink": "https://en.wikipedia.org/wiki/Battle_of_Uhud#/media/File:Battle_of_Uhud_624_CE.png",
+    "status": "embedded in local draft; awaiting asset availability through production Git workflow",
+    "id": "uhud-map-534",
+    "visuallyVerified": true,
+    "publicPath": "public/static/images/yqsirah/uhud-p534.jpg",
+    "url": "/static/images/yqsirah/uhud-p534.jpg",
+    "alt": "Battle of Uhud: sides I–IV and the archers’ position",
+    "anchor": "(Modified from Dr. Zubair Rashid's detailing)"
+  },
+  {
+    "passage": 403,
+    "pdfPage": 540,
+    "file": "var/imports/yqsirah/formatting/source-images/uhud-p540-000.jpg",
+    "sha256": "dc112795f449db21377f26a4e8ca98b42ec9364202c8a907fb90392549519e28",
+    "description": "Original battle map",
+    "attribution": "Modified from Dr. Zubair Rashid’s detailing",
+    "sourceLink": "https://en.wikipedia.org/wiki/Battle_of_Uhud#/media/File:Battle_of_Uhud_624_CE.png",
+    "status": "embedded in local draft; awaiting asset availability through production Git workflow",
+    "id": "uhud-map-540",
+    "visuallyVerified": true,
+    "publicPath": "public/static/images/yqsirah/uhud-p533.jpg",
+    "url": "/static/images/yqsirah/uhud-p533.jpg",
+    "alt": "Battle of Uhud: army positions",
+    "anchor": "(Modified from Dr. Zubair Rashid's detailing)",
+    "position": "before"
+  }
+]

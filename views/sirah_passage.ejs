@@ -35,9 +35,13 @@ const outlineKey = currentHeading ? `${book.alias}:${currentHeading.h1}${Number(
     </section>
   </header>
   <% if (item.chapter) { %>
+    <div data-sirah-heading-path="<%= item.chapter.path %>">
     <%- include('sub-views/chapterTitle.ejs', { site, page, contextOnly: true, collapseIntro: true, hadithFlatHeadingRail: Boolean(outline?.flat), hadithFlatHeadingContext: outlineContext, hadithFlatHeadingKey: outlineKey }); %>
+    </div>
     <% [item.section, item.subsection].filter(Boolean).forEach(function (heading) { %>
+      <div data-sirah-heading-path="<%= heading.path %>">
       <%- include('sub-views/heading.ejs', { site, page, heading, contextOnly: true, collapseIntro: true, passageHasHeadline: Boolean(item.title_en || item.title) }); %>
+      </div>
     <% }); %>
   <% } %>
   <%- include('sub-views/sirah_item.ejs', { i: item, title: true }); %>

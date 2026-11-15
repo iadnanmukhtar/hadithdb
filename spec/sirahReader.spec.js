@@ -144,8 +144,11 @@ test.each([['yqsirah','sirah'],['ibnhisham','sirah'],['history','sirah'],['histo
  expect($('.heading-bookmark-btn')).toHaveLength(0);
  expect($('.hadith-bookmark-btn')).toHaveLength(1);
  expect($('[data-hadith-heading-key]').hasClass('mt-4')).toBe(false);
- for(const [type,level,hasTitle] of [['sirah',2,true],['hadith',3,true],['sirah',3,false]])
+ for(const [type,level,hasTitle] of [['sirah',2,true],['hadith',3,true]])
   expect(cheerio.load(renderHeading(type,level,hasTitle))('heading.heading')).toHaveLength(1);
+ const untitledPassage = cheerio.load(renderHeading('sirah',3,false));
+ expect(untitledPassage('heading.heading')).toHaveLength(0);
+ expect(untitledPassage('.sirah-subsection-heading')).toHaveLength(1);
 });
 
  test.each(['sirah','history'])('%s routes through the shared passage renderer', type => {

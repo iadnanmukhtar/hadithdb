@@ -22,7 +22,13 @@
 <%# Heading Title %>
 <article class="col-12<%= passageHeadlineOnly ? '' : ' mt-4' %>"<% if (isQuranHeading) { %> id="quran-heading-<%= quranHeadingKey.replace(/\./g, '-') %>" data-quran-heading-target data-quran-heading-key="<%= quranHeadingKey %>" data-quran-heading-surah="<%= heading.h1 %>"<% } else if (isHadithHeading) { %> id="hadith-heading-<%= hadithHeadingKey.replace(/[^A-Za-z0-9_-]/g, '-') %>"<% if (isHadithHeadingTarget) { %> data-hadith-heading-target<% } %> data-hadith-heading-key="<%= hadithHeadingKey %>" data-hadith-heading-context="<%= `${book.alias}:${heading.h1}` %>" data-hadith-heading-level="<%= heading.level %>"<% if (Number(heading.level) === 3) { %> data-hadith-heading-parent-key="<%= `${book.alias}:${heading.h1}.${heading.h2}` %>"<% } %><% } %>>
 
-  <% if (!passageHeadlineOnly) { %>
+  <% if (!passageHeadlineOnly && book && ['sirah', 'history'].includes(book.type) && Number(heading.level) === 3) { %>
+  <header class="row sirah-subsection-heading">
+    <% ['en', 'ar'].forEach(function (lang) { const field = lang === 'en' ? 'title_en' : 'title'; if (!heading[field] && !site.editMode) return; %>
+    <h3 class="col-12 fs-5" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>"><span class="<%= site.editMode ? '_e' : '' %>" data-id="<%= heading.id %>" data-prop="toc.<%= field %>"><%- heading[field] || '' %></span></h3>
+    <% }); %>
+  </header>
+  <% } else if (!passageHeadlineOnly) { %>
   <heading class="row heading py-2">
     
     <% if (!sirahArabicHeadingOnly) { %>

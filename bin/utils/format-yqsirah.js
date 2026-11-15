@@ -49,7 +49,19 @@ function paragraphBreaks(text){
 function formatField(original,manual=[],options={}){
  let text=original;const ledger=[];
  for(const change of manual){
-  assert(['evidence','punctuation','spacing','quran-layout','quran-completion','pdf-repair','footnote-boundary'].includes(change.kind),'Unsupported manual edit kind');
+  assert(['evidence','punctuation','spacing','quran-layout','quran-translation-layout','quran-completion','pdf-repair','footnote-boundary','source-image'].includes(change.kind),'Unsupported manual edit kind');
+  if(change.kind==='source-image'){
+   const image=require('../../data/yqsirah-formatting-source-images.json').find(r=>r.id===change.imageId);
+   assert(image?.visuallyVerified&&Number.isInteger(image.pdfPage),'Source image requires visual PDF verification');
+   assert(/^public\/static\/images\/yqsirah\/[\w-]+\.jpg$/.test(image.publicPath),'Invalid source image path');
+   assert.equal(image.url,image.publicPath.slice('public'.length));
+   assert.equal(digest(fs.readFileSync(path.resolve(__dirname,'../..',image.publicPath))),image.sha256,'Source image bytes changed');
+   assert.equal(change.before,image.anchor,'Image must retain its recorded source position');
+   assert([undefined,'before'].includes(image.position),'Invalid source image position');
+   const markup=`![${image.alt}](${image.url})`;
+   const restored=image.position==='before'?`${markup}\n\n${change.before}`:`${change.before}\n\n${markup}\n\n`;
+   assert.equal(change.after,restored,'Image restoration may only append or prepend the verified image');
+  }
   if(change.kind==='footnote-boundary'){
    const verified=require('../../data/yqsirah-formatting-pdf-repairs.json').repairs.find(r=>r.id===change.repairId);
    assert(verified&&verified.kind==='footnote-boundary'&&verified.visuallyVerified&&Number.isInteger(verified.page),'Footnote boundary requires a visually verified source mapping');
@@ -73,7 +85,21 @@ function formatField(original,manual=[],options={}){
    assert(/^[\p{Script=Arabic}\p{M} –-]+$/u.test(change.label));
    assert([undefined,4].includes(change.indent),'Only footnote indentation is supported');
    const indent=' '.repeat(change.indent||0);
-   assert.equal(change.after,`\n\n${indent}> ﴿${change.before}﴾\n${indent}>\n${indent}> [${change.label}](${change.url})\n\n${indent}`,'Quran layout may only wrap existing Arabic and add its reference');
+   const quote=change.inlineReference
+    ? `${indent}> ﴿${change.before}﴾ ([${change.label}](${change.url}))`
+    : `${indent}> ﴿${change.before}﴾\n${indent}>\n${indent}> [${change.label}](${change.url})`;
+   assert.equal(change.after,`\n\n${quote}\n\n${indent}`,'Quran layout may only wrap existing Arabic and add its reference');
+  }
+  if(change.kind==='quran-translation-layout'){
+   assert(/^https:\/\/quran\.islamunlocked\.com\/quran:\d+:\d+$/.test(change.url));
+   assert.equal(change.verification?.hadithdb,change.url);
+   assert(change.verification?.independent,'Translation layout requires verified reference');
+   assert(/^\[\d+:\d+(?:[-–]\d+)?\]\.$/.test(change.sourceReference),'Expected an existing Quran reference');
+   assert(change.before.endsWith(change.sourceReference),'Translation must retain its original source reference');
+   assert([undefined,4].includes(change.indent));
+   const indent=' '.repeat(change.indent||0);
+   const original=change.before.slice(0,-change.sourceReference.length).trim();
+   assert.equal(change.after,`${indent}<!-- -->\n\n${indent}> ${original} ([${change.label}](${change.url}))`,'Translation layout cannot rewrite the source English');
   }
   if(change.kind==='quran-completion'){
    const verified=require('../../data/yqsirah-formatting-quran-evidence.json').find(e=>e.reference===change.reference);

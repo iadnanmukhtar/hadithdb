@@ -13644,6 +13644,15 @@ function initReaderInfiniteNavigation(root) {
 					return;
 				if (node.matches('.reader-infinite-status, .reader-infinite-sentinel, [data-reader-infinite-anchor]'))
 					return;
+				if (mode === 'hadith-sirah-item') {
+					if (node.matches('.quran-tafsir-source, .page-updated'))
+						return;
+					var headingPath = node.getAttribute('data-sirah-heading-path');
+					if (headingPath && Array.from(main[0].querySelectorAll('[data-sirah-heading-path]')).some(function (heading) {
+						return heading.getAttribute('data-sirah-heading-path') === headingPath;
+					}))
+						return;
+				}
 				chunk[0].appendChild(document.importNode(node, true));
 			});
 			if (!chunk[0].children.length)
