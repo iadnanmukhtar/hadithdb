@@ -44,7 +44,7 @@ const outlineKey = currentHeading ? `${book.alias}:${currentHeading.h1}${Number(
       </div>
     <% }); %>
   <% } %>
-  <%- include('sub-views/sirah_item.ejs', { i: item, title: true }); %>
+  <%- include('sub-views/sirah_item.ejs', { site, page, i: item, title: true }); %>
 </main>
 </div>
 <% if (showHeadingRail) { %>

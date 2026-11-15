@@ -65,3 +65,31 @@ test('scrolling keeps only new heading boundaries and omits repeated book metada
  expect(Array.from(chunk.querySelectorAll('[data-sirah-heading-path]')).map(node => node.dataset.sirahHeadingPath)).toEqual(['history/1/2/4']);
  expect(chunk.querySelector('.sirah-item').textContent).toBe('Next passage');
 });
+
+test.each([
+ [true, true, false, true],
+ [true, false, false, false],
+ [false, true, false, false],
+ [true, true, true, false]
+])('passage editor markup follows admin=%s editMode=%s noadmin=%s', (admin, editMode, noadmin, editable) => {
+ const book = { alias: 'yqsirah', type: 'sirah', name_en: 'Seerah' };
+ const item = { id: 408, num: '408', ref: 'yqsirah:408', book_alias: book.alias,
+  title_en: 'Passage', body_en: 'Original body[^1].', footnote_en: '[^1]: Original footnote.' };
+ // Use EJS's real include scope: parent template constants are not include locals.
+ const html = ejs.render(fs.readFileSync(filename, 'utf8'), {
+  global: { settings: { site: {} } }, req: { admin, editMode }, noadmin,
+  book, item, utils, arabic, readerNavigation: {}, hadithHeadingOutlines: {}
+ }, { filename, includer: (name, resolved) => name.endsWith('sirah_item.ejs')
+  ? { filename: resolved }
+  : { template: ' ' } });
+ const $ = cheerio.load(html);
+ for (const field of ['title_en', 'body_en', 'footnote_en']) {
+  const editor = $(`._e[data-prop="hadith.${field}"]`);
+  expect(editor).toHaveLength(editable ? 1 : 0);
+  if (editable) expect(editor.attr('data-id')).toBe('408');
+ }
+ if (editable) {
+  expect($('[data-prop="hadith.body_en"]').attr('data-markdown-source')).toBe(item.body_en);
+  expect($('[data-prop="hadith.footnote_en"]').attr('data-markdown-source')).toBe(item.footnote_en);
+ }
+});
