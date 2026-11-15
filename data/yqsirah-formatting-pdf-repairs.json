@@ -1,0 +1,79 @@
+{
+  "source": "temp/yqsirah.pdf",
+  "source_sha256": "e9efc5e4b78d184c7d74c5d25733f2692ee029939c927e86d9be2f296106bce4",
+  "repairs": [
+    {
+      "id": "226-cave-abu-bakr",
+      "page": 334,
+      "passage": 226,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "ل\u0000 ,,ﷺ(",
+      "after": "ﷺ, \"لو نظر أحدهم إلى قدميه لأبصرنا ("
+    },
+    {
+      "id": "226-cave-prophetic-reply",
+      "page": 334,
+      "passage": 226,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "للا\u0000 (",
+      "after": "\"يا أبا بكر ما ظنك باثنين الله ثالثهما ("
+    },
+    {
+      "id": "233-footnotes-134-135",
+      "kind": "footnote-boundary",
+      "page": 343,
+      "passage": 233,
+      "field": "footnotes",
+      "visuallyVerified": true,
+      "before": "[^p343n134]: This is a huge blessing of Madinah, but at the same time, a very dangerous warning for anybody who wishes to harm it. Du'a to die in Madinah: \" اللهم إنا نسألك الموت في مدينة رسول الله صلى الله عليه وسلم ودفنا في بقيع الغرقد(O\n\n[^p343n135]: Allah, we ask You to cause us to die in The City of the Prophet ﷺ, and cause us to be buried in Baqi' al-Gharqad).\"",
+      "after": "[^p343n134]: This is a huge blessing of Madinah, but at the same time, a very dangerous warning for anybody who wishes to harm it.\n\n[^p343n135]: Du'a to die in Madinah: \" اللهم إنا نسألك الموت في مدينة رسول الله صلى الله عليه وسلم ودفنا في بقيع الغرقد(O Allah, we ask You to cause us to die in The City of the Prophet ﷺ, and cause us to be buried in Baqi' al-Gharqad).\""
+    },
+    {
+      "id": "233-city-prayer-order",
+      "page": 342,
+      "passage": 233,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "في... اللهم بارك لنا مدينتنا",
+      "after": "اللهم بارك لنا ... في مدينتنا"
+    },
+    {
+      "id": "235-labatayha",
+      "page": 345,
+      "passage": 235,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "ما بين البتيها حرام",
+      "after": "ما بين لابتيها حرام"
+    },
+    {
+      "id": "235-yemen-faith",
+      "page": 346,
+      "passage": 235,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "اإليمان يمان والحكمة يمانية",
+      "after": "الإيمان يمان والحكمة يمانية"
+    },
+    {
+      "id": "239-aws-name",
+      "page": 350,
+      "passage": 239,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "األوس",
+      "after": "الأوس"
+    },
+    {
+      "id": "248-ansar-prayer",
+      "page": 359,
+      "passage": 248,
+      "field": "body",
+      "visuallyVerified": true,
+      "before": "فارحم األنصار والمهاجرة",
+      "after": "فارحم الأنصار والمهاجرة"
+    }
+  ]
+}
