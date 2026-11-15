@@ -692,8 +692,8 @@ main.community .community-cover-title { color: #fff; font-size: clamp(1.2rem,2vw
 
 /* Editable parallel columns use the same Markdown storage as the reader. */
 .community-edit-parallel { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 1rem; margin-block: .8rem; direction: ltr; }
-.community-edit-parallel-cell { min-width: 0; padding: .5rem; border: 1px solid var(--community-line); border-radius: .35rem; overflow-wrap: anywhere; }
-.community-edit-parallel-cell:focus-within { border-color: var(--community-accent); }
+.community-edit-parallel-cell { min-width: 0; padding: .5rem 0; border: 0; border-radius: .35rem; box-shadow: inset 0 0 0 1px var(--community-line); overflow-wrap: anywhere; }
+.community-edit-parallel-cell:focus-within { box-shadow: inset 0 0 0 1px var(--community-accent); }
 .community-edit-parallel-cell > :last-child { margin-bottom: 0; }
 @media(max-width:575px) { .community-edit-parallel { gap: .5rem; } }
 

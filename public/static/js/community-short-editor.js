@@ -8,6 +8,14 @@
     try { const u = new URL(value, location.origin); return ['http:', 'https:', 'mailto:'].includes(u.protocol) ? value : null; } catch (_) { return null; }
   }
   const escape = text => text.replace(/([\\`*_{}\[\]<>#|~^])/g, '\\$1').replace(/^([ \t]*)([-+] |\d+\. )/gm, '$1\\$2');
+  function plainMarkdownLine(line) {
+    line=line.replace(/^(?:[ \t]*(?:#{1,6}|-#|>|[-+*]|\d+[.)])[ \t]+)+/,'').replace(/^\[[ xX]\][ \t]+/,'');
+    line=line.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,(_,target,label)=>label || target).replace(/\[\^[^\]]+\]/g,'');
+    const read=tokens=>tokens.map(t=>t.type==='html'?'':t.tokens?read(t.tokens):t.text || '').join('');
+    let text=read(window.marked.Lexer.lexInline(line));
+    for(let n=0;n<3;n++)text=text.replace(/(==|__|\*\*|~~|[*_~^`])([^\n]+?)\1/g,'$2');
+    return text.replace(/\\([\\`*_{}\[\]<>#|~^])/g,'$1').replace(/\s*\|\|\s*/g,' ').replace(/^(?:[ \t]*(?:#{1,6}|-#|>|[-+*]|\d+[.)])[ \t]+)+/,'');
+  }
   function footnoteRow(label, contents) {
     const row=document.createElement('div');row.dataset.footnote=label;row.className='community-edit-footnote';
     const caption=document.createElement('span');caption.className='community-footnote-label';caption.contentEditable='false';caption.textContent='Footnote '+label;
@@ -945,6 +953,19 @@
         source.dispatchEvent(new Event('input',{bubbles:true}));
         if(wasRich && renderContent(source.value)){restoreFormattedSelection(selectionStart+9+indent.length,selectionEnd+9+indent.length);}return true;
       }
+      if(command==='removeFormat'){
+        const wasRich=mode==='rich',before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=wasRich?formatCaret():null;
+        if(wasRich)toSource();
+        const start=source.selectionStart,end=source.selectionEnd,value=source.value;
+        const begin=start?value.lastIndexOf('\n',start-1)+1:0;
+        const last=end>start && value[end-1]==='\n'?end-1:end,next=value.indexOf('\n',last),finish=next<0?value.length:next;
+        const text=value.slice(begin,finish).split('\n').map(plainMarkdownLine).join('\n');
+        const caret=begin+Math.min(text.length,plainMarkdownLine(value.slice(begin,start)).replace(/[*_~^`]/g,'').length);
+        source.setRangeText(text,begin,finish,'select');source.dispatchEvent(new Event('input',{bubbles:true}));
+        if(wasRich){restoreFormattedSelection(start===end?caret:begin,start===end?caret:begin+text.length);recordFormatChange(before,beforePoint,beforeMarkdown);}
+        else selection();
+        return true;
+      }
       const richSpeech=command==='propheticSpeech' && mode==='rich';
       const richItalic=command==='italic' && mode==='rich' && savedRange && !savedRange.collapsed;
       const richQuote=command==='formatBlock' && arg==='blockquote' && mode==='rich';
@@ -968,13 +989,6 @@
         }
         if(command==='subscript'||command==='superscript'){const marker=command==='subscript'?'~':'^';text=marker+escape(selected).replace(/ /g,'\\ ')+marker;}
         else if(markers[command])text=markers[command]+selected+markers[command];
-        else if(command==='removeFormat'){
-          const begin=start?value.lastIndexOf('\n',start-1)+1:0;
-          const next=value.indexOf('\n',end),finish=next<0?value.length:next;
-          text=value.slice(begin,finish).split('\n').map(line=>line.replace(/^(?:[ \t]*(?:#{1,6}|-#|>|[-+*]|\d+[.)])[ \t]+)+/,'')
-            .replace(/(\*\*|__|~~|==)(.+?)\1/g,'$2').replace(/([*`_])([^\n]+?)\1/g,'$2').replace(/<\/?em>/g,'')).join('\n');
-          source.setRangeText(text,begin,finish,'select');source.dispatchEvent(new Event('input',{bubbles:true}));selection();return true;
-        }
         else if(command==='link') {
           const url=window.prompt('Link URL','https://');if(!url)return true;
           if(!safeLink(url)){hint.textContent='Use an http, https, or mailto link.';return true;}
@@ -1002,47 +1016,6 @@
       if(!savedRange){rich.focus({preventScroll:true});selection();}
       if(!savedRange)return true;
       const s=window.getSelection();rich.focus({preventScroll:true});s.removeAllRanges();s.addRange(savedRange);
-      if(command==='removeFormat' && s.isCollapsed){
-        const anchor=s.anchorNode,offset=s.anchorOffset;
-        const block=(anchor.nodeType===1?anchor:anchor.parentElement).closest('h1,h2,h3,h4,h5,h6,.notebook-subtext');
-        if(block && rich.contains(block)){
-          const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
-          const paragraph=document.createElement('p');paragraph.dir='auto';paragraph.append(...block.childNodes);block.replaceWith(paragraph);
-          const node=anchor===block?paragraph:anchor;s.setBaseAndExtent(node,offset,node,offset);
-          sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
-        }
-      }
-      if(command==='removeFormat' && !s.isCollapsed){
-        const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret(),range=s.getRangeAt(0).cloneRange();
-        const blocks=[...rich.querySelectorAll('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6')].filter(block=>!block.querySelector('.notebook-rich-line,p,li,h1,h2,h3,h4,h5,h6') && !block.closest('[data-notebook-raw]') && range.intersectsNode(block));
-        const markers=[];
-        for(const block of blocks){
-          const part=document.createRange();part.selectNodeContents(block);
-          if(range.compareBoundaryPoints(Range.START_TO_START,part)>0)part.setStart(range.startContainer,range.startOffset);
-          if(range.compareBoundaryPoints(Range.END_TO_END,part)<0)part.setEnd(range.endContainer,range.endOffset);
-          if(part.collapsed)continue;
-          const left=document.createRange(),right=document.createRange();
-          left.selectNodeContents(block);left.setEnd(part.startContainer,part.startOffset);
-          right.selectNodeContents(block);right.setStart(part.endContainer,part.endOffset);
-          const leftContent=left.cloneContents(),rightContent=right.cloneContents(),middle=document.createElement('span');
-          middle.append(part.cloneContents());
-          middle.querySelectorAll('strong,b,em,i,u,s,strike,del,mark,code,sub,sup:not([data-footnote-ref])').forEach(node=>node.replaceWith(...node.childNodes));
-          middle.querySelectorAll('[style]').forEach(node=>node.removeAttribute('style'));
-          block.replaceChildren(leftContent,middle,rightContent);markers.push(middle);
-          // removeFormat only removes inline emphasis natively. Clear the
-          // selected line's heading/subtext style as well, retaining its text.
-          const styledBlock=block.closest('h1,h2,h3,h4,h5,h6,.notebook-subtext');
-          if(styledBlock && rich.contains(styledBlock)){
-            const paragraph=document.createElement('p');paragraph.dir='auto';
-            paragraph.append(...styledBlock.childNodes);styledBlock.replaceWith(paragraph);
-          }
-        }
-        if(markers.length){
-          const selected=document.createRange();selected.setStartBefore(markers[0]);selected.setEndAfter(markers[markers.length-1]);
-          // Keep ordinary spans as selection boundaries; serialization ignores them.
-          s.removeAllRanges();s.addRange(selected);sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return true;
-        }
-      }
       if(command==='highlight'){
         const range=s.getRangeAt(0),node=range.startContainer;
         const existing=(node.nodeType===1?node:node.parentElement).closest('mark');
@@ -1386,6 +1359,16 @@
       }
       if(event.key==='Enter' && !event.isComposing) {
         const active=window.getSelection();
+        const heading=(active.anchorNode?.nodeType===1?active.anchorNode:active.anchorNode?.parentElement)?.closest('h1,h2,h3,h4,h5,h6');
+        if(!event.shiftKey && heading && rich.contains(heading)){
+          event.preventDefault();
+          const before=rich.innerHTML,beforeMarkdown=source.value,beforePoint=formatCaret();
+          document.execCommand('insertParagraph',false);
+          document.execCommand('formatBlock',false,'p');
+          const next=(active.anchorNode?.nodeType===1?active.anchorNode:active.anchorNode?.parentElement)?.closest('p');
+          next?.querySelectorAll('[data-heading-fold]').forEach(button=>button.remove());
+          sync();selection();recordFormatChange(before,beforePoint,beforeMarkdown);return;
+        }
         let block=active.anchorNode?.nodeType===1?active.anchorNode:active.anchorNode?.parentElement;
         const quote=block?.closest('blockquote'),listItem=block?.closest('li');
         block=block?.closest('p,div,li,blockquote');

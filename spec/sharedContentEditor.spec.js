@@ -361,11 +361,11 @@ test('clear formatting removes highlight and code while retaining selected words
  await page.evaluate(()=>{const r=document.createRange();r.selectNodeContents(rich.querySelector('p:last-child'));getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('removeFormat');});
  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nMarked and code');
 });
-test('clear formatting preserves unselected emphasis across paragraphs and supports Undo',async()=>{
+test('clear formatting clears each selected line and supports Undo',async()=>{
  const original='Before\n\n**First middle**\n\n==Last words==';
  await setup('article',original);
  await page.evaluate(()=>{const first=rich.querySelector('strong').firstChild,last=rich.querySelector('mark').firstChild;getSelection().setBaseAndExtent(first,6,last,4);surface.selection();surface.format('removeFormat');});
- expect(await page.evaluate(()=>source.value)).toBe('Before\n\n**First** middle\n\nLast ==words==');
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nFirst middle\n\nLast words');
  await page.keyboard.press('Meta+z');
  expect(await page.evaluate(()=>source.value)).toBe(original);
 });
@@ -748,4 +748,31 @@ test('formatted paste retains inline emphasis within a bilingual column',async()
  });
  expect(await page.evaluate(()=>source.value)).toContain('**Bold** and _italic_ || العربية');
  expect(await page.locator('.community-edit-parallel-cell').count()).toBe(2);
+});
+for(const kind of ['post','article','note']){
+ test('Enter leaves an existing heading in '+kind,async()=>{
+  await setup(kind,'Before\n\n## Heading');await page.evaluate(()=>selectBlock('h2'));
+  await page.keyboard.press('Enter');await page.keyboard.type('Normal paragraph');
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\n## Heading\n\nNormal paragraph');
+  expect(await page.locator('.community-rich-input h2').count()).toBe(1);
+  expect(await page.locator('.community-rich-input p').last().textContent()).toBe('Normal paragraph');
+ });
+ test('clear formatting strips the full selected line including links and subscript in '+kind,async()=>{
+  await setup(kind,'Before\n\n## **Bold** [link](https://example.com) ~small~ ^raised^ ==marked==\n\nAfter');
+  await page.evaluate(()=>{const text=rich.querySelector('strong').firstChild,r=document.createRange();r.setStart(text,1);r.setEnd(text,3);getSelection().removeAllRanges();getSelection().addRange(r);surface.selection();surface.format('removeFormat');});
+  expect(await page.evaluate(()=>source.value)).toBe('Before\n\nBold link small raised marked\n\nAfter');
+  await page.keyboard.press('Meta+z');
+  expect(await page.evaluate(()=>source.value)).toContain('## **Bold** [link]');
+ });
+}
+test.each([390,1000])('parallel columns align with the content edges at %i px',async width=>{
+ await setup('note','Before\n\nEnglish text || النص العربي\n\nAfter',width);
+ const result=await page.locator('.community-edit-parallel').evaluate(row=>{const a=row.firstElementChild,b=row.lastElementChild,r=row.getBoundingClientRect();return {left:a.firstElementChild.getBoundingClientRect().left-r.left,right:r.right-b.firstElementChild.getBoundingClientRect().right,gap:b.getBoundingClientRect().left-a.getBoundingClientRect().right};});
+ expect(result.left).toBeLessThan(1);expect(result.right).toBeLessThan(1);expect(result.gap).toBeGreaterThan(0);
+ await page.screenshot({path:`/tmp/editor-columns-${width}.png`});
+});
+test('clear formatting also removes visible Markdown markers from a literal line',async()=>{
+ await setup('article','Before\n\n\\#\\# **Heading**');
+ await page.evaluate(()=>{selectBlock('p:last-child');surface.format('removeFormat');});
+ expect(await page.evaluate(()=>source.value)).toBe('Before\n\nHeading');
 });

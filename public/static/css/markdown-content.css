@@ -43,8 +43,8 @@
 :is(.notebook-markdown, .content-markdown) td, :is(.notebook-markdown, .content-markdown) th { min-width: 12em; border: 1px solid var(--note-edge, #bbb); padding: .4rem; vertical-align: top; }
 
 /* Keep bilingual rows in source order, with equal tracks even on small screens. */
-:is(.notebook-markdown, .content-markdown) .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: start; }
-:is(.notebook-markdown, .content-markdown) .notebook-parallel-cell { min-width: 0; padding-inline: .5rem; }
+:is(.notebook-markdown, .content-markdown) .notebook-parallel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1rem; align-items: start; }
+:is(.notebook-markdown, .content-markdown) .notebook-parallel-cell { min-width: 0; padding-inline: 0; }
 :is(.notebook-markdown, .content-markdown) .notebook-parallel-cell > :first-child { margin-top: 0; }
 :is(.notebook-markdown, .content-markdown) .notebook-parallel-cell > :last-child { margin-bottom: .5rem; }
 
