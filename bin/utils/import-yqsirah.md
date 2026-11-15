@@ -117,3 +117,38 @@ applies `yqsirah-allah-spelling.js` after the reviewed quotation overlay.
 `repair-yqsirah-allah-spelling.js` checks provenance, backs up affected rows on the
 server, updates body/search text and notes transactionally, and verifies no
 literal occurrences remain. No other spelling or wording is changed.
+
+## Restoring the original transcript after website edits
+
+`reimport-yqsirah.js` restores the complete original PDF text with the reviewed
+Arabic repairs and Allah spelling corrections. It retains the current reviewed
+53-chapter / 490-section / 533-subsection outline, passage IDs and references,
+source provenance, book description, and author/transcriber credits. It does not
+redeploy code or replace the book identity.
+
+Run a read-only comparison first:
+
+```sh
+node bin/utils/reimport-yqsirah.js
+```
+
+The output reports changed bodies, search text, notes, titles, and a state hash.
+Only after restoration has been explicitly authorized, apply that exact state:
+
+```sh
+node bin/utils/reimport-yqsirah.js --apply --expected-state=<dry-run-state>
+```
+
+The tool refuses missing/reordered passages, changed hierarchy, and unreviewed
+heading edits. It locks and checks the current state again before updating.
+Full copies of this book's `hadiths` and `yqsirah_source_entries` rows are backed
+up in timestamped database tables on the database host, in the same transaction
+as the restoration. Backup table names are recorded in the local restoration
+report under `var/imports/yqsirah/reimport/`. Bodies are not exported from the
+database for comparison. Readback must exactly match the source plan before
+commit; a subsequent dry run must report zero changes.
+
+After a successful authorized restoration, reindex only book `100427` and flush
+only the `yqsirah` book cache using the existing maintenance commands. Code files
+must follow the normal Git workflow; do not copy patches to production or reload
+application workers as part of this data restoration.
