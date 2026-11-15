@@ -4,6 +4,7 @@
     var section = page.context.section;
     var sirahArabicHeadingOnly = book && book.type === 'sirah' && !utils.trimToEmpty(heading.title_en) && !site.editMode;
     var headingEnglishOnly = locals.headingEnglishOnly;
+    var passageHeadlineOnly = Boolean(locals.passageHasHeadline && book && ['sirah', 'history'].includes(book.type) && Number(heading.level) === 3);
     var quranHeadingAyahModalIndex = Number.isInteger(locals.quranHeadingAyahModalIndex) ? locals.quranHeadingAyahModalIndex : -1;
     var showQuranHeadingModalActions = quranHeadingAyahModalIndex >= 0;
     var isQuranHeading = book && book.alias === 'quran' && heading && Number(heading.level) >= 2;
@@ -19,8 +20,9 @@
 <a id="S<%- heading.h2 + (heading.h3 ? `-${heading.h3}` : '') %>"></a>
 
 <%# Heading Title %>
-<article class="col-12 mt-4"<% if (isQuranHeading) { %> id="quran-heading-<%= quranHeadingKey.replace(/\./g, '-') %>" data-quran-heading-target data-quran-heading-key="<%= quranHeadingKey %>" data-quran-heading-surah="<%= heading.h1 %>"<% } else if (isHadithHeading) { %> id="hadith-heading-<%= hadithHeadingKey.replace(/[^A-Za-z0-9_-]/g, '-') %>"<% if (isHadithHeadingTarget) { %> data-hadith-heading-target<% } %> data-hadith-heading-key="<%= hadithHeadingKey %>" data-hadith-heading-context="<%= `${book.alias}:${heading.h1}` %>" data-hadith-heading-level="<%= heading.level %>"<% if (Number(heading.level) === 3) { %> data-hadith-heading-parent-key="<%= `${book.alias}:${heading.h1}.${heading.h2}` %>"<% } %><% } %>>
+<article class="col-12<%= passageHeadlineOnly ? '' : ' mt-4' %>"<% if (isQuranHeading) { %> id="quran-heading-<%= quranHeadingKey.replace(/\./g, '-') %>" data-quran-heading-target data-quran-heading-key="<%= quranHeadingKey %>" data-quran-heading-surah="<%= heading.h1 %>"<% } else if (isHadithHeading) { %> id="hadith-heading-<%= hadithHeadingKey.replace(/[^A-Za-z0-9_-]/g, '-') %>"<% if (isHadithHeadingTarget) { %> data-hadith-heading-target<% } %> data-hadith-heading-key="<%= hadithHeadingKey %>" data-hadith-heading-context="<%= `${book.alias}:${heading.h1}` %>" data-hadith-heading-level="<%= heading.level %>"<% if (Number(heading.level) === 3) { %> data-hadith-heading-parent-key="<%= `${book.alias}:${heading.h1}.${heading.h2}` %>"<% } %><% } %>>
 
+  <% if (!passageHeadlineOnly) { %>
   <heading class="row heading py-2">
     
     <% if (!sirahArabicHeadingOnly) { %>
@@ -82,6 +84,7 @@
     <% } %>
 
   </heading>
+  <% } %>
 
   <%# Heading Intro %>
   <%

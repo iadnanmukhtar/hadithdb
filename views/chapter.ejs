@@ -131,7 +131,7 @@
           } %>
       
       <% if (showHeading) { %>
-      <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.heading }); %>
+      <%- include('sub-views/heading.ejs', { site: site, page: page, heading: item.heading, passageHasHeadline: Boolean(item.id && (item.title_en || item.title)) }); %>
       <% } %>
       
       <% if (item.id) { %>

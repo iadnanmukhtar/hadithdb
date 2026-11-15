@@ -125,3 +125,32 @@ test('English footnotes beginning with an Arabic honorific keep English reading 
  expect($('[data-prop="hadith.body"]')).toHaveLength(1);
  });
  test('public sirah reader has no edit controls',()=>{const $=render({body_en:'Text',footnote_en:'Note'});expect($('._e, [data-sirah-editor]')).toHaveLength(0);});
+
+test.each([['yqsirah','sirah'],['ibnhisham','sirah'],['history','sirah'],['history','history']])('%s (%s) H3 keeps the passage headline without a duplicate separator', (alias, bookType) => {
+ const headingTemplate = fs.readFileSync(path.join(__dirname, '../views/sub-views/heading.ejs'), 'utf8');
+ const renderHeading = (type, level, passageHasHeadline = true) => ejs.render(headingTemplate, {
+  site: {editMode:false}, page: {context:{book:{alias,type},chapter:{h1:3}},menu:'Section'},
+  heading:{id:19,level,h1:3,h2:3,h3:level===3?1:null,title_en:'Pre-Islamic Arabia: Various Paganistic Practices',path:`${alias}/3/3/1`},
+  passageHasHeadline, headingEnglishOnly:true, contextOnly:true, req:{},
+  utils:require('../lib/Utils'), arabic:require('../lib/Arabic')
+ });
+ const heading = renderHeading(bookType,3);
+ const passage = render({book_alias:alias,num:'19',ref:`${alias}:19`,title:'',body:'',title_en:'Pre-Islamic Arabia: Various Paganistic Practices',body_en:'Passage text'});
+ const $ = cheerio.load(heading + passage.html());
+ expect($('heading.heading')).toHaveLength(0);
+ expect($('h1[lang=en]').text()).toBe('Pre-Islamic Arabia: Various Paganistic Practices');
+ expect($(`[data-hadith-heading-key="${alias}:3.3.1"]`)).toHaveLength(1);
+ expect($('#S3-1')).toHaveLength(1);
+ expect($('.heading-bookmark-btn')).toHaveLength(0);
+ expect($('.hadith-bookmark-btn')).toHaveLength(1);
+ expect($('[data-hadith-heading-key]').hasClass('mt-4')).toBe(false);
+ for(const [type,level,hasTitle] of [['sirah',2,true],['hadith',3,true],['sirah',3,false]])
+  expect(cheerio.load(renderHeading(type,level,hasTitle))('heading.heading')).toHaveLength(1);
+});
+
+ test.each(['sirah','history'])('%s routes through the shared passage renderer', type => {
+  const include = jest.fn(() => '<article>Shared Sirah/History reader</article>');
+  const source = fs.readFileSync(path.join(__dirname, '../views/sub-views/hadith.ejs'), 'utf8');
+  ejs.render(source, {i:{book_type:type},title:false,searchResult:false,include});
+  expect(include).toHaveBeenCalledWith('sirah_item.ejs', expect.objectContaining({title:false}));
+ });

@@ -1,4 +1,4 @@
-<% if ((i.doctype === 'sirah' || i.book_type === 'sirah') && !(typeof searchResult !== 'undefined' && searchResult)) { %>
+<% if ((['sirah', 'history'].includes(i.doctype) || ['sirah', 'history'].includes(i.book_type)) && !(typeof searchResult !== 'undefined' && searchResult)) { %>
 <%- include('sirah_item.ejs', { i: i, title: title }); %>
 <% } else { %>
 <%
