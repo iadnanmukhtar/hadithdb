@@ -19334,6 +19334,72 @@
           "reason": "Bukhari 3039 verifies al-Bara’s report of fleeing women. Verify the Zubayr and Abu Dujana dialogues, Hind identification, exact ten flag bearers and attribution of their deaths separately; preserve the original narrative."
         }
       ]
+    },
+    "413": {
+      "status": "in-review",
+      "source_body_sha256": "3752a47677146c7a9a1211dda6c8ff83bc5357a93c41542a45924e7c2abee11d",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "every Arab tribe in\n\nMadinah",
+          "after": "every Arab tribe in Madinah"
+        },
+        {
+          "kind": "evidence",
+          "before": "As for the rest of us, we moved on in life, and Allah blessed us; and now we don't know what Allah is going to do with us.\"",
+          "after": "As for the rest of us, we moved on in life, and Allah blessed us; and now we don't know what Allah is going to do with us.\"\n\n> «هَاجَرْنَا مَعَ النَّبِيِّ ﷺ نَلْتَمِسُ وَجْهَ اللَّهِ فَوَقَعَ أَجْرُنَا عَلَى اللَّهِ فَمِنَّا مَنْ مَاتَ لَمْ يَأْكُلْ مِنْ أَجْرِهِ شَيْئًا مِنْهُمْ مُصْعَبُ بْنُ عُمَيْرٍ وَمِنَّا مَنْ أَيْنَعَتْ لَهُ ثَمَرَتُهُ فَهُوَ يَهْدِبُهَا قُتِلَ يَوْمَ أُحُدٍ فَلَمْ نَجِدْ مَا نُكَفِّنُهُ إِلاَّ بُرْدَةً إِذَا غَطَّيْنَا بِهَا رَأْسَهُ خَرَجَتْ رِجْلاَهُ وَإِذَا غَطَّيْنَا رِجْلَيْهِ خَرَجَ رَأْسُهُ فَأَمَرَنَا النَّبِيُّ ﷺ أَنْ نُغَطِّيَ رَأْسَهُ وَأَنْ نَجْعَلَ عَلَى رِجْلَيْهِ مِنَ الإِذْخِرِ» ([البخاري ١٢٧٦](https://hadithunlocked.com/bukhari:1276)، صحيح)\n\n<!-- -->\n\n> Khabbab said: We emigrated with the Prophet ﷺ seeking Allah’s pleasure, and our reward became due from Allah. Some of us died without receiving any of their reward in this world, among them Musab b. Umayr; others lived to harvest their ripened fruit. Musab was killed at Uhud. We found only a cloak in which to shroud him. When we covered his head, his feet were exposed; when we covered his feet, his head was exposed. The Prophet ﷺ instructed us to cover his head and place idhkhir over his feet. ([Bukhari 1276](https://hadithunlocked.com/bukhari:1276))\n\n",
+          "verification": {
+            "hadithdb": "https://hadithunlocked.com/bukhari:1276",
+            "independent": "https://sunnah.com/bukhari:1276",
+            "scope": "Khabbab’s full matn in this route, kept plain because it is narrator speech, including his indirect account of the Prophet’s instruction. English is a separate meaning of this version; the expanded lecture quotation remains intact."
+          }
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Musab biography and Khabbab framing",
+          "reason": "Bukhari 1276 verifies the migration/reward and shroud report, but not the lecture’s complete deathbed speech or its date, age and governorship framing. The early-Hijrah chronology, parental details and severed-hands account need separate source matching. Preserve explicit uncertainty about the contingent that killed Musab."
+        }
+      ]
+    },
+    "414": {
+      "status": "in-review",
+      "source_body_sha256": "6c769ad95b64ee84661279ffa9aea23bcc33777e551579c70672da84ac499e2f",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Hanzala washed by angels",
+          "reason": "Identify the exact source and grade for the quoted angel-washing statement and the newlywed/ghusl account before adding Arabic. Preserve the original narrative without treating fame of the report as verification."
+        }
+      ]
+    },
+    "415": {
+      "status": "in-review",
+      "source_body_sha256": "c211213cf20e0ae3cce43bdb1ef97e965dc88223c8b8479c1e3fb815d49b56b1",
+      "body": [
+        {
+          "kind": "spacing",
+          "before": "هو في النار(He",
+          "after": "هو في النار (He"
+        }
+      ],
+      "citationFlags": [
+        {
+          "reference": "Quzman and the wicked-man report",
+          "reason": "Bukhari 3062 contains the concluding wording about support through a wicked man, but its narrator and unnamed combatant do not establish identity with Quzman in this Uhud account. Verify the historical account and relevant variants before attaching Arabic that could conflate events. Preserve all dialogue and the original narrative."
+        }
+      ]
+    },
+    "416": {
+      "status": "in-review",
+      "source_body_sha256": "cda5d4f4c462d4e2ae828a8cae57dc233563377581765fbf0ce1ca7ec7900cd7",
+      "body": [],
+      "citationFlags": [
+        {
+          "reference": "Usayrim identity and little-work quotation",
+          "reason": "Bukhari 2808 verifies “He did little and was rewarded greatly” about an unnamed armored convert, without naming Usayrim or specifying the Fajr–Zuhr interval. Verify the identification and Abu Hurayra’s no-prayer report separately before adding Arabic. The extracted Arabic spelling of al-Usayrim also needs visual PDF checking."
+        }
+      ]
     }
   },
   "citationReviews": [

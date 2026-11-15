@@ -163,6 +163,14 @@ function buildDraft(plan,manifest){
   const review=manifest.passages[String(entry.num)]||{};
   if(review.source_body_sha256)assert.equal(digest(entry.body),review.source_body_sha256,`Passage ${entry.num}: stale editorial source`);
   const fields={};for(const field of ['title','body','footnotes'])fields[field]=formatField(entry[field],review[field]||[],{paragraphs:field==='body'});
+  if(review.retainOriginalTranscript===true){
+   assert.equal(review.source_body_sha256,digest(entry.body),`Passage ${entry.num}: archived transcript requires the exact source hash`);
+   const original=entry.body+(entry.footnotes?'\n\n'+entry.footnotes:'');
+   assert(!/^\s*%%\s*$/m.test(original),`Passage ${entry.num}: source conflicts with the comment delimiter`);
+   const field=fields.body;
+   field.text=edit(field.text,field.text.length,'','\n\n%%\n'+original+'\n%%','original-transcript-comment',field.ledger);
+   assert.equal(undo(field.text,field.ledger),entry.body);
+  }
   return {num:entry.num,h1:entry.h1,h2:entry.h2,h3:entry.h3,source_sha256:entry.sha256,reviewStatus:review.status||'mechanical-pass-only',fields};
  });
 }
