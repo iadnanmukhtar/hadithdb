@@ -21,11 +21,12 @@ test('indexes managed primary and chain names without rewriting the source isnad
 });
 
 test('reindexes all unique affected ids and refreshes only after success', async () => {
-	global.query = jest.fn(async () => [{ hId: 7 }, { hId: 8 }]);
+	global.query = jest.fn(async sql => sql.startsWith('SELECT id,tocId')
+		? [{ id: 7, tocId: 55 }, { id: 8, tocId: 56 }] : [{ hId: 7 }, { hId: 8 }]);
 	jest.spyOn(Index, 'updateBulkPartial').mockResolvedValue();
 	jest.spyOn(Index, 'refresh').mockResolvedValue();
 	await NarratorIndex.reindex([7, 8, 7]);
-	expect(global.query).toHaveBeenCalledWith(expect.stringContaining('hId IN (7,8)'));
+	expect(global.query).toHaveBeenCalledWith(expect.stringContaining('WHERE h.id IN (7,8)'));
 	expect(Index.updateBulkPartial).toHaveBeenCalledWith('hadiths', [{ hId: 7 }, { hId: 8 }]);
 	expect(Index.refresh).toHaveBeenCalledWith('hadiths');
 	Index.updateBulkPartial.mockRejectedValueOnce(new Error('bulk failed'));

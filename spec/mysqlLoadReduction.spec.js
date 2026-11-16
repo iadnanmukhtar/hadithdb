@@ -54,6 +54,30 @@ test('point lookup retains the view projection but restricts both materialized d
   expect(global.query).toHaveBeenCalledTimes(3);
 });
 
+test('batch lookups restrict both dependencies, deduplicate ids and preserve full rows', async () => {
+  const rows = [{ hId: 7, body_en: 'Body', grade_grade_ids: '1:2' }, { hId: 8, body: 'متن' }];
+  global.query = jest.fn().mockResolvedValueOnce([{ id: 7, tocId: 55 }, { id: 8, tocId: 55 }]).mockResolvedValueOnce(rows);
+  expect(await View.byIds([7, 8, 7, 'bad', 0])).toEqual(rows);
+  expect(global.query.mock.calls[0][0]).toBe('SELECT id,tocId FROM hadiths WHERE id IN (7,8)');
+  const sql = global.query.mock.calls[1][0];
+  expect(sql).toContain('v_toc WHERE tId IN (55)');
+  expect(sql).toContain('v_hadiths_grades WHERE id IN (7,8)');
+  expect(sql).toContain('WHERE h.id IN (7,8) ORDER BY h.ordinal');
+  expect(sql).toContain('h.body_warsh AS body_warsh');
+  expect(await View.byIds([])).toEqual([]);
+  expect(global.query).toHaveBeenCalledTimes(2);
+});
+
+test('batch lookups bound large requests and return missing records without a broad fallback', async () => {
+  global.query = jest.fn(async sql => sql.startsWith('SELECT id,tocId') ? [{ id: 1, tocId: 55 }] : []);
+  expect(await View.byIds(Array.from({ length: 101 }, (_, i) => i + 1))).toEqual([]);
+  expect(global.query).toHaveBeenCalledTimes(4);
+  expect(global.query.mock.calls[2][0]).toBe('SELECT id,tocId FROM hadiths WHERE id IN (101)');
+  global.query.mockReset().mockResolvedValue([]);
+  expect(await View.byIds([999])).toEqual([]);
+  expect(global.query).toHaveBeenCalledTimes(1);
+});
+
 test('index migration is a no-write dry run by default and skips existing exact indexes', async () => {
   jest.spyOn(console,'log').mockImplementation(() => {});
   const query = jest.fn().mockResolvedValue([]);

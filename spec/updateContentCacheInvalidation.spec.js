@@ -41,12 +41,16 @@ describe('admin content cache invalidation', () => {
     global.query = jest.fn(async query => {
       if (/^UPDATE hadiths SET/.test(query.trim()))
         return { affectedRows: 1, message: 'updated' };
-      if (query.includes('FROM v_hadiths') && query.includes('hId=123'))
+      if (query === 'SELECT id,tocId FROM hadiths WHERE id=123 LIMIT 1')
+        return [{ id: 123, tocId: 456 }];
+      if (query.includes('FROM hadiths h') && query.includes('WHERE h.id=123 LIMIT 1'))
         return [item];
       return [];
     });
     jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
     jest.spyOn(Index, 'update').mockResolvedValue();
+    jest.spyOn(require('../lib/RuntimeRefresh'), 'publish').mockResolvedValue();
+    jest.spyOn(VirtualHadithSnapshot, 'refreshHadith').mockResolvedValue();
     jest.spyOn(VirtualHadithSnapshot, 'queueHadith').mockImplementation(() => {});
   });
 
@@ -62,19 +66,24 @@ describe('admin content cache invalidation', () => {
     await updateHandler()(request(), res, jest.fn());
 
     expect(Books.touchBookContentLastmodById).toHaveBeenCalledWith(1);
+    expect(Index.update).toHaveBeenCalledWith('hadiths', item, { force: true, refresh: true });
+    const reads = global.query.mock.calls.map(([sql]) => sql);
+    expect(reads.some(sql => /FROM v_hadiths\s/.test(sql))).toBe(false);
+    expect(reads.filter(sql => sql.includes('WHERE h.id=123 LIMIT 1'))).toHaveLength(2);
     expect(Utils.flushCacheContaining).toHaveBeenCalledWith('bukhari:1');
     expect(Utils.flushCacheContaining.mock.invocationCallOrder[0]).toBeLessThan(res.json.mock.invocationCallOrder[0]);
     expect(res.status).toHaveBeenCalledWith(200);
   });
 
-  test('does not report success when required cache invalidation fails', async () => {
+  test('reports a pending refresh when cache invalidation fails after saving', async () => {
     jest.spyOn(debugFactory, 'log').mockImplementation(() => {});
     jest.spyOn(Utils, 'flushCacheContaining').mockRejectedValue(new Error('cache index unavailable'));
     const res = response();
 
     await updateHandler()(request(), res, jest.fn());
 
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json.mock.calls[0][0].message).toContain('cache index unavailable');
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json.mock.calls[0][0].refreshPending).toBe(true);
+    expect(res.json.mock.calls[0][0].warning).toBe(true);
   });
 });

@@ -38,7 +38,8 @@ describe('Hadith Sharh administration', () => {
 		global.query = jest.fn(async sql => {
 			if (sql.includes('SELECT id FROM hadiths WHERE id=123')) return [{ id: 123 }];
 			if (sql.includes('SELECT id FROM hdith_hadith_sharh WHERE hadith_id=123')) return [{ id: 11 }, { id: 12 }];
-			if (sql.includes('FROM v_hadiths') && sql.includes('hId=123')) return [{ id: 123, hId: 123, book_id: 1, book_alias: 'bukhari', num: '1', ref: 'bukhari:1' }];
+			if (sql === 'SELECT id,tocId FROM hadiths WHERE id=123 LIMIT 1') return [{ id: 123, tocId: 456 }];
+			if (sql.includes('FROM hadiths h') && sql.includes('WHERE h.id=123 LIMIT 1')) return [{ id: 123, hId: 123, book_id: 1, book_alias: 'bukhari', num: '1', ref: 'bukhari:1' }];
 			return [];
 		});
 		const req = { body: { value: '12,11' }, params: { id: '123', prop: 'hdith_sharh.reorder' }, user: { uid: 'admin' } };
@@ -78,7 +79,8 @@ describe('Hadith Sharh administration', () => {
 	test('updates both title languages from a paired autocomplete selection', async () => {
 		global.query = jest.fn(async sql => {
 			if (sql.includes('WHERE hs.id=11')) return [{ id: 11, hadith_id: 123, source_id: 4, source_book_id: -1, title: 'فتح الباري', title_en: 'Fatḥ al-Bārī', text: 'شرح' }];
-			if (sql.includes('FROM v_hadiths') && sql.includes('hId=123')) return [{ id: 123, hId: 123, book_id: 1, book_alias: 'bukhari', num: '1', ref: 'bukhari:1' }];
+			if (sql === 'SELECT id,tocId FROM hadiths WHERE id=123 LIMIT 1') return [{ id: 123, tocId: 456 }];
+			if (sql.includes('FROM hadiths h') && sql.includes('WHERE h.id=123 LIMIT 1')) return [{ id: 123, hId: 123, book_id: 1, book_alias: 'bukhari', num: '1', ref: 'bukhari:1' }];
 			return [];
 		});
 		const req = {

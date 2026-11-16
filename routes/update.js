@@ -97,7 +97,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'hadith') {
       const contributionAction = ['title','title_en'].includes(col) ? 'title' : col === 'revise' ? 'revise' : null;
-      const contributionBefore = contributionAction ? (await global.query('SELECT * FROM v_hadiths WHERE hId=' + require('../lib/Community').id(ids[0])))[0] : null;
+      const contributionBefore = contributionAction ? await HadithTranslationIndexView.byId(require('../lib/Community').id(ids[0])) : null;
       var result = "";
 
       if (col === 'delete') {
@@ -225,7 +225,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           status.value = 'Queued';
         } else {
           result = await global.query(`UPDATE hadiths SET lastmod_user='${userId}', lastfixed=CURRENT_TIMESTAMP(), ${col}=${sql(status.value)} WHERE id=${ids[0]}`);
-          var item = new Item((await global.query(`SELECT * FROM v_hadiths WHERE hId=${ids[0]}`))[0]);
+          var item = new Item(await HadithTranslationIndexView.byId(ids[0]));
           // Sirah transcripts store their searchable English text alongside the body.
           if (col === 'body_en' && (item.doctype === 'sirah' || ['sirah', 'history'].includes(item.book_type)))
             await global.query(`UPDATE hadiths SET text_en=${sql(status.value)} WHERE id=${ids[0]}`);
@@ -277,7 +277,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
       if (contributionAction) {
         try {
-          const contributionAfter = col === 'revise' ? revised.item : (await global.query('SELECT * FROM v_hadiths WHERE hId=' + require('../lib/Community').id(ids[0])))[0];
+          const contributionAfter = col === 'revise' ? revised.item : await HadithTranslationIndexView.byId(require('../lib/Community').id(ids[0]));
           await require('../lib/CommunityHadithPosts').publish(req.user, contributionAction, contributionBefore, contributionAfter);
         } catch (err) {
           debug.error('Hadith saved but Community post failed: ' + err.message);
@@ -1458,7 +1458,8 @@ async function commentaryIndexRowById(id) {
       hc.lastmod
     FROM ${commentaryJoin.from}
     ${commentaryJoin.join}
-    JOIN v_hadiths q ON q.id=hc.hadithId
+    JOIN hadiths qh ON qh.id=hc.hadithId
+    JOIN v_toc q ON q.tId=qh.tocId AND q.book_virtual=0
     ${translationIndexFields.joinSql}
     WHERE hc.id=${id}
       AND bc.source='local'
@@ -1593,8 +1594,8 @@ async function createLocalCommentaryPassage(ids, col, value) {
 
   var quranAyah = (await global.query(`
     SELECT id
-    FROM v_hadiths
-    WHERE book_alias='quran'
+    FROM hadiths
+    WHERE bookId=0
       AND h1=${surah}
       AND num=${MySQL.escape(`${surah}:${ayahFrom}`)}
     LIMIT 1`))[0];
@@ -3149,8 +3150,9 @@ async function hadithSearchRowById(hadithId) {
   var id = parseInt(hadithId, 10);
   if (!Number.isInteger(id) || id <= 0)
     return null;
-  var rows = await getHadithSearchRowsWithAdjacentRefs(`hId=${id}`);
-  return rows[0] || null;
+  // Constrain the heading and grading dependencies before materialization;
+  // an outer v_hadiths hId filter can still build the entire corpus.
+  return HadithTranslationIndexView.byId(id);
 }
 
 async function getHadithSearchRowsWithAdjacentRefs(whereClause) {

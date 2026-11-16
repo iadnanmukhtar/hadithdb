@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
+const cheerio = require('cheerio');
 const ContentRevision = require('../lib/ContentRevision');
 const Tafsir = require('../lib/Tafsir');
 
@@ -50,6 +51,10 @@ describe('content revision', () => {
 		const result = await ContentRevision.revise('hdith_sharh', 9);
 
 		expect(result.fields.text_en).toContain('quran.islamunlocked.com/quran:3:29');
+		const contextSql = global.query.mock.calls[0][0];
+		expect(contextSql).toContain('JOIN hadiths h ON h.id=hs.hadith_id');
+		expect(contextSql).toContain('JOIN v_toc t ON t.tId=h.tocId AND t.book_virtual=0');
+		expect(contextSql).not.toContain('v_hadiths');
 		expect(global.query.mock.calls.some(([sql]) => sql.includes('text_en=\'\\"Say, whether you conceal\\"'))).toBe(true);
 	});
 
@@ -65,10 +70,18 @@ describe('content revision', () => {
 	test('renders a linked inline footnote as a numbered note containing the link', () => {
 		const markdown = 'abc [^[Dhāriyāt 51:56–57](https://quran.islamunlocked.com/quran:51:56-57)]';
 		const html = Tafsir.renderCommentaryText(markdown, '', 'md', { footnoteIdPrefix: 'intro-link' });
-		expect(html).toContain('abc <sup class="footnote-ref">');
-		expect(html).toContain('href="#intro-link-fn1"');
-		expect(html).toContain('<li id="intro-link-fn1" class="footnote-item"><p><a href="https://quran.islamunlocked.com/quran:51:56-57">Dhāriyāt 51:56–57</a>');
-		expect(html).not.toContain('abc [<sup');
+		const $ = cheerio.load(html);
+		const marker = $('sup.footnote-ref > a');
+		expect(marker).toHaveLength(1);
+		expect(marker.attr('href')).toBe('#intro-link-fn1');
+		expect(marker.text()).toBe('[1]');
+		expect(marker.closest('p').text()).toBe('abc [1]');
+		const note = $('ol.footnotes-list > li#intro-link-fn1.footnote-item');
+		expect(note).toHaveLength(1);
+		const link = note.find('p > a[href="https://quran.islamunlocked.com/quran:51:56-57"]');
+		expect(link).toHaveLength(1);
+		expect(link.text()).toBe('Dhāriyāt 51:56–57');
+		expect(note.find('a.footnote-backref').attr('href')).toBe(`#${marker.attr('id')}`);
 	});
 
 	test('uses the tafsir footnote color for revised content footnotes and their links', () => {

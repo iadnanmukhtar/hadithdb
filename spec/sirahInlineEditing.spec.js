@@ -5,7 +5,7 @@ const handler=router.stack.find(l=>l.route?.path==='/:id/:prop').route.stack.at(
 afterEach(()=>{jest.restoreAllMocks();delete global.query;});
 test.each(['yqsirah','ibnhisham','history'])('%s body edits update search text before refreshing the index',async alias=>{
  const row={id:123,hId:123,book_id:100427,book_alias:alias,book_type:'sirah',doctype:'sirah',num:'1',ref:alias+':1',body_en:'Edited text[^n].',footnote_en:'[^n]: Preserved note.'};
- global.query=jest.fn(async sql=>sql.includes('FROM v_hadiths')?[row]:{affectedRows:1,message:'updated'});
+ global.query=jest.fn(async sql=>sql.startsWith('SELECT id,tocId FROM hadiths')?[{id:123,tocId:456}]:sql.includes('FROM hadiths h')?[row]:{affectedRows:1,message:'updated'});
  jest.spyOn(Books,'touchBookContentLastmodById').mockResolvedValue();
  jest.spyOn(Index,'update').mockResolvedValue();
  jest.spyOn(Snapshot,'refreshHadith').mockResolvedValue();

@@ -15,7 +15,8 @@ describe('hadith narrator inline editing', () => {
 	beforeEach(() => {
 		global.query = jest.fn(async sql => {
 			if (sql.startsWith('UPDATE hdith_hadith_metadata SET')) return { affectedRows: 1 };
-			if (sql.includes('FROM v_hadiths') && sql.includes('hId=123')) return [{
+			if (sql === 'SELECT id,tocId FROM hadiths WHERE id=123 LIMIT 1') return [{ id: 123, tocId: 456 }];
+			if (sql.includes('FROM hadiths h') && sql.includes('WHERE h.id=123 LIMIT 1')) return [{
 				id: 123, hId: 123, book_id: 1, book_alias: 'bukhari', num: '1', ref: 'bukhari:1'
 			}];
 			return [];
@@ -25,6 +26,8 @@ describe('hadith narrator inline editing', () => {
 		jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
 		jest.spyOn(Utils, 'flushCacheContaining').mockResolvedValue();
 		jest.spyOn(Index, 'update').mockResolvedValue();
+		jest.spyOn(require('../lib/RuntimeRefresh'), 'publish').mockResolvedValue();
+		jest.spyOn(require('../lib/VirtualHadithSnapshot'), 'refreshHadith').mockResolvedValue();
 	});
 
 	afterEach(() => {
@@ -77,7 +80,8 @@ describe('hadith narrator inline editing', () => {
 		global.query.mockImplementation(async sql => {
 			if (sql.includes('MAX(ordinal)')) return [{ ordinal: 1 }];
 			if (sql.startsWith('INSERT INTO hdith_narrators')) return { insertId: 456 };
-			if (sql.includes('FROM v_hadiths') && sql.includes('hId=123')) return [{
+			if (sql === 'SELECT id,tocId FROM hadiths WHERE id=123 LIMIT 1') return [{ id: 123, tocId: 456 }];
+			if (sql.includes('FROM hadiths h') && sql.includes('WHERE h.id=123 LIMIT 1')) return [{
 				id: 123, hId: 123, book_id: 1, book_alias: 'bukhari', num: '1', ref: 'bukhari:1'
 			}];
 			return [];
