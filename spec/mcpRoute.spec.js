@@ -89,6 +89,32 @@ describe('public MCP Streamable HTTP route', () => {
     expect((await wrongHeader.json()).error.message).toContain('Unsupported MCP protocol version');
   });
 
+  test.each([
+    ['resources/list', {}, { __omitProtocol: true }, 'MCP-Protocol-Version header is required after initialization.'],
+    ['prompts/list', {}, { 'MCP-Protocol-Version': '1900-01-01' }, 'Unsupported MCP protocol version: 1900-01-01.'],
+    ['initialize', {}, {}, 'initialize requires a protocolVersion.'],
+    ['custom/"probe"\nnext', {}, { __omitProtocol: true }, 'MCP-Protocol-Version header is required after initialization.']
+  ])('logs the method and rejection reason for protocol errors: %s', async (method, params, headers, reason) => {
+    const originalLog = Debug.log;
+    const log = jest.fn();
+    Debug.log = log;
+    try {
+      const response = await request('POST', {
+        jsonrpc: '2.0', id: 'protocol-log', method, params
+      }, headers);
+      expect(response.status).toBe(400);
+      expect((await response.json()).error.message).toBe(reason);
+      const logs = log.mock.calls.flat().join('');
+      expect(log.mock.calls).toHaveLength(1);
+      expect(logs).toContain(method === 'initialize' ? '| initialize |' : `method=${JSON.stringify(method)}`);
+      expect(logs).toContain('failed (protocol_error)');
+      expect(logs).toContain(`reason=${JSON.stringify(reason)}`);
+      expect(logs).not.toContain('\nnext');
+    } finally {
+      Debug.log = originalLog;
+    }
+  });
+
   test('initializes without a session id', async () => {
     const response = await request('POST', {
       jsonrpc: '2.0',

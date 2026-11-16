@@ -102,6 +102,7 @@ function requestSearchTerm(req) {
 
 function protocolError(req, res, message) {
   res.locals.mcpOutcome = 'protocol_error';
+  res.locals.mcpErrorReason = message;
   return res.status(400).json(jsonRpcError(req.body && req.body.id, JSON_RPC_ERRORS.INVALID_REQUEST, message));
 }
 
@@ -129,11 +130,14 @@ router.use(function identifyAndAuditMcpRequest(req, res, next) {
     const searchTerm = requestSearchTerm(req);
     const details = [
       `Request ${req.method} /mcp`,
-      rpcMethod === 'unknown' ? '' : rpcMethod,
+      rpcMethod === 'unknown'
+        ? `method=${JSON.stringify(String(req.body && req.body.method || 'unknown').slice(0, 120))}`
+        : rpcMethod,
       toolName === '-' ? '' : `tool=${toolName}`,
       searchTerm === '-' ? '' : `search=${JSON.stringify(searchTerm)}`,
       `${latencyMs.toFixed(1)}ms`,
-      outcome === 'success' ? 'success' : `failed (${outcome})`
+      outcome === 'success' ? 'success' : `failed (${outcome})`,
+      res.locals.mcpErrorReason ? `reason=${JSON.stringify(res.locals.mcpErrorReason.slice(0, 300))}` : ''
     ].filter(Boolean);
     debug.info(details.join(' | '));
   });
