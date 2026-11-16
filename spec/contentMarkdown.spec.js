@@ -74,3 +74,15 @@ test('attribute-free italic boundaries preserve adjacent text without enabling a
  expect(load(Content.render('`<em>literal</em>`'))('code').text()).toBe('<em>literal</em>');
  expect(Content.render('*ordinary*',{propheticSpeech:false})).not.toContain('source-prophetic-speech');
 });
+
+test('honorifics leave surrounding prose in its own language in body and footnotes',()=>{
+ expect(load(Content.render('ﷺ'))('p').attr('dir')).toBe('rtl');
+ const md='ﷺ Peace be upon him.\n\n> ﷺ The English explanation.\n\nArabic[^ar] and English[^en].\n\n[^ar]: ﷺ نص عربي.\n\n[^en]: ﷺ An English explanation.';
+ for(const html of [Content.render(md),Notebook.render(md),Tafsir.renderCommentaryText(md,'','md')]) {
+  const $=load(html);
+  expect($('p').first().attr('dir')).toBe('ltr');
+  expect($('blockquote').attr('dir')).toBe('ltr');
+  expect($('.footnote-item').map((_,el)=>$(el).attr('dir')).get()).toEqual(['rtl','ltr']);
+  expect($('.footnotes').text()).toContain('ﷺ نص عربي.');
+ }
+});

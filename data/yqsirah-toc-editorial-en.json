@@ -1,0 +1,5396 @@
+{
+  "alias": "yqsirah",
+  "source_sha256": "aa9fc59f8d91f7fbc4b810b18542d7f4b875667ca6dbfd9b662df54a2d2efad8",
+  "sections": [
+    {
+      "id": 170322,
+      "h1": 1,
+      "h2": 1,
+      "title_en": "Introducing the Prophet ﷺ",
+      "intro_en": "✧ Introduces the Prophet's ﷺ qualities and honored place as a starting point for studying his life.",
+      "before": {
+        "title_en": "Introducing the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170323,
+      "h1": 1,
+      "h2": 2,
+      "title_en": "The Names of Prophet Muhammad ﷺ",
+      "intro_en": "✧ Explains the Prophet's ﷺ names and the meanings they convey about his character and mission.",
+      "before": {
+        "title_en": "The Names of Prophet Muhammad ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170324,
+      "h1": 1,
+      "h2": 3,
+      "title_en": "The Distinctive Honors of Prophet Muhammad ﷺ",
+      "intro_en": "✧ Discusses the special honors associated with the Prophet ﷺ and their significance in the lecture's account.",
+      "before": {
+        "title_en": "The Specialties of Prophet Muhammad ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170325,
+      "h1": 1,
+      "h2": 4,
+      "title_en": "The Physical Appearance of Prophet Muhammad ﷺ",
+      "intro_en": "✧ Collects descriptions of the Prophet's ﷺ appearance as remembered and transmitted by his Companions.",
+      "before": {
+        "title_en": "The Physical Appearance of Prophet Muhammad ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170326,
+      "h1": 1,
+      "h2": 5,
+      "title_en": "The Prophet's ﷺ Character and Conduct",
+      "intro_en": "✧ Illustrates humility, good manners, courage, generosity, and humor through accounts of the Prophet's ﷺ conduct.",
+      "before": {
+        "title_en": "The Character and Conduct of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170332,
+      "h1": 1,
+      "h2": 6,
+      "title_en": "The Prophet's ﷺ Love for His Ummah",
+      "intro_en": "✧ Describes the Prophet's ﷺ concern for his community and the ways he expressed that care.",
+      "before": {
+        "title_en": "Prophet Muhammad's ﷺ Love For His Ummah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170333,
+      "h1": 1,
+      "h2": 7,
+      "title_en": "Loving the Prophet ﷺ and His Companions",
+      "intro_en": "✧ Concludes with the report of companionship with those one loves and its meaning for the early Muslims.",
+      "before": {
+        "title_en": "Conclusion",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170335,
+      "h1": 2,
+      "h2": 1,
+      "title_en": "The Meaning and Study of Sirah",
+      "intro_en": "✧ Defines sirah and explains why the Prophet's ﷺ life must be understood within its historical setting.",
+      "before": {
+        "title_en": "Why Study the Sirah?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170336,
+      "h1": 2,
+      "h2": 2,
+      "title_en": "Benefits of Studying the Sirah",
+      "intro_en": "✧ Explores the Prophet's ﷺ example in worship, family life, character, and leadership as reasons to study his biography.",
+      "before": {
+        "title_en": "Benefits of Studying the Seerah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170337,
+      "h1": 2,
+      "h2": 3,
+      "title_en": "Sources for Studying the Sirah",
+      "intro_en": "✧ Introduces the Quran and other sources used to reconstruct the Prophet's ﷺ life and assess its reports.",
+      "before": {
+        "title_en": "Primary Sources Used for the Series",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170339,
+      "h1": 3,
+      "h2": 1,
+      "title_en": "Arab Peoples and Pre-Islamic Arabia",
+      "intro_en": "✧ Introduces traditional divisions of the Arabs and the peoples who inhabited Arabia before Islam.",
+      "before": {
+        "title_en": "Arabia Before Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170340,
+      "h1": 3,
+      "h2": 2,
+      "title_en": "Ibrahim, Ismail, and Arabian Monotheism",
+      "intro_en": "✧ Traces the account of monotheism in Arabia through Ibrahim and Ismail before the rise of pagan practices.",
+      "before": {
+        "title_en": "Pre-Islamic Arabia: The Monotheism of Ibrahim & Ismail",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170341,
+      "h1": 3,
+      "h2": 3,
+      "title_en": "The Rise and Practices of Arabian Paganism",
+      "intro_en": "✧ Discusses accounts of how idol worship entered Arabia and the religious practices that developed around it.",
+      "before": {
+        "title_en": "Pre-Islamic Arabia: History of the Introduction of Paganism",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170343,
+      "h1": 3,
+      "h2": 4,
+      "title_en": "The Hunafa and the Search for Monotheism",
+      "intro_en": "✧ Examines accounts of those who sought the religion of Ibrahim outside the prevailing pagan traditions.",
+      "before": {
+        "title_en": "Pre-Islamic Arabia: The Hunafa'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170344,
+      "h1": 3,
+      "h2": 5,
+      "title_en": "Religion in the Roman and Sassanid Empires",
+      "intro_en": "✧ Surveys the religious setting of the neighboring empires as background to the emergence of Islam.",
+      "before": {
+        "title_en": "Religious Status of the Romans and the Sassanids",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170345,
+      "h1": 3,
+      "h2": 6,
+      "title_en": "Salman al-Farisi's Search for Faith",
+      "intro_en": "✧ Recounts Salman's religious journey and his encounters with Christians in his search for guidance.",
+      "before": {
+        "title_en": "Remnants of the Real Christians: The Story of Salman al-Farisi",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170346,
+      "h1": 3,
+      "h2": 7,
+      "title_en": "Heraclius and the Recognition of Prophethood",
+      "intro_en": "✧ Considers the account of the Byzantine emperor Heraclius in the discussion of Christianity and the Prophet's ﷺ mission.",
+      "before": {
+        "title_en": "Remnants of the Real Christians: Heraclius the Emperor of Byzantium",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170347,
+      "h1": 3,
+      "h2": 8,
+      "title_en": "The Need for Revelation and Guidance",
+      "intro_en": "✧ Draws lessons about divine guidance from the religious conditions described before the Prophet's ﷺ mission.",
+      "before": {
+        "title_en": "Conclusion",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170349,
+      "h1": 4,
+      "h2": 1,
+      "title_en": "Arab Origins and the Prophet's ﷺ Ancestry",
+      "intro_en": "✧ Introduces traditional accounts of Arab origins while acknowledging the limits of the surviving genealogical material.",
+      "before": {
+        "title_en": "The Prophet’s Ancestry",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170350,
+      "h1": 4,
+      "h2": 2,
+      "title_en": "The Prophet's ﷺ Lineage and Arab Nobility",
+      "intro_en": "✧ Traces the Prophet's ﷺ ancestry to Adnan and discusses the meaning of noble lineage in Arab society.",
+      "before": {
+        "title_en": "Genealogy and Lineage",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170354,
+      "h1": 4,
+      "h2": 3,
+      "title_en": "Mudar and Kinana in the Prophet's ﷺ Ancestry",
+      "intro_en": "✧ Discusses traditions about Mudar and Kinana and their place in the Prophet's ﷺ ancestral line.",
+      "before": {
+        "title_en": "Kinana",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170355,
+      "h1": 4,
+      "h2": 4,
+      "title_en": "The Origins and Name of Quraysh",
+      "intro_en": "✧ Explores competing identifications of Quraysh and the genealogical traditions associated with the tribe's name.",
+      "before": {
+        "title_en": "Quraysh (قريش)",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170356,
+      "h1": 4,
+      "h2": 5,
+      "title_en": "The Prophet's ﷺ Ancestors and Makkan Leadership",
+      "intro_en": "✧ Recounts the roles of Qusayy, Abd Manaf, Hashim, and Abd al-Muttalib in the history of Makkah.",
+      "before": {
+        "title_en": "The Prophet’s Immediate Ancestors",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170361,
+      "h1": 4,
+      "h2": 6,
+      "title_en": "Abd al-Muttalib: Zamzam, His Children, and His Vow",
+      "intro_en": "✧ Connects the rediscovery of Zamzam with Abd al-Muttalib's family and the account of his vow concerning Abd Allah.",
+      "before": {
+        "title_en": "Abdul Muttalib: Rediscovery of Zamzam (زمزم)",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170364,
+      "h1": 4,
+      "h2": 7,
+      "title_en": "Abd al-Muttalib and the Army of the Elephant",
+      "intro_en": "✧ Recounts the expedition against Makkah and Abd al-Muttalib's role in the story of the elephant.",
+      "before": {
+        "title_en": "Abdul Muttalib: Incident of the Attack of the Elephant(s)",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170365,
+      "h1": 4,
+      "h2": 8,
+      "title_en": "Lessons from the Prophet's ﷺ Ancestry",
+      "intro_en": "✧ Reflects on the ancestral achievements and family standing emphasized in the account of the Prophet's ﷺ lineage.",
+      "before": {
+        "title_en": "Conclusion",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170367,
+      "h1": 5,
+      "h2": 1,
+      "title_en": "Belief in Allah and Idolatry in Arabia",
+      "intro_en": "✧ Examines how recognition of Allah coexisted with idols and other religious practices among the pre-Islamic Arabs.",
+      "before": {
+        "title_en": "Religious Life in Pre-Islamic Arabia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170368,
+      "h1": 5,
+      "h2": 2,
+      "title_en": "Why the Prophetic Mission Began in Arabia",
+      "intro_en": "✧ Discusses the lecture's explanations for Arabia's role as the setting of the Prophet's ﷺ mission.",
+      "before": {
+        "title_en": "Wisdoms of Sending the Prophet ﷺ in Arabia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170369,
+      "h1": 5,
+      "h2": 3,
+      "title_en": "Abd Allah and Aminah, the Prophet's ﷺ Parents",
+      "intro_en": "✧ Introduces the Prophet's ﷺ parents and explains why relatively little information survives about their lives.",
+      "before": {
+        "title_en": "Parents of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170370,
+      "h1": 5,
+      "h2": 4,
+      "title_en": "The Birth of Prophet Muhammad ﷺ",
+      "intro_en": "✧ Examines accounts of the Prophet's ﷺ birth, including questions about its date and reported circumstances.",
+      "before": {
+        "title_en": "Date & Time of the Birth of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170372,
+      "h1": 5,
+      "h2": 5,
+      "title_en": "Halimah, Fosterage, and the Opening of the Heart",
+      "intro_en": "✧ Recounts the Prophet's ﷺ early fosterage, the opening of his heart, and later accounts of his foster family.",
+      "before": {
+        "title_en": "From Aminah to Halimah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170375,
+      "h1": 5,
+      "h2": 6,
+      "title_en": "The Death of Aminah",
+      "intro_en": "✧ Recounts the loss of the Prophet's ﷺ mother and its place in the account of his childhood.",
+      "before": {
+        "title_en": "The Death of Aminah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170376,
+      "h1": 5,
+      "h2": 7,
+      "title_en": "Under Abd al-Muttalib's Care",
+      "intro_en": "✧ Describes the Prophet's ﷺ childhood in his grandfather's care after the loss of his parents.",
+      "before": {
+        "title_en": "Living With Abdul Muttalib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170377,
+      "h1": 5,
+      "h2": 8,
+      "title_en": "Lessons from the Prophet's ﷺ Orphanhood",
+      "intro_en": "✧ Reflects on the Prophet's ﷺ early bereavements and the lessons drawn from his experience as an orphan.",
+      "before": {
+        "title_en": "Wisdoms Gleaned From the Orphanhood",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170378,
+      "h1": 5,
+      "h2": 9,
+      "title_en": "Assessing the Childhood Journey to Syria",
+      "intro_en": "✧ Examines the reported journey to Syria and questions surrounding the historical reliability of its details.",
+      "before": {
+        "title_en": "The Prophet's Journey to Syria as a Child: Did It Really Happen?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170380,
+      "h1": 6,
+      "h2": 1,
+      "title_en": "Sources for the Prophet's ﷺ Youth",
+      "intro_en": "✧ Introduces the limited accounts of the Prophet's ﷺ early youth and the difficulties of reconstructing that period.",
+      "before": {
+        "title_en": "The Prophet’s Youth",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170381,
+      "h1": 6,
+      "h2": 2,
+      "title_en": "The Prophet ﷺ as a Shepherd",
+      "intro_en": "✧ Discusses the Prophet's ﷺ work as a shepherd and the lessons drawn from that experience.",
+      "before": {
+        "title_en": "Prophet Muhammad ﷺ as a Shepherd",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170382,
+      "h1": 6,
+      "h2": 3,
+      "title_en": "The Fijar Wars",
+      "intro_en": "✧ Introduces the conflicts known as the Fijar Wars within the account of the Prophet's ﷺ youth.",
+      "before": {
+        "title_en": "The Fijar Wars (the Evil Wars)",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170383,
+      "h1": 6,
+      "h2": 4,
+      "title_en": "The Fijar Wars and Hilf al-Fudul",
+      "intro_en": "✧ Connects the wars with the pact of Hilf al-Fudul and examines lessons about justice and cooperation.",
+      "before": {
+        "title_en": "Hilf al-Fudul and Its Lessons",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170385,
+      "h1": 6,
+      "h2": 5,
+      "title_en": "Meeting and Marrying Khadijah",
+      "intro_en": "✧ Recounts the relationship leading to the marriage and the lessons drawn from the Prophet's ﷺ life with Khadijah.",
+      "before": {
+        "title_en": "Meeting and Marrying Khadija",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170388,
+      "h1": 6,
+      "h2": 6,
+      "title_en": "The Loss of the Prophet's ﷺ Children",
+      "intro_en": "✧ Considers the Prophet's ﷺ bereavements and the wisdoms discussed in relation to the deaths of his children.",
+      "before": {
+        "title_en": "Tangent: Wisdoms Behind the Prophet ﷺ Losing His Children",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170390,
+      "h1": 7,
+      "h2": 1,
+      "title_en": "Rebuilding the Kabah and Resolving the Black Stone Dispute",
+      "intro_en": "✧ Recounts the rebuilding, the dispute over placing the Black Stone, and the lessons drawn from its resolution.",
+      "before": {
+        "title_en": "Rebuilding the Ka‘bah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170394,
+      "h1": 8,
+      "h2": 1,
+      "title_en": "Zayd b. Harithah: Adoption and Family Ties",
+      "intro_en": "✧ Traces accounts of Zayd's place in the Prophet's ﷺ household and the family relationships surrounding his adoption.",
+      "before": {
+        "title_en": "Zayd ibn Harithah: Adoption and Family",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170397,
+      "h1": 9,
+      "h2": 1,
+      "title_en": "Dreams, Jibril, and the First Revelation",
+      "intro_en": "✧ Connects the discussion of dreams with Jibril's first appearance and the opening verses of Surat al-Alaq.",
+      "before": {
+        "title_en": "The Beginning of Revelation",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170402,
+      "h1": 9,
+      "h2": 2,
+      "title_en": "Further Revelation and the Nature of Prophethood",
+      "intro_en": "✧ Examines al-Muddaththir, forms of revelation, distinctions among prophets and messengers, and humanity's need for prophetic guidance.",
+      "before": {
+        "title_en": "After the First Revelation",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170412,
+      "h1": 10,
+      "h2": 1,
+      "title_en": "The First Believers",
+      "intro_en": "✧ Recounts the earliest responses to the Prophet's ﷺ message among his family and close associates.",
+      "before": {
+        "title_en": "The Early Converts",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170413,
+      "h1": 10,
+      "h2": 2,
+      "title_en": "Private Dawah and the Stages of Preaching",
+      "intro_en": "✧ Describes the early private invitation to Islam and places it within the wider progression of the dawah.",
+      "before": {
+        "title_en": "The Private Dawah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170415,
+      "h1": 10,
+      "h2": 3,
+      "title_en": "Open Preaching and Its Lessons",
+      "intro_en": "✧ Examines the transition to public preaching and the lessons drawn from the Prophet's ﷺ approach.",
+      "before": {
+        "title_en": "The Open Preaching",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170418,
+      "h1": 11,
+      "h2": 1,
+      "title_en": "Forms of Quraysh's Opposition",
+      "intro_en": "✧ Introduces the different methods Quraysh used to oppose Islam, without presenting them as a strict chronology.",
+      "before": {
+        "title_en": "The Quraysh’s Opposition",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170419,
+      "h1": 11,
+      "h2": 2,
+      "title_en": "Quraysh's Appeal to Abu Talib",
+      "intro_en": "✧ Recounts the attempt to restrain the Prophet ﷺ by appealing to the authority of his uncle.",
+      "before": {
+        "title_en": "1. Appealing to the Highest Authority",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170420,
+      "h1": 11,
+      "h2": 3,
+      "title_en": "Abu Talib's Protection and the Proposed Bargain",
+      "intro_en": "✧ Examines Quraysh's proposal, Abu Talib's protection, and the differing responses of the Prophet's ﷺ uncles to Islam.",
+      "before": {
+        "title_en": "2. Proposing a Bargain to Abu Talib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170424,
+      "h1": 11,
+      "h2": 4,
+      "title_en": "Suppressing Public Recitation of the Quran",
+      "intro_en": "✧ Describes opposition to hearing the Quran publicly and efforts to restrict its recitation in Makkah.",
+      "before": {
+        "title_en": "3. Banning of the Recitation of the Quran in Public",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170425,
+      "h1": 11,
+      "h2": 5,
+      "title_en": "Ridicule of the Prophet ﷺ and the Believers",
+      "intro_en": "✧ Examines mockery as a means of opposing the message and intimidating the early Muslim community.",
+      "before": {
+        "title_en": "4. Ridiculing the Prophet ﷺ and the Believers",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170426,
+      "h1": 11,
+      "h2": 6,
+      "title_en": "Accusations against the Prophet ﷺ",
+      "intro_en": "✧ Discusses the labels and allegations used to discredit the Prophet ﷺ and his message among the people.",
+      "before": {
+        "title_en": "5. False Accusations and Slanders",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170427,
+      "h1": 11,
+      "h2": 7,
+      "title_en": "Demands for Miracles",
+      "intro_en": "✧ Recounts challenges demanding signs from the Prophet ﷺ within the broader pattern of Makkan opposition.",
+      "before": {
+        "title_en": "6. Challenging the Prophet ﷺ for a Miracle",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170428,
+      "h1": 11,
+      "h2": 8,
+      "title_en": "Offers of Compromise and Bribery",
+      "intro_en": "✧ Examines proposals intended to change the Prophet's ﷺ course through concessions, inducements, or religious compromise.",
+      "before": {
+        "title_en": "7. Attempts of Middle Ground / Bribery",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170429,
+      "h1": 11,
+      "h2": 9,
+      "title_en": "Questions Used to Challenge the Prophet ﷺ",
+      "intro_en": "✧ Describes attempts to test the Prophet ﷺ through questions raised by those opposing his message.",
+      "before": {
+        "title_en": "8. Quizzing the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170430,
+      "h1": 11,
+      "h2": 10,
+      "title_en": "The Torture of the Early Muslims",
+      "intro_en": "✧ Recounts the persecution of Bilal, Khabbab, the family of Yasir, and Suhayb during the Makkan period.",
+      "before": {
+        "title_en": "9. Outright Torture",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170435,
+      "h1": 11,
+      "h2": 11,
+      "title_en": "The Boycott as a Means of Persecution",
+      "intro_en": "✧ Introduces collective social pressure and exclusion as another method used against the Prophet ﷺ and his supporters.",
+      "before": {
+        "title_en": "10. Boycott",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170436,
+      "h1": 11,
+      "h2": 12,
+      "title_en": "Attacks on the Prophet ﷺ and the Trials of Faith",
+      "intro_en": "✧ Recounts mistreatment of the Prophet ﷺ and considers why the early believers faced such severe trials.",
+      "before": {
+        "title_en": "Torture to the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170438,
+      "h1": 11,
+      "h2": 13,
+      "title_en": "The House of al-Arqam",
+      "intro_en": "✧ Describes the house associated with the early Muslim community and its role during the Makkan dawah.",
+      "before": {
+        "title_en": "The House of al-Arqam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170440,
+      "h1": 12,
+      "h2": 1,
+      "title_en": "The First Migration to Abyssinia and Its Setting",
+      "intro_en": "✧ Examines the choice of Abyssinia, lessons from migration, and the religious background of the Najashi.",
+      "before": {
+        "title_en": "The First Emigration to Abyssinia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170444,
+      "h1": 12,
+      "h2": 2,
+      "title_en": "The Disputed Satanic Verses Reports",
+      "intro_en": "✧ Compares versions, scholarly interpretations, theological arguments, and Yasir Qadhi's assessment of the disputed reports.",
+      "before": {
+        "title_en": "The Report of the “Satanic Verses”: Narrations and Assessment",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170453,
+      "h1": 12,
+      "h2": 3,
+      "title_en": "Abu Bakr's Attempted Migration and Protection",
+      "intro_en": "✧ Recounts Abu Bakr's departure, the protection offered to him, and the reasons he remained in Makkah.",
+      "before": {
+        "title_en": "Abu Bakr’s Attempt to Emigrate",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170455,
+      "h1": 12,
+      "h2": 4,
+      "title_en": "Returning from Abyssinia and Seeking Protection",
+      "intro_en": "✧ Describes the return prompted by a false report and the experiences of Uthman b. Mazun and Abu Salamah.",
+      "before": {
+        "title_en": "Coming Back to Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170458,
+      "h1": 12,
+      "h2": 5,
+      "title_en": "The Second Migration and Quraysh's Appeals to the Najashi",
+      "intro_en": "✧ Recounts renewed migration, attempts to secure the Muslims' return, and the political pressures facing the Najashi.",
+      "before": {
+        "title_en": "The Second Emigration to Abyssinia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170462,
+      "h1": 12,
+      "h2": 6,
+      "title_en": "The Najashi's Faith, Political Struggles, and Death",
+      "intro_en": "✧ Connects accounts of the Najashi's acceptance of Islam with conflict in his kingdom and his later death.",
+      "before": {
+        "title_en": "Najashi’s Islam, Reign, and Death",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170465,
+      "h1": 12,
+      "h2": 7,
+      "title_en": "The Muslims' Long Stay in Abyssinia",
+      "intro_en": "✧ Examines their continued residence after the Hijrah and the question of Islam's reception among local people.",
+      "before": {
+        "title_en": "The Muslims’ Continued Stay in Abyssinia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170467,
+      "h1": 12,
+      "h2": 8,
+      "title_en": "Umm Habibah's Marriage in Abyssinia",
+      "intro_en": "✧ Recounts the Prophet's ﷺ marriage proposal to Umm Habibah and the Najashi's role in arranging the marriage.",
+      "before": {
+        "title_en": "Ummi Habiba bint Abi Sufyan",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170469,
+      "h1": 13,
+      "h2": 1,
+      "title_en": "The Significance of Hamzah's and Umar's Conversions",
+      "intro_en": "✧ Introduces two conversions presented as strengthening the position of the small Muslim community in Makkah.",
+      "before": {
+        "title_en": "The Conversions of Hamza and Umar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170470,
+      "h1": 13,
+      "h2": 2,
+      "title_en": "The Conversion of Hamzah b. Abd al-Muttalib",
+      "intro_en": "✧ Recounts Hamzah's acceptance of Islam and its place in the growing support for the Prophet ﷺ.",
+      "before": {
+        "title_en": "1. Hamzah ibn Abdul Muttalib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170471,
+      "h1": 13,
+      "h2": 3,
+      "title_en": "The Conversion of Umar b. al-Khattab",
+      "intro_en": "✧ Recounts Umar's acceptance of Islam within the account of opposition and change in Makkan society.",
+      "before": {
+        "title_en": "2. Umar ibn al-Khattab",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170472,
+      "h1": 13,
+      "h2": 4,
+      "title_en": "The Boycott, Its End, and Its Lessons",
+      "intro_en": "✧ Examines the pressures of the boycott, the events leading to its dissolution, and lessons drawn from the ordeal.",
+      "before": {
+        "title_en": "The Boycott and Its End",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170476,
+      "h1": 14,
+      "h2": 1,
+      "title_en": "The Year of Sorrow",
+      "intro_en": "✧ Introduces the succession of losses and setbacks that followed the end of the boycott.",
+      "before": {
+        "title_en": "The Year of Sorrow",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170477,
+      "h1": 14,
+      "h2": 2,
+      "title_en": "Abu Talib's Death and the Question of His Faith",
+      "intro_en": "✧ Recounts his death and protection of the Prophet ﷺ while examining family conversions and claims about his religious position.",
+      "before": {
+        "title_en": "The Death of Abu Talib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170481,
+      "h1": 14,
+      "h2": 3,
+      "title_en": "The Loss of Khadijah and Abu Talib's Protection",
+      "intro_en": "✧ Describes Khadijah's death alongside the consequences of losing the support previously provided by Abu Talib.",
+      "before": {
+        "title_en": "The Death of Khadija RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170483,
+      "h1": 14,
+      "h2": 4,
+      "title_en": "The Journey to Taif: Rejection, Prayer, and Consolation",
+      "intro_en": "✧ Recounts the preaching, rejection, supplication, encounter with Addas, and angelic offer associated with the journey.",
+      "before": {
+        "title_en": "The Journey to Ta’if",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170491,
+      "h1": 14,
+      "h2": 5,
+      "title_en": "The Night of the Jinn",
+      "intro_en": "✧ Recounts the encounter with the jinn in the narrative of the Prophet's ﷺ preaching beyond Makkah.",
+      "before": {
+        "title_en": "The Night of the Jinn",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170492,
+      "h1": 14,
+      "h2": 6,
+      "title_en": "Returning under Mutim b. Adi's Protection",
+      "intro_en": "✧ Describes the search for protection that enabled the Prophet ﷺ to re-enter Makkah after Taif.",
+      "before": {
+        "title_en": "Returning to Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170494,
+      "h1": 15,
+      "h2": 1,
+      "title_en": "The Night Journey and Ascension: Sources and Chronology",
+      "intro_en": "✧ Introduces the terminology, Quranic references, narration difficulties, and differing dates associated with al-Isra and al-Miraj.",
+      "before": {
+        "title_en": "The Night Journey and Ascension: Background",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170499,
+      "h1": 15,
+      "h2": 2,
+      "title_en": "The Night Journey to Jerusalem",
+      "intro_en": "✧ Recounts the opening of the chest, the journey on al-Buraq, prayer with the prophets, and the choice of milk.",
+      "before": {
+        "title_en": "Al-Isra: The Night Journey",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170504,
+      "h1": 15,
+      "h2": 3,
+      "title_en": "The Ascension: Prophets and Signs in the Heavens",
+      "intro_en": "✧ Describes encounters with earlier prophets, heavenly landmarks, Jibril's appearance, and the distinction between the heavens and Paradise.",
+      "before": {
+        "title_en": "Al-Mi‘raj: The Ascension through the Heavens",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170515,
+      "h1": 15,
+      "h2": 4,
+      "title_en": "The Divine Meeting and the Obligation of Prayer",
+      "intro_en": "✧ Examines the prescribed prayers, their reduction, the question of seeing Allah, and related discussions of al-Najm and divine decree.",
+      "before": {
+        "title_en": "Gifts of the Ascension and the Obligation of Prayer",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170523,
+      "h1": 15,
+      "h2": 5,
+      "title_en": "The Hairdresser of Pharaoh's Daughter",
+      "intro_en": "✧ Recounts the report about the hairdresser and her children within the accounts associated with the Night Journey.",
+      "before": {
+        "title_en": "The Story of the Mashitah of the Daughter of Pharaoh",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170524,
+      "h1": 15,
+      "h2": 6,
+      "title_en": "Descriptions of Paradise during the Ascension",
+      "intro_en": "✧ Discusses what the Prophet ﷺ is reported to have seen and questions about entry into Paradise.",
+      "before": {
+        "title_en": "Observing Jannah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170525,
+      "h1": 15,
+      "h2": 7,
+      "title_en": "Descriptions of Hell during the Night Journey",
+      "intro_en": "✧ Collects reports of punishments witnessed during the journey and connects them with the conduct they address.",
+      "before": {
+        "title_en": "Observing Jahannam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170526,
+      "h1": 15,
+      "h2": 8,
+      "title_en": "The Return from the Night Journey and Abu Bakr's Response",
+      "intro_en": "✧ Recounts the return to Makkah and Abu Bakr's response in the account of the title al-Siddiq.",
+      "before": {
+        "title_en": "The Return to Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170528,
+      "h1": 15,
+      "h2": 9,
+      "title_en": "Quranic References and Questions about the Night Journey",
+      "intro_en": "✧ Examines whether the journey was a dream and the question of the Prophet ﷺ seeing Allah.",
+      "before": {
+        "title_en": "Al-Isra wal-Mi'raj in the Quran",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170531,
+      "h1": 15,
+      "h2": 10,
+      "title_en": "Theological and Legal Lessons from the Night Journey",
+      "intro_en": "✧ Draws together theological reflections and legal lessons discussed in connection with al-Isra and al-Miraj.",
+      "before": {
+        "title_en": "Lessons from the Night Journey and Ascension",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170535,
+      "h1": 16,
+      "h2": 1,
+      "title_en": "The Search for Support beyond Makkah",
+      "intro_en": "✧ Explains the precarious protection in Makkah and the circumstances prompting approaches to other communities.",
+      "before": {
+        "title_en": "Seeking Support Beyond Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170536,
+      "h1": 16,
+      "h2": 2,
+      "title_en": "Approaching Kindah and Banu Shayban during Hajj",
+      "intro_en": "✧ Recounts approaches to visiting tribes and the discussions surrounding support for the Prophet's ﷺ mission.",
+      "before": {
+        "title_en": "Approaching the Tribes during Hajj",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170539,
+      "h1": 16,
+      "h2": 3,
+      "title_en": "The Khazraj, Yathrib, and the Reception of Islam",
+      "intro_en": "✧ Introduces Yathrib's setting, the Prophet's ﷺ encounter with the Khazraj, and lessons from their response.",
+      "before": {
+        "title_en": "Meeting the Khazraj of Yathrib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170545,
+      "h1": 16,
+      "h2": 4,
+      "title_en": "The First Pledge of Aqabah and Islam in Yathrib",
+      "intro_en": "✧ Connects the pledge with Friday prayer, the conversions of Usayd and Saad, and the account of al-Usayrim.",
+      "before": {
+        "title_en": "The First Covenant of Aqaba (the Covenant of Women)",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170549,
+      "h1": 16,
+      "h2": 5,
+      "title_en": "The Second Pledge of Aqabah",
+      "intro_en": "✧ Recounts the larger delegation from Yathrib and the commitments made before the migration to Madinah.",
+      "before": {
+        "title_en": "The Second Covenant of Aqaba",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170551,
+      "h1": 17,
+      "h2": 1,
+      "title_en": "The Conclusion and Lessons of the Second Pledge",
+      "intro_en": "✧ Describes the cry interrupting the gathering, the merits of the Ansar, and lessons drawn from the pledge.",
+      "before": {
+        "title_en": "The Second Pledge of Aqaba: Its Conclusion and Lessons",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170555,
+      "h1": 17,
+      "h2": 2,
+      "title_en": "Permission to Migrate to Madinah",
+      "intro_en": "✧ Recounts the announcement identifying the place of migration and the preparations it set in motion.",
+      "before": {
+        "title_en": "Permission to Migrate to Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170556,
+      "h1": 17,
+      "h2": 3,
+      "title_en": "Abu Salamah's Family and the Journey to Madinah",
+      "intro_en": "✧ Recounts the family's migration difficulties and the assistance associated with Uthman b. Talhah along the journey.",
+      "before": {
+        "title_en": "Migration to Madinah: The Family of Abu Salama",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170558,
+      "h1": 17,
+      "h2": 4,
+      "title_en": "Suhayb al-Rumi's Migration",
+      "intro_en": "✧ Introduces Suhayb's background and recounts his experience of leaving Makkah to join the Muslims in Madinah.",
+      "before": {
+        "title_en": "Migration to Madinah: Suhayb al-Rumi",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170559,
+      "h1": 17,
+      "h2": 5,
+      "title_en": "Umar and His Companions Leave for Madinah",
+      "intro_en": "✧ Recounts the migration accounts associated with Umar and the experiences of those traveling with him.",
+      "before": {
+        "title_en": "The Migration of Umar and His Companions",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170561,
+      "h1": 17,
+      "h2": 6,
+      "title_en": "Preparing for the Prophet's ﷺ Hijrah",
+      "intro_en": "✧ Reconstructs the preparations for migration through reports about Abu Bakr, his household, and the Prophet ﷺ.",
+      "before": {
+        "title_en": "1. Preparations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170562,
+      "h1": 17,
+      "h2": 7,
+      "title_en": "The Night of the Hijrah",
+      "intro_en": "✧ Recounts the events surrounding the Prophet's ﷺ departure from Makkah at the beginning of the migration.",
+      "before": {
+        "title_en": "2. The Night of the Hijrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170563,
+      "h1": 17,
+      "h2": 8,
+      "title_en": "The Journey to the Cave of Thawr",
+      "intro_en": "✧ Follows the Prophet ﷺ and Abu Bakr to their refuge in the cave during the Hijrah.",
+      "before": {
+        "title_en": "3. To Ghari Thawr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170564,
+      "h1": 17,
+      "h2": 9,
+      "title_en": "Suraqah b. Malik's Pursuit",
+      "intro_en": "✧ Recounts Suraqah's pursuit during the Hijrah and addresses questions arising from the account of his encounter.",
+      "before": {
+        "title_en": "4. The Story of Suraqa ibn Malik",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170566,
+      "h1": 17,
+      "h2": 10,
+      "title_en": "The Encounter with Umm Mabad",
+      "intro_en": "✧ Recounts the travelers' meeting with Umm Mabad on the journey from Makkah toward Madinah.",
+      "before": {
+        "title_en": "5. The Story of Ummi Ma'bad",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170567,
+      "h1": 17,
+      "h2": 11,
+      "title_en": "Abu Bakr's Discreet Reply during the Hijrah",
+      "intro_en": "✧ Describes an encounter with travelers and Abu Bakr's use of an ambiguous answer to protect his companion's identity.",
+      "before": {
+        "title_en": "6. Another Mini Story During the Hijrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170568,
+      "h1": 17,
+      "h2": 12,
+      "title_en": "Lessons from the Hijrah",
+      "intro_en": "✧ Draws practical and spiritual lessons from the planning, difficulties, and encounters associated with the migration.",
+      "before": {
+        "title_en": "What We Learn From the Incident of the Hijrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170569,
+      "h1": 17,
+      "h2": 13,
+      "title_en": "Madinah's Names, Virtues, and Sacred Boundaries",
+      "intro_en": "✧ Explains the city's names and blessings, the meaning of a sanctuary, and reflections on its choice for migration.",
+      "before": {
+        "title_en": "Madinah: Its Names, Virtues, and Sanctity",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170574,
+      "h1": 18,
+      "h2": 1,
+      "title_en": "From the Hijrah to Life in Madinah",
+      "intro_en": "✧ Connects the preceding discussion of Madinah's virtues with the account of the community established there.",
+      "before": {
+        "title_en": "The Hijrah and the Community of Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170575,
+      "h1": 18,
+      "h2": 2,
+      "title_en": "The Peoples and Relationships of Yathrib",
+      "intro_en": "✧ Surveys the Jewish tribes, Aws and Khazraj, their relationships, and estimates of the city's population before the Hijrah.",
+      "before": {
+        "title_en": "Madinah’s People before the Hijrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170580,
+      "h1": 18,
+      "h2": 3,
+      "title_en": "Awaiting the Prophet's ﷺ Arrival in Yathrib",
+      "intro_en": "✧ Recounts the anticipation of the Ansar and the first news of the travelers' approach to the city.",
+      "before": {
+        "title_en": "The Prophet's ﷺ Arrival in the City of Yathrib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170581,
+      "h1": 18,
+      "h2": 4,
+      "title_en": "The Quranic Command to Migrate",
+      "intro_en": "✧ Examines the development of commands concerning migration and the later question of residence in non-Muslim lands.",
+      "before": {
+        "title_en": "Verses of Commandment of Hijrah in the Quran: From Lenient to Strict",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170583,
+      "h1": 18,
+      "h2": 5,
+      "title_en": "The Welcome in Madinah and Abu Ayyub's Hospitality",
+      "intro_en": "✧ Recounts the Prophet's ﷺ reception in the city and his stay in the home of Abu Ayyub al-Ansari.",
+      "before": {
+        "title_en": "The Prophet’s Arrival in Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170586,
+      "h1": 18,
+      "h2": 6,
+      "title_en": "Building the Prophet's ﷺ Mosque and Its Later History",
+      "intro_en": "✧ Describes the mosque's construction, later expansions, particular blessings, and the account of the crying palm stump.",
+      "before": {
+        "title_en": "Building the Prophet’s Mosque",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170590,
+      "h1": 18,
+      "h2": 7,
+      "title_en": "Quba, Its Mosque, and the First Friday Prayer",
+      "intro_en": "✧ Recounts the stay in Quba, the houses visited, the mosque's significance, and discussions of Friday prayer and sermons.",
+      "before": {
+        "title_en": "The Stay in Quba",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170595,
+      "h1": 18,
+      "h2": 8,
+      "title_en": "The Mosque as a Center of Community Life",
+      "intro_en": "✧ Examines the mosque's communal role through accounts of construction, poetry, and Ammar's exchange with the Prophet ﷺ.",
+      "before": {
+        "title_en": "The Mosque’s Role in the Muslim Community",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170598,
+      "h1": 18,
+      "h2": 9,
+      "title_en": "Changes to Prayer and the Introduction of the Adhan",
+      "intro_en": "✧ Discusses the development of communal worship through changes in prayer units and the introduction of the call to prayer.",
+      "before": {
+        "title_en": "Changing of the Rak'at & the Legislation of Adhan",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170599,
+      "h1": 18,
+      "h2": 10,
+      "title_en": "The Prophet's ﷺ Houses in Madinah",
+      "intro_en": "✧ Describes the Prophet's ﷺ living arrangements and addresses questions concerning his homes in the developing community.",
+      "before": {
+        "title_en": "Houses of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170601,
+      "h1": 18,
+      "h2": 11,
+      "title_en": "The Establishment of the Hijri Calendar",
+      "intro_en": "✧ Explains the adoption of the Islamic calendar during Umar's rule and its association with the migration.",
+      "before": {
+        "title_en": "Tangent: Establishment of Hijri Calendar During the Reign of Umar RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170602,
+      "h1": 18,
+      "h2": 12,
+      "title_en": "Community, Love of Madinah, and Greetings of Peace",
+      "intro_en": "✧ Connects the formation of the Muslim community with attachment to Madinah and the teaching about spreading salam.",
+      "before": {
+        "title_en": "Establishing the Muslim Community",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170605,
+      "h1": 18,
+      "h2": 13,
+      "title_en": "Brotherhood between the Muhajirun and Ansar",
+      "intro_en": "✧ Illustrates the bonds of brotherhood through the Ansar's generosity, individual examples, and lessons from the arrangement.",
+      "before": {
+        "title_en": "Brotherhood between the Muhajirun and the Ansar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170610,
+      "h1": 19,
+      "h2": 1,
+      "title_en": "Introducing the Constitution of Madinah",
+      "intro_en": "✧ Introduces the agreement governing relationships among the different groups within the newly established community in Madinah.",
+      "before": {
+        "title_en": "The Constitution of Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170611,
+      "h1": 19,
+      "h2": 2,
+      "title_en": "The Constitution's Clauses concerning Muslims",
+      "intro_en": "✧ Examines provisions addressing Muslim obligations and relationships within the agreement established for the community of Madinah.",
+      "before": {
+        "title_en": "1. Clauses Related to the Muslims",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170612,
+      "h1": 19,
+      "h2": 3,
+      "title_en": "The Constitution's Clauses concerning Jewish Communities",
+      "intro_en": "✧ Examines the provisions addressing Jewish groups and their place within the agreement governing Madinah.",
+      "before": {
+        "title_en": "2. Clauses Related to the Jews",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170613,
+      "h1": 19,
+      "h2": 4,
+      "title_en": "The Constitution's Clauses concerning Pagans",
+      "intro_en": "✧ Discusses the provisions concerning pagan residents within the broader agreement regulating the community of Madinah.",
+      "before": {
+        "title_en": "3. Clauses Related to the Pagans",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170614,
+      "h1": 19,
+      "h2": 5,
+      "title_en": "Shared Obligations under the Constitution",
+      "intro_en": "✧ Examines the agreement's common provisions and the responsibilities extending across the different groups in Madinah.",
+      "before": {
+        "title_en": "4. Clauses Related to Everyone",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170615,
+      "h1": 19,
+      "h2": 6,
+      "title_en": "Misreadings of the Constitution of Madinah",
+      "intro_en": "✧ Discusses interpretations the lecture disputes and the importance of reading the agreement within its historical setting.",
+      "before": {
+        "title_en": "Misinterpretations of the Constitution",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170616,
+      "h1": 19,
+      "h2": 7,
+      "title_en": "Lessons from the Constitution of Madinah",
+      "intro_en": "✧ Draws lessons from the agreement's provisions and its organization of relations among the city's communities.",
+      "before": {
+        "title_en": "Points of Benefit From the Constitution",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170617,
+      "h1": 19,
+      "h2": 8,
+      "title_en": "The Mosque, Brotherhood, and the Madinan Agreement",
+      "intro_en": "✧ Reviews the principal steps taken after arrival: building the mosque, establishing brotherhood, and organizing the wider community.",
+      "before": {
+        "title_en": "What Has Occurred in Madinah Since the Arrival of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170618,
+      "h1": 19,
+      "h2": 9,
+      "title_en": "Religious Bonds and National Identity",
+      "intro_en": "✧ Considers the relationship between shared faith and national affiliation in the discussion of Muslim community formation.",
+      "before": {
+        "title_en": "Philosophical Tangent: Bonds of Religion vs. Bonds of Nationality",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170620,
+      "h1": 20,
+      "h2": 1,
+      "title_en": "The Change of Qiblah and the Question of Abrogation",
+      "intro_en": "✧ Introduces the change of prayer direction and the questions raised by the replacement of an earlier ruling.",
+      "before": {
+        "title_en": "The Change of Qiblah: Background",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170621,
+      "h1": 20,
+      "h2": 2,
+      "title_en": "Prayer toward Jerusalem and Relations in Madinah",
+      "intro_en": "✧ Explains the earlier prayer direction and the tensions discussed as background to its subsequent change.",
+      "before": {
+        "title_en": "1. Background",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170623,
+      "h1": 20,
+      "h2": 3,
+      "title_en": "Revelation of the New Qiblah and Its Lessons",
+      "intro_en": "✧ Recounts the command to turn toward Makkah and considers the wisdoms associated with the change.",
+      "before": {
+        "title_en": "3. Revelation of the Verse",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170625,
+      "h1": 20,
+      "h2": 4,
+      "title_en": "The Place of Salah in Islam",
+      "intro_en": "✧ Examines the theological significance of prayer within the discussion of the change of qiblah.",
+      "before": {
+        "title_en": "Theological Tangent: The Status of Salah in Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170626,
+      "h1": 20,
+      "h2": 5,
+      "title_en": "The Mosque of the Two Qiblahs",
+      "intro_en": "✧ Discusses the mosque associated with the change in prayer direction and its place in the historical account.",
+      "before": {
+        "title_en": "Masjid al-Qiblatayn (Mosque of the Two Qiblas)",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170627,
+      "h1": 20,
+      "h2": 6,
+      "title_en": "The Meaning of Ummatan Wasata",
+      "intro_en": "✧ Explores the description of the Muslim community in Quran 2:143 within the surrounding verses about the qiblah.",
+      "before": {
+        "title_en": "\"Ummatan Wasata\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170629,
+      "h1": 21,
+      "h2": 1,
+      "title_en": "The Mosque's Roof and the People of the Suffah",
+      "intro_en": "✧ Connects the mosque's physical arrangements with the circumstances of those who stayed at the Suffah.",
+      "before": {
+        "title_en": "The Roof of Masjid al-Nabawi",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170631,
+      "h1": 21,
+      "h2": 2,
+      "title_en": "Sirmah, the Hanif of Madinah",
+      "intro_en": "✧ Recounts the religious search and conversion of the elderly Madinan described as having rejected idolatry.",
+      "before": {
+        "title_en": "Sirma the Hanif of Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170632,
+      "h1": 21,
+      "h2": 3,
+      "title_en": "Economic Organization in the New Muslim Community",
+      "intro_en": "✧ Discusses economic policies made possible by the Muslims' new circumstances after settling in Madinah.",
+      "before": {
+        "title_en": "1. Economic Policies",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170633,
+      "h1": 21,
+      "h2": 4,
+      "title_en": "The Development of Worship in Madinah",
+      "intro_en": "✧ Traces the introduction of ritual obligations, beginning with fasting, during the early period after the Hijrah.",
+      "before": {
+        "title_en": "2. Spiritual Practices",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170635,
+      "h1": 22,
+      "h2": 1,
+      "title_en": "Permission to Fight and the Stages of Jihad",
+      "intro_en": "✧ Explains the changing circumstances of armed struggle and the stages outlined in the lecture's discussion.",
+      "before": {
+        "title_en": "Permission to Fight and the Stages of Jihad",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170637,
+      "h1": 22,
+      "h2": 2,
+      "title_en": "Types of Military Expeditions",
+      "intro_en": "✧ Distinguishes categories of expeditions before introducing the early military activity of the community in Madinah.",
+      "before": {
+        "title_en": "Types of Military Expeditions",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170638,
+      "h1": 22,
+      "h2": 3,
+      "title_en": "The Expedition of al-Abwa",
+      "intro_en": "✧ Recounts the expedition of al-Abwa as part of the early military activity after the Hijrah.",
+      "before": {
+        "title_en": "Ghazwa al-Abwa",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170639,
+      "h1": 22,
+      "h2": 4,
+      "title_en": "The Expedition of Ubaydah b. al-Harith",
+      "intro_en": "✧ Describes the mission led by Ubaydah within the sequence of expeditions preceding the Battle of Badr.",
+      "before": {
+        "title_en": "Sariyya of Ubaydah ibn al-Harith",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170640,
+      "h1": 22,
+      "h2": 5,
+      "title_en": "The Expedition of al-Ushayrah",
+      "intro_en": "✧ Recounts the expedition of al-Ushayrah within the developing confrontation between the Muslims and Quraysh.",
+      "before": {
+        "title_en": "Ghazwa al-Ushayra",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170641,
+      "h1": 22,
+      "h2": 6,
+      "title_en": "The Expedition of Badr al-Sughra",
+      "intro_en": "✧ Introduces the earlier expedition associated with Badr and distinguishes it within the sequence of military events.",
+      "before": {
+        "title_en": "Ghazwa Badr al-Sughra",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170642,
+      "h1": 22,
+      "h2": 7,
+      "title_en": "The Expedition of Nakhlah and Its Lessons",
+      "intro_en": "✧ Recounts the events of the Nakhlah expedition and examines the lessons drawn from its consequences.",
+      "before": {
+        "title_en": "Sariyya Nakhla",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170644,
+      "h1": 22,
+      "h2": 8,
+      "title_en": "Internal and External Threats to Madinah",
+      "intro_en": "✧ Distinguishes tensions within the city from the challenge posed by Quraysh and the wider Arabian setting.",
+      "before": {
+        "title_en": "The Threats Facing Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170645,
+      "h1": 22,
+      "h2": 9,
+      "title_en": "The Caravan, Badr, and the Change of Qiblah",
+      "intro_en": "✧ Introduces the caravan and battlefield while considering the lecture's comparison between Badr and the new prayer direction.",
+      "before": {
+        "title_en": "The Caravan and the Road to Badr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170648,
+      "h1": 22,
+      "h2": 10,
+      "title_en": "Mustering the Army and Gathering Intelligence before Badr",
+      "intro_en": "✧ Describes volunteers, limited transport, questions of assistance and promises, and efforts to gather information before battle.",
+      "before": {
+        "title_en": "Preparing the Muslim Army",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170655,
+      "h1": 22,
+      "h2": 11,
+      "title_en": "Atikah bt. Abd al-Muttalib's Dream",
+      "intro_en": "✧ Recounts the dream attributed to Atikah before Badr and discusses questions associated with its narration.",
+      "before": {
+        "title_en": "The Dream of Atikah bint Abdul Muttalib",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170657,
+      "h1": 22,
+      "h2": 12,
+      "title_en": "Quraysh's Leaders and the Decision to March",
+      "intro_en": "✧ Examines the responses of Utbah, Uqbah, and Umayyah as Quraysh prepared for the confrontation at Badr.",
+      "before": {
+        "title_en": "The Quraysh Leaders Prepare for Badr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170662,
+      "h1": 22,
+      "h2": 13,
+      "title_en": "Quraysh's Supplication and the Army's Departure",
+      "intro_en": "✧ Connects the army's preparations with its supplication, estimates of its size, and reports about Iblis.",
+      "before": {
+        "title_en": "The Du'a of the Quraysh",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170665,
+      "h1": 22,
+      "h2": 14,
+      "title_en": "The Caravan's Escape and Quraysh's Advance",
+      "intro_en": "✧ Follows developments affecting Abu Sufyan's caravan and the Quraysh army as the confrontation at Badr approached.",
+      "before": {
+        "title_en": "Updates on Abu Sufyan's Caravan and the Quraysh Army",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170666,
+      "h1": 22,
+      "h2": 15,
+      "title_en": "Consultation and Saad b. Muadh's Pledge of Support",
+      "intro_en": "✧ Recounts the Prophet's ﷺ consultation with his Companions and the response attributed to Saad before battle.",
+      "before": {
+        "title_en": "Consulting the Companions before Battle",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170668,
+      "h1": 22,
+      "h2": 16,
+      "title_en": "Positioning the Army and Preparing for Badr",
+      "intro_en": "✧ Discusses consultation and judgment alongside the accounts of rain, sleep, and the alignment of the Muslim ranks.",
+      "before": {
+        "title_en": "The Muslim Army’s Final Preparations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170672,
+      "h1": 22,
+      "h2": 17,
+      "title_en": "The Opening Confrontation and Those to Be Spared",
+      "intro_en": "✧ Examines the Quraysh side, instructions concerning particular individuals, and the account of the first death.",
+      "before": {
+        "title_en": "The Quraysh Side",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170675,
+      "h1": 22,
+      "h2": 18,
+      "title_en": "The Opening Duels and Umayr b. al-Humam",
+      "intro_en": "✧ Recounts the initial combat, the promise of angelic help, and Umayr's response at the battle.",
+      "before": {
+        "title_en": "The Mubaraza",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170678,
+      "h1": 22,
+      "h2": 19,
+      "title_en": "Angelic Help and Ukashah at Badr",
+      "intro_en": "✧ Examines reports of divine assistance during the fighting and the account associated with Ukashah b. Mihsan.",
+      "before": {
+        "title_en": "The Battle of Badr and the Help of the Angels",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170681,
+      "h1": 22,
+      "h2": 20,
+      "title_en": "Quraysh's Defeat and the Fate of Its Leaders",
+      "intro_en": "✧ Recounts deaths and encounters involving Abu Jahl, Umayyah, and others as the battle ended in Quraysh's defeat.",
+      "before": {
+        "title_en": "The End of Abu Jahal",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170688,
+      "h1": 22,
+      "h2": 21,
+      "title_en": "Can the Dead Hear? Evidence and Scholarly Views",
+      "intro_en": "✧ Compares Quranic passages, hadith reports, competing scholarly positions, and Yasir Qadhi's assessment of the question.",
+      "before": {
+        "title_en": "Can the Dead Hear? The Discussion after Badr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170694,
+      "h1": 22,
+      "h2": 22,
+      "title_en": "The Distribution of the Spoils of Badr",
+      "intro_en": "✧ Discusses the question of captured property and its distribution following the Muslims' victory at Badr.",
+      "before": {
+        "title_en": "The Spoils of War",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170695,
+      "h1": 22,
+      "h2": 23,
+      "title_en": "Consultation over Prisoners and Prophetic Judgment",
+      "intro_en": "✧ Examines decisions about the captives alongside questions of personal judgment, mercy, and severity in the early Madinan period.",
+      "before": {
+        "title_en": "Prisoners of War and Consultation",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170698,
+      "h1": 22,
+      "h2": 24,
+      "title_en": "The Fate of al-Nadr and Uqbah after Badr",
+      "intro_en": "✧ Recounts the treatment of al-Nadr b. al-Harith and Uqbah b. Abi Muayt following their capture.",
+      "before": {
+        "title_en": "The Mocker of the Quran: Al-Nadr ibn al-Harith",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170700,
+      "h1": 22,
+      "h2": 25,
+      "title_en": "News of Victory and the Death of Ruqayyah",
+      "intro_en": "✧ Connects the return of news from Badr with the loss of the Prophet's ﷺ daughter Ruqayyah.",
+      "before": {
+        "title_en": "The Victory of the Muslims",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170702,
+      "h1": 22,
+      "h2": 26,
+      "title_en": "Suhayl b. Amr and the Treatment of Captives",
+      "intro_en": "✧ Recounts Suhayl's captivity and places it within the broader discussion of how the prisoners were treated.",
+      "before": {
+        "title_en": "Prisoner of War: Suhayl ibn Amr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170704,
+      "h1": 22,
+      "h2": 27,
+      "title_en": "Al-Abbas among the Prisoners of Badr",
+      "intro_en": "✧ Recounts the captivity of the Prophet's ﷺ uncle and the questions surrounding his treatment after the battle.",
+      "before": {
+        "title_en": "Prisoner of War: Al-Abbas, the Uncle of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170705,
+      "h1": 22,
+      "h2": 28,
+      "title_en": "Teaching Literacy as a Prisoner's Ransom",
+      "intro_en": "✧ Discusses the account of prisoners teaching children to read and write as a means of securing release.",
+      "before": {
+        "title_en": "Prisoners of War: Teaching Children How to Read and Write as the Ransom",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170706,
+      "h1": 22,
+      "h2": 29,
+      "title_en": "Abu al-As and Zaynab after Badr",
+      "intro_en": "✧ Recounts the captivity of Zaynab's husband and the family circumstances surrounding his ransom and release.",
+      "before": {
+        "title_en": "Prisoner of War: Abu al-As, the Husband of Zaynab bint Muhammad",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170707,
+      "h1": 22,
+      "h2": 30,
+      "title_en": "Amr b. Abi Sufyan's Captivity",
+      "intro_en": "✧ Recounts the experience of Abu Sufyan's son among the prisoners taken at the Battle of Badr.",
+      "before": {
+        "title_en": "Prisoner of War: Amr ibn Abi Sufyan",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170708,
+      "h1": 22,
+      "h2": 31,
+      "title_en": "Abu Aziz and the Release of Remaining Captives",
+      "intro_en": "✧ Describes the captivity of Musab's brother and the discussion of mercy toward the remaining prisoners.",
+      "before": {
+        "title_en": "Prisoner of War: Abu Aziz, the Brother of Mus'ab ibn Umayr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170710,
+      "h1": 22,
+      "h2": 32,
+      "title_en": "The Religious and Political Aftermath of Badr",
+      "intro_en": "✧ Examines Quraysh's response, Abu Lahab's death, the status of Badr's participants, and wider political and military consequences.",
+      "before": {
+        "title_en": "The Aftermath and Significance of Badr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170717,
+      "h1": 22,
+      "h2": 33,
+      "title_en": "Surat al-Anfal and the Battle of Badr",
+      "intro_en": "✧ Explores the Quranic discussion of the battle and its lessons through the verses of Surat al-Anfal.",
+      "before": {
+        "title_en": "Tafsir of Surah al-Anfal [8]",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170719,
+      "h1": 23,
+      "h2": 1,
+      "title_en": "Between Badr and Uhud",
+      "intro_en": "✧ Introduces the incidents and expeditions occurring between the two battles in the second and third years after Hijrah.",
+      "before": {
+        "title_en": "Threats and Expeditions after Badr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170720,
+      "h1": 23,
+      "h2": 2,
+      "title_en": "The Assassination Plot and Questions about Jewish Relations",
+      "intro_en": "✧ Recounts a plot against the Prophet ﷺ and addresses modern criticisms and questions about treatment of Jews.",
+      "before": {
+        "title_en": "Another Aftermath of the Battle of Badr: Assassination Attempt on the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170723,
+      "h1": 23,
+      "h2": 3,
+      "title_en": "The Expulsion of Banu Qaynuqa and Its Lessons",
+      "intro_en": "✧ Recounts the confrontation with Banu Qaynuqa, their expulsion, and the lessons and questions discussed afterward.",
+      "before": {
+        "title_en": "The Expulsion of the Banu Qaynuqa",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170726,
+      "h1": 23,
+      "h2": 4,
+      "title_en": "The Expedition of Qarqarat al-Kudr",
+      "intro_en": "✧ Recounts the expedition as part of the military activity and security concerns following the Battle of Badr.",
+      "before": {
+        "title_en": "Expedition of Qarqarat al-Kudr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170727,
+      "h1": 23,
+      "h2": 5,
+      "title_en": "The Sawiq Expedition",
+      "intro_en": "✧ Describes the incident known as Sawiq within the sequence of confrontations between Badr and Uhud.",
+      "before": {
+        "title_en": "Sariyya of Sawiq",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170728,
+      "h1": 23,
+      "h2": 6,
+      "title_en": "The Qaradah Expedition",
+      "intro_en": "✧ Recounts the Qaradah expedition and its place in the growing conflict before the Battle of Uhud.",
+      "before": {
+        "title_en": "Sariyya of Qarada",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170729,
+      "h1": 23,
+      "h2": 7,
+      "title_en": "The Killing of Kaab b. al-Ashraf",
+      "intro_en": "✧ Recounts the events surrounding Kaab's killing and addresses questions arising from the lecture's treatment of the incident.",
+      "before": {
+        "title_en": "The Assassination of Ka'b ibn al-Ashraf",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170731,
+      "h1": 23,
+      "h2": 8,
+      "title_en": "Review of the Makkan Period",
+      "intro_en": "✧ Revisits the earlier Makkan narrative before continuing the account of events in the Madinan period.",
+      "before": {
+        "title_en": "Review of the Makkan Period",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170733,
+      "h1": 24,
+      "h2": 1,
+      "title_en": "Why Quraysh Sought Battle at Uhud",
+      "intro_en": "✧ Explains the motives discussed for the new campaign, including religious hostility and revenge for losses at Badr.",
+      "before": {
+        "title_en": "The Causes of Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170734,
+      "h1": 24,
+      "h2": 2,
+      "title_en": "Quraysh's Preparations for Uhud",
+      "intro_en": "✧ Describes the forces and preparations assembled by Quraysh for its campaign against the Muslims at Uhud.",
+      "before": {
+        "title_en": "Quraysh's Preparation for the Battle of Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170735,
+      "h1": 24,
+      "h2": 3,
+      "title_en": "Al-Abbas Sends News of Quraysh's Army",
+      "intro_en": "✧ Recounts the warning sent to Madinah and considers why the information was dispatched at that stage.",
+      "before": {
+        "title_en": "News Reaches the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170736,
+      "h1": 24,
+      "h2": 4,
+      "title_en": "The Dream before Uhud and Consultation with the Muslims",
+      "intro_en": "✧ Connects the Prophet's ﷺ dream with the announcement of danger, consultation, and lessons from the response.",
+      "before": {
+        "title_en": "The Dream of the Prophet ﷺ About the Battle of Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170739,
+      "h1": 24,
+      "h2": 5,
+      "title_en": "Organizing the Army and Marching to Uhud",
+      "intro_en": "✧ Describes the divisions of the Muslim force, its available equipment, and the departure from Madinah.",
+      "before": {
+        "title_en": "Preparing for Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170740,
+      "h1": 24,
+      "h2": 6,
+      "title_en": "The Virtues of Uhud and the Choice of Battlefield",
+      "intro_en": "✧ Discusses reports about the mountain and the reasons considered for selecting its surroundings for battle.",
+      "before": {
+        "title_en": "Blessings of the Mountain of Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170742,
+      "h1": 24,
+      "h2": 7,
+      "title_en": "The Withdrawal before Uhud",
+      "intro_en": "✧ Recounts the separation of part of the force as the Muslims approached the confrontation at Uhud.",
+      "before": {
+        "title_en": "The Hypocrites Breaking Away",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170743,
+      "h1": 24,
+      "h2": 8,
+      "title_en": "The Camp, Army Positions, and Young Volunteers at Uhud",
+      "intro_en": "✧ Examines battlefield deployment, the admission of young Companions, and difficulties in arranging the reports chronologically.",
+      "before": {
+        "title_en": "The Muslim Army’s Position and Deployment",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170747,
+      "h1": 24,
+      "h2": 9,
+      "title_en": "The Archers' Position and Orders at Uhud",
+      "intro_en": "✧ Explains the strategic role of the archers and the instructions given to protect the army's vulnerable approach.",
+      "before": {
+        "title_en": "Vitality of the Archers",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170748,
+      "h1": 24,
+      "h2": 10,
+      "title_en": "Abu Dujanah at Uhud",
+      "intro_en": "✧ Recounts Abu Dujanah's role in the battle and the reports associated with his actions there.",
+      "before": {
+        "title_en": "Abu Dujana RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170749,
+      "h1": 24,
+      "h2": 11,
+      "title_en": "Abu Amir's Opposition at Uhud",
+      "intro_en": "✧ Introduces Abu Amir and his role on the opposing side in the account of the battle.",
+      "before": {
+        "title_en": "Abu Amir the Fasiq",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170750,
+      "h1": 24,
+      "h2": 12,
+      "title_en": "Opening Duels and the Muslims' Early Advantage at Uhud",
+      "intro_en": "✧ Follows the initial fighting, the fate of Quraysh's standard-bearers, and the Muslims' early success on the battlefield.",
+      "before": {
+        "title_en": "The Mubaraza",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170754,
+      "h1": 24,
+      "h2": 13,
+      "title_en": "The Reversal at Uhud and al-Yaman's Death",
+      "intro_en": "✧ Recounts the change in the battle's course and the death of Hudhayfah's father amid the confusion.",
+      "before": {
+        "title_en": "The Tide Turns at Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170756,
+      "h1": 24,
+      "h2": 14,
+      "title_en": "Hamzah's Death at Uhud",
+      "intro_en": "✧ Recounts the circumstances of Hamzah's death and the reports surrounding the loss of the Prophet's ﷺ uncle.",
+      "before": {
+        "title_en": "Martyrdom of Hamzah ibn Abdul Muttalib RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170757,
+      "h1": 24,
+      "h2": 15,
+      "title_en": "Musab b. Umayr's Death at Uhud",
+      "intro_en": "✧ Recounts Musab's final fighting and reflects on the life and death of the Muslim standard-bearer.",
+      "before": {
+        "title_en": "Martyrdom of Mus'ab ibn Umayr RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170758,
+      "h1": 24,
+      "h2": 16,
+      "title_en": "Hanzalah's Death at Uhud",
+      "intro_en": "✧ Recounts Hanzalah's participation and death in the battle alongside the reports associated with his burial.",
+      "before": {
+        "title_en": "Martyrdom of Hanzala RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170759,
+      "h1": 24,
+      "h2": 17,
+      "title_en": "The Death of Quzman b. al-Harith",
+      "intro_en": "✧ Examines Quzman's fighting and death within the lecture's discussion of intention and outward appearances in battle.",
+      "before": {
+        "title_en": "Death of Quzman ibn al-Harith",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170760,
+      "h1": 24,
+      "h2": 18,
+      "title_en": "Al-Usayrim's Conversion and Death at Uhud",
+      "intro_en": "✧ Recounts the acceptance of Islam and death of Amr b. Thabit in the accounts of Uhud.",
+      "before": {
+        "title_en": "Martyrdom of al-Usayrim Amr ibn Thabit RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170761,
+      "h1": 24,
+      "h2": 19,
+      "title_en": "Mukhayriq's Support for the Muslims at Uhud",
+      "intro_en": "✧ Recounts Mukhayriq's decision to support the Muslims and the account of his commitment to the agreement.",
+      "before": {
+        "title_en": "Mukhayriq the Jew Who Honored the Constitution",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170762,
+      "h1": 24,
+      "h2": 20,
+      "title_en": "The Companions Who Defended the Prophet ﷺ",
+      "intro_en": "✧ Recounts the defensive efforts and injuries of Saad b. Abi Waqqas, Talhah b. Ubayd Allah, Qatadah, and others.",
+      "before": {
+        "title_en": "The Companions Defending the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170766,
+      "h1": 24,
+      "h2": 21,
+      "title_en": "The Prophet's ﷺ Injuries and the Lessons of Uhud",
+      "intro_en": "✧ Examines his injuries, the Quranic response discussed in the lecture, and reflections on the wisdom of these events.",
+      "before": {
+        "title_en": "The Prophet’s Injuries and Their Lessons",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170769,
+      "h1": 24,
+      "h2": 22,
+      "title_en": "The Rumor of Death and the Companions' Responses",
+      "intro_en": "✧ Recounts Anas b. al-Nadr's death, Kaab's discovery of the Prophet ﷺ, and the regrouping of the Companions.",
+      "before": {
+        "title_en": "The Rumor of the Prophet’s Death",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170773,
+      "h1": 24,
+      "h2": 23,
+      "title_en": "Ubayy b. Khalaf's Attack on the Prophet ﷺ",
+      "intro_en": "✧ Recounts Ubayy's confrontation with the Prophet ﷺ and his death in the aftermath of the encounter.",
+      "before": {
+        "title_en": "The Only Pagan to Be Killed at the Hands of the Prophet ﷺ: Ubay ibn Khalaf",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170774,
+      "h1": 24,
+      "h2": 24,
+      "title_en": "Treating the Wounded after Uhud",
+      "intro_en": "✧ Describes the severity of the Prophet's ﷺ injuries and the efforts of Muslim women to help the wounded.",
+      "before": {
+        "title_en": "Severity of the Wounds of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170776,
+      "h1": 24,
+      "h2": 25,
+      "title_en": "Abu Sufyan's Challenge and the Muslims' Reply",
+      "intro_en": "✧ Recounts the exchange at the end of Uhud and the response ordered by the Prophet ﷺ.",
+      "before": {
+        "title_en": "\"Answer Him Back: 'Allah SWT is Mightier and Has More Honor!'\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170777,
+      "h1": 24,
+      "h2": 26,
+      "title_en": "Safiyyah Learns of Hamzah's Death",
+      "intro_en": "✧ Recounts Safiyyah's response to her brother's death and discusses the relationship between personal grief and communal welfare.",
+      "before": {
+        "title_en": "Safiyyah Finds Out About the Death of Her Brother Hamzah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170779,
+      "h1": 24,
+      "h2": 27,
+      "title_en": "Mutilation, Burial, and Honoring the Martyrs of Uhud",
+      "intro_en": "✧ Discusses the prohibition of mutilation, burial arrangements, and the recognition given to those who had memorized the Quran.",
+      "before": {
+        "title_en": "Prohibition of Mutilation",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170782,
+      "h1": 24,
+      "h2": 28,
+      "title_en": "The Capture of Abu Azzah al-Jumahi",
+      "intro_en": "✧ Recounts the fate of Abu Azzah as the prisoner associated with the aftermath of Uhud.",
+      "before": {
+        "title_en": "The Only Prisoner of War of Uhud: Abu Azzah al-Jumahi",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170783,
+      "h1": 24,
+      "h2": 29,
+      "title_en": "Mourning and the Families of the Martyrs",
+      "intro_en": "✧ Examines the prohibition of wailing alongside discussions of naming children and caring for the families of those killed.",
+      "before": {
+        "title_en": "Prohibition of Wailing",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170786,
+      "h1": 24,
+      "h2": 30,
+      "title_en": "Hamra al-Asad and the Threat of Another Attack",
+      "intro_en": "✧ Recounts the expedition undertaken after Uhud to respond to the danger of a renewed Quraysh offensive.",
+      "before": {
+        "title_en": "The Expedition of Hamra al-Asad: Making Sure the Quraysh Don't Launch Another Attack",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170787,
+      "h1": 24,
+      "h2": 31,
+      "title_en": "The Outcome and Lessons of Uhud",
+      "intro_en": "✧ Assesses the battle's outcome and draws together the lessons discussed from its reversals and losses.",
+      "before": {
+        "title_en": "The Outcome and Lessons of Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170790,
+      "h1": 25,
+      "h2": 1,
+      "title_en": "The Threats Leading to al-Raji and Bir Maunah",
+      "intro_en": "✧ Introduces the dangers facing the Muslims after Uhud and the circumstances preceding two attacks on groups of Companions.",
+      "before": {
+        "title_en": "Threats after Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170791,
+      "h1": 25,
+      "h2": 2,
+      "title_en": "Abd Allah b. Unays's Expedition and Its Lessons",
+      "intro_en": "✧ Recounts the mission assigned to Abd Allah b. Unays and the lessons drawn from its events.",
+      "before": {
+        "title_en": "The Expedition of Abdullah ibn Unays",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170793,
+      "h1": 25,
+      "h2": 3,
+      "title_en": "The Incident of al-Raji and Its Lessons",
+      "intro_en": "✧ Recounts the attack associated with al-Raji and reflects on the experiences of the Companions involved.",
+      "before": {
+        "title_en": "The Incident of al-Raji",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170795,
+      "h1": 25,
+      "h2": 4,
+      "title_en": "The Incident of Bir Maunah and Its Lessons",
+      "intro_en": "✧ Recounts the losses at Bir Maunah and the lessons discussed in the aftermath of the incident.",
+      "before": {
+        "title_en": "The Incident of Bir Ma'una",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170798,
+      "h1": 26,
+      "h2": 1,
+      "title_en": "The Prophet's ﷺ Family Life around the Fourth Year",
+      "intro_en": "✧ Introduces the marriages considered before returning to the political events surrounding the expulsion of Banu Nadir.",
+      "before": {
+        "title_en": "Family Life and Expeditions after Uhud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170799,
+      "h1": 26,
+      "h2": 2,
+      "title_en": "The Prophet's ﷺ Marriages after Khadijah",
+      "intro_en": "✧ Introduces Sawdah, Aisha, Hafsah, Zaynab bt. Khuzaymah, Umm Salamah, and Zaynab bt. Jahsh in their family settings.",
+      "before": {
+        "title_en": "The Prophet’s Marriages after Khadija",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170807,
+      "h1": 26,
+      "h2": 3,
+      "title_en": "The Return to Badr without a Battle",
+      "intro_en": "✧ Recounts the Muslims' response to Abu Sufyan's challenge and the encounter that did not take place.",
+      "before": {
+        "title_en": "The Battle That Didn't Take Place",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170808,
+      "h1": 26,
+      "h2": 4,
+      "title_en": "Dhat al-Riqa: Prayer, Danger, and the Companions' Experiences",
+      "intro_en": "✧ Connects fear prayer with the assassination attempt, Abbad's devotion to prayer, and the account of Jabir.",
+      "before": {
+        "title_en": "Dhat al-Riqa‘: Events and Lessons",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170814,
+      "h1": 27,
+      "h2": 1,
+      "title_en": "The Setting and Chronology of Banu Nadir's Expulsion",
+      "intro_en": "✧ Introduces the confrontation with Banu Nadir and the differing chronology discussed in relation to preceding events.",
+      "before": {
+        "title_en": "Banu Nadir: Background",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170815,
+      "h1": 27,
+      "h2": 2,
+      "title_en": "Blood Money and Tensions with Banu Nadir",
+      "intro_en": "✧ Explains the request concerning blood money and its place in the developing conflict with Banu Nadir.",
+      "before": {
+        "title_en": "The Blood Money",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170817,
+      "h1": 27,
+      "h2": 3,
+      "title_en": "The Reported Assassination Plot of Banu Nadir",
+      "intro_en": "✧ Recounts the reported attempt against the Prophet ﷺ within the narrative leading to Banu Nadir's expulsion.",
+      "before": {
+        "title_en": "Attempt to Assassinate the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170818,
+      "h1": 27,
+      "h2": 4,
+      "title_en": "The Expulsion of Banu Nadir",
+      "intro_en": "✧ Describes the confrontation and departure of Banu Nadir as the conflict with the Muslims unfolded.",
+      "before": {
+        "title_en": "The Expulsion of Banu Nadir",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170819,
+      "h1": 27,
+      "h2": 5,
+      "title_en": "Fay and the Property Left by Banu Nadir",
+      "intro_en": "✧ Explains the distinction between fay and battle spoils in the discussion of the abandoned land and property.",
+      "before": {
+        "title_en": "Fay'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170820,
+      "h1": 27,
+      "h2": 6,
+      "title_en": "Surat al-Hashr and the Expulsion of Banu Nadir",
+      "intro_en": "✧ Explores the Quranic treatment of the episode through the verses and themes of Surat al-Hashr.",
+      "before": {
+        "title_en": "Tafsir of Surah al-Hashr [59]",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170821,
+      "h1": 27,
+      "h2": 7,
+      "title_en": "Dating the Expulsion of Banu Nadir",
+      "intro_en": "✧ Examines the chronology of the expulsion and its placement among the events of the Madinan period.",
+      "before": {
+        "title_en": "When Did the Expulsion Take Place?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170823,
+      "h1": 28,
+      "h2": 1,
+      "title_en": "Zayd b. Thabit Learns Hebrew",
+      "intro_en": "✧ Recounts Zayd's language learning and its role in the Prophet's ﷺ dealings with other communities.",
+      "before": {
+        "title_en": "Zayd ibn Thabit Learns Hebrew",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170824,
+      "h1": 28,
+      "h2": 2,
+      "title_en": "The Stages of the Prohibition of Alcohol",
+      "intro_en": "✧ Traces the Quranic rulings discussed in the lecture as successive stages leading to the prohibition of alcohol.",
+      "before": {
+        "title_en": "The Prohibition of Alcohol",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170825,
+      "h1": 28,
+      "h2": 3,
+      "title_en": "No Compulsion in Religion and Religious Freedom",
+      "intro_en": "✧ Examines the Quranic principle against compulsion alongside the lecture's broader discussion of religious freedom in Islam.",
+      "before": {
+        "title_en": "No Compulsion in Religion",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170827,
+      "h1": 28,
+      "h2": 4,
+      "title_en": "The Births and Virtues of Hasan and Husayn",
+      "intro_en": "✧ Introduces the Prophet's ﷺ grandsons and examines reports describing their virtues and their relationship with him.",
+      "before": {
+        "title_en": "The Birth and Virtues of Hasan and Husayn",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170830,
+      "h1": 29,
+      "h2": 1,
+      "title_en": "Banu al-Mustaliq: The Expedition, Date, and Outcome",
+      "intro_en": "✧ Recounts the expedition while examining its disputed chronology and the consequences of the encounter.",
+      "before": {
+        "title_en": "The Expedition of Banu al-Mustaliq",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170833,
+      "h1": 29,
+      "h2": 2,
+      "title_en": "Introducing the Slander against Aisha",
+      "intro_en": "✧ Briefly introduces the slander as an event connected with the expedition, before the fuller account that follows.",
+      "before": {
+        "title_en": "1. The Slander of Aisha RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170834,
+      "h1": 29,
+      "h2": 3,
+      "title_en": "Juwayriyah's Marriage and the Captives of Banu al-Mustaliq",
+      "intro_en": "✧ Connects the treatment of the captives with Juwayriyah's marriage, her virtues, and the tribe's subsequent response.",
+      "before": {
+        "title_en": "Juwayriyya and the Captives of Banu al-Mustaliq",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170838,
+      "h1": 29,
+      "h2": 4,
+      "title_en": "Slavery in the Lecture's Islamic Framework",
+      "intro_en": "✧ Discusses the institution of slavery as a background issue arising from the accounts of captives and marriage.",
+      "before": {
+        "title_en": "Tangent: Islamic Notion of 'Slavery'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170839,
+      "h1": 29,
+      "h2": 5,
+      "title_en": "Surat al-Munafiqun and the Dating of al-Muraysi",
+      "intro_en": "✧ Introduces the discussion of the surah and revisits the chronology of the expedition of al-Muraysi.",
+      "before": {
+        "title_en": "Surah al-Munafiqun and the Expedition’s Date",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170841,
+      "h1": 29,
+      "h2": 6,
+      "title_en": "Conflict, Hypocrisy, and the Revelation of al-Munafiqun",
+      "intro_en": "✧ Recounts the dispute, Zayd b. Arqam's report, Abd Allah b. Ubayy's words, and the responses to the crisis.",
+      "before": {
+        "title_en": "The Hypocrites’ Provocation and Its Aftermath",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170848,
+      "h1": 29,
+      "h2": 7,
+      "title_en": "Public Interest and the Consequences of Decisions",
+      "intro_en": "✧ Explains maslahah through the response to Abd Allah b. Ubayy and the consideration of public perceptions.",
+      "before": {
+        "title_en": "Maslaha in Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170850,
+      "h1": 30,
+      "h2": 1,
+      "title_en": "Aisha's Account of the Slander",
+      "intro_en": "✧ Presents her narration while explaining the decision not to repeat the details of the allegation.",
+      "before": {
+        "title_en": "The Slander against Aisha",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170853,
+      "h1": 30,
+      "h2": 2,
+      "title_en": "The Revelation Declaring Aisha's Innocence",
+      "intro_en": "✧ Recounts the Quranic response to the slander and its place in the resolution of Aisha's ordeal.",
+      "before": {
+        "title_en": "Allah SWT Revealed Quran About the Innocence of Aisha RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170854,
+      "h1": 30,
+      "h2": 3,
+      "title_en": "Abu Bakr's Support for Mistah",
+      "intro_en": "✧ Recounts the question of continuing financial assistance to Mistah after his involvement in spreading the slander.",
+      "before": {
+        "title_en": "Abu Bakr's RA Sadaqa to Mistah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170855,
+      "h1": 30,
+      "h2": 4,
+      "title_en": "Zaynab bt. Jahsh's Testimony about Aisha",
+      "intro_en": "✧ Describes Zaynab's response when asked about Aisha during the events surrounding the accusation against her.",
+      "before": {
+        "title_en": "Zaynab bint Jahsh's RA Testimony",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170856,
+      "h1": 30,
+      "h2": 5,
+      "title_en": "Those Who Instigated and Spread the Slander",
+      "intro_en": "✧ Distinguishes the roles of the instigators and the Muslims who repeated the accusation against Aisha.",
+      "before": {
+        "title_en": "The Munafiqun Who Instigated the Rumor and the Muslims Who Spread the Rumor",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170857,
+      "h1": 30,
+      "h2": 6,
+      "title_en": "Safwan and Hassan b. Thabit after the Slander",
+      "intro_en": "✧ Examines the accounts concerning Safwan b. al-Muattal and Hassan in the aftermath of the accusation.",
+      "before": {
+        "title_en": "Safwan ibn Muattal RA and Hassan ibn Thabit the Famous Poet RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170858,
+      "h1": 30,
+      "h2": 7,
+      "title_en": "Abu Ayyub and His Wife Respond to the Rumor",
+      "intro_en": "✧ Recounts the couple's discussion as an example of the responses to the allegation against Aisha.",
+      "before": {
+        "title_en": "Abu Ayyub al-Ansari RA and His Wife",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170859,
+      "h1": 30,
+      "h2": 8,
+      "title_en": "Lessons from the Slander against Aisha",
+      "intro_en": "✧ Reflects on the harm of rumors and backbiting, the experience of trials, and the responsibilities of believers.",
+      "before": {
+        "title_en": "Lessons From the Incident",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170861,
+      "h1": 31,
+      "h2": 1,
+      "title_en": "The Trench: Causes, Chronology, and the Confederate Alliance",
+      "intro_en": "✧ Examines when the battle occurred, why the coalition formed, and how the groups united against Madinah.",
+      "before": {
+        "title_en": "The Battle of the Trench: Background and Causes",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170865,
+      "h1": 31,
+      "h2": 2,
+      "title_en": "Consultation and Salman's Proposal to Dig a Trench",
+      "intro_en": "✧ Recounts the warning of the approaching armies and the proposal offered when the Prophet ﷺ consulted his Companions.",
+      "before": {
+        "title_en": "News Reaches the Muslims",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170866,
+      "h1": 31,
+      "h2": 3,
+      "title_en": "Salman's Freedom and Preparations to Protect the Community",
+      "intro_en": "✧ Connects Salman's release with openness to new ideas, shelter for families, and the account involving Hassan b. Thabit.",
+      "before": {
+        "title_en": "The Freeing of Salman al-Farisi RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170870,
+      "h1": 31,
+      "h2": 4,
+      "title_en": "Digging the Trench: Hardship, Miracles, and Prophecies",
+      "intro_en": "✧ Describes food shortages and construction alongside reports of miraculous provision and predictions about later conquests and Ammar.",
+      "before": {
+        "title_en": "Digging the Trench and the Miracles during Preparations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170876,
+      "h1": 31,
+      "h2": 5,
+      "title_en": "Organizing Madinah's Defense against the Confederates",
+      "intro_en": "✧ Examines coalition leaders, Banu Ghatafan, the time needed to dig, and difficulties in ordering the reports.",
+      "before": {
+        "title_en": "Planning the Defense of Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170881,
+      "h1": 31,
+      "h2": 6,
+      "title_en": "Guarding the Trench during the Siege",
+      "intro_en": "✧ Describes the Muslims' deployment, patrols, and living arrangements while defending Madinah against the besieging forces.",
+      "before": {
+        "title_en": "The Siege",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170882,
+      "h1": 31,
+      "h2": 7,
+      "title_en": "Banu Qurayzah's Change of Allegiance",
+      "intro_en": "✧ Recounts the shift attributed to Banu Qurayzah and its significance within the account of the siege.",
+      "before": {
+        "title_en": "Banu Qurayza Changes Sides",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170883,
+      "h1": 31,
+      "h2": 8,
+      "title_en": "Hypocrisy and Lessons from the Siege",
+      "intro_en": "✧ Examines requests to withdraw, expressions of doubt, and lessons drawn from the pressure placed on the community.",
+      "before": {
+        "title_en": "The Munafiqun",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170885,
+      "h1": 31,
+      "h2": 9,
+      "title_en": "Quraysh at the Trench: Stalemate and Skirmishes",
+      "intro_en": "✧ Describes the army's response to the obstacle and the limited fighting and casualties during the siege.",
+      "before": {
+        "title_en": "The Quraysh",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170887,
+      "h1": 31,
+      "h2": 10,
+      "title_en": "Saad b. Muadh's Death and Virtues",
+      "intro_en": "✧ Recounts the death of Saad and the reports describing his virtues in connection with the siege narrative.",
+      "before": {
+        "title_en": "The Death of Sa'd ibn Mu'adh RA; His Virtues and Blessings",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170888,
+      "h1": 31,
+      "h2": 11,
+      "title_en": "The Missed Asr Prayer during the Siege",
+      "intro_en": "✧ Discusses the interruption of prayer amid the fighting and its place in the account of the trench.",
+      "before": {
+        "title_en": "Missing Salat al-Asr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170889,
+      "h1": 31,
+      "h2": 12,
+      "title_en": "Failed Coordination among the Confederates",
+      "intro_en": "✧ Recounts the breakdown of cooperation among the besieging groups and the role of the Sabbath in the negotiations.",
+      "before": {
+        "title_en": "The Tide Turns against the Confederates",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170892,
+      "h1": 31,
+      "h2": 13,
+      "title_en": "The Storm, Hudhayfah's Mission, and Quraysh's Withdrawal",
+      "intro_en": "✧ Connects the severe weather with Hudhayfah's observations and the decision of Quraysh to abandon the siege.",
+      "before": {
+        "title_en": "The Worst Weather & the Role of Hudhayfah ibn al-Yaman RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170894,
+      "h1": 31,
+      "h2": 14,
+      "title_en": "Hudhayfah's Return and the Effect of the Windstorm",
+      "intro_en": "✧ Recounts the delivery of news to the Prophet ﷺ and distinguishes the army's departure from its destruction.",
+      "before": {
+        "title_en": "Bringing Back the News to the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170896,
+      "h1": 31,
+      "h2": 15,
+      "title_en": "The End of the Siege and the Means of Victory",
+      "intro_en": "✧ Reviews the outcome of the Battle of the Trench and the lessons drawn from the coalition's withdrawal.",
+      "before": {
+        "title_en": "The Outcome and Lessons of the Battle",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170900,
+      "h1": 32,
+      "h2": 1,
+      "title_en": "The March to Banu Qurayzah and Interpreting Instructions",
+      "intro_en": "✧ Recounts the command to proceed after the trench and the legal discussion about literal and contextual interpretation.",
+      "before": {
+        "title_en": "The Expedition against Banu Qurayza",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170903,
+      "h1": 32,
+      "h2": 2,
+      "title_en": "The Siege of Banu Qurayzah and Abu Lubabah's Repentance",
+      "intro_en": "✧ Describes the negotiations during the siege and Abu Lubabah's actions and repentance in the account.",
+      "before": {
+        "title_en": "Laying Siege to the Banu Qurayza",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170906,
+      "h1": 32,
+      "h2": 3,
+      "title_en": "Banu Qurayzah's Surrender and Amr b. Sada",
+      "intro_en": "✧ Recounts the surrender and the individual account of Amr within the concluding events of the siege.",
+      "before": {
+        "title_en": "Banu Qurayza Surrenders & the Mini-Story of Amr ibn Sa'da",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170907,
+      "h1": 32,
+      "h2": 4,
+      "title_en": "Saad b. Muadh's Judgment concerning Banu Qurayzah",
+      "intro_en": "✧ Recounts the selection of Saad as arbitrator and the judgment he delivered after the surrender.",
+      "before": {
+        "title_en": "The Judgment of Sa'd ibn Mu'adh RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170908,
+      "h1": 32,
+      "h2": 5,
+      "title_en": "The Executions and Questions about the Numbers",
+      "intro_en": "✧ Examines the account of the executions following the judgment and the estimates of those killed.",
+      "before": {
+        "title_en": "Execution of the Banu Qurayza",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170910,
+      "h1": 32,
+      "h2": 6,
+      "title_en": "Property and Spoils after Banu Qurayzah",
+      "intro_en": "✧ Describes the captured property and the discussion of distribution rules following the confrontation with Banu Qurayzah.",
+      "before": {
+        "title_en": "The Booty",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170911,
+      "h1": 32,
+      "h2": 7,
+      "title_en": "Rayhanah bt. Zayd and the Differing Accounts",
+      "intro_en": "✧ Recounts Rayhanah's place in the narrative and the differing reports concerning her relationship with the Prophet ﷺ.",
+      "before": {
+        "title_en": "Rayhana bint Zayd",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170912,
+      "h1": 32,
+      "h2": 8,
+      "title_en": "The Question of Antisemitism in Discussions of Islam",
+      "intro_en": "✧ Addresses the broader question raised by the lecture's account of relations with the Jewish tribes.",
+      "before": {
+        "title_en": "Is Islam Antisemitic?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170913,
+      "h1": 32,
+      "h2": 9,
+      "title_en": "Reports about the Virtues of Saad b. Muadh",
+      "intro_en": "✧ Collects accounts honoring Saad and discusses his standing among the Companions following the events of the siege.",
+      "before": {
+        "title_en": "The Blessings of Sa'd ibn Mu'adh RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170915,
+      "h1": 33,
+      "h2": 1,
+      "title_en": "Events between the Trench and Hudaybiyyah",
+      "intro_en": "✧ Introduces the expeditions and individual encounters occurring in the interval before the journey to Hudaybiyyah.",
+      "before": {
+        "title_en": "Expeditions and Events After the Trench",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170916,
+      "h1": 33,
+      "h2": 2,
+      "title_en": "Thumamah b. Uthal: Captivity, Conversion, and Commitment",
+      "intro_en": "✧ Recounts Thumamah's change of faith and conduct, together with the lessons drawn from his treatment and response.",
+      "before": {
+        "title_en": "Thumama ibn Uthal: Captivity and Conversion",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170919,
+      "h1": 33,
+      "h2": 3,
+      "title_en": "A Quraysh-Sponsored Attempt on the Prophet's ﷺ Life",
+      "intro_en": "✧ Recounts the report of a Bedouin sent to Madinah under the pretense of accepting Islam.",
+      "before": {
+        "title_en": "Another Assassination Attempt on the Life of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170920,
+      "h1": 33,
+      "h2": 4,
+      "title_en": "The Killing of Sallam b. Abi al-Huqayq",
+      "intro_en": "✧ Recounts the mission directed against Sallam within the sequence of events following the Battle of the Trench.",
+      "before": {
+        "title_en": "The Assassination of Sallam ibn Abi al-Huqayq",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170921,
+      "h1": 33,
+      "h2": 5,
+      "title_en": "The Banu Lihyan Expedition and Fear Prayer",
+      "intro_en": "✧ Connects the account of the expedition with the discussion of the legislation of prayer during danger.",
+      "before": {
+        "title_en": "The Ghazwa of Banu Lahyan",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170923,
+      "h1": 33,
+      "h2": 6,
+      "title_en": "Zayd's Expedition, Abu al-As, and Marriage after Conversion",
+      "intro_en": "✧ Recounts Abu al-As's return and examines the treatment of existing marriage contracts when spouses accept Islam.",
+      "before": {
+        "title_en": "Zayd’s Expedition and the Return of Abu al-As",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170926,
+      "h1": 33,
+      "h2": 7,
+      "title_en": "The Khabat Expedition and Eating Whale Meat",
+      "intro_en": "✧ Recounts the expedition's experience with a whale and the legal discussion concerning the permissibility of its meat.",
+      "before": {
+        "title_en": "Sariyya al-Khabat & the Fiqh of Eating Whale Meat",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170927,
+      "h1": 33,
+      "h2": 8,
+      "title_en": "Zaynab's Marriage and the Revelation of Hijab",
+      "intro_en": "✧ Connects the Prophet's ﷺ marriage to Zaynab bt. Jahsh with the circumstances discussed around the revelation of hijab.",
+      "before": {
+        "title_en": "The Revelation of Hijab and Zaynab’s Marriage",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170930,
+      "h1": 34,
+      "h2": 1,
+      "title_en": "Hudaybiyyah's Significance and Continuing Relevance",
+      "intro_en": "✧ Introduces the event's importance, its classification as a treaty or expedition, and the parallels considered in the lecture.",
+      "before": {
+        "title_en": "Hudaybiyyah: Its Significance",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170933,
+      "h1": 34,
+      "h2": 2,
+      "title_en": "Preparing for Umrah and Learning Quraysh's Response",
+      "intro_en": "✧ Describes the pilgrims, weapons, sacrificial animals, scouting, and ritual questions arising as the Muslims set out.",
+      "before": {
+        "title_en": "Setting Out for Umrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170942,
+      "h1": 34,
+      "h2": 3,
+      "title_en": "News of Quraysh's Military Preparations",
+      "intro_en": "✧ Recounts the scout's warning that Quraysh had mobilized and positioned forces to block the Muslims' approach.",
+      "before": {
+        "title_en": "The Quraysh Wants War",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170943,
+      "h1": 34,
+      "h2": 4,
+      "title_en": "Consultation on the Road and Prayer in Danger",
+      "intro_en": "✧ Examines the response to Quraysh's deployment through consultation with the Companions and the account of fear prayer.",
+      "before": {
+        "title_en": "Shura",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170945,
+      "h1": 34,
+      "h2": 5,
+      "title_en": "The Difficult Detour toward Hudaybiyyah",
+      "intro_en": "✧ Recounts the alternative route taken to avoid the opposing forces and the discussion of hypocrisy among the travelers.",
+      "before": {
+        "title_en": "Taking an Unusual Road",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170947,
+      "h1": 34,
+      "h2": 6,
+      "title_en": "Al-Qaswa Stops and the Muslims Make Camp",
+      "intro_en": "✧ Describes the camel's halt at Hudaybiyyah and the lessons drawn from the Prophet's ﷺ response.",
+      "before": {
+        "title_en": "Al-Qaswa' Stops at the Plain of Hudaybiyyah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170949,
+      "h1": 34,
+      "h2": 7,
+      "title_en": "Hudaybiyyah's Name and the Report of Water",
+      "intro_en": "✧ Explains the place-name and recounts the miracle discussed in connection with the Muslims' camp there.",
+      "before": {
+        "title_en": "What is \"Hudaybiyyah\"?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170951,
+      "h1": 34,
+      "h2": 8,
+      "title_en": "Preparing to Negotiate despite an Attempted Attack",
+      "intro_en": "✧ Connects the Prophet's ﷺ willingness to respect sacred limits with the account of a surprise attack by Quraysh.",
+      "before": {
+        "title_en": "The Negotiations Will Begin",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170953,
+      "h1": 34,
+      "h2": 9,
+      "title_en": "Budayl b. Warqa as an Emissary from Khuzaah",
+      "intro_en": "✧ Recounts the visit of Budayl and his role in the exchanges preceding the treaty negotiations.",
+      "before": {
+        "title_en": "An Emissary From the Tribe of Khuza'a: Budayl ibn Warqa'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170954,
+      "h1": 34,
+      "h2": 10,
+      "title_en": "Urwah b. Masud's Negotiations and Changing Assessment",
+      "intro_en": "✧ Examines Urwah's accusations, observations of the Companions, changed response, and the lessons drawn from the encounter.",
+      "before": {
+        "title_en": "Negotiations with Urwa ibn Mas‘ud",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170962,
+      "h1": 34,
+      "h2": 11,
+      "title_en": "Khirash b. Umayyah Sent as an Envoy",
+      "intro_en": "✧ Recounts the Prophet's ﷺ decision to send Khirash to Quraysh during the exchanges at Hudaybiyyah.",
+      "before": {
+        "title_en": "The Prophet ﷺ Sends Khirash ibn Umayyah al-Khuza'i",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170963,
+      "h1": 34,
+      "h2": 12,
+      "title_en": "Al-Hulays's Visit and the Lessons of His Response",
+      "intro_en": "✧ Describes the envoy's encounter with the pilgrims and the lessons drawn from his assessment of their intentions.",
+      "before": {
+        "title_en": "Quraysh Sends al-Hulays ibn Alqama al-Kinani",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170965,
+      "h1": 34,
+      "h2": 13,
+      "title_en": "Uthman's Mission to Makkah and His Delayed Return",
+      "intro_en": "✧ Explains the choice of envoy, Umar's advice, and the concern caused by Uthman's prolonged absence.",
+      "before": {
+        "title_en": "Sending Uthman as Envoy",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170969,
+      "h1": 34,
+      "h2": 14,
+      "title_en": "The Pledge of Ridwan and the Question of Veneration",
+      "intro_en": "✧ Recounts the pledge and discusses Uthman's standing, the associated tree, and attitudes toward commemorative places and objects.",
+      "before": {
+        "title_en": "The Pledge of Ridwan",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170973,
+      "h1": 34,
+      "h2": 15,
+      "title_en": "Uthman's Return and the Official Quraysh Delegation",
+      "intro_en": "✧ Describes the return of the envoy and the arrival of representatives authorized to negotiate an agreement.",
+      "before": {
+        "title_en": "Quraysh Sends Back Uthman",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170975,
+      "h1": 34,
+      "h2": 16,
+      "title_en": "Good Words, Optimism, and Omens",
+      "intro_en": "✧ Distinguishes the encouragement taken from a favorable expression from the superstitious beliefs rejected in the lecture.",
+      "before": {
+        "title_en": "Tangent: The Concept of Good Omen in Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170976,
+      "h1": 34,
+      "h2": 17,
+      "title_en": "Suhayl b. Amr and His Sons",
+      "intro_en": "✧ Introduces the Quraysh negotiator and his family as background to the difficult exchanges over the treaty.",
+      "before": {
+        "title_en": "Suhayl ibn Amr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170978,
+      "h1": 34,
+      "h2": 18,
+      "title_en": "Negotiating the Treaty and the Return of Abu Jandal",
+      "intro_en": "✧ Recounts the drafting, contested terms, Abu Jandal's arrival, and the political recognition discussed in connection with the agreement.",
+      "before": {
+        "title_en": "The Terms of the Treaty",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170983,
+      "h1": 34,
+      "h2": 19,
+      "title_en": "Umar's Objections and Lessons about Disagreement",
+      "intro_en": "✧ Examines Umar's questions, Abu Bakr's response, subsequent remorse, and the discussion of disagreement with those in authority.",
+      "before": {
+        "title_en": "Umar’s Questions about the Treaty",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170989,
+      "h1": 34,
+      "h2": 20,
+      "title_en": "Ending Ihram and Departing from Hudaybiyyah",
+      "intro_en": "✧ Recounts the Companions' distress and the conclusion of the pilgrimage attempt before the return to Madinah.",
+      "before": {
+        "title_en": "Shaving of Head and Making Way Back to Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170990,
+      "h1": 34,
+      "h2": 21,
+      "title_en": "Surat al-Fath and the Treaty as a Victory",
+      "intro_en": "✧ Connects the revelation with the Companions' expectations and the benefits that emerged from the agreement.",
+      "before": {
+        "title_en": "The Revelation of Surah al-Fath",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170993,
+      "h1": 34,
+      "h2": 22,
+      "title_en": "The Faith and Trials of Abu Jandal and Abu Basir",
+      "intro_en": "✧ Reflects on the difficult consequences of the treaty for two believers seeking protection among the Muslims.",
+      "before": {
+        "title_en": "The Iman of Abu Jandal and Abu Basir",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170994,
+      "h1": 34,
+      "h2": 23,
+      "title_en": "Umm Kulthum's Migration and the Ruling on Believing Women",
+      "intro_en": "✧ Recounts her arrival in Madinah and the revelation addressing women who migrated after the treaty.",
+      "before": {
+        "title_en": "Emigration of Ummi Kulthum bint Uqba ibn Abi Mu'ayt",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170995,
+      "h1": 34,
+      "h2": 24,
+      "title_en": "The Missed Fajr Prayer and Reflections on al-Fath",
+      "intro_en": "✧ Recounts an incident on the return journey and continues the discussion of the Quranic account of Hudaybiyyah.",
+      "before": {
+        "title_en": "Missing Fajr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 170997,
+      "h1": 34,
+      "h2": 25,
+      "title_en": "Hudaybiyyah's Theological, Legal, and Political Lessons",
+      "intro_en": "✧ Draws together lessons from the treaty concerning faith, legal rulings, and the lecture's discussion of modern political thought.",
+      "before": {
+        "title_en": "Lessons from Hudaybiyyah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171002,
+      "h1": 35,
+      "h2": 1,
+      "title_en": "The Expedition to Khaybar in Historical Context",
+      "intro_en": "✧ Introduces Khaybar by revisiting earlier confrontations and the movement of Jewish tribes out of Madinah.",
+      "before": {
+        "title_en": "The Expedition to Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171003,
+      "h1": 35,
+      "h2": 2,
+      "title_en": "Khaybar's Geography, Settlement, and Name",
+      "intro_en": "✧ Describes the fertile settlement north of Madinah and discusses explanations offered for its name and origins.",
+      "before": {
+        "title_en": "Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171004,
+      "h1": 35,
+      "h2": 3,
+      "title_en": "The Reasons for the Campaign against Khaybar",
+      "intro_en": "✧ Examines the motives presented for the expedition within the developing political and military situation.",
+      "before": {
+        "title_en": "Reason to Attack Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171005,
+      "h1": 35,
+      "h2": 4,
+      "title_en": "Dating the Battle of Khaybar",
+      "intro_en": "✧ Discusses when the campaign took place and its position in the sequence of the Prophet's ﷺ expeditions.",
+      "before": {
+        "title_en": "When Did the Battle of Khaybar Take Place?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171006,
+      "h1": 35,
+      "h2": 5,
+      "title_en": "The March to Khaybar",
+      "intro_en": "✧ Follows the Muslim force on its approach to Khaybar and the events accompanying the journey.",
+      "before": {
+        "title_en": "Marching to Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171007,
+      "h1": 35,
+      "h2": 6,
+      "title_en": "Fighting and the Capture of Khaybar's Fortresses",
+      "intro_en": "✧ Recounts the campaign's fighting and individual encounters as the Muslims took the fortified settlements.",
+      "before": {
+        "title_en": "The Fighting at Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171010,
+      "h1": 35,
+      "h2": 7,
+      "title_en": "Was Khaybar Conquered or Surrendered?",
+      "intro_en": "✧ Examines differing descriptions of the outcome and why the distinction matters for historical and legal discussions.",
+      "before": {
+        "title_en": "Was Khaybar a Conquest or a Surrender?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171011,
+      "h1": 35,
+      "h2": 8,
+      "title_en": "The Agreement with the People of Khaybar",
+      "intro_en": "✧ Describes the terms reached after the fighting and the arrangements governing the inhabitants' subsequent position.",
+      "before": {
+        "title_en": "Treaty With the People of Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171012,
+      "h1": 35,
+      "h2": 9,
+      "title_en": "The Attempt to Poison the Prophet ﷺ at Khaybar",
+      "intro_en": "✧ Recounts the poisoning attempt and the reports associated with its consequences after the campaign.",
+      "before": {
+        "title_en": "Attempt to Poison the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171013,
+      "h1": 35,
+      "h2": 10,
+      "title_en": "The Distribution of Khaybar's Spoils",
+      "intro_en": "✧ Discusses the allocation of the gains and their connection with the promise mentioned in Surat al-Fath.",
+      "before": {
+        "title_en": "The Ghanima",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171014,
+      "h1": 35,
+      "h2": 11,
+      "title_en": "Jafar's Return and the Emigrants of Two Hijrahs",
+      "intro_en": "✧ Recounts the return from Abyssinia, the recognition of the emigrants' experience, and the changed material circumstances.",
+      "before": {
+        "title_en": "The Return of Ja‘far and the Emigrants from Abyssinia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171018,
+      "h1": 36,
+      "h2": 1,
+      "title_en": "Reviewing the Prophet's ﷺ Marriages around Khaybar",
+      "intro_en": "✧ Introduces marriage accounts deferred in the military narrative, including those of Zaynab and Umm Habibah.",
+      "before": {
+        "title_en": "An Overview of the Prophet’s Marriages",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171019,
+      "h1": 36,
+      "h2": 2,
+      "title_en": "Zaynab bt. Jahsh: Character, Marriage, and Household Life",
+      "intro_en": "✧ Examines her relationship with Aisha, the dating of her marriage, and the account of the wedding feast.",
+      "before": {
+        "title_en": "Zaynab bint Jahsh: Background and Character",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171023,
+      "h1": 36,
+      "h2": 3,
+      "title_en": "Zaynab's Marriage: Quran, Reports, and Competing Interpretations",
+      "intro_en": "✧ Compares the Quranic account with hadith, sirah, and tafsir reports, assessing differing versions and describing Zaynab's generosity.",
+      "before": {
+        "title_en": "Marriage to Zaynab bint Jahsh: Sources and Interpretations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171031,
+      "h1": 36,
+      "h2": 4,
+      "title_en": "The Marriage to Umm Habibah",
+      "intro_en": "✧ Recounts the marriage arranged while Umm Habibah was in Abyssinia and its place in the Prophet's ﷺ family life.",
+      "before": {
+        "title_en": "Marriage to Ummi Habiba RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171032,
+      "h1": 36,
+      "h2": 5,
+      "title_en": "A Review of the Prophet's ﷺ Wives",
+      "intro_en": "✧ Lists the marriages discussed so far and places them within the developing account of the Prophet's ﷺ household.",
+      "before": {
+        "title_en": "The Wives of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171033,
+      "h1": 36,
+      "h2": 6,
+      "title_en": "The Questioning of Sayah after Khaybar",
+      "intro_en": "✧ Recounts the report concerning Sayah and the search for information in the aftermath of the campaign.",
+      "before": {
+        "title_en": "Extracting Information From Sa'ya",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171034,
+      "h1": 36,
+      "h2": 7,
+      "title_en": "Safiyyah's Marriage and Life in the Prophet's ﷺ Household",
+      "intro_en": "✧ Recounts her dream, freedom, marriage feast, journey, and relationships with the other wives of the Prophet ﷺ.",
+      "before": {
+        "title_en": "Marriage to Safiyyah bint Huyayy",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171042,
+      "h1": 37,
+      "h2": 1,
+      "title_en": "Abu Hurayrah's Arrival among the Muslims",
+      "intro_en": "✧ Introduces Abu Hurayrah's migration and his place in the community during the period surrounding Khaybar.",
+      "before": {
+        "title_en": "The Immigration of Abu Hurairah RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171043,
+      "h1": 37,
+      "h2": 2,
+      "title_en": "An Ansari Girl's Participation at Khaybar",
+      "intro_en": "✧ Recounts the unnamed girl's experience among the women who accompanied the expedition to assist the wounded.",
+      "before": {
+        "title_en": "The Story of an Unnamed Girl",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171044,
+      "h1": 37,
+      "h2": 3,
+      "title_en": "Legal Rulings Associated with Khaybar",
+      "intro_en": "✧ Discusses rulings concerning food, captives, and marriage that the lecture connects with the Khaybar campaign.",
+      "before": {
+        "title_en": "New Fiqhs Legislated Around the Time of the Incident of Khaybar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171046,
+      "h1": 38,
+      "h2": 1,
+      "title_en": "The Prophet's ﷺ Letters to Rulers",
+      "intro_en": "✧ Introduces the correspondence inviting rulers beyond the immediate Muslim community to consider the message of Islam.",
+      "before": {
+        "title_en": "Letters to the Rulers",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171047,
+      "h1": 38,
+      "h2": 2,
+      "title_en": "The Letter to the Najashi of Abyssinia",
+      "intro_en": "✧ Examines the correspondence with the Abyssinian ruler within the account of invitations sent beyond Arabia.",
+      "before": {
+        "title_en": "The Letter to the Najashi of Abyssinia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171048,
+      "h1": 38,
+      "h2": 3,
+      "title_en": "The Letter to Heraclius",
+      "intro_en": "✧ Recounts the invitation addressed to the Byzantine emperor and the reports surrounding its reception.",
+      "before": {
+        "title_en": "The Letter to Heraclius the Emperor of Rome",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171049,
+      "h1": 38,
+      "h2": 4,
+      "title_en": "The Letter to Khosrow of Persia",
+      "intro_en": "✧ Describes the message sent to the Persian ruler and his response in the lecture's account.",
+      "before": {
+        "title_en": "The Letter to Khosrow the Emperor of Persia",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171050,
+      "h1": 38,
+      "h2": 5,
+      "title_en": "The Letter to the Muqawqis of Egypt",
+      "intro_en": "✧ Recounts the correspondence with the ruler identified as the Muqawqis and the response associated with Egypt.",
+      "before": {
+        "title_en": "The Letter to Jurayj ibn Mina the Muqawqis of Egypt",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171051,
+      "h1": 38,
+      "h2": 6,
+      "title_en": "Letters to Other Rulers",
+      "intro_en": "✧ Surveys further invitations sent to rulers as the Prophet's ﷺ correspondence extended beyond the principal neighboring powers.",
+      "before": {
+        "title_en": "Letters to Other Rulers",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171052,
+      "h1": 38,
+      "h2": 7,
+      "title_en": "Lessons from the Letters to Rulers",
+      "intro_en": "✧ Examines the long-term aims, choice of recipients, and wider significance of the Prophet's ﷺ diplomatic correspondence.",
+      "before": {
+        "title_en": "Benefits of the Letters",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171054,
+      "h1": 39,
+      "h2": 1,
+      "title_en": "The Fulfilled Umrah and the Return to Makkah",
+      "intro_en": "✧ Describes the Muslims' return, their response to claims of weakness, and the performance of the pilgrimage without interference.",
+      "before": {
+        "title_en": "Umrah al-Qada: The Fulfilled Umrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171058,
+      "h1": 39,
+      "h2": 2,
+      "title_en": "The Marriage to Maymunah bt. al-Harith",
+      "intro_en": "✧ Recounts the Prophet's ﷺ marriage to Maymunah within the events surrounding the return to Makkah for Umrah.",
+      "before": {
+        "title_en": "Marriage to Maymunah bint al-Harith RA, the Last Wife of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171059,
+      "h1": 39,
+      "h2": 3,
+      "title_en": "Lessons from the Fulfilled Umrah",
+      "intro_en": "✧ Considers the changing balance with Quraysh and the lessons drawn from the Muslims' return to Makkah.",
+      "before": {
+        "title_en": "What We Learn From the Event of Umrah al-Qada",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171060,
+      "h1": 39,
+      "h2": 4,
+      "title_en": "The Care of Hamzah's Daughter",
+      "intro_en": "✧ Recounts the young girl's appeal to leave Makkah with the Muslims and the question of her guardianship.",
+      "before": {
+        "title_en": "Umara the Daughter of Hamzah ibn Abdul Muttalib RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171061,
+      "h1": 39,
+      "h2": 5,
+      "title_en": "The Conversions of Amr, Khalid, and Uthman b. Talhah",
+      "intro_en": "✧ Recounts three prominent conversions and draws together lessons from their different paths to accepting Islam.",
+      "before": {
+        "title_en": "The Conversions of Amr, Khalid, and Uthman ibn Talha",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171067,
+      "h1": 40,
+      "h2": 1,
+      "title_en": "Mutah: Its Location, Classification, and Causes",
+      "intro_en": "✧ Introduces the setting of the encounter and explains the questions concerning its designation and the reasons for the expedition.",
+      "before": {
+        "title_en": "Mu’tah: Background and Causes",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171071,
+      "h1": 40,
+      "h2": 2,
+      "title_en": "Departure for Mutah and Abd Allah b. Rawahah",
+      "intro_en": "✧ Recounts the army's departure and the account of Abd Allah b. Rawahah before the battle.",
+      "before": {
+        "title_en": "Leaving for Mu'tah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171073,
+      "h1": 40,
+      "h2": 3,
+      "title_en": "The Opposing Forces and the Decision to Fight",
+      "intro_en": "✧ Describes the Ghassanid preparations and the Muslims' response to the forces they encountered near Mutah.",
+      "before": {
+        "title_en": "Preparations of the Ghassanids",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171076,
+      "h1": 40,
+      "h2": 4,
+      "title_en": "The Fighting at Mutah and the Commanders' Deaths",
+      "intro_en": "✧ Recounts the deaths of the appointed commanders and the emotional impact of the news of battle.",
+      "before": {
+        "title_en": "The Fighting and the Martyrdom of the Commanders",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171078,
+      "h1": 40,
+      "h2": 5,
+      "title_en": "Khalid Takes Command and the Outcome of Mutah",
+      "intro_en": "✧ Examines Khalid's leadership after the commanders' deaths and the differing ways of describing the battle's outcome.",
+      "before": {
+        "title_en": "Khalid ibn al-Walid Takes Charge",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171080,
+      "h1": 40,
+      "h2": 6,
+      "title_en": "Returning from Mutah and Caring for the Bereaved",
+      "intro_en": "✧ Describes the army's reception, consolation of the families, and lessons concerning arrogance and the treatment of others.",
+      "before": {
+        "title_en": "The Army’s Return and the Families of the Martyrs",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171083,
+      "h1": 40,
+      "h2": 7,
+      "title_en": "Mutah in Byzantine Accounts and Khalid's Title",
+      "intro_en": "✧ Compares the battle's treatment in Byzantine chronicles with the discussion of Khalid as the Sword of Allah.",
+      "before": {
+        "title_en": "The Battle of Mu'tah in Byzantine Chronicles",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171085,
+      "h1": 40,
+      "h2": 8,
+      "title_en": "Lessons from the Expedition of Mutah",
+      "intro_en": "✧ Draws together the practical and spiritual lessons discussed through the expedition's leadership, fighting, and aftermath.",
+      "before": {
+        "title_en": "Benefits of the Incident of Mu'tah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171086,
+      "h1": 40,
+      "h2": 9,
+      "title_en": "The Chronology of the Expedition of Mutah",
+      "intro_en": "✧ Examines the date assigned to the encounter and its relationship to other events in the sirah.",
+      "before": {
+        "title_en": "When Did the Incident of Mu'tah Take Place?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171087,
+      "h1": 40,
+      "h2": 10,
+      "title_en": "From Mutah toward the Conquest of Makkah",
+      "intro_en": "✧ Connects the outcome of Mutah with the next expeditions and the changing circumstances before the conquest.",
+      "before": {
+        "title_en": "From Mu’tah to Dhat al-Salasil",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171089,
+      "h1": 41,
+      "h2": 1,
+      "title_en": "Dhat al-Salasil: Leadership, Reinforcements, and Results",
+      "intro_en": "✧ Examines Amr's appointment, Abu Ubaydah's reinforcements, their interactions, and the outcome of the expedition.",
+      "before": {
+        "title_en": "Dhat al-Salasil: Command and Outcome",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171094,
+      "h1": 41,
+      "h2": 2,
+      "title_en": "Tayammum and the Protection of Human Life",
+      "intro_en": "✧ Explores legal lessons from the use of dry ablution and the discussion of the sanctity of life.",
+      "before": {
+        "title_en": "Tayammum and the Sanctity of Life",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171098,
+      "h1": 42,
+      "h2": 1,
+      "title_en": "Khuzaah, Banu Bakr, and the Treaty Alliances",
+      "intro_en": "✧ Introduces the history of Khuzaah and the tensions between the tribes allied to the two treaty parties.",
+      "before": {
+        "title_en": "The Alliances before the Conquest",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171101,
+      "h1": 42,
+      "h2": 2,
+      "title_en": "The Breach of the Treaty and the Prophet's ﷺ Response",
+      "intro_en": "✧ Recounts the violation of the agreement and the intervention that set the course toward the conquest.",
+      "before": {
+        "title_en": "The Treaty Is Violated",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171103,
+      "h1": 42,
+      "h2": 3,
+      "title_en": "Abu Sufyan's Attempt to Restore the Agreement",
+      "intro_en": "✧ Describes his efforts to reach an accommodation and the different responses discussed in the lecture.",
+      "before": {
+        "title_en": "Abu Sufyan's Attempt to Find a Common Ground",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171105,
+      "h1": 42,
+      "h2": 4,
+      "title_en": "Secret Preparations for the Conquest of Makkah",
+      "intro_en": "✧ Recounts preparations for the campaign and reflects on the reversal of the Muslims' earlier circumstances.",
+      "before": {
+        "title_en": "Preparing for the Conquest in Secrecy",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171107,
+      "h1": 42,
+      "h2": 5,
+      "title_en": "Hatib b. Abi Baltaah's Letter and Its Lessons",
+      "intro_en": "✧ Recounts Hatib's action before the conquest and examines the lessons drawn from the response to it.",
+      "before": {
+        "title_en": "The Mistake of Hatib ibn Abi Balta'ah RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171109,
+      "h1": 42,
+      "h2": 6,
+      "title_en": "The Conquest's Date and the Rules of Travel",
+      "intro_en": "✧ Places the campaign in its chronological setting and discusses when travel concessions begin to apply.",
+      "before": {
+        "title_en": "When Did the Conquest of Makkah Take Place?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171111,
+      "h1": 42,
+      "h2": 7,
+      "title_en": "Al-Abbas's Acceptance of Islam and His Role",
+      "intro_en": "✧ Examines differing accounts of when al-Abbas became Muslim and his place in the events surrounding the conquest.",
+      "before": {
+        "title_en": "Al-Abbas and His Acceptance of Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171114,
+      "h1": 42,
+      "h2": 8,
+      "title_en": "Abu Sufyan b. al-Harith and Abd Allah b. Abi Umayyah Accept Islam",
+      "intro_en": "✧ Recounts their acceptance of Islam and the discussion of forgiveness and severity surrounding reconciliation with the Prophet ﷺ.",
+      "before": {
+        "title_en": "The Conversion of Abu Sufyan ibn al-Harith and Abdullah ibn Abi Umayyah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171117,
+      "h1": 42,
+      "h2": 9,
+      "title_en": "The Conversion of Abu Sufyan b. Harb",
+      "intro_en": "✧ Recounts Abu Sufyan's acceptance of Islam and connects it with the supplication discussed in the narrative.",
+      "before": {
+        "title_en": "Conversion of Abu Sufyan ibn Harb",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171119,
+      "h1": 42,
+      "h2": 10,
+      "title_en": "Entering Makkah: Protection, Limited Fighting, and the Kabah",
+      "intro_en": "✧ Describes assurances of safety, the army's entry, removal of idols, the short sermon, and lessons from the conquest.",
+      "before": {
+        "title_en": "Entering and Securing Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171125,
+      "h1": 42,
+      "h2": 11,
+      "title_en": "Restoring Custody of the Kabah's Keys",
+      "intro_en": "✧ Recounts the request to combine custodial duties and the return of the keys to Uthman b. Talhah.",
+      "before": {
+        "title_en": "Custodianship of the Keys of Ka'bah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171126,
+      "h1": 42,
+      "h2": 12,
+      "title_en": "Limited Retaliation and the Exceptional Nature of the Conquest",
+      "intro_en": "✧ Examines the permission given to Khuzaah and the restrictions discussed in connection with the conquest of Makkah.",
+      "before": {
+        "title_en": "Conditional Permission for the Khuza'a to Retaliate",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171128,
+      "h1": 42,
+      "h2": 13,
+      "title_en": "Exceptions to the General Amnesty",
+      "intro_en": "✧ Examines differing lists of those initially excluded from protection and the accounts of their individual circumstances.",
+      "before": {
+        "title_en": "Those Who Were Not Granted Amnesty",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171129,
+      "h1": 42,
+      "h2": 14,
+      "title_en": "Bilal's Adhan and the Responses of New Muslims",
+      "intro_en": "✧ Recounts the call to prayer and considers the changed circumstances and faith of those accepting Islam after the conquest.",
+      "before": {
+        "title_en": "Bilal’s Adhan and the New Muslims",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171132,
+      "h1": 42,
+      "h2": 15,
+      "title_en": "The End of Migration from Makkah",
+      "intro_en": "✧ Explains the statement about no Hijrah after the conquest within the changed circumstances of the city.",
+      "before": {
+        "title_en": "\"There Is No Hijrah After the Conquest\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171133,
+      "h1": 42,
+      "h2": 16,
+      "title_en": "The Women's Pledge, Hind's Questions, and Physical Contact",
+      "intro_en": "✧ Recounts the pledge of allegiance and examines the legal discussion about shaking hands with non-mahrams.",
+      "before": {
+        "title_en": "Women's Oath of Allegiance & the Back-and-Forth With Hind bint Utbah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171135,
+      "h1": 42,
+      "h2": 17,
+      "title_en": "Reassuring the Ansar after the Conquest",
+      "intro_en": "✧ Describes the Ansar's concern that the Prophet ﷺ might remain with his people and his response to them.",
+      "before": {
+        "title_en": "The Ansar Feel Left Out",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171136,
+      "h1": 42,
+      "h2": 18,
+      "title_en": "Individual Conversions after the Conquest of Makkah",
+      "intro_en": "✧ Recounts the experiences of Fudalah, Safwan, Suhayl, Abu Quhafah, Umm Hani, and Abd Allah b. al-Zibara.",
+      "before": {
+        "title_en": "Conversions after the Conquest",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171143,
+      "h1": 42,
+      "h2": 19,
+      "title_en": "The Prophet's ﷺ Stay in Makkah: Prayer and Sermons",
+      "intro_en": "✧ Examines shortened prayers during the stay and lessons drawn from the sermons delivered after the conquest.",
+      "before": {
+        "title_en": "The Prophet’s Nineteen Days in Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171146,
+      "h1": 42,
+      "h2": 20,
+      "title_en": "Arabia's Response to the Conquest and Surat al-Nasr",
+      "intro_en": "✧ Connects the spread of acceptance of Islam with the surah's message and its implications for the Prophet's ﷺ final years.",
+      "before": {
+        "title_en": "The Entire Arabian Peninsula Embraces Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171148,
+      "h1": 42,
+      "h2": 21,
+      "title_en": "The Destruction of Major Idols around Makkah",
+      "intro_en": "✧ Recounts the missions against prominent idols during the period following the conquest of the city.",
+      "before": {
+        "title_en": "19 Days in Makkah: Destroying Major Idols",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171149,
+      "h1": 42,
+      "h2": 22,
+      "title_en": "Khalid's Error and the Protection of the Companions' Honor",
+      "intro_en": "✧ Examines the Prophet's ﷺ response to Khalid's actions and the warning against insulting his Companions.",
+      "before": {
+        "title_en": "Khalid’s Mistake and the Prophet’s Response",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171151,
+      "h1": 42,
+      "h2": 23,
+      "title_en": "Taif after the Conquest of Makkah",
+      "intro_en": "✧ Introduces Taif as a remaining center of opposition after the consolidation of Makkah and its surroundings.",
+      "before": {
+        "title_en": "Ta'if",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171152,
+      "h1": 42,
+      "h2": 24,
+      "title_en": "Legal and Theological Lessons from the Conquest",
+      "intro_en": "✧ Discusses rulings and reflections arising from the campaign, including travel concessions and questions of mercy.",
+      "before": {
+        "title_en": "Legal and Theological Lessons from the Conquest",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171156,
+      "h1": 43,
+      "h2": 1,
+      "title_en": "Thaqif and Hawazin Mobilize for War",
+      "intro_en": "✧ Describes preparations by the opposing tribes and the exchange involving Abd Allah b. Abi Hadrad and Umar.",
+      "before": {
+        "title_en": "Thaqif and Hawazin Prepare for War",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171158,
+      "h1": 43,
+      "h2": 2,
+      "title_en": "Preparing for Hunayn: Leadership and Overconfidence",
+      "intro_en": "✧ Follows the Muslims' preparations and march while examining generational tensions and warnings about pride in numbers.",
+      "before": {
+        "title_en": "Muslims' Preparations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171162,
+      "h1": 43,
+      "h2": 3,
+      "title_en": "The Hanging Tree and the Lessons of Monotheism",
+      "intro_en": "✧ Recounts the request associated with a tree and examines the theological lessons drawn from the Prophet's ﷺ response.",
+      "before": {
+        "title_en": "The Hadith of the Hanging Tree",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171164,
+      "h1": 43,
+      "h2": 4,
+      "title_en": "Camping at Hunayn and the Enemy's Ambush",
+      "intro_en": "✧ Describes the Muslims' approach to the valley and the tactics prepared by Thaqif and Hawazin.",
+      "before": {
+        "title_en": "Muslims Camp at Hunayn",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171166,
+      "h1": 43,
+      "h2": 5,
+      "title_en": "Hunayn: Setback, Recovery, and the Limits of Fighting",
+      "intro_en": "✧ Follows the reversal and rally, individual encounters, enemy flight, and lessons concerning noncombatants, identity, and reliance on Allah.",
+      "before": {
+        "title_en": "The Battle of Hunayn",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171178,
+      "h1": 43,
+      "h2": 6,
+      "title_en": "The Captives and Spoils of Hunayn",
+      "intro_en": "✧ Describes the property and captives left after the battle and the scale of the resulting gains.",
+      "before": {
+        "title_en": "The Spoils of Hunayn",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171179,
+      "h1": 43,
+      "h2": 7,
+      "title_en": "Reunion with the Prophet's ﷺ Foster Family",
+      "intro_en": "✧ Recounts the encounters involving his foster relatives, including the reports about Halimah and her husband.",
+      "before": {
+        "title_en": "Reunion with the Prophet’s Foster Family",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171181,
+      "h1": 43,
+      "h2": 8,
+      "title_en": "Hunayn's Casualties and Comparisons with Badr",
+      "intro_en": "✧ Reviews losses in the battle and the parallels drawn between Hunayn and the earlier encounter at Badr.",
+      "before": {
+        "title_en": "Casualties and Comparisons with Badr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171183,
+      "h1": 43,
+      "h2": 9,
+      "title_en": "The Siege of Taif: Tactics, Withdrawal, and Lessons",
+      "intro_en": "✧ Examines the siege's conduct and duration, damage to produce, the decision to withdraw, and supplication for Thaqif.",
+      "before": {
+        "title_en": "The Siege of Ta'if",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171189,
+      "h1": 43,
+      "h2": 10,
+      "title_en": "Waiting at Jiranah and Encouraging New Converts",
+      "intro_en": "✧ Describes the pause before distributing the spoils and the concern to draw newly converted people closer to Islam.",
+      "before": {
+        "title_en": "Encouraging New Converts",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171190,
+      "h1": 43,
+      "h2": 11,
+      "title_en": "Distributing Hunayn's Spoils and Reassuring the Ansar",
+      "intro_en": "✧ Examines generosity toward new Muslims, the Ansar's concerns, and individual responses to the distribution of wealth.",
+      "before": {
+        "title_en": "Distributing the Spoils and Addressing the Ansar",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171195,
+      "h1": 43,
+      "h2": 12,
+      "title_en": "The Challenge over Distribution and Public Interest",
+      "intro_en": "✧ Connects criticism of the Prophet's ﷺ allocation with the discussion of extremism and the consequences of possible responses.",
+      "before": {
+        "title_en": "Extremism and the Consideration of Public Benefit",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171197,
+      "h1": 43,
+      "h2": 13,
+      "title_en": "Hawazin's Acceptance of Islam",
+      "intro_en": "✧ Recounts the tribe's eventual approach to the Muslims after the battle and the negotiations that followed.",
+      "before": {
+        "title_en": "The Hawazin Finally Come to Embrace Islam",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171198,
+      "h1": 43,
+      "h2": 14,
+      "title_en": "Umrah from Jiranah after the Campaign",
+      "intro_en": "✧ Recounts the Prophet's ﷺ pilgrimage from Jiranah and places it among the Umrahs discussed in his lifetime.",
+      "before": {
+        "title_en": "Performing Umrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171200,
+      "h1": 44,
+      "h2": 1,
+      "title_en": "Kaab b. Zuhayr's Acceptance of Islam",
+      "intro_en": "✧ Recounts the poet's conversion and its setting in the months following the conquest of Makkah.",
+      "before": {
+        "title_en": "The Conversion of Ka‘b ibn Zuhayr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171202,
+      "h1": 44,
+      "h2": 2,
+      "title_en": "Administration and the Removal of Remaining Idols",
+      "intro_en": "✧ Describes the organization of authority around Makkah and the missions against smaller idols in the surrounding region.",
+      "before": {
+        "title_en": "Consolidating Authority around Makkah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171205,
+      "h1": 44,
+      "h2": 3,
+      "title_en": "Adi b. Hatim's Conversion and the Question of Good Deeds",
+      "intro_en": "✧ Recounts Adi's acceptance of Islam and examines lessons concerning belief and the reward of good deeds.",
+      "before": {
+        "title_en": "The Conversion of Adi ibn Hatim and Its Lessons",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171208,
+      "h1": 44,
+      "h2": 4,
+      "title_en": "The Brief Marriage to Fatimah bt. al-Dahhak",
+      "intro_en": "✧ Recounts the reported marriage and separation, followed by a discussion of social attitudes toward divorce.",
+      "before": {
+        "title_en": "The Brief Marriage to Fatima bint al-Dahhak",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171210,
+      "h1": 44,
+      "h2": 5,
+      "title_en": "The Death of Zaynab bt. Muhammad",
+      "intro_en": "✧ Recounts the death of the Prophet's ﷺ daughter and its place among the family events of this period.",
+      "before": {
+        "title_en": "The Death of Zaynab bint Muhammad RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171211,
+      "h1": 44,
+      "h2": 6,
+      "title_en": "The Birth of Ibrahim b. Muhammad",
+      "intro_en": "✧ Introduces the birth of the Prophet's ﷺ son within the account of his later family life.",
+      "before": {
+        "title_en": "The Birth of Ibrahim ibn Muhammad RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171213,
+      "h1": 45,
+      "h2": 1,
+      "title_en": "The Meaning, Purpose, and Number of Prophetic Miracles",
+      "intro_en": "✧ Defines the concept of a miracle and examines its purpose and the range attributed to the Prophet ﷺ.",
+      "before": {
+        "title_en": "Miracles: Definition, Purpose, and Number",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171217,
+      "h1": 45,
+      "h2": 2,
+      "title_en": "Miracles involving Inanimate Objects",
+      "intro_en": "✧ Collects reports concerning objects as part of the lecture's survey of miracles associated with the Prophet ﷺ.",
+      "before": {
+        "title_en": "1. Miracles That Occurred With Inanimate Objects",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171218,
+      "h1": 45,
+      "h2": 3,
+      "title_en": "Miracles involving Animals",
+      "intro_en": "✧ Examines reports involving animals within the broader discussion of signs associated with the Prophet ﷺ.",
+      "before": {
+        "title_en": "2. Miracles Dealing With Animals",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171219,
+      "h1": 45,
+      "h2": 4,
+      "title_en": "Miracles involving Food and Water",
+      "intro_en": "✧ Recounts reports of extraordinary provision in the lecture's survey of the Prophet's ﷺ miracles.",
+      "before": {
+        "title_en": "3. Miracles Dealing With Food and Water",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171220,
+      "h1": 45,
+      "h2": 5,
+      "title_en": "Accounts of Divine Protection of the Prophet ﷺ",
+      "intro_en": "✧ Examines reports of protection from danger within the discussion of signs associated with his mission.",
+      "before": {
+        "title_en": "4. Protection That Allah Gave to the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171221,
+      "h1": 45,
+      "h2": 6,
+      "title_en": "Knowledge of the Unseen Granted to the Prophet ﷺ",
+      "intro_en": "✧ Discusses reports of knowledge disclosed to the Prophet ﷺ within the lecture's treatment of prophetic signs.",
+      "before": {
+        "title_en": "5. Knowledge of the Unseen Given to the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171222,
+      "h1": 45,
+      "h2": 7,
+      "title_en": "Prophecies concerning Future Events",
+      "intro_en": "✧ Collects predictions attributed to the Prophet ﷺ and discusses them within the survey of his miracles.",
+      "before": {
+        "title_en": "6. Prophecies of the Future",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171223,
+      "h1": 45,
+      "h2": 8,
+      "title_en": "Reports of Healing through the Prophet ﷺ",
+      "intro_en": "✧ Recounts healing accounts included in the lecture's discussion of signs associated with the Prophet ﷺ.",
+      "before": {
+        "title_en": "7. The Healing of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171224,
+      "h1": 45,
+      "h2": 9,
+      "title_en": "Reports of Immediate Answers to Supplication",
+      "intro_en": "✧ Examines accounts of answered prayers within the survey of miracles associated with the Prophet ﷺ.",
+      "before": {
+        "title_en": "8. Immediate Responses to His Du'a",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171225,
+      "h1": 45,
+      "h2": 10,
+      "title_en": "Knowledge of Earlier Prophets as a Sign",
+      "intro_en": "✧ Explains why the lecture treats knowledge of earlier prophetic histories as evidence in the discussion of miracles.",
+      "before": {
+        "title_en": "9. Stories of the Previous Prophets",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171226,
+      "h1": 45,
+      "h2": 11,
+      "title_en": "The Splitting of the Moon and Other Miracles",
+      "intro_en": "✧ Concludes the survey with further reports, beginning with the splitting of the moon during the Makkan period.",
+      "before": {
+        "title_en": "10. Other Miracles",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171228,
+      "h1": 46,
+      "h2": 1,
+      "title_en": "Reviewing the Battle of Hunayn and Siege of Taif",
+      "intro_en": "✧ Retraces the course of the fighting and siege before drawing together their lessons and consequences.",
+      "before": {
+        "title_en": "Review of Hunayn and Ta’if",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171230,
+      "h1": 46,
+      "h2": 2,
+      "title_en": "Lessons from Hunayn and the Siege of Taif",
+      "intro_en": "✧ Examines the practical and spiritual lessons drawn from the battle, its aftermath, and the subsequent siege.",
+      "before": {
+        "title_en": "Points of Benefit From the Battle of Hunayn and the Siege of Ta'if",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171231,
+      "h1": 46,
+      "h2": 3,
+      "title_en": "The Regional Consequences of Hunayn and Taif",
+      "intro_en": "✧ Assesses the changes in the Hejaz and the position of remaining opposition following the campaign.",
+      "before": {
+        "title_en": "The Results of the Battle of Hunayn and the Siege of Ta'if",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171233,
+      "h1": 47,
+      "h2": 1,
+      "title_en": "Between Taif and Tabuk: Events and Religious Freedom",
+      "intro_en": "✧ Introduces developments during the intervening months and includes the discussion of religious freedom in Islam.",
+      "before": {
+        "title_en": "Events Leading to the Expedition of Tabuk",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171235,
+      "h1": 47,
+      "h2": 2,
+      "title_en": "Tabuk and the Army of Hardship",
+      "intro_en": "✧ Explains the expedition's names, the difficulties faced by the army, and the warning against depending on miracles.",
+      "before": {
+        "title_en": "Names of the Expedition and the Hardship of Tabuk",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171240,
+      "h1": 47,
+      "h2": 3,
+      "title_en": "The Date and Season of the Tabuk Expedition",
+      "intro_en": "✧ Places the expedition in the ninth year after Hijrah and discusses the heat and chronology of the journey.",
+      "before": {
+        "title_en": "When Did the Expedition Take Place?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171241,
+      "h1": 47,
+      "h2": 4,
+      "title_en": "Why the Expedition to Tabuk Took Place",
+      "intro_en": "✧ Compares proposed explanations for the campaign and presents the lecturer's assessment of the reasons offered.",
+      "before": {
+        "title_en": "Why Did the Expedition Take Place?",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171242,
+      "h1": 47,
+      "h2": 5,
+      "title_en": "Funding Tabuk through the Companions' Contributions",
+      "intro_en": "✧ Recounts the contributions of Uthman, Abu Bakr, Umar, and others as further resources were sought for the army.",
+      "before": {
+        "title_en": "Funding the Expedition",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171246,
+      "h1": 47,
+      "h2": 6,
+      "title_en": "Abu Musa's Request and the Meaning of an Oath",
+      "intro_en": "✧ Recounts the request for mounts and discusses the distinction between an expression and a binding oath.",
+      "before": {
+        "title_en": "The Phrase \"Wallahi\" as an Expression vs. as a Qasam: The Story of Abu Musa al-Ash'ari RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171247,
+      "h1": 47,
+      "h2": 7,
+      "title_en": "Kaab b. Malik's Absence, Repentance, and Its Lessons",
+      "intro_en": "✧ Presents Kaab's account and commentary on his experience, drawing out personal and legal lessons from his repentance.",
+      "before": {
+        "title_en": "Ka‘b ibn Malik: His Absence and Repentance",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171253,
+      "h1": 47,
+      "h2": 8,
+      "title_en": "Generosity and Rivalry in Good Deeds before Tabuk",
+      "intro_en": "✧ Examines the contributions of the Companions and the lessons drawn from their efforts to support the expedition.",
+      "before": {
+        "title_en": "The Companions’ Generosity in Funding Tabuk",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171257,
+      "h1": 47,
+      "h2": 9,
+      "title_en": "The Hypocrites' Mockery of Contributions",
+      "intro_en": "✧ Discusses the disparagement directed at those donating for the expedition and its place in the account of Tabuk.",
+      "before": {
+        "title_en": "Mocking of the Hypocrites",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171258,
+      "h1": 47,
+      "h2": 10,
+      "title_en": "Excuses for Avoiding the Tabuk Expedition",
+      "intro_en": "✧ Examines the reasons offered by those unwilling to participate and the lecture's discussion of their motives.",
+      "before": {
+        "title_en": "Excuses That the Hypocrites Gave to Not Participate",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171259,
+      "h1": 47,
+      "h2": 11,
+      "title_en": "Intention and the Reward of Those Unable to Travel",
+      "intro_en": "✧ Explains how sincere intention figures in accounts of believers who shared the reward without accompanying the army.",
+      "before": {
+        "title_en": "Those Who Got the Ajr of Tabuk Without Physically Participating",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171261,
+      "h1": 47,
+      "h2": 12,
+      "title_en": "Wathilah's Transport and His Companion's Sincerity",
+      "intro_en": "✧ Recounts the arrangement for sharing a mount and the generosity shown concerning the promised share of spoils.",
+      "before": {
+        "title_en": "The Sincerity of the Companion of Wathila RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171262,
+      "h1": 47,
+      "h2": 13,
+      "title_en": "Abu Khaythamah's Decision to Join the Army",
+      "intro_en": "✧ Recounts Abu Khaythamah's experience in the narrative of those who initially remained behind during the expedition.",
+      "before": {
+        "title_en": "The Story of Abu Khaythama al-Ansari RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171263,
+      "h1": 47,
+      "h2": 14,
+      "title_en": "Abu Dharr's Journey to Tabuk",
+      "intro_en": "✧ Recounts Abu Dharr's experience on the journey and the reports associated with his arrival among the Muslims.",
+      "before": {
+        "title_en": "The Story of Abu Dharr al-Ghifari RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171264,
+      "h1": 47,
+      "h2": 15,
+      "title_en": "Masjid al-Dirar and the Mosque Founded on Piety",
+      "intro_en": "✧ Contrasts the two mosques and discusses the caution required in applying the example of harm to later situations.",
+      "before": {
+        "title_en": "Masjid al-Dirar and the Mosque Founded on Piety",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171267,
+      "h1": 47,
+      "h2": 16,
+      "title_en": "Ali Remains in Madinah: The Report and Its Interpretation",
+      "intro_en": "✧ Recounts Ali's appointment during the expedition and examines the sectarian interpretation addressed in the lecture.",
+      "before": {
+        "title_en": "Leaving Ali in Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171269,
+      "h1": 47,
+      "h2": 17,
+      "title_en": "Thaniyat al-Wada and Attachment to Homeland",
+      "intro_en": "✧ Explains the farewell landmark and connects the journey with a discussion of national and local attachment.",
+      "before": {
+        "title_en": "Thaniyat al-Wada'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171271,
+      "h1": 47,
+      "h2": 18,
+      "title_en": "Muadh b. Jabal's Question on the Road to Tabuk",
+      "intro_en": "✧ Recounts the conversation with the Prophet ﷺ during the journey and the guidance given in response.",
+      "before": {
+        "title_en": "The Question of Mu'adh ibn Jabal RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171272,
+      "h1": 47,
+      "h2": 19,
+      "title_en": "Shortening Prayers during the Tabuk Expedition",
+      "intro_en": "✧ Discusses the practice of shortened prayer within the account of travel to and residence at Tabuk.",
+      "before": {
+        "title_en": "Praying Qasr",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171273,
+      "h1": 47,
+      "h2": 20,
+      "title_en": "The Reported Sermon on Arrival at Tabuk",
+      "intro_en": "✧ Presents the sermon attributed to the Prophet ﷺ while noting the lecture's qualification concerning its transmission.",
+      "before": {
+        "title_en": "The Prophet's ﷺ Khutbah on the Morning of Tabuk",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171274,
+      "h1": 47,
+      "h2": 21,
+      "title_en": "Northern Agreements and the Report of Heraclius's Questions",
+      "intro_en": "✧ Examines political activity around Tabuk and the account of questions conveyed from Heraclius through a messenger.",
+      "before": {
+        "title_en": "Sealing the Northern Barrier Against the Romans",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171276,
+      "h1": 47,
+      "h2": 22,
+      "title_en": "The Stay at Tabuk and Sermons on the Journey",
+      "intro_en": "✧ Describes the period at Tabuk and the return journey through examples of the Prophet's ﷺ addresses.",
+      "before": {
+        "title_en": "The Stay at Tabuk and the Return Journey",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171278,
+      "h1": 47,
+      "h2": 23,
+      "title_en": "Miraculous Accounts from the Expedition to Tabuk",
+      "intro_en": "✧ Collects reports of extraordinary events discussed in connection with the hardships and experiences of the expedition.",
+      "before": {
+        "title_en": "Mu'jizat and Karamat That Happened During the Expedition",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171279,
+      "h1": 47,
+      "h2": 24,
+      "title_en": "The Prophet ﷺ Prays behind Abd al-Rahman b. Awf",
+      "intro_en": "✧ Recounts the prayer led by Abd al-Rahman and the honor associated with this incident during the expedition.",
+      "before": {
+        "title_en": "The Prophet ﷺ Prayed Behind Him: The Great Honor of Abd al-Rahman ibn Awf RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171280,
+      "h1": 47,
+      "h2": 25,
+      "title_en": "The Burial of Abd Allah Dhu al-Bijadayn",
+      "intro_en": "✧ Recounts the death and burial of Abd Allah during the events associated with the Tabuk expedition.",
+      "before": {
+        "title_en": "Burial of Abdullah Dhu al-Bijadayn RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171281,
+      "h1": 47,
+      "h2": 26,
+      "title_en": "Travel Prayer and Tanning Animal Hides",
+      "intro_en": "✧ Examines legal rulings discussed during the expedition, including prayer while traveling and the treatment of a dead animal's skin.",
+      "before": {
+        "title_en": "Legal Rulings during the Expedition",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171284,
+      "h1": 47,
+      "h2": 27,
+      "title_en": "Passing Thamud: Supplication, Blessing, and Unseen Knowledge",
+      "intro_en": "✧ Connects the journey past Thamud with discussions of answered prayer, the source of blessing, and the limits of knowledge.",
+      "before": {
+        "title_en": "Passing Thamud and Lessons from the Journey",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171288,
+      "h1": 47,
+      "h2": 28,
+      "title_en": "Mockery of Religion during the Tabuk Expedition",
+      "intro_en": "✧ Recounts inappropriate remarks made on the journey and the Quranic response discussed in relation to them.",
+      "before": {
+        "title_en": "Certain Things Are Off-Limits for Jokes",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171289,
+      "h1": 47,
+      "h2": 29,
+      "title_en": "The Hypocrites' Plot against the Prophet ﷺ",
+      "intro_en": "✧ Recounts the assassination attempt attributed to the hypocrites during the events connected with the expedition.",
+      "before": {
+        "title_en": "The Hypocrites' Attempt to Assassinate the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171290,
+      "h1": 47,
+      "h2": 30,
+      "title_en": "The Return through Thaniyat al-Wada",
+      "intro_en": "✧ Describes the return to Madinah by the northern farewell landmark after the journey to Tabuk.",
+      "before": {
+        "title_en": "Returning to Madinah Via Thaniyat al-Wada'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171291,
+      "h1": 47,
+      "h2": 31,
+      "title_en": "The Wisdoms Discussed in the Tabuk Expedition",
+      "intro_en": "✧ Draws together the purposes and lessons considered in the lecture's assessment of the difficult campaign.",
+      "before": {
+        "title_en": "The Wisdom of the Expedition of Tabuk",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171292,
+      "h1": 47,
+      "h2": 32,
+      "title_en": "The Life and Death of Abd Allah b. Ubayy",
+      "intro_en": "✧ Reviews his place in Madinan affairs and recounts the events and questions surrounding his death.",
+      "before": {
+        "title_en": "Abdullah ibn Ubayy: His Life and Death",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171294,
+      "h1": 47,
+      "h2": 33,
+      "title_en": "Surat al-Tawbah and the Events of Tabuk",
+      "intro_en": "✧ Examines the Quranic verses addressing the expedition and the responses it revealed within the community.",
+      "before": {
+        "title_en": "Surah al-Tawbah and the Expedition of Tabuk",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171297,
+      "h1": 48,
+      "h2": 1,
+      "title_en": "Why the Ninth Year Became the Year of Delegations",
+      "intro_en": "✧ Introduces the wave of tribal visits and explains the designation given to this period in the sirah.",
+      "before": {
+        "title_en": "The Year of Delegations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171299,
+      "h1": 48,
+      "h2": 2,
+      "title_en": "Abd al-Qays and the Request for Guidance",
+      "intro_en": "✧ Recounts the tribe's delegations and their questions about teachings that would lead them to Paradise.",
+      "before": {
+        "title_en": "The Tribe of Abd al-Qays: \"Tell Us Something That Will Cause Us to Enter Jannah\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171300,
+      "h1": 48,
+      "h2": 3,
+      "title_en": "Dimam b. Thalabah and the Delegation of Banu Saad",
+      "intro_en": "✧ Describes the representative's direct questioning and sincerity in the account of his tribe's acceptance of Islam.",
+      "before": {
+        "title_en": "Banu Sa'd ibn Bakr, the Tribe of Halimah the Foster Mother of the Prophet ﷺ: The Genuineness of Dimam ibn Tha'laba",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171301,
+      "h1": 48,
+      "h2": 4,
+      "title_en": "Muzaynah and the Provision of Food from Umar's Home",
+      "intro_en": "✧ Recounts the delegation's need for supplies and the report of extraordinary provision for their return journey.",
+      "before": {
+        "title_en": "The Tribe of Muzayna: Miracle in the House of Umar RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171302,
+      "h1": 48,
+      "h2": 5,
+      "title_en": "Banu Asad and the Claim of Doing a Favor",
+      "intro_en": "✧ Examines the delegation's claim concerning its conversion and the response that guidance itself is Allah's favor.",
+      "before": {
+        "title_en": "Banu Asad ibn Khuzaymah: \"Do Not Regard Your Islam as a Favor to Me. Rather, It Is Allah Who Has Done You a Favor by Guiding You to the Faith\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171303,
+      "h1": 48,
+      "h2": 6,
+      "title_en": "Banu Amir b. Sasaah and the Assassination Plot",
+      "intro_en": "✧ Recounts the delegation's encounter and the reported plot against the Prophet ﷺ in the context of earlier hostility.",
+      "before": {
+        "title_en": "Banu Amir ibn Sa'sa'ah, the Tribe Responsible for the Massacre of Bi'r Ma'una: Assassination Attempt on the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171304,
+      "h1": 48,
+      "h2": 7,
+      "title_en": "Tamim al-Dari and the Report of al-Jassasah",
+      "intro_en": "✧ Presents the account associated with Tamim concerning al-Jassasah and al-Dajjal within the discussion of delegations.",
+      "before": {
+        "title_en": "The Tribe of Tamim al-Dari: The Hadith of al-Jassasah and al-Dajjal",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171305,
+      "h1": 48,
+      "h2": 8,
+      "title_en": "Tufayl b. Amr and the People of Daws",
+      "intro_en": "✧ Recounts Tufayl's experience and his role in the account of the tribe to which Abu Hurayrah belonged.",
+      "before": {
+        "title_en": "Banu Daws, the Tribe of Abu Hurairah RA: The Story of Tufayl ibn Amr al-Dawsi",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171306,
+      "h1": 48,
+      "h2": 9,
+      "title_en": "The Delegation of Wail b. Hujr",
+      "intro_en": "✧ Recounts Wail's visit and the later reversal of circumstances discussed in connection with his treatment of others.",
+      "before": {
+        "title_en": "The Delegation of Wa'il ibn Hujr: What Goes Around Comes Around",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171307,
+      "h1": 48,
+      "h2": 10,
+      "title_en": "Thaqif's Conversion, Negotiations, and Growing Commitment",
+      "intro_en": "✧ Follows Urwah's death, the delegation's requests, leniency toward converts, fasting, study, and the removal of al-Lat.",
+      "before": {
+        "title_en": "The Delegation and Conversion of Thaqif",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171315,
+      "h1": 48,
+      "h2": 11,
+      "title_en": "Banu Hanifah and Musaylimah's Claim to Prophethood",
+      "intro_en": "✧ Introduces the delegation and examines the account of Musaylimah within the events of the later prophetic period.",
+      "before": {
+        "title_en": "Banu Hanifa, the Tribe of Musaylimah: Musaylimah the False Prophet",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171316,
+      "h1": 48,
+      "h2": 12,
+      "title_en": "The People of Jurash and the Mission of al-Surad",
+      "intro_en": "✧ Connects the Azd delegation and al-Surad's assignment with the report concerning events at Jurash.",
+      "before": {
+        "title_en": "The Tribe of Jurash: \"Verily, Allah's Camel is Being Sacrificed at Jurash as We Speak\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171317,
+      "h1": 48,
+      "h2": 13,
+      "title_en": "Himyar's Question about Creation and the People of Yemen",
+      "intro_en": "✧ Recounts the question about the beginning of creation and the discussion of virtues associated with Yemen.",
+      "before": {
+        "title_en": "The Tribe of Himyar: \"How Did the Beginning of Creation Come About?\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171319,
+      "h1": 48,
+      "h2": 14,
+      "title_en": "Advice to Muadh and Abu Musa: Ease and Cooperation",
+      "intro_en": "✧ Presents the guidance to make matters easy, offer encouragement, and work together without causing division.",
+      "before": {
+        "title_en": "\"Make Things Easy and Don't Make Things Difficult. Give People Glad Tidings and Don't Turn People Away. Cause People to Come Together and Don't Cause Disunity\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171320,
+      "h1": 48,
+      "h2": 15,
+      "title_en": "Teachings Preserved by Companions Who Met the Prophet ﷺ Once",
+      "intro_en": "✧ Examines reports concerning modesty and striving toward upright conduct from Companions known through brief encounters.",
+      "before": {
+        "title_en": "Hadiths from Companions Who Met the Prophet ﷺ Once",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171323,
+      "h1": 48,
+      "h2": 16,
+      "title_en": "The Christians of Najran and the Proposed Mubahalah",
+      "intro_en": "✧ Recounts the delegation's discussions, the Quranic challenge, and the explanation given for its leaders' response.",
+      "before": {
+        "title_en": "The Christians of Najran and the Verse of Mubahala",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171325,
+      "h1": 48,
+      "h2": 17,
+      "title_en": "Abd al-Rahman's Delegation and the Question of Kingship",
+      "intro_en": "✧ Recounts the visitors' changing impressions and their question about requesting a kingdom like that of Sulayman.",
+      "before": {
+        "title_en": "The Delegation of Abd al-Rahman ibn Abi Aqil: \"Ya Rasulullah, Why Don't You Ask Your Lord to Give You a Kingdom Like That of Sulayman?\"",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171326,
+      "h1": 48,
+      "h2": 18,
+      "title_en": "Assessing Weak and Fabricated Delegation Reports",
+      "intro_en": "✧ Discusses problematic accounts associated with this period and explains why the lecture addresses their circulation.",
+      "before": {
+        "title_en": "Some Fabricated Ahadith Related to This Time Frame",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171327,
+      "h1": 48,
+      "h2": 19,
+      "title_en": "Lessons from the Year of Delegations",
+      "intro_en": "✧ Draws together lessons from the varied encounters, questions, negotiations, and conversions described in the delegation accounts.",
+      "before": {
+        "title_en": "Lessons From the Episodes of the Year of Delegations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171328,
+      "h1": 48,
+      "h2": 20,
+      "title_en": "Questions about Mubahalah and the Najran Delegation",
+      "intro_en": "✧ Addresses follow-up questions concerning the mutual invocation and the treatment of the visiting Christians of Najran.",
+      "before": {
+        "title_en": "Questions and Answers about the Delegations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171330,
+      "h1": 49,
+      "h2": 1,
+      "title_en": "Mariyah al-Qibtiyyah and the Correspondence with Egypt",
+      "intro_en": "✧ Introduces her historical setting through the letter sent to the Muqawqis and the response associated with Egypt.",
+      "before": {
+        "title_en": "Maria al-Qibtiyya: Historical Background",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171332,
+      "h1": 49,
+      "h2": 2,
+      "title_en": "Mariyah and Sirin: Household Life and Difficult Historical Questions",
+      "intro_en": "✧ Recounts their arrival and examines slavery, the handling of difficult reports, and the account involving Mabur.",
+      "before": {
+        "title_en": "Maria and Sirin in Madinah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171336,
+      "h1": 49,
+      "h2": 3,
+      "title_en": "The Birth of Ibrahim and the Prophet's ﷺ Family",
+      "intro_en": "✧ Recounts Ibrahim's birth within the discussion of Mariyah and the Prophet's ﷺ later household life.",
+      "before": {
+        "title_en": "The Birth of Ibrahim ibn Muhammad RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171337,
+      "h1": 49,
+      "h2": 4,
+      "title_en": "Ibrahim's Death, the Eclipse, and Reflections on Bereavement",
+      "intro_en": "✧ Connects the child's death with the solar eclipse and distinguishes the event from the explanations people attached to it.",
+      "before": {
+        "title_en": "Ibrahim’s Death and the Solar Eclipse",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171340,
+      "h1": 49,
+      "h2": 5,
+      "title_en": "Hafsah's Jealousy and the Revelation of al-Tahrim",
+      "intro_en": "✧ Examines the reported household incident and its connection with the revelation discussed from Surat al-Tahrim.",
+      "before": {
+        "title_en": "The Incident of the Jealousy of Hafsa RA & the Revelation of Surah al-Tahrim",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171341,
+      "h1": 49,
+      "h2": 6,
+      "title_en": "The Death of Mariyah al-Qibtiyyah",
+      "intro_en": "✧ Concludes the account of Mariyah by recounting her death and its place in the family narrative.",
+      "before": {
+        "title_en": "The Death of Maria al-Qibtiyya RA",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171343,
+      "h1": 50,
+      "h2": 1,
+      "title_en": "The Marital Dispute: Chronology and the Choice of Simplicity",
+      "intro_en": "✧ Examines the timing and causes of the dispute in relation to the Prophet's ﷺ chosen manner of life.",
+      "before": {
+        "title_en": "The Marital Dispute: Background and Causes",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171346,
+      "h1": 50,
+      "h2": 2,
+      "title_en": "The Prophet's ﷺ Month Apart and Its Lessons",
+      "intro_en": "✧ Recounts the separation from his wives and draws lessons from the household dispute and its resolution.",
+      "before": {
+        "title_en": "The Prophet’s Month Apart from His Wives",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171349,
+      "h1": 51,
+      "h2": 1,
+      "title_en": "Abu Bakr Leads Hajj and Earlier Pilgrimage Customs",
+      "intro_en": "✧ Describes his appointment to lead the pilgrimage and the practices addressed as its public observance changed.",
+      "before": {
+        "title_en": "Abu Bakr Leads the Hajj",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171352,
+      "h1": 51,
+      "h2": 2,
+      "title_en": "Al-Tawbah's Opening Verses and Ali's Hajj Mission",
+      "intro_en": "✧ Examines the proclamation of the verses and the interpretation of Ali's assignment alongside Abu Bakr's leadership.",
+      "before": {
+        "title_en": "The Revelation of the Beginning of Surah al-Tawba incl. 'the Verse of the Sword'",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171354,
+      "h1": 51,
+      "h2": 3,
+      "title_en": "The Four Announcements at Hajj",
+      "intro_en": "✧ Explains the public proclamations made during the pilgrimage and their significance for its subsequent observance.",
+      "before": {
+        "title_en": "Four Major Announcements During the Hajj",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171355,
+      "h1": 51,
+      "h2": 4,
+      "title_en": "Governors, Religious Teachers, and the Letter to Amr b. Hazm",
+      "intro_en": "✧ Describes the organization of regional leadership and instruction, including the letter addressed to Amr b. Hazm.",
+      "before": {
+        "title_en": "Appointing Governors and Religious Teachers",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171357,
+      "h1": 51,
+      "h2": 5,
+      "title_en": "Questions on Pilgrimage and the Prophet's ﷺ Final Years",
+      "intro_en": "✧ Addresses follow-up questions from the preceding discussion, beginning with the origin of the clothing prescribed for ihram.",
+      "before": {
+        "title_en": "Questions and Answers about the Final Years",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171359,
+      "h1": 52,
+      "h2": 1,
+      "title_en": "When Hajj Became Obligatory and When to Perform It",
+      "intro_en": "✧ Examines the date of the command and whether financial ability requires an immediate pilgrimage.",
+      "before": {
+        "title_en": "The Obligation of Hajj and Its Timing",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171361,
+      "h1": 52,
+      "h2": 2,
+      "title_en": "The Farewell Hajj through Jabir's Narration",
+      "intro_en": "✧ Follows the Prophet's ﷺ pilgrimage through Jabir's account and the sequence of rites it describes.",
+      "before": {
+        "title_en": "The Farewell Hajj and Jabir’s Account",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171363,
+      "h1": 52,
+      "h2": 3,
+      "title_en": "The Sermons of the Farewell Hajj",
+      "intro_en": "✧ Collects the addresses delivered during the pilgrimage and the guidance conveyed to those gathered there.",
+      "before": {
+        "title_en": "The Farewell Sermons",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171365,
+      "h1": 52,
+      "h2": 4,
+      "title_en": "Aisha's Umrah and the Departure for Madinah",
+      "intro_en": "✧ Recounts Aisha's eagerness to perform Umrah and the events preceding the pilgrims' return journey.",
+      "before": {
+        "title_en": "The Return to Madinah and Aisha’s Umrah",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171367,
+      "h1": 52,
+      "h2": 5,
+      "title_en": "Ghadir Khumm and Differing Interpretations of the Sermon",
+      "intro_en": "✧ Examines the reported address concerning Ali and the Sunni and Shia interpretations discussed in the lecture.",
+      "before": {
+        "title_en": "Another Sunni-Shia Controversy: The Sermon of Ghadir Khumm",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171368,
+      "h1": 52,
+      "h2": 6,
+      "title_en": "Lessons from the Farewell Sermons",
+      "intro_en": "✧ Draws together the principles and responsibilities emphasized in the Prophet's ﷺ addresses during his final pilgrimage.",
+      "before": {
+        "title_en": "Points of Benefit From the Farewell Sermons of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171370,
+      "h1": 53,
+      "h2": 1,
+      "title_en": "The Return from Hajj and the Final Madinan Period",
+      "intro_en": "✧ Resumes the account after the Farewell Hajj and introduces the last phase of the Prophet's ﷺ life.",
+      "before": {
+        "title_en": "Returning to Madinah after the Farewell Hajj",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171372,
+      "h1": 53,
+      "h2": 2,
+      "title_en": "Usamah's Expedition and Plans for Future Campaigns",
+      "intro_en": "✧ Describes preparations for the expedition and their place in the military plans of the Prophet's ﷺ final period.",
+      "before": {
+        "title_en": "Preparing Usama’s Expedition",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171374,
+      "h1": 53,
+      "h2": 3,
+      "title_en": "Quranic and Prophetic Indications of the Approaching Death",
+      "intro_en": "✧ Examines passages and reports understood in the lecture as signs that the Prophet's ﷺ life was nearing its end.",
+      "before": {
+        "title_en": "Signs in the Quran and Sunnah That Foretold the Death of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171375,
+      "h1": 53,
+      "h2": 4,
+      "title_en": "The Final Illness, Public Advice, and Abu Bakr's Door",
+      "intro_en": "✧ Recounts the illness and the guidance given publicly, including the instruction concerning the doors opening into the mosque.",
+      "before": {
+        "title_en": "The Prophet’s Final Illness and Advice",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171378,
+      "h1": 53,
+      "h2": 5,
+      "title_en": "Abu Bakr Leads Prayer during the Final Illness",
+      "intro_en": "✧ Describes the appointment, Aisha's reservations, and Abu Bakr's leadership of the congregation while the Prophet ﷺ was ill.",
+      "before": {
+        "title_en": "Abu Bakr Leads the Prayer",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171381,
+      "h1": 53,
+      "h2": 6,
+      "title_en": "The Prophet's ﷺ Last Public Address",
+      "intro_en": "✧ Recounts the final address discussed in the lecture, including the instruction to care for the Ansar.",
+      "before": {
+        "title_en": "The Last Public Lecture of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171382,
+      "h1": 53,
+      "h2": 7,
+      "title_en": "The Prophet's ﷺ Possessions near the End of His Life",
+      "intro_en": "✧ Describes the small amount of money remaining and the instructions concerning it during his final illness.",
+      "before": {
+        "title_en": "Material Possessions of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171383,
+      "h1": 53,
+      "h2": 8,
+      "title_en": "Final Conversations, Visits, and the Prophet's ﷺ Last Days",
+      "intro_en": "✧ Recounts the conversation with Fatimah, Usamah's visit, the difficulty of dying, and the use of the miswak.",
+      "before": {
+        "title_en": "The Prophet’s Last Days and Private Conversations",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171388,
+      "h1": 53,
+      "h2": 9,
+      "title_en": "The Death of Prophet Muhammad ﷺ",
+      "intro_en": "✧ Recounts the final moments and death of the Prophet ﷺ within the closing narrative of his life.",
+      "before": {
+        "title_en": "The Death of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171389,
+      "h1": 53,
+      "h2": 10,
+      "title_en": "The Companions' Grief and Hassan's Elegy",
+      "intro_en": "✧ Describes responses to the Prophet's ﷺ death and the expression of loss in Hassan b. Thabit's poetry.",
+      "before": {
+        "title_en": "The Companions’ Grief and Reactions",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171391,
+      "h1": 53,
+      "h2": 11,
+      "title_en": "The Prophet's ﷺ Funeral Rites",
+      "intro_en": "✧ Recounts the arrangements and rites following his death as described in the closing account of the sirah.",
+      "before": {
+        "title_en": "Funeral Rites of the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171392,
+      "h1": 53,
+      "h2": 12,
+      "title_en": "Grief, Consolation, and Love across Generations",
+      "intro_en": "✧ Reflects on the loss of the Prophet ﷺ and the reports concerning his love for believers who came later.",
+      "before": {
+        "title_en": "Grief, Consolation, and Love for the Prophet ﷺ",
+        "intro_en": null
+      }
+    },
+    {
+      "id": 171395,
+      "h1": 53,
+      "h2": 13,
+      "title_en": "Closing Supplications and Blessings upon the Prophet ﷺ",
+      "intro_en": "✧ Concludes the series with prayers and salawat after the account of the Prophet's ﷺ life and death.",
+      "before": {
+        "title_en": "Concluding Supplications and Salawat",
+        "intro_en": null
+      }
+    }
+  ]
+}

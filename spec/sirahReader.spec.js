@@ -157,3 +157,16 @@ test.each([['yqsirah','sirah'],['ibnhisham','sirah'],['history','sirah'],['histo
   ejs.render(source, {i:{book_type:type},title:false,searchResult:false,include});
   expect(include).toHaveBeenCalledWith('sirah_item.ejs', expect.objectContaining({title:false}));
  });
+
+test.each(['yqsirah', 'ibnhisham', 'history'])('%s footnotes retain independent Arabic and English block directions', alias => {
+ const notes='[^n]: Al-ayn (العين) — the evil eye.\n\n    > ﴿وَإِنَّهُ لَكِتَابٌ عَزِيزٌ﴾\n    >\n    > [فصلت ٤١](https://example.com/41)\n\n    <!-- -->\n\n    > It is indeed a mighty Book. ([Fussilat 41:41](https://example.com/41))\n\n[^ar]: حاشية عربية كاملة.';
+ for(const editMode of [false,true]) {
+  const $=render({book_alias:alias,body:'',body_en:'Notes[^n][^ar].',footnote_en:notes},true,editMode);
+  const footnotes=$('.footnotes');
+  expect(footnotes.find('blockquote').map((_,el)=>$(el).attr('dir')).get()).toEqual(['rtl','ltr']);
+  expect(footnotes.find('blockquote').first().find('p').map((_,el)=>$(el).attr('dir')).get()).toEqual(['rtl','rtl']);
+  expect(footnotes.find('.footnote-item').map((_,el)=>$(el).attr('dir')).get()).toEqual(['ltr','rtl']);
+  $('.footnote-ref a').each((_,el)=>expect($($(el).attr('href')).length).toBe(1));
+  expect(footnotes.find('.footnote-backref')).toHaveLength(2);
+ }
+});

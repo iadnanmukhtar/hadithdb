@@ -7,10 +7,9 @@
   const sirahHasArabic = Boolean(utils.emptyIfNull(sirahArabicBody).replace(/<[^>]*>/g, '').trim());
   const sirahColumns = sirahHasEnglish && sirahHasArabic ? 'col-md-6 col-sm-12' : 'col-12';
   const sirahMarkdown = (body, notes, lang) => {
-    // An English explanation can open with an Arabic honorific. Keep its reading
-    // direction English without changing the stored source text.
-    const html = utils.markdownToHtml([body, notes].filter(Boolean).join('\n\n'), { footnoteIdPrefix: `sirah-${i.id}-${lang}` });
-    return lang === 'en' ? html.replace(/<section class="footnotes">[\s\S]*?<\/section>/g, section => section.replace(/dir="(?:rtl|auto)"/g, 'dir="ltr"')) : html;
+    // Footnotes use the same per-block direction as the body, including Arabic
+    // quotations inside an otherwise English explanation.
+    return utils.markdownToHtml([body, notes].filter(Boolean).join('\n\n'), { footnoteIdPrefix: `sirah-${i.id}-${lang}` });
   };
   const sirahRendered = (body, notes, lang) => {
     const html = sirahMarkdown(body, notes, lang);

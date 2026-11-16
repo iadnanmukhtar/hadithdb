@@ -269,3 +269,20 @@ test('bilingual tafsir Arabic nested in an English Markdown root matches hadith'
   }
  }finally{await page.close();}
 });
+
+test.each([390,1000])('Sirah footnote previews keep Arabic quote borders on the right at %s px',async width=>{
+ const page=await browser.newPage({viewport:{width,height:850}});
+ try {
+  const notes='[^n]: English note.\n\n    > ﴿وَإِنَّهُ لَكِتَابٌ عَزِيزٌ﴾\n    >\n    > [فصلت ٤١](https://example.com/41)\n\n    <!-- -->\n\n    > It is indeed a mighty Book.';
+  const html=require('../lib/ContentMarkdown').render('Note[^n].\n\n'+notes);
+  await page.setContent('<article class="sirah-item"><div data-sirah-editor="body" data-edit-lang="en" data-markdown-source="Note[^n]."></div><div id="notes" class="content-markdown" lang="en" data-id="7" data-prop="hadith.footnote_en" data-sirah-editor="footnotes" data-edit-lang="en"></div></article>');
+  for(const name of ['style','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
+  await page.addScriptTag({path:'node_modules/jquery/dist/jquery.js'});
+  const preview=source.slice(source.indexOf('const contentPreview ='),source.indexOf('const setMarkdownPreview ='));
+  await page.addScriptTag({content:`const editHadithApiPath=x=>x,isEnglishTafsirMarkdown=()=>false,isEnglishCommentaryIntroMarkdown=()=>false;window.fetch=async()=>({ok:true,json:async()=>({html:${JSON.stringify(html)}})});${preview}window.previewFootnotes=contentPreview;`});
+  await page.evaluate(async notes=>{document.querySelector('#notes').innerHTML=await window.previewFootnotes($('#notes'),notes);},notes);
+  const quotes=await page.locator('#notes blockquote').evaluateAll(nodes=>nodes.map(node=>{const css=getComputedStyle(node);return{dir:css.direction,align:css.textAlign,left:parseFloat(css.borderLeftWidth),right:parseFloat(css.borderRightWidth)};}));
+  expect(quotes).toEqual([{dir:'rtl',align:'right',left:0,right:3},{dir:'ltr',align:'left',left:3,right:0}]);
+  expect(await page.locator('#notes .footnote-backref').getAttribute('href')).toBe('#fnref1');
+ }finally{await page.close();}
+});

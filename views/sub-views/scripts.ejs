@@ -180,7 +180,6 @@
           const html = (await response.json()).html;
           if (!sirahKind) return html;
           const rendered = $('<div>').html(html);
-          if (sirahLang === 'en') rendered.find('.footnotes [dir]').attr('dir', 'ltr');
           if (sirahKind === 'footnotes' && sirahLinkedNotes)
             return rendered.find('.footnotes').prop('outerHTML') || 'No referenced footnotes.';
           if (sirahKind === 'body') rendered.find('.footnotes, .footnotes-sep').remove();
