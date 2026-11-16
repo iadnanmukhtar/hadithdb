@@ -32,9 +32,9 @@ describe('saved heading visibility', () => {
     delete global.query;
   });
 
-  async function submit() {
+  async function submit(prop = 'toc.title_en') {
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
-    await handler({ body: { value: 'The Prohibition' }, params: { id: '2172', prop: 'toc.title_en' }, user: { uid: 'admin' } }, res, jest.fn());
+    await handler({ body: { value: 'The Prohibition' }, params: { id: '2172', prop }, user: { uid: 'admin' } }, res, jest.fn());
     return res;
   }
 
@@ -57,5 +57,18 @@ describe('saved heading visibility', () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json.mock.calls[0][0].message).toContain('index unavailable');
     expect(Utils.cacheBookDirectory).not.toHaveBeenCalled();
+  });
+
+  test.each(['toc.title', 'toc.title_en'])('%s reindexes titles without rebuilding commentary navigation', async prop => {
+    await submit(prop);
+    expect(Index.updateBulk).toHaveBeenCalledWith('toc', expect.any(Array), undefined, { skipCommentaries: true });
+    expect(Index.updateBulk).toHaveBeenCalledWith('hadiths', expect.any(Array), true, { skipCommentaries: true });
+    expect(VirtualHadithSnapshot.queueHeading).toHaveBeenCalledWith('2172');
+  });
+
+  test('other heading edits retain commentary synchronization', async () => {
+    await submit('toc.intro_en');
+    expect(Index.updateBulk).toHaveBeenCalledWith('toc', expect.any(Array), undefined, { skipCommentaries: false });
+    expect(Index.updateBulk).toHaveBeenCalledWith('hadiths', expect.any(Array), true, { skipCommentaries: false });
   });
 });

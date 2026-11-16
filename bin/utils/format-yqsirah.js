@@ -94,12 +94,17 @@ function formatField(original,manual=[],options={}){
    assert(/^https:\/\/quran\.islamunlocked\.com\/quran:\d+:\d+$/.test(change.url));
    assert.equal(change.verification?.hadithdb,change.url);
    assert(change.verification?.independent,'Translation layout requires verified reference');
-   assert(/^\[\d+:\d+(?:[-–]\d+)?\]\.$/.test(change.sourceReference),'Expected an existing Quran reference');
+   const cited=change.sourceReference.match(/^\[(?:Quran, )?(\d+):(\d+)(?:[-–](\d+))?\]\.$/);
+   assert(cited,'Expected an existing Quran reference');
+   assert.equal(change.url,'https://quran.islamunlocked.com/quran:'+cited[1]+':'+cited[2],'Quran translation URL must match the exact cited passage start');
+   if(cited[3])assert(Number(cited[3])>=Number(cited[2]),'Quran translation range must be in ascending order');
    assert(change.before.endsWith(change.sourceReference),'Translation must retain its original source reference');
    assert([undefined,4].includes(change.indent));
    const indent=' '.repeat(change.indent||0);
    const original=change.before.slice(0,-change.sourceReference.length).trim();
-   assert.equal(change.after,`${indent}<!-- -->\n\n${indent}> ${original} ([${change.label}](${change.url}))`,'Translation layout cannot rewrite the source English');
+   assert([undefined,true].includes(change.blankSeparator),'Unexpected Quran quote separator flag');
+   const boundary=change.blankSeparator?'':`${indent}<!-- -->\n\n`;
+   assert.equal(change.after,`${boundary}${indent}> ${original} ([${change.label}](${change.url}))`,'Translation layout cannot rewrite the source English');
   }
   if(change.kind==='quran-completion'){
    const verified=require('../../data/yqsirah-formatting-quran-evidence.json').find(e=>e.reference===change.reference);
@@ -158,6 +163,22 @@ function formatField(original,manual=[],options={}){
  assert.equal(undo(text,ledger),original,'The editorial ledger cannot reproduce the source');
  return {text,ledger};
 }
+function heldReasonComment(flags){
+ const oneLine=value=>(typeof value==='string'?value:'').replace(/\s+/g,' ').trim();
+ const notices=[];
+ for(const raw of flags||[]){
+  const flag=typeof raw==='string'?{reason:raw}:raw||{};
+  const reason=oneLine(flag.reason);
+  if(!reason)continue;
+  const label=oneLine(flag.reference)||'Unresolved review';
+  const links=(Array.isArray(flag.sources)?flag.sources:[]).map(oneLine)
+   .filter(url=>/^https:\/\/(?:quran\.com|quran\.islamunlocked\.com|hadithunlocked\.com|sunnah\.com|(?:www\.)?islamweb\.(?:net|org)|(?:www\.)?dorar\.net|quran\.ksu\.edu\.sa|(?:www\.)?masaha\.org)(?:\/|$)/.test(url));
+  const next=oneLine(flag.nextAction)||(links.length?'Compare the exact flagged claim with '+links.slice(0,3).join(' and ')+'.':'Resolve the flagged wording or verify the exact existing baseline before selecting this passage for publication.');
+  const notice='- '+label+': '+reason+'\n  Next check: '+next;
+  if(!notices.includes(notice))notices.push(notice);
+ }
+ return notices.length?'Editorial hold (not for readers)\n'+notices.join('\n'):'';
+}
 function buildDraft(plan,manifest){
  return plan.entries.map(entry=>{
   const review=manifest.passages[String(entry.num)]||{};
@@ -169,6 +190,12 @@ function buildDraft(plan,manifest){
    assert(!/^\s*%%\s*$/m.test(original),`Passage ${entry.num}: source conflicts with the comment delimiter`);
    const field=fields.body;
    field.text=edit(field.text,field.text.length,'','\n\n%%\n'+original+'\n%%','original-transcript-comment',field.ledger);
+   assert.equal(undo(field.text,field.ledger),entry.body);
+  }
+  const hold=heldReasonComment(review.citationFlags);
+  if(hold){
+   const field=fields.body;
+   field.text=edit(field.text,field.text.length,'','\n\n%%\n'+hold+'\n%%','editorial-hold-comment',field.ledger);
    assert.equal(undo(field.text,field.ledger),entry.body);
   }
   return {num:entry.num,h1:entry.h1,h2:entry.h2,h3:entry.h3,source_sha256:entry.sha256,reviewStatus:review.status||'mechanical-pass-only',fields};

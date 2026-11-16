@@ -163,3 +163,16 @@ test('heading bulk indexing refreshes navigation for the indexed source books', 
 	await require('../lib/Index').updateBulk('toc', [{ hId: 55, book_id: 7, ref: 'malik/1' }]);
 	expect(Navigation.syncSourceBooks).toHaveBeenCalledWith([7]);
 });
+
+test.each(['toc', 'hadiths'])('title-only %s bulk indexing avoids commentary SQL while writing search documents', async index => {
+	jest.spyOn(Navigation, 'syncSourceBooks').mockResolvedValue();
+	jest.spyOn(require('../lib/HadithSharhIndex'), 'syncHadiths').mockResolvedValue();
+	jest.spyOn(require('../lib/HadithTranslationIndexView'), 'attachTranslations').mockImplementation(async rows => rows);
+	jest.spyOn(require('../lib/HadithNarratorIndex'), 'attach').mockResolvedValue();
+	axios.post.mockResolvedValue({ status: 200, data: { errors: false, items: [] } });
+	await require('../lib/Index').updateBulk(index, [{ hId: 55, book_id: 7, ref: 'malik/1' }], true, { skipCommentaries: true });
+	expect(Navigation.syncSourceBooks).not.toHaveBeenCalled();
+	expect(require('../lib/HadithSharhIndex').syncHadiths).not.toHaveBeenCalled();
+	expect(Sharh.buildReaderSequence).not.toHaveBeenCalled();
+	expect(axios.post).toHaveBeenCalledWith(expect.stringContaining(`/${index}/_bulk`), expect.anything(), expect.anything());
+});

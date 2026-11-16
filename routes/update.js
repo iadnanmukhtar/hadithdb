@@ -953,7 +953,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.message = result.message;
       try {
         if (shouldRunDefaultHeadingTasks) {
-          await reindexHeadingSubtreeByHeadingId(tocHeadingId);
+          // Titles are embedded in heading/hadith search documents, but do not
+          // change commentary documents or the Sharh reader's membership/order.
+          await reindexHeadingSubtreeByHeadingId(tocHeadingId, {
+            skipCommentaries: ['title', 'title_en'].includes(col)
+          });
           var invalidatedHeading = await invalidateHeadingCachesByHeadingId(tocHeadingId);
           var commentaryHeadingBook = invalidatedHeading && await CommentaryHeadings.book(invalidatedHeading.book_id);
           if (commentaryHeadingBook) {
@@ -2965,7 +2969,7 @@ function buildHeadingTranslationPrompt(heading, contentType, sourceText) {
   ].join('\n');
 }
 
-async function reindexHeadingSubtreeByHeadingId(headingId) {
+async function reindexHeadingSubtreeByHeadingId(headingId, options = {}) {
   headingId = parseInt(headingId, 10);
   if (!Number.isInteger(headingId) || headingId <= 0)
     return;
@@ -2974,7 +2978,7 @@ async function reindexHeadingSubtreeByHeadingId(headingId) {
     return;
   // Readers use search results to rebuild their disk cache. Publish the new
   // headings and embedded item titles before invalidating that cache.
-  await reindexSearchScope(buildHeadingScopeWhere(heading), { refresh: true, strict: true });
+  await reindexSearchScope(buildHeadingScopeWhere(heading), { ...options, refresh: true, strict: true });
 }
 
 async function reindexChapterSearchScope(bookId, h1, options) {
@@ -3095,7 +3099,7 @@ async function reindexSearchScope(whereClause, options) {
   if (headings.length > 0) {
     var headingStarted = Date.now();
     try {
-      await Index.updateBulk(Heading.INDEX, headings);
+      await Index.updateBulk(Heading.INDEX, headings, undefined, { skipCommentaries: options.skipCommentaries === true });
       debug(`reindex search scope headings indexed ${headings.length} rows in ${Date.now() - headingStarted}ms: ${whereClause}`);
     } catch (err) {
       debug.error(`unable to reindex headings for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);
@@ -3111,7 +3115,7 @@ async function reindexSearchScope(whereClause, options) {
   if (items.length > 0) {
     var itemIndexStarted = Date.now();
     try {
-      await Index.updateBulk(Item.INDEX, items, true);
+      await Index.updateBulk(Item.INDEX, items, true, { skipCommentaries: options.skipCommentaries === true });
       debug(`reindex search scope items indexed ${items.length} rows in ${Date.now() - itemIndexStarted}ms: ${whereClause}`);
     } catch (err) {
       debug.error(`unable to reindex hadiths for search scope ${whereClause}: ${err.message}\n${err.stack || ''}`);

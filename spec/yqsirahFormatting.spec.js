@@ -167,3 +167,64 @@ test('restores an omitted Quran clause without rewriting surrounding text',()=>{
  misplaced.after=e.before.replace(misplaced.anchor,e.insert+misplaced.anchor);
  expect(()=>formatField(e.before,[misplaced])).toThrow(/complete verified verse/);
 });
+
+test('renders the archived canary with two linked quotation directions and one visible transcript',()=>{
+ const entry=require('../var/imports/yqsirah/reimport/full-source-plan.json').entries.find(e=>e.num===424);
+ const manifest=require('../data/yqsirah-formatting.json');
+ const {buildDraft}=require('../bin/utils/format-yqsirah');
+ const draft=buildDraft({entries:[entry]},manifest)[0], body=draft.fields.body;
+ expect(body.text.split('\n\n%%\n')[1]).toBe(entry.body+'\n%%');
+ expect(undo(body.text,body.ledger)).toBe(entry.body);
+ expect(undo(draft.fields.footnotes.text,draft.fields.footnotes.ledger)).toBe(entry.footnotes);
+ const $=require('cheerio').load(require('../lib/ContentMarkdown').render(body.text));
+ expect($('blockquote').map((i,el)=>$(el).attr('dir')).get()).toEqual(['rtl','ltr']);
+ expect($('blockquote a').map((i,el)=>$(el).attr('href')).get()).toEqual(Array(2).fill('https://hadithunlocked.com/bukhari:4054'));
+ expect($('blockquote em')).toHaveLength(0);
+ expect(($.text().match(/Now the question arises/g)||[])).toHaveLength(1);
+ expect($.text()).not.toContain('%%');
+});
+
+test('wraps a literal Quran-prefixed source reference without changing the original English or scope',()=>{
+ const source='“Indeed, We have given you a clear victory.” [Quran, 48:1].', reference='[Quran, 48:1].';
+ const url='https://quran.islamunlocked.com/quran:48:1';
+ const change={kind:'quran-translation-layout',before:source,sourceReference:reference,url,label:'al-Fath 48:1',verification:{hadithdb:url,independent:'https://quran.com/48/1'}};
+ change.after='<!-- -->\n\n> '+source.slice(0,-reference.length).trim()+' ([al-Fath 48:1]('+url+'))';
+ const f=formatField(source,[change]); expect(undo(f.text,f.ledger)).toBe(source);
+ expect(f.text).toContain('“Indeed, We have given you a clear victory.”');
+ const wrong='https://quran.islamunlocked.com/quran:48:2';
+ expect(()=>formatField(source,[{...change,url:wrong,verification:{...change.verification,hadithdb:wrong}}])).toThrow('exact cited passage start');
+ expect(()=>formatField(source,[{...change,sourceReference:'[Text, 48:1].'}])).toThrow('Expected an existing Quran reference');
+ expect(()=>formatField(source,[{...change,after:change.after.replace('given','shown')}])).toThrow('cannot rewrite');
+});
+
+test('blank lines alone keep Arabic and English quotes separate at top level, in lists, and in footnotes',()=>{
+ const render=require('../lib/ContentMarkdown').render,load=require('cheerio').load,q='> ﴿إِنَّ مَعَ الْعُسْرِ يُسْرًا﴾ ([الشرح ٦](https://quran.islamunlocked.com/quran:94:6))\n\n> Indeed, with hardship comes ease. ([al-Sharh 94:6](https://quran.islamunlocked.com/quran:94:6))';
+ const indent=(s,n)=>s.split('\n').map(l=>l?' '.repeat(n)+l:l).join('\n');
+ for(const [source,selector] of [[q,'blockquote'],['1. Original list item\n\n'+indent(q,3)+'\n\n   Continuation.','ol li blockquote'],['Original[^a].\n\n[^a]: Note.\n\n'+indent(q,4),'.footnotes li blockquote']]){
+  const $=load(render(source+'\n\n%%\nSECRET ARCHIVE\n%%'));
+  expect($(selector).map((i,x)=>$(x).attr('dir')).get()).toEqual(['rtl','ltr']);
+  expect($(selector).map((i,x)=>$(x).find('a').length).get()).toEqual([1,1]);
+  expect($.text()).not.toContain('SECRET ARCHIVE');
+ }
+ const before='“We have given you a clear victory.” [Quran, 48:1].',sourceReference='[Quran, 48:1].',url='https://quran.islamunlocked.com/quran:48:1';
+ const edit={kind:'quran-translation-layout',before,sourceReference,url,label:'al-Fath 48:1',blankSeparator:true,verification:{hadithdb:url,independent:'https://quran.com/48/1'},after:'> “We have given you a clear victory.” ([al-Fath 48:1]('+url+'))'};
+ const result=formatField(before,[edit]);expect(result.text).not.toContain('<!--');expect(undo(result.text,result.ledger)).toBe(before);
+});
+
+test('held source flags produce a separate reversible hidden reason and next check, with original archive and notes intact',()=>{
+ const {buildDraft}=require('../bin/utils/format-yqsirah'),crypto=require('node:crypto');
+ const e={num:1,title:'Original',body:'Original narrative.[^note]',footnotes:'[^note]: Original note.'};
+ const flag={reference:'Report identity',reason:'The narrator and wording are not verified.',sources:['https://sunnah.com/bukhari:1']};
+ const p={status:'in-review',retainOriginalTranscript:true,source_body_sha256:crypto.createHash('sha256').update(e.body).digest('hex'),citationFlags:[flag,{...flag}]};
+ const draft=buildDraft({entries:[e]},{passages:{1:p}})[0],body=draft.fields.body;
+ expect(body.text).toContain('%%\nOriginal narrative.[^note]\n\n[^note]: Original note.\n%%\n\n%%\nEditorial hold');
+ expect(body.text.match(/The narrator and wording are not verified\./g)).toHaveLength(1);
+ expect(body.text).toContain('Next check: Compare the exact flagged claim with https://sunnah.com/bukhari:1.');
+ expect(undo(body.text,body.ledger)).toBe(e.body);
+ expect(undo(draft.fields.footnotes.text,draft.fields.footnotes.ledger)).toBe(e.footnotes);
+ const $=require('cheerio').load(require('../lib/ContentMarkdown').render(body.text+'\n\n'+draft.fields.footnotes.text));
+ expect($.text()).not.toMatch(/Editorial hold|wording are not verified|Next check/);
+ expect($('.footnote-ref')).toHaveLength(1);
+ expect($('.footnotes')).toHaveLength(1);
+ expect(draft.reviewStatus).toBe('in-review');
+});
