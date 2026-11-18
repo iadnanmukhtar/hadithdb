@@ -29,7 +29,10 @@
         page.subtitle_en = 'Search Results';
         page.subtitle = '';
     } else if (results.length > 0 && typeof book !== 'undefined') {
-        page.canonical = `/${book.alias}:${results[0].num}`;
+        var canonicalReference = results[0].actual
+          ? (results[0].ref_ref || `${results[0].book_alias_ref}:${results[0].num_ref}`)
+          : `${book.alias}:${results[0].num}`;
+        page.canonical = `/${canonicalReference}`;
         var hadithHeadingTitle = (results[0].en && results[0].en.title) || results[0].title_en
           || (results[0].section && (results[0].section.title_en || results[0].section.h2_title_en))
           || results[0].h2_title_en

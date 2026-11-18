@@ -78,3 +78,19 @@ test.each(['en', 'ar'])('renders both virtual and source references in %s', lang
   expect(html).toContain(lang === 'en' ? '>100</span>' : '>١٠٠</span>');
   expect(html).toContain(lang === 'en' ? 'muslim:2664' : 'مسلم:٢٦٦٤');
 });
+
+test.each([true, false])('detail canonical uses the original hadith (virtual=%s), preserving navigation', virtual => {
+  const ejs = require('ejs');
+  const Utils = require('../lib/Utils');
+  const source = fs.readFileSync('views/search.ejs', 'utf8');
+  const template = source.slice(0, source.indexOf("<%- include('sub-views/head.ejs'"));
+  const item = virtual ? new Item({ ...row, single: true, ref_ref: 'muslim:2664', prev_ref: 'riyad:99', next_ref: 'riyad:101' })
+    : new Item({ hId: 999, book_alias: 'muslim', num: '2664', single: true, prev_ref: 'muslim:2663', next_ref: 'muslim:2665' });
+  const itemBook = { alias: virtual ? 'riyad' : 'muslim', shortName_en: 'Collection' };
+  const page = JSON.parse(ejs.render(template + '<%- JSON.stringify(page) %>', {
+    global: { settings: { site: {} } }, q: '', req: {}, results: [item], book: itemBook, utils: Utils
+  }).replace(/^[\s\S]*?<head>\s*/, '').trim());
+  expect(page.canonical).toBe('/muslim:2664');
+  expect(page.prev).toBe(virtual ? '/riyad:99' : '/muslim:2663');
+  expect(page.next).toBe(virtual ? '/riyad:101' : '/muslim:2665');
+});
