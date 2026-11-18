@@ -170,3 +170,14 @@ test.each(['yqsirah', 'ibnhisham', 'history'])('%s footnotes retain independent 
   expect(footnotes.find('.footnote-backref')).toHaveLength(2);
  }
 });
+
+test('Sirah passage video previews follow the body and preserve the editable source', () => {
+ const body = 'Introduction [Watch lecture](https://youtu.be/dQw4w9WgXcQ?t=60).\n\nFinal paragraph.';
+ for (const editMode of [false, true]) {
+  const $ = render({ book_alias: 'yqsirah', num: '1', ref: 'yqsirah:1', body: '', body_en: body }, true, editMode);
+  const content = $('.hadith-body-content');
+  expect(content.children().last().hasClass('markdown-video-previews')).toBe(true);
+  expect(content.find('.markdown-video-preview')).toHaveLength(1);
+  if (editMode) expect(content.attr('data-markdown-source')).toBe(body);
+ }
+});

@@ -1,4 +1,22 @@
 @font-face { font-family: Hafs; font-style: normal; src: url('/static/fonts/kd-hafs.woff2'); }
+.markdown-video-previews { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; margin-block: 1.5rem; }
+.markdown-video-preview { display: grid; grid-template-columns: minmax(0, 28%) minmax(0, 1fr); align-items: start; gap: 1rem; width: 100%; text-decoration: none; font-family: var(--bs-font-sans-serif, system-ui, sans-serif); text-align: start; direction: ltr; }
+:is(.notebook-markdown, .content-markdown) a.markdown-video-preview { color: inherit; text-decoration: none; }
+.markdown-video-thumbnail { display: grid; place-items: center; position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: .65rem; background: #20242a; color: white; overflow: hidden; }
+.markdown-video-thumbnail img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
+.markdown-video-play { position: relative; padding: .2rem .9rem; border-radius: .6rem; background: #000b; font-size: 1.5rem; }
+.markdown-video-thumbnail img + .markdown-video-play { display: none; }
+.markdown-video-copy { display: grid; gap: .35rem; min-width: 0; padding-block: .05rem; line-height: 1.4; }
+.markdown-video-copy strong { font-size: 1.05rem; font-weight: 650; }
+.markdown-video-description { font-size: .95rem; white-space: pre-line; }
+.markdown-video-copy small { display: block; color: var(--bs-secondary-color, #687078); font-size: .9rem; }
+.markdown-video-preview:hover .markdown-video-copy strong { text-decoration: underline; text-underline-offset: .15em; }
+.markdown-video-preview:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+@media (max-width: 575px) {
+  .markdown-video-preview { grid-template-columns: minmax(0, 38%) minmax(0, 1fr); gap: .7rem; }
+  .markdown-video-copy strong { font-size: .95rem; }
+  .markdown-video-copy small { font-size: .8rem; }
+}
 @font-face { font-family: QuranV1; font-style: normal; font-weight: 400; src: url('/static/fonts/DigitalKhattV1.otf'); }
 :is(.notebook-markdown, .content-markdown) { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
 :is(.notebook-markdown, .content-markdown) a { color: var(--note-link, #0d6efd); }
