@@ -84,6 +84,12 @@
 	function plainText(text) {
 		return utils.emptyIfNull(text).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
 	}
+	function hasSearchLanguageContent(code) {
+		return ['body', 'text', 'chain', 'footnote'].some(field => plainText((i[code] || {})[field]));
+	}
+	const singleLanguageSearch = !!searchResult && !isQuranItem && !site.editMode
+		&& hasSearchLanguageContent('en') !== hasSearchLanguageContent('ar');
+	const showSearchLanguage = !singleLanguageSearch || hasSearchLanguageContent(lang);
 	function bilingualLabel(english, arabic) {
 		return [english, arabic].filter(Boolean).join(' — ');
 	}
@@ -182,7 +188,8 @@
 	})();
 %>
 
-<section class="col-md-6 col-sm-12 h<%= contentTranslationClass %>" lang="<%=lang%>" data-reader-language-column="<%= lang === 'ar' ? 'arabic' : 'english' %>"<%- contentTranslationAttrs %>>
+<% if (showSearchLanguage) { %>
+<section class="<%= singleLanguageSearch ? 'col-12' : 'col-md-6 col-sm-12' %> h<%= contentTranslationClass %>" lang="<%=lang%>" data-reader-language-column="<%= lang === 'ar' ? 'arabic' : 'english' %>"<%- contentTranslationAttrs %>>
 
 	<%# Chain  ............................................................. %>
 	<section lang="<%=lang%>"<%- contentTranslationClass ? ` class="${contentTranslationClass.trim()}"` : '' %><%- contentTranslationAttrs %>>
@@ -470,3 +477,4 @@
 	<% } %>
 	
 </section>
+<% } %>
