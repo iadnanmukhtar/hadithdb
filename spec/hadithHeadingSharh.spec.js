@@ -43,11 +43,11 @@ describe('Hadith heading and virtual-book sharh', () => {
 		expect(css).toMatch(/\.hadith-sharh-column:lang\(en\) \.hadith-sharh-body,\s*\.hadith-sharh-column:lang\(en\) \.hadith-sharh-more \{ font-size: calc\(\.81rem \* var\(--content-font-scale\)\) !important; \}/);
 	});
 
-	test('reinitializes independent More and Less controls in appended reader sections', () => {
+	test('reinitializes paired More and Less controls in appended reader sections', () => {
 		const script = fs.readFileSync(path.join(__dirname, '../public/static/js/script.js'), 'utf8');
 		expect(script).toContain("var wrap = body.closest('.hadith-sharh-collapse-wrap');");
-		expect(script).toContain("body.classList.toggle('is-expanded', expanded);");
-		expect(script).toContain("button.textContent = expanded ? lessLabel : moreLabel;");
+		expect(script).toContain("item.classList.toggle('is-expanded', expanded);");
+		expect(script).toContain("var entry = body.closest('.hadith-sharh-entry') || wrap;");
 		expect(script.match(/initHadithSharhDisclosures\(chunk\)/g)).toHaveLength(2);
 	});
 

@@ -7,7 +7,9 @@
     var requestPath = req && req.originalUrl ? req.originalUrl.split('?')[0] : (req && req.path ? req.path : '');
     var pageMenu = page && page.menu ? page.menu : '';
     var pageBook = page && page.context ? page.context.book : null;
-    var pageQuranCommentaryBook = page && page.context ? page.context.quranCommentaryBook : null;
+    var searchContextBook = locals.sharhBook || (pageMenu === 'Sharh' && locals.book) || pageBook;
+    var pageQuranCommentaryBook = (page && page.context ? page.context.quranCommentaryBook : null)
+      || (pageBook && ['tafsir', 'trans'].includes(pageBook.type) ? pageBook : null);
     var isQuranArea = req && req.quranArea === true
       || requestPath === '/quran'
       || requestPath.indexOf('/quran/') === 0
@@ -43,11 +45,15 @@
     var quranSearchContext = quranSearchTafsirBook
       ? 'tafsir'
       : (isQuranStudyArea ? 'study' : (quranSearchCommentaryBook ? 'commentary' : 'quran'));
-    var hadithSearchBookAlias = requestPath !== '/' && pageBook && pageBook.alias !== 'quran'
-      && (pageBook.type || pageBook.book_type || pageBook.book_model || 'hadith') === 'hadith'
-      ? pageBook.alias
+    var hadithSearchBookAlias = requestPath !== '/' && searchContextBook && searchContextBook.alias !== 'quran'
+      && ['hadith', 'sharh', 'sirah', 'history'].includes(searchContextBook.type || searchContextBook.book_type || searchContextBook.book_model || 'hadith')
+      ? searchContextBook.alias
       : '';
     var isSearchResultsContext = page && page.context && page.context.fromSearch === true;
+    var contextualSearchBook = !isSearchResultsContext ? (quranSearchCommentaryBook || searchContextBook) : null;
+    var contextualSearchBookAlias = contextualSearchBook ? contextualSearchBook.alias : '';
+    var contextualSearchBookName = contextualSearchBook ? (contextualSearchBook.shortName_en || contextualSearchBook.name_en || contextualSearchBook.shortName || contextualSearchBook.alias) : '';
+    var headerSearchPlaceholder = contextualSearchBookName ? 'Search within ' + contextualSearchBookName : 'Search the library';
     var headerSearchTerm = isSearchResultsContext && req && req.query && req.query.q
       ? req.query.q.toString()
       : '';
@@ -232,7 +238,9 @@
     <!--hadithdb-cache:left-rail:end-->
 
     <%- include('global_search_dialog.ejs', {
-      initialSearchMode: isQuranArea ? 'quran' : 'hadith',
+      initialSearchMode: isQuranArea || quranSearchCommentaryBook ? 'quran' : 'hadith',
+      contextualSearchBookAlias: contextualSearchBookAlias,
+      contextualSearchBookName: contextualSearchBookName,
       hadithSearchAction: commandHadithSearchAction,
       quranSearchAction: commandQuranSearchAction,
       quranSearchReturnMode: quranSearchReturnMode,
@@ -283,7 +291,7 @@
   <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
     <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith, Sharh, Tafsir, and Quran (Command or Control K)">
       <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-      <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="Search the library" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || 'Search the library' %></span>
+      <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="<%= headerSearchPlaceholder %>" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || headerSearchPlaceholder %></span>
       <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
     </button>
   </div>

@@ -59,6 +59,20 @@ function render(selectedHadithAliases, overrides = {}) {
 }
 
 describe('global search dialog', () => {
+	test.each(['tafsir', 'trans'])('limits contextual %s search to the viewed book', async kind => {
+		const book = { alias: 'test-book', source: 'local', hidden: 0, shortName_en: 'Test Book' };
+		const html = await render([], {
+			initialSearchMode: 'quran', contextualSearchBookAlias: book.alias,
+			contextualSearchBookName: book.shortName_en,
+			quranSearchCommentaryAliases: [book.alias],
+			quranSearchTafsirs: kind === 'tafsir' ? [book] : [],
+			quranSearchTranslations: kind === 'trans' ? [book] : []
+		});
+		expect(html).toContain('Search within Test Book');
+		expect(html).toContain('name="tafsir" value="test-book" checked');
+		expect(html).not.toContain('name="b" value="quran" checked');
+	});
+
 	test('General leaves all filters unselected without context', async () => {
 		const html = await render([]);
 		expect(html).toContain('command-search-mode-label">General</span>');

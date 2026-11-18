@@ -767,7 +767,7 @@
                     </td>
                     <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
                     <% } else { %>
-					<td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></td>
+					<td><span class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></span></td>
                     <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>
                     <% } %>
                   </tr>
@@ -820,6 +820,7 @@
         </div>
 
         <h2 class="fs-4 mt-3">Chapters Headings</h2>
+        <%- include('sub-views/book_toc_editor.ejs', { site, book }); %>
 		<% if (hadithIntroductionAdminHref && !hadithIntroductionHref) { %>
 		<p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= hadithIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
 		<% } %>
@@ -846,6 +847,7 @@
           toc[i].h2 = formatHeadingNumber(toc[i].h2);
           var title_en = truncateTitle(toc[i].title_en, 75);
           var title = truncateTitle(toc[i].title, 150);
+          var hasArabicTitle = Boolean(displayName(toc[i].title));
           var sections = (Array.isArray(toc[i].sections) ? toc[i].sections : []).filter(function (section) {
             return !hadithIntroductionArticles.some(function (article) { return String(article.id) === String(section.id); });
           });
@@ -853,7 +855,7 @@
           var hasSections = sections.length > 0;
           var chapterRowId = `toc-chapter-${toc[i].id || i}`;
           %>
-            <tr class="chapter" data-toc-chapter="<%= chapterRowId %>" data-toc-heading-target data-toc-heading-key="<%= tocHeadingRailKeys.get(toc[i]) %>">
+            <tr class="chapter" data-toc-edit-id="<%= toc[i].id %>" data-toc-edit-level="1" data-toc-edit-h1="<%= toc[i].h1 %>" data-toc-chapter="<%= chapterRowId %>" data-toc-heading-target data-toc-heading-key="<%= tocHeadingRailKeys.get(toc[i]) %>">
               <% if (showTocStartNumbers) { %>
               <td><%- toc[i].start %></td>
               <% } %>
@@ -868,15 +870,15 @@
                 C<%- toc[i].h1 %>
               </td>
               <% if (toc[i].start) { %>
-              <td>
+              <td colspan="<%= hasArabicTitle ? 1 : 2 %>">
                 <a href="<%= quranTocHref(toc[i]) %>" class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en || 'Chapter' %></a>
               </td>
-              <td lang="ar"><a href="<%= quranTocHref(toc[i]) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td>
+              <% if (hasArabicTitle) { %><td lang="ar"><a href="<%= quranTocHref(toc[i]) %>" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></a></td><% } %>
               <% } else { %>
-              <td>
+              <td colspan="<%= hasArabicTitle ? 1 : 2 %>">
                 <span class="_e" data-id="<%=toc[i].id%>" data-prop="toc.title_en" data-arabizi="true"><%- title_en %></span>
               </td>
-              <td lang="ar" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td>
+              <% if (hasArabicTitle) { %><td lang="ar" class="_e<%= book.alias === 'quran' ? ' quran-surah-name' : '' %>" data-id="<%=toc[i].id%>" data-prop="toc.title"><%- title %></td><% } %>
               <% } %>
             </tr>
             <% for (var sectionIndex = 0; sectionIndex < sections.length; sectionIndex++) {
@@ -885,20 +887,21 @@
               section.h2 = formatHeadingNumber(section.h2);
               var sectionTitleEn = truncateTitle(section.title_en, 75);
               var sectionTitle = truncateTitle(section.title, 150);
+              var sectionHasArabicTitle = Boolean(displayName(section.title));
             %>
-            <tr class="title toc-section-row<%= Number(section.level) === 3 ? ' toc-subsection-row' : '' %> d-none" data-toc-parent="<%= chapterRowId %>" data-toc-level="<%= section.level %>">
+            <tr data-toc-edit-id="<%= section.id %>" data-toc-edit-level="<%= section.level %>" data-toc-edit-h1="<%= section.h1 %>" data-toc-edit-h2="<%= section.h2 %>" class="title toc-section-row<%= Number(section.level) === 3 ? ' toc-subsection-row' : '' %> d-none" data-toc-parent="<%= chapterRowId %>" data-toc-level="<%= section.level %>">
               <% if (showTocStartNumbers) { %>
               <td><%- section.start %></td>
               <% } %>
               <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
               <% if (section.path) { %>
-              <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>">
+              <td colspan="<%= sectionHasArabicTitle ? 1 : 2 %>" class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>">
 				<a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a><span data-note-key="<%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? `tafsir-heading:${quranCommentaryBookSlug}:${section.h1}.${section.h2}` : `heading:${section.id}` %>" data-note-title="<%= (quranCommentaryBookLabel || book.shortName_en) + ' — ' + (section.title_en || section.title || 'Passage') %>" data-note-url="<%= quranTocHref(section) %>"></span>
               </td>
-              <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
+              <% if (sectionHasArabicTitle) { %><td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td><% } %>
               <% } else { %>
-			  <td class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></td>
-              <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>
+			  <td colspan="<%= sectionHasArabicTitle ? 1 : 2 %>"><span class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></span></td>
+              <% if (sectionHasArabicTitle) { %><td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td><% } %>
               <% } %>
             </tr>
             <% }

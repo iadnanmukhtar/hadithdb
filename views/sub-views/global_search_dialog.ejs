@@ -1,4 +1,7 @@
 <%
+  var contextBookAlias = typeof contextualSearchBookAlias !== 'undefined' ? contextualSearchBookAlias : '';
+  var contextBookName = typeof contextualSearchBookName !== 'undefined' ? contextualSearchBookName : '';
+  var contextPlaceholder = contextBookName ? 'Search within ' + contextBookName : '';
   var commandHadithBooks = (hadithSearchBooks || []).filter(function (book) {
     return book
       && Number(book.hidden) === 0
@@ -33,17 +36,18 @@
   var selectedCommandQuranBookFilters = Array.isArray(quranSearchBookFilters) ? quranSearchBookFilters : [];
   var selectedCommandCommentaryAliases = Array.isArray(quranSearchCommentaryAliases) ? quranSearchCommentaryAliases : [];
   var hasCommandSpecificCommentary = selectedCommandCommentaryAliases.length > 0;
-  var commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran') || (initialSearchMode === 'quran' && !isSearchResultsContext);
+  var commandQuranTextSelected = selectedCommandQuranBookFilters.includes('quran') || (initialSearchMode === 'quran' && !isSearchResultsContext && (!contextBookAlias || contextBookAlias === 'quran'));
   var commandAllTafsirSelected = !hasCommandSpecificCommentary && selectedCommandQuranBookFilters.some(function (alias) { return alias === 'tafsir' || alias === 'commentaries'; });
   var commandAllTranslationsSelected = selectedCommandQuranBookFilters.some(function (alias) { return alias === 'translation' || alias === 'translations'; });
 %>
 <dialog id="global-search-dialog" class="command-search-dialog" data-command-search-dialog data-initial-search-mode="<%= initialSearchMode %>"
   data-quran-search-context="<%= quranSearchContext || 'quran' %>" data-quran-commentary-alias="<%= quranSearchCommentaryAlias || '' %>"
+  data-context-book-alias="<%= contextBookAlias %>" data-context-book-name="<%= contextBookName %>"
   data-command-search-results-context="<%= isSearchResultsContext ? '1' : '0' %>">
   <div class="command-search-shell">
     <div class="command-search-heading">
       <div>
-        <span class="command-search-kicker">Search the library</span>
+        <span class="command-search-kicker" data-command-search-kicker><%= contextPlaceholder || 'Search the library' %></span>
         <h2 class="command-search-title">What are you looking for?</h2>
       </div>
       <div class="command-search-heading-actions">

@@ -194,6 +194,24 @@ main .intro.content-markdown:lang(en) {
   font-size: calc(.81rem * var(--content-font-scale));
 }
 
+/* Inline explanations need a quieter hierarchy than full-page readers. */
+main .hadith-sharh-body.content-markdown:lang(ar) {
+  font-size: calc(.95rem * var(--content-font-scale)) !important;
+}
+main .hadith-sharh-body.content-markdown:lang(en) {
+  font-size: calc(.78rem * var(--content-font-scale)) !important;
+}
+.hadith-sharh-body.content-markdown :is(h1, h2, h3, h4, h5, h6) {
+  margin-block: 1em .35em;
+  line-height: 1.4;
+}
+.hadith-sharh-body.content-markdown h1 { font-size: 1.2em !important; }
+.hadith-sharh-body.content-markdown h2 { font-size: 1.14em !important; }
+.hadith-sharh-body.content-markdown h3 { font-size: 1.09em !important; }
+.hadith-sharh-body.content-markdown h4 { font-size: 1.05em !important; }
+.hadith-sharh-body.content-markdown h5 { font-size: 1.02em !important; }
+.hadith-sharh-body.content-markdown h6 { font-size: 1em !important; }
+
 /* Bilingual tafsir can be mounted inside an English-language Markdown root.
    Size its actual language columns, not just that outer root. */
 .quran-tafsir-local-pair > [lang="ar"] {

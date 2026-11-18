@@ -245,7 +245,7 @@ test.each([390,1100])('full-page commentary and narrative readers share hadith s
         expect(sizes.tafsir).toBeCloseTo(sizes.hadith);
         expect(sizes.sharh).toBeCloseTo(sizes.hadith);
         expect(sizes.intro).toBeLessThan(sizes.hadith);
-        expect(sizes.inline).toBeCloseTo(sizes.intro);
+        expect(sizes.inline).toBeLessThan(sizes.intro);
       }
     }
     await page.screenshot({path:`/tmp/reader-surfaces-${width}.png`});

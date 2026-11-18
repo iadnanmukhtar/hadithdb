@@ -1463,6 +1463,15 @@ function initCommandSearch() {
 	}
 
 	function renderSelectedFilters() {
+		var selectedBooks = Array.from(dialog.querySelectorAll('[data-command-filter]:checked')).filter(function (field) { return !field.disabled; });
+		var contextual = selectedBooks.length === 1 && selectedBooks[0].value === dialog.dataset.contextBookAlias;
+		var placeholder = contextual && dialog.dataset.contextBookName ? 'Search within ' + dialog.dataset.contextBookName : 'Search the library';
+		input.placeholder = placeholder;
+		input.setAttribute('aria-label', placeholder);
+		var kicker = dialog.querySelector('[data-command-search-kicker]');
+		if (kicker) kicker.textContent = placeholder;
+		document.querySelectorAll('[data-command-search-trigger-label]').forEach(function (label) { label.dataset.emptyLabel = placeholder; });
+		updateCommandSearchPresentation();
 		var panel = activePanel();
 		var selected = dialog.querySelector('[data-command-search-selected]');
 		var pills = dialog.querySelector('[data-command-search-pills]');
@@ -15770,13 +15779,15 @@ function initHadithSharhDisclosures(root) {
 		var button = wrap && wrap.querySelector('[data-hadith-sharh-expand]');
 		if (!button)
 			return;
-		var moreLabel = button.dataset.hadithSharhMoreLabel || button.textContent.trim();
-		var lessLabel = button.dataset.hadithSharhLessLabel || 'Less...';
+		var entry = body.closest('.hadith-sharh-entry') || wrap;
+		var bodies = entry.querySelectorAll('[data-hadith-sharh-collapsible]');
+		button.setAttribute('aria-controls', Array.from(bodies).map(function (item) { return item.id; }).filter(Boolean).join(' '));
 		var updateOverflow = function () {
 			if (body.classList.contains('is-expanded'))
 				return;
 			body.classList.remove('hadith-sharh-no-overflow');
 			requestAnimationFrame(function () {
+				if (body.classList.contains('is-expanded')) return;
 				var overflows = body.scrollHeight > body.clientHeight + 1;
 				body.classList.toggle('hadith-sharh-no-overflow', !overflows);
 				button.hidden = !overflows;
@@ -15784,11 +15795,21 @@ function initHadithSharhDisclosures(root) {
 		};
 		button.addEventListener('click', function () {
 			var expanded = !body.classList.contains('is-expanded');
-			body.classList.toggle('is-expanded', expanded);
-			body.classList.remove('hadith-sharh-no-overflow');
-			button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
-			button.textContent = expanded ? lessLabel : moreLabel;
-			button.hidden = false;
+			bodies.forEach(function (item) {
+				var control = item.closest('.hadith-sharh-collapse-wrap').querySelector('[data-hadith-sharh-expand]');
+				item.classList.toggle('is-expanded', expanded);
+				item.classList.remove('hadith-sharh-no-overflow');
+				if (!control) return;
+				control.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+				control.textContent = expanded ? (control.dataset.hadithSharhLessLabel || 'Less...') : control.dataset.hadithSharhMoreLabel;
+				control.hidden = false;
+				if (!expanded) requestAnimationFrame(function () {
+					if (item.classList.contains('is-expanded')) return;
+					var overflows = item.scrollHeight > item.clientHeight + 1;
+					item.classList.toggle('hadith-sharh-no-overflow', !overflows);
+					control.hidden = !overflows;
+				});
+			});
 		});
 		updateOverflow();
 		if (document.fonts && document.fonts.ready)

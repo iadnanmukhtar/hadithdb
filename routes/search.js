@@ -1683,8 +1683,6 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
     var sirahNumber = await SirahReader.sourceReference(book, req.params.num);
     if (sirahNumber)
       return res.redirect(301, `/${book.alias}:${sirahNumber}${appendOriginalQuery(req)}`);
-    if (await redirectVirtualHadithReference(book, req.params.num, req, res))
-      return;
     if (!book) {
       var surah = findSurah(req.params.bookAlias);
       if (surah) {
@@ -1699,7 +1697,9 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
       return next(createError(404, `Book '${req.params.bookAlias}' does not exist`));
     }
   }
-  var results = await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
+  var results = book && Number(book.virtual) === 1
+    ? await require('../lib/VirtualHadithReference').getReference(book, req.params.num)
+    : await Index.docsFromKeyValue(Item.INDEX, { ref: `${req.params.bookAlias}:${req.params.num}` });
   if (results.length == 0) {
     const canonicalReference = req.params.bookAlias !== 'quran'
       ? await findNumberedHadithFallback(req.params.bookAlias, req.params.num)
@@ -1711,6 +1711,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
 
   results = results.map(item => new Item(item));
   if (req.params.bookAlias !== 'quran'
+    && Number(book.virtual) !== 1
     && Books.referenceView(book) === 'section'
     && !('json' in req.query)
     && !('tsv' in req.query)
@@ -2408,40 +2409,6 @@ async function getQuranSectionSubsections(section, options = {}) {
   return section.quranSubsections;
 }
 
-async function redirectVirtualHadithReference(book, num, req, res) {
-  if (!book || book.virtual != 1)
-    return false;
-
-  var candidateNums = [num];
-  if (/^\d+(?:\.\d+)?$/.test(num))
-    candidateNums.push(`${num}a`);
-  else if (/^\d+(?:\.\d+)?[a-z]$/i.test(num))
-    candidateNums.push(num.replace(/[a-z]$/i, ''));
-  candidateNums = Array.from(new Set(candidateNums));
-
-  var conditions = candidateNums.map(candidate => `hv.num='${Utils.escSQL(candidate)}'`);
-  var num0 = Number(num);
-  if (Number.isFinite(num0))
-    conditions.push(`hv.num0=${num0}`);
-  var orderConditions = candidateNums.map((candidate, idx) => `WHEN hv.num='${Utils.escSQL(candidate)}' THEN ${idx}`);
-
-  var rows = await global.query(`
-	SELECT b.alias AS book_alias, h.num
-    FROM hadiths_virtual hv
-    JOIN hadiths h ON h.id = hv.hadithId
-    JOIN books b ON b.id = h.bookId
-    WHERE hv.bookId=${book.id}
-      AND (${conditions.join(' OR ')})
-    ORDER BY CASE ${orderConditions.join(' ')} ELSE ${candidateNums.length} END, hv.num0, hv.id
-    LIMIT 1`);
-  if (rows.length < 1)
-    return false;
-
-  var queryIndex = req.originalUrl.indexOf('?');
-  var queryString = queryIndex >= 0 ? req.originalUrl.substring(queryIndex) : '';
-  res.redirect(302, `/${rows[0].book_alias}:${rows[0].num}${queryString}`);
-  return true;
-}
 
 // RANDOM BOOK TOC ITEM FRAGMENT
 router.get('/:bookAlias/random', async function (req, res, next) {

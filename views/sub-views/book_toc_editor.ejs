@@ -1,0 +1,4 @@
+<% if (site.editMode && book.alias !== 'quran' && ['hadith','sirah'].includes(book.type)) { %>
+<link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/book-toc-editor.css') %>">
+<script src="<%= utils.staticAssetUrl('/static/js/book-toc-editor.js') %>" data-book-toc-editor data-book-id="<%= book.id %>" data-virtual="<%= Number(book.virtual) === 1 ? '1' : '0' %>" defer></script>
+<% } %>

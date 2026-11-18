@@ -66,6 +66,47 @@ async function requireAdmin(req, res, next) {
   next();
 }
 
+// TOC structure operations use a single locked transaction, separate from text edits.
+router.get('/book-toc/:bookId', requireAdmin, async function (req, res, next) {
+  res.set('Cache-Control', 'no-store');
+  try { res.json(await require('../lib/BookTocEditing').list(req.params.bookId)); }
+  catch (error) { res.status(error.status || 500).json({ message: error.expose ? error.message : 'Unable to load the book TOC' }); }
+});
+router.post('/book-toc/:bookId', requireAdmin, async function (req, res, next) {
+  const stopKeepalive = require('../lib/UpdateKeepalive')(req, res);
+  let saved;
+  try {
+    saved = await require('../lib/BookTocEditing').mutate(req.params.bookId, req.body, req.user.uid);
+    await refreshBookTocChange(saved);
+    res.json({ code: 200, message: 'TOC saved' });
+  } catch (error) {
+    if (saved) {
+      debug.error(`TOC saved but refresh failed for book ${saved.book.id}: ${error.message}`);
+      res.json({ code: 200, refreshPending: true, message: 'Saved, but reader/search refresh is pending. Reload before making another change.' });
+    } else res.status(error.status || 500).json({ message: error.expose ? error.message : 'Unable to save the book TOC' });
+  } finally { stopKeepalive(); }
+});
+async function refreshBookTocChange(saved) {
+  const book = saved.book;
+  await Books.touchBookContentLastmodById(book.id);
+  if (Number(book.virtual) === 1) await VirtualHadithSnapshot.refreshBook(book.id);
+  if (saved.deletedId) await Index.delete(Heading.INDEX, saved.deletedId);
+  await reindexSearchScope(`book_id=${Number(book.id)}`, { refresh: true, strict: true });
+  if (Number(book.virtual) !== 1) {
+    const ids = saved.hadithIds;
+    if (ids.length) {
+      const virtualBooks = await global.query(`SELECT DISTINCT bookId FROM hadiths_virtual WHERE hadithId IN (${ids.map(Number).join(',')})`);
+      for (const row of virtualBooks) await VirtualHadithSnapshot.refreshBook(row.bookId);
+    }
+  }
+  await require('../lib/SharhNavigationIndex').syncSourceBooks([book.id]);
+  invalidateBookChapterCache({ book_id: book.id });
+  await flushBookCaches(new Set([book.alias]));
+  await Utils.flushBookDiskCache(book.alias, { strict: true });
+  await Library.reloadBooks();
+  await RuntimeRefresh.publish({ invalidateLocal: true });
+}
+
 router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
   const stopKeepalive = require('../lib/UpdateKeepalive')(req, res);
   var userId = req.user.uid;
@@ -143,34 +184,17 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         await Hadith.a_reinit();
 
       } else if (col == 'moveup' || col == 'movedn') {
-        var curr = (await global.query(`SELECT * from hadiths WHERE id=${ids[0]}`))[0];
-        if (curr) {
-          var prev = (await global.query(`SELECT * from hadiths WHERE bookId=${curr.bookId} AND ordinal < ${curr.ordinal} ORDER BY ordinal DESC LIMIT 1`))[0];
-          var next = (await global.query(`SELECT * from hadiths WHERE bookId=${curr.bookId} AND ordinal > ${curr.ordinal} ORDER BY ordinal ASC LIMIT 1`))[0];
-          var repl = null;
-          if (col == 'moveup')
-            repl = prev;
-          else if (col == 'movedn')
-            repl = next;
-          if (repl != null) {
-            result = await global.query(`UPDATE hadiths 
-            SET
-              tocId=${repl.tocId},
-              h1=${repl.h1},
-              h2=${repl.h2},
-              h3=${repl.h3}
-            WHERE id=${curr.id} AND bookId=${curr.bookId}`);
-            await global.query(`SET @n:=0`);
-            await global.query(`UPDATE hadiths SET numInChapter=(@n:=@n+1)
-            WHERE bookId=${curr.bookId} AND h1=${repl.h1} ORDER by bookId, h1, ordinal`);
-            await Books.touchBookContentLastmodById(curr.bookId);
-            await reindexChapterSearchScope(curr.bookId, curr.h1);
-            if (Number(curr.h1) !== Number(repl.h1))
-              await reindexChapterSearchScope(curr.bookId, repl.h1);
-          } else
-            throw new Error("Invalid command");
-        } else
-          throw new Error("Hadith not found");
+        const tocEditor = require('../lib/BookTocEditing');
+        if (!/^[1-9]\d*$/.test(String(ids[0]))) throw createError(400, 'Invalid item ID');
+        const [movingItem] = await global.query(`SELECT bookId FROM hadiths WHERE id=${Number(ids[0])}`);
+        if (!movingItem) throw createError(404, 'Item not found');
+        const tocState = await tocEditor.list(movingItem.bookId);
+        const moved = await tocEditor.mutate(movingItem.bookId, {
+          action: 'moveItem', id: ids[0], direction: col === 'moveup' ? 'up' : 'down', revision: tocState.revision
+        }, userId);
+        try { await refreshBookTocChange(moved); }
+        catch (error) { return res.json({ code: 200, refreshPending: true, message: 'Saved; reader refresh pending' }); }
+        return res.json({ code: 200, message: 'Item moved' });
 
       } else if (col === 'tocId') {
         var before = (await global.query(`SELECT * FROM hadiths WHERE id=${ids[0]}`))[0];

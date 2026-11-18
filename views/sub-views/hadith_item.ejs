@@ -219,7 +219,7 @@
 
 		<%# Virtual Num %>
 		<% if (i.book_virtual) { %>
-			(<span<% if (site.editMode) { %> class="_e" data-id="<%= i.id %>" data-prop="hadith_virtual.num"<% } %> title="Virtual Num"><%- (langData.num) ? `${langData.num}` : '' %></span>)
+			(<% if (i.single) { %><%= langData.book_shortName || i.book_alias %>:<% } %><span<% if (site.editMode) { %> class="_e" data-id="<%= i.id %>" data-prop="hadith_virtual.num"<% } %> title="Virtual Num"><%- (langData.num) ? `${langData.num}` : '' %></span>)
 		<% } %>
 
 		<%# Admin: Virtul Num 0%>

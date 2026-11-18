@@ -11,12 +11,12 @@ describe('Book.getChapters', () => {
     global.query = originalQuery;
   });
 
-  test('Sirah TOC includes H3 titles and stable passage starts under their H2 parent', async () => {
-    const search = jest.spyOn(Index, 'docsFromQueryFields')
+  test.each(['sirah','hadith'])('%s TOC includes H3 titles and stable passage starts under their H2 parent', async type => {
+    const search = jest.spyOn(Index, 'docsFromQueryFields').mockResolvedValue([])
       .mockResolvedValueOnce([{level:1,book_alias:'yqsirah',h1:11,h1_title_en:'Opposition'}])
       .mockResolvedValueOnce([{level:2,book_alias:'yqsirah',h1:11,h2:3,h2_title_en:'Proposing a Bargain',h2_start:'89',h2_count:4}])
       .mockResolvedValueOnce([{level:3,book_alias:'yqsirah',h1:11,h2:3,h3:1,h3_title_en:'The Phenomenon of Abu Talib',h3_start:'90',h3_count:1}]);
-    const chapters = await new Book({alias:'yqsirah',type:'sirah'}).getChapters();
+    const chapters = await new Book({alias:'yqsirah',type}).getChapters();
     const children = chapters[0].sections[0].subsections;
     expect(children).toHaveLength(1);
     expect(children[0]).toBeInstanceOf(Subsection);
@@ -28,7 +28,7 @@ describe('Book.getChapters', () => {
     global.query = jest.fn(() => {
       throw new Error('TOC heading rails must not query the DB');
     });
-    const search = jest.spyOn(Index, 'docsFromQueryFields')
+    const search = jest.spyOn(Index, 'docsFromQueryFields').mockResolvedValue([])
       .mockResolvedValueOnce([{
         ordinal: 1,
         level: 1,
@@ -51,10 +51,11 @@ describe('Book.getChapters', () => {
 
     expect(chapters).toHaveLength(1);
     expect(chapters[0].sections).toHaveLength(1);
-    expect(search).toHaveBeenCalledTimes(2);
+    expect(search).toHaveBeenCalledTimes(3);
     expect(search.mock.calls.map(call => [call[0], call[1].bool.filter[1], call[5]])).toEqual([
-      ['toc', { term: { level: 1 } }, 'h1, ordinal'],
-      ['toc', { term: { level: 2 } }, 'h1, h2, ordinal']
+      ['toc', { term: { level: 1 } }, 'ordinal, tId'],
+      ['toc', { term: { level: 2 } }, 'ordinal, tId'],
+      ['toc', { term: { level: 3 } }, 'ordinal, tId']
     ]);
     expect(global.query).not.toHaveBeenCalled();
   });
