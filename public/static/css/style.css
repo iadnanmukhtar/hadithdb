@@ -7622,6 +7622,20 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	font-style: inherit;
 }
 
+.hadith-also-found-headings {
+	font-size: var(--content-font-size);
+	color: var(--c-accent);
+}
+
+.hadith-also-found-headings > :lang(en) {
+	font-size: var(--content-size-meta);
+}
+
+.hadith-also-found-headings a {
+	color: var(--c-accent);
+	text-decoration: none;
+}
+
 .h:lang(en),
 .hadith-also-found-reference:lang(en),
 .intro:lang(en),

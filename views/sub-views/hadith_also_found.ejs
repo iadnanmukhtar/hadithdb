@@ -8,16 +8,19 @@
 				<div class="col-md-6 col-sm-12" lang="en" dir="ltr"><a class="hadith-also-found-reference fw-bold" href="<%= utils.urlFor(req, '/' + ref.referencePath) %>"><%= ref.book_alias %>:<%= ref.num %></a></div>
 				<% if (ref.book_shortName) { %><div class="col-md-6 col-sm-12 text-end" lang="ar" dir="rtl"><a class="hadith-also-found-reference fw-bold" href="<%= utils.urlFor(req, '/' + ref.referencePath) %>"><%= ref.book_shortName %>:<bdi><%= ref.num_ar %></bdi></a></div><% } %>
 			</div>
-			<div class="row small mt-1">
-				<div class="col-md-6 col-sm-12" lang="en">
-					<a href="<%= utils.urlFor(req, '/' + ref.book_alias + '/' + utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))) %>"><%= ref.h1_title_en || `Chapter ${utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))}` %></a>
-					<% if (ref.h2_title_en || Number(ref.h2)) { %><span aria-hidden="true"> › </span><a href="<%= utils.urlFor(req, '/' + ref.path) %>"><%= ref.h2_title_en || `Section ${utils.formatHadithHeadingNumber(String(ref.h2 ?? ''))}` %></a><% } %>
+			<div class="row mt-1 hadith-also-found-headings">
+				<% ['en', 'ar'].forEach(function (lang) {
+					const chapterTitle = lang === 'en' ? (ref.h1_title_en || `Chapter ${utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))}`) : ref.h1_title;
+					const sectionTitle = lang === 'en' ? (ref.h2_title_en || (Number(ref.h2) ? `Section ${utils.formatHadithHeadingNumber(String(ref.h2))}` : '')) : ref.h2_title;
+					if (!chapterTitle && !sectionTitle) return;
+				%>
+				<div class="col-md-6 col-sm-12<%= lang === 'ar' ? ' text-end' : '' %>" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
+					§
+					<% if (sectionTitle) { %><a href="<%= utils.urlFor(req, '/' + ref.path) %>" title="<%= sectionTitle %>"><%= utils.truncate(sectionTitle, 30, true) %></a><% } %>
+					<% if (sectionTitle && chapterTitle) { %><%= lang === 'en' ? 'in' : 'في' %><% } %>
+					<% if (chapterTitle) { %><a href="<%= utils.urlFor(req, '/' + ref.book_alias + '/' + utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))) %>" title="<%= chapterTitle %>"><%= utils.truncate(chapterTitle, 30, true) %></a><% } %>
 				</div>
-				<% if (ref.h1_title || ref.h2_title) { %><div class="col-md-6 col-sm-12 text-end" lang="ar" dir="rtl">
-					<% if (ref.h1_title) { %><a href="<%= utils.urlFor(req, '/' + ref.book_alias + '/' + utils.formatHadithHeadingNumber(String(ref.h1 ?? ''))) %>"><%= ref.h1_title %></a><% } %>
-					<% if (ref.h1_title && ref.h2_title) { %><span aria-hidden="true"> › </span><% } %>
-					<% if (ref.h2_title) { %><a href="<%= utils.urlFor(req, '/' + ref.path) %>"><%= ref.h2_title %></a><% } %>
-				</div><% } %>
+				<% }); %>
 			</div>
 		</li>
 		<% }); %>

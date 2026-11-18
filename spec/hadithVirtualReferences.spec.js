@@ -23,7 +23,7 @@ test('retains distinct numbers in the same alias section, excludes hidden books 
 test('renders only alias references and headings, with escaped text and no repeated matn', async () => {
     const html = await ejs.renderFile(path.join(__dirname, '../views/sub-views/hadith_also_found.ejs'), {
         i: { body: 'Do not repeat the hadith', virtualReferences: [{ book_alias: 'riyad', book_shortName: 'رياض', num_ar: '٢أ', num: '2a', h1: 0, h2: 0.01, h1_title_en: '<script>bad</script>', h2_title_en: 'Sincerity', h1_title: 'المقدمة', h2_title: 'الإخلاص', path: 'riyad/0/0.01', referencePath: 'riyad/0/0.01#2a' }] },
-        metadataBase: 'hadith-metadata-100', req: {}, utils: { ...Utils, formatHadithHeadingNumber: Utils.formatHadithHeadingNumber, urlFor: (_, url) => url }
+        metadataBase: 'hadith-metadata-100', req: {}, utils: { ...Utils, truncate: Utils.truncate, formatHadithHeadingNumber: Utils.formatHadithHeadingNumber, urlFor: (_, url) => url }
     });
     expect(html).toContain('riyad:2a');
     expect(html).toContain('رياض:<bdi>٢أ</bdi>');
