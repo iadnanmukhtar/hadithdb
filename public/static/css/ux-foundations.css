@@ -112,6 +112,17 @@
   height: 1.12rem;
   cursor: pointer;
 }
+.ux-fields .form-switch:has(> .form-check-label) {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  column-gap: .5rem;
+  padding-inline-start: 0;
+}
+.ux-fields .form-switch:has(> .form-check-label) > .form-check-input {
+  float: none;
+  margin: max(0px, calc((1lh - 1.12rem) / 2)) 0 0;
+}
 .ux-fields .form-switch .form-check-input:disabled { cursor: default; }
 .ux-fields .form-switch .form-check-input:checked {
   background-color: var(--ux-accent);
