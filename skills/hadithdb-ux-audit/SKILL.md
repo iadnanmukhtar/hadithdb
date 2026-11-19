@@ -5,7 +5,7 @@ description: Audit HadithDB pages during the UX makeover, compare repeated contr
 
 # HadithDB UX audit
 
-Start with the current page and the [component library](../../docs/design-system/library.html). The [audit atlas](../../docs/design-system/index.html) helps locate equivalents across routes. The library records accepted designs; its comparison pages also contain alternatives. Check which one was selected.
+Start with the current page and the [component library](../../docs/design-system/library.html). The [audit atlas](../../docs/design-system/index.html) helps locate equivalents across routes. The library records accepted designs. After selection, fold the chosen treatment into its existing entry, refresh affected specimens, and retire the comparison files and styles after checking their consumers. Keep original audit captures available for before-and-after review.
 
 ## Inspect two ways
 

@@ -5,18 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Component library · HadithDB</title>
   <link rel="stylesheet" href="../../public/static/css/ux-foundations.css">
+  <link rel="stylesheet" href="../../public/static/css/ivory.css">
   <link rel="stylesheet" href="library.css">
 </head>
-<body class="ux-system">
+<body class="ux-system" data-palette="ivory">
 <header><img src="../../public/static/img/logo2.svg" width="32" height="32" alt=""><strong>HadithDB</strong><a href="index.html">UX audit</a></header>
 <main>
   <h1>Component library</h1>
   <p class="intro">Settings and Community email preferences establish the first patterns for navigation, preferences and feedback. Each entry records a control in use and the behavior another page can reuse.</p>
-  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#choices">Choices</a><a href="#panels">Panels &amp; forms</a><a href="#control-options">Control options</a><a href="buttons.html">Button options</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
+  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#choices">Choices</a><a href="#panels">Panels &amp; forms</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
   <section id="foundations"><h2>Foundations</h2>
     <div class="grid">
       <article><h3>Interface type</h3><div class="type-sample">Reading &amp; listening</div><p>Source Sans 3 sets the interface rhythm. Page titles scale from 2 to 2.75 rem, group headings use 1.4 rem, and both use weight 650. Body text uses 1 rem with 1.5 line height. Use weight 600 for control labels.</p></article>
-      <article><h3>Color &amp; focus</h3><div class="palette"><span class="accent">Action</span><span class="text">Text</span><span class="muted">Summary</span><span class="inset">Inset</span></div><p>Ivory &amp; ink pairs a cream canvas with near-white reading and card surfaces. Use ink for text, blue for links and switches, and Midnight indigo for primary actions. Show a two-pixel accent outline on keyboard focus. <a href="palettes.html">Compare light palette options</a>.</p></article>
+      <article><h3>Color &amp; focus</h3><div class="palette"><span class="accent">Action</span><span class="text">Text</span><span class="muted">Summary</span><span class="inset">Inset</span></div><p>Ivory &amp; ink pairs a cream canvas with near-white reading and card surfaces. Use ink for text, blue for links and switches, and Midnight indigo for primary actions. Show a two-pixel accent outline on keyboard focus. <a href="../../public/static/css/ivory.css">Palette tokens</a>.</p></article>
     </div>
     <p>Load the <a href="../../public/static/css/ux-foundations.css">foundation stylesheet</a> and apply <code>ux-system</code> to the adopting page container. Its tokens inherit the active site theme. Quran specimens retain their script-specific fonts. Prose and Markdown typography will enter the library with the first finalized reading or authoring page.</p>
   </section>
@@ -31,13 +32,13 @@
       <article><h3>Script preview cards</h3><img src="settings/scripts.png" alt="Three radio cards showing the same ayah in Uthmani, Indo-Pak and Warsh"><p>Use one labeled radio group for an exclusive script choice. Each card pairs a name with the same referenced ayah in its own script and font. Preserve Arabic direction, marks, and line height. The entire card selects the option.</p></article>
       <article><h3>Appearance swatches</h3><img src="settings/themes.png" alt="Six labeled note themes showing paper and ink colors"><p>Show the actual foreground and background together. Each button exposes its theme name and pressed state. Keep the selected outline visible alongside the sample.</p></article>
       <article id="catalog-preferences"><h3>Catalog preferences</h3><img src="settings/catalog.png" alt="Translation cards with favorite hearts, switches and reorder handles"><p>Use a switch for inclusion, a heart for the preferred work, and a handle for ordering. Preserve protected entries and show the enabled count. Keep a single-language catalog flat. Offer “Enable all” when entries are disabled.</p><img src="settings/full-list.png" alt="Full view reciter rows with the name, description, favorite, and inclusion switch"><p>Tile and Full are two layouts of the same preferences. Full rows give the name and supporting detail more room. Keep the selected favorite, enabled state, and ordering when switching layouts.</p></article>
-      <article><h3>View selector</h3><img src="settings/view.png" alt="Tile and Full view buttons"><p>Set Tile and Full in a compact inset track. Give the selected segment a raised surface and accent text. Pair it with a borderless accent action for “Enable all”. Expose the active mode with <code>aria-pressed</code> and retain it after reload.</p></article>
+      <article><h3>View selector</h3><p>Set Tile and Full in a compact inset track. Give the selected segment a raised surface and accent text. Pair it with a borderless accent action for “Enable all”. Expose the active mode with <code>aria-pressed</code> and retain it after reload. See the <a href="#catalog-toolbar">rendered catalog toolbar</a>.</p></article>
     </div>
   </section>
   <section id="panels"><h2>Panels &amp; forms</h2>
     <p>These entries come from the expanded Settings panels. The shared CSS hooks live in the <a href="../../public/static/css/ux-foundations.css">foundation stylesheet</a>. Use them inside <code>ux-system</code> alongside the app’s Bootstrap form markup.</p>
     <div class="grid">
-      <article><h3>Panel header &amp; toolbar</h3><img src="settings/catalog-toolbar.png" alt="Reciter guidance beside Enable all and the Tile and Full selector"><p>Use <code>ux-panel-header</code> for guidance or a count alongside contextual actions. At 700 px and below, stack the actions beneath the description. Reading catalogs reuse the text action and inset selector. Email preferences uses the same header with a Midnight secondary link.</p></article>
+      <article id="catalog-toolbar"><h3>Panel header &amp; toolbar</h3><img src="settings/catalog-toolbar.png" alt="Reciter guidance beside Enable all and the Tile and Full selector"><p>Use <code>ux-panel-header</code> for guidance or a count alongside contextual actions. At 700 px and below, stack the actions beneath the description. Reading catalogs reuse the text action and inset selector. Email preferences uses the same header with a Midnight secondary link.</p></article>
       <article><h3>Nested disclosure</h3><img src="settings/language-disclosure.png" alt="English Tafsirs subsection with a trailing chevron"><p>Use a trailing chevron for both advanced fields and language groups. Advanced limits use native details. A catalog group uses a button with <code>aria-expanded</code> and <code>aria-controls</code> linked to its collapsible list. Keep a single-language catalog flat. See the <a href="#grouped-edits">advanced limits specimen</a>.</p></article>
       <article><h3>Field grid, labels &amp; units</h3><img src="settings/session.png" alt="Labeled numeric fields with a minutes suffix on the time budget"><p>Wrap the fields in <code>ux-fields</code>. Use <code>ux-field-grid</code> for related inputs and selects. Columns fit the available space and align controls below labels of different lengths. Number inputs, select menus, and unit suffixes share a 2.65 rem minimum height. Keep the unit visible next to its value.</p></article>
       <article><h3>Switches &amp; dependent settings</h3><p>Use the same Bootstrap switch inside <code>ux-fields</code> for catalog inclusion, Drive copies, and auto-recharge. The checked track uses the app’s dark accent blue. Label card switches with the item name and standalone switches with their effect. For a visible label, leave a 0.5 rem gap after the track and align wrapped lines under the first word.</p><p>Drive’s switch saves immediately. Auto-recharge groups its switch, threshold, and package under one Save action. Protected catalog entries keep their checked and disabled states. See <a href="#catalog-preferences">catalog preferences</a>.</p></article>
@@ -45,32 +46,10 @@
       <article><h3>Inset cards, balance &amp; activity</h3><img src="settings/payment-fields.png" alt="Points balance, purchase controls, auto-recharge fields, and a point activity entry"><p>Apply <code>ux-inset-card</code> to give a balance, scheduling group, or advanced disclosure the same surface and border. In billing, pair the balance with Buy, keep auto-recharge in a separate form group, and show recent point changes with amount, reason, and date. With an empty ledger, show “No point activity yet.”</p></article>
     </div>
   </section>
-  <section id="control-options"><h2>Control options</h2>
-    <p>Settings uses the inset selector and text action. Compare it with the two earlier alternatives using the same reciter preferences. Change the view, enable both reciters, or switch one off to try again.</p>
-    <div id="control-demos" class="grid"></div>
-    <template id="control-demo">
-      <article><h3></h3><p class="rationale"></p>
-        <div class="demo-panel">
-          <div class="demo-toolbar">
-            <button class="bulk" type="button">Enable all</button>
-            <div class="mode" role="group" aria-label="Reciter view">
-              <button type="button" data-mode="tile" aria-pressed="true">Tile</button>
-              <button type="button" data-mode="full" aria-pressed="false">Full</button>
-            </div>
-          </div>
-          <div class="reciters">
-            <label>Husari <input type="checkbox" role="switch" checked></label>
-            <label>Jalil <input type="checkbox" role="switch"></label>
-          </div>
-          <small role="status"></small>
-        </div>
-      </article>
-    </template>
-  </section>
   <section id="feedback"><h2>Actions &amp; feedback</h2>
     <div class="grid">
       <article id="action-hierarchy"><h3>Settings action hierarchy</h3><dl><dt>Midnight primary</dt><dd>Use the gradient for the main action in a task, such as saving a schedule, connecting Drive, buying points, or saving auto-recharge.</dd><dt>Midnight secondary</dt><dd>Use pale indigo for progress, timing personalization, email preferences, Drive import, and payment management.</dd><dt>Text and selection controls</dt><dd>Keep “Enable all”, folder links, and disconnect lightweight. View segments, switches, favorites, and preview cards communicate selection through their own states.</dd></dl></article>
-      <article id="grouped-edits"><h3>Grouped edits &amp; advanced limits</h3><img src="settings/session.png" alt="Review session limits and the advanced session limits disclosure"><p>Use the same field height, label weight, and focus treatment for review and billing inputs. Let the grid follow the available panel width. Show common fields first. Put category caps and queue order behind a named disclosure. Use the <a href="buttons.html#midnight">Midnight indigo</a> gradient for Save and the pale indigo secondary action for Progress. A single save action applies the related fields together and reports the result near the form.</p></article>
+      <article id="grouped-edits"><h3>Grouped edits &amp; advanced limits</h3><img src="settings/session.png" alt="Review session limits and the advanced session limits disclosure"><p>Use the same field height, label weight, and focus treatment for review and billing inputs. Let the grid follow the available panel width. Show common fields first. Put category caps and queue order behind a named disclosure. Use the <a href="#action-hierarchy">Midnight indigo</a> gradient for Save and the pale indigo secondary action for Progress. A single save action applies the related fields together and reports the result near the form.</p></article>
       <article><h3>Email notification groups</h3><img src="settings/email-notifications.png" alt="Email master switch, category switches and explicit Save preferences action"><p>Use a labeled master switch and a fieldset for dependent categories. Turning the master off disables the categories while retaining their choices. Save applies the group. Author subscriptions save independently and report their result beside the author list. <a href="../../views/community.ejs">Email preferences template</a></p></article>
       <article><h3>Saving a preference</h3><dl><dt>Ready</dt><dd>Show the saved choice or enabled count in the collapsed row.</dd><dt>Saving</dt><dd>For an immediate choice such as Quran script, show the pending state and disable the choice while the request is in flight.</dd><dt>Saved</dt><dd>Update the row summary and confirm the change beside the control.</dd><dt>Failed</dt><dd>Restore the saved selection or switches. Keep a failed form draft available for retry and exclude it from unrelated saves.</dd><dt>Signed out</dt><dd>Explain when sign-in is needed. Keep account-backed writes unavailable.</dd></dl></article>
     </div>
@@ -80,5 +59,4 @@
     <p>The current examples come from <a href="../../views/settings.ejs">the Settings beta template</a>, its <a href="../../public/static/css/settings-beta.css">component styles</a>, and the <a href="../../public/static/js/settings-filter.js">local search implementation</a>. Catalog, Drive, and billing specimens use sample account data. Use the <a href="index.html#controls">control comparisons</a> to find candidates as other pages are finalized.</p>
   </section>
 </main>
-<script src="control-options.js"></script>
 </body></html>
