@@ -41,3 +41,11 @@ test('preview finishing is idempotent and does not pollute post excerpts', () =>
   expect(Content.finish(html, source)).toBe(html);
   expect(require('../lib/Community').content(source).excerpt).not.toContain('Watch video');
 });
+
+test('puts the preview between the final paragraph and the footnote separator', () => {
+  const $ = load(Content.render(source + '\n\nFinal sentence[^1].\n\n[^1]: Source note.'));
+  const preview = $('.markdown-video-previews');
+  expect(preview.prev().text()).toContain('Final sentence');
+  expect(preview.next().is('hr.footnotes-sep')).toBe(true);
+  expect(preview.next().next().is('section.footnotes')).toBe(true);
+});
