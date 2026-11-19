@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Light palettes · HadithDB</title>
+<link rel="stylesheet" href="../../public/static/css/ux-foundations.css">
+<link rel="stylesheet" href="library.css">
+<style>
+@font-face { font-family: Quran; src: url('../../public/static/fonts/DigitalKhattV1.otf') format('opentype'); font-display: swap; }
+body { --canvas: #fff; background: var(--canvas); }
+body[data-palette="ivory"] { --canvas: #f8f6f0; --ux-surface: #fffefa; --ux-inset: #f1efe8; --ux-border: #dcd9cf; --ux-text: #292a31; --ux-muted: #5e6068; --ux-accent: #216a9a; }
+body[data-palette="stone"] { --canvas: #f3f2ee; --ux-surface: #fff; --ux-inset: #eceeea; --ux-border: #d4dad5; --ux-text: #273331; --ux-muted: #58635f; --ux-accent: #286855; }
+fieldset { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1.5rem 0; padding: 0; border: 0; }
+legend { font-weight: 600; margin-bottom: .45rem; }
+fieldset label { padding: .5rem .75rem; border-radius: .5rem; border: 1px solid var(--ux-border); cursor: pointer; }
+fieldset label:has(:checked) { background: var(--ux-surface); border-color: var(--ux-accent); }
+input { accent-color: var(--ux-accent); }
+article { background: var(--ux-surface); }
+.reader { font: 2.3rem/1.95 Quran,serif; text-align: center; }
+.preference { display: block; margin: 1rem 0; background: var(--ux-inset); border-radius: .45rem; padding: .8rem; }
+.preference input { vertical-align: middle; margin-inline: 0 .5rem; }
+output { display: block; min-height: 1.5em; color: var(--ux-muted); }
+dl { display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; }
+dd { margin: .15rem 0 0; font-variant-numeric: tabular-nums; color: var(--ux-muted); }
+</style></head>
+<body class="ux-system" data-palette="ivory">
+<header><img src="../../public/static/img/logo2.svg" width="32" height="32" alt=""><strong>HadithDB</strong><a href="library.html">Component library</a></header>
+<main><h1>Light palettes</h1><p class="intro">Compare the page background, reading surface, and controls with Midnight as the primary action.</p>
+<fieldset><legend>Palette</legend>
+<label><input type="radio" name="palette" value="current"> Current white</label>
+<label><input type="radio" name="palette" value="ivory" checked> Ivory &amp; ink</label>
+<label><input type="radio" name="palette" value="stone"> Stone &amp; teal</label>
+</fieldset>
+<div class="grid">
+<article><h2>Al-Ikhlas 112:1</h2><p class="reader" lang="ar" dir="rtl">قُلْ هُوَ ٱللَّهُ أَحَدٌ</p><a href="library.html#choices">Quran script options</a></article>
+<article><h2>Email preferences</h2><label class="preference"><input class="preview-switch" type="checkbox" role="switch" checked>Receive email notifications</label><button type="button" class="ux-primary-action">Save preferences</button><output aria-live="polite"></output></article>
+</div><dl aria-label="Palette values"></dl>
+</main>
+<script>
+const roles = {Canvas:'--canvas', Surface:'--ux-surface', Inset:'--ux-inset', Text:'--ux-text', Accent:'--ux-accent'};
+function showPalette() {
+  document.body.dataset.palette = document.querySelector('[name=palette]:checked').value;
+  const styles = getComputedStyle(document.body);
+  document.querySelector('dl').replaceChildren(...Object.entries(roles).map(([name, token]) => {
+    const pair = document.createElement('div'), term = document.createElement('dt'), value = document.createElement('dd');
+    term.textContent = name; value.textContent = styles.getPropertyValue(token).trim();
+    pair.append(term, value); return pair;
+  }));
+}
+document.querySelector('fieldset').addEventListener('change', showPalette);
+document.querySelector('button').addEventListener('click', () => {document.querySelector('output').textContent = 'Preview saved.';});
+showPalette();
+</script></body></html>

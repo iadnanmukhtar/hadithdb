@@ -44,6 +44,6 @@ dd { margin: 0 0 .6rem; }
 .reciters label { display: grid; gap: .65rem; padding: .6rem; border: 1px solid var(--ux-border); border-radius: .45rem; background: var(--ux-surface); font-weight: 600; cursor: pointer; }
 .reciters.full { grid-template-columns: 1fr; }
 .reciters.full label { display: flex; align-items: center; justify-content: space-between; }
-.reciters input { appearance: none; width: 2rem; height: 1.15rem; border: 1px solid var(--ux-muted); border-radius: 1rem; margin: 0; background: radial-gradient(circle at .54rem center, var(--ux-muted) .35rem, transparent .38rem); cursor: pointer; }
-.reciters input:checked { border-color: var(--ux-accent); background: radial-gradient(circle at calc(100% - .54rem) center, white .35rem, transparent .38rem) var(--ux-accent); }
+.reciters input, .preview-switch { appearance: none; width: 2rem; height: 1.15rem; border: 1px solid var(--ux-muted); border-radius: 1rem; margin: 0; background: radial-gradient(circle at .54rem center, var(--ux-muted) .35rem, transparent .38rem); cursor: pointer; }
+.reciters input:checked, .preview-switch:checked { border-color: var(--ux-accent); background: radial-gradient(circle at calc(100% - .54rem) center, white .35rem, transparent .38rem) var(--ux-accent); }
 .demo-panel small { display: block; color: var(--ux-muted); margin-top: .4rem; }
