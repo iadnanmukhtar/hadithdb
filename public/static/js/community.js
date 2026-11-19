@@ -1156,7 +1156,7 @@
     showEmailPreferences(preferences);
     $('email-authors').replaceChildren();
     for (const author of me.subscriptions || []) {
-      const row = node('div', undefined, 'd-flex flex-wrap justify-content-between align-items-center gap-2 py-2');
+      const row = node('div', undefined, 'email-author-row');
       row.append(link(author.name, '/community/@' + author.handle));
       const control = button(author.email ? 'Unsubscribe' : 'Subscribe', async () => {
         control.disabled = true;
@@ -1166,10 +1166,10 @@
           author.email = result.email;
           control.textContent = author.email ? 'Unsubscribe' : 'Subscribe';
           control.setAttribute('aria-label', (author.email ? 'Unsubscribe from ' : 'Subscribe to ') + author.name);
-          $('email-result').textContent = 'Author subscription updated.';
-        } catch (err) { if (own === epoch) $('email-result').textContent = err.message; }
+          $('email-author-result').textContent = 'Author subscription updated.';
+        } catch (err) { if (own === epoch) $('email-author-result').textContent = err.message; }
         finally { control.disabled = false; }
-      }, 'btn btn-sm btn-outline-secondary');
+      }, 'ux-secondary-action');
       control.setAttribute('aria-label', (author.email ? 'Unsubscribe from ' : 'Subscribe to ') + author.name);
       row.append(control); $('email-authors').append(row);
     }
@@ -1183,7 +1183,7 @@
     const form = $('email-form'), own = epoch;
     const preferences = Object.fromEntries(emailKeys.map(key => [key, form.elements[key].checked]));
     if (stopAll) preferences.enabled = false;
-    const controls = [...form.querySelectorAll('button')]; controls.forEach(el => el.disabled = true);
+    const controls = [...form.querySelectorAll('input, button[type="submit"], #community-email-stop')]; controls.forEach(el => el.disabled = true);
     $('email-result').textContent = 'Saving…';
     try {
       const result = await api('/email-preferences','PUT',{preferences});
@@ -1310,7 +1310,7 @@
       for (const key of ['author-name','author-bio','author-stats','author-avatar']) $(key).replaceChildren();
       $('feed')?.replaceChildren();
     }
-    if ($('email-form')) { $('email-form').hidden = true; $('email-form').reset(); $('email-authors').replaceChildren(); $('email-result').textContent = ''; }
+    if ($('email-form')) { $('email-form').hidden = true; $('email-form').reset(); $('email-author-result').textContent = ''; $('email-authors').replaceChildren(); $('email-result').textContent = ''; }
     const own = ++epoch; ++feedEpoch; loadingFeed = false; feedHasMore = false; feedObserver?.disconnect(); me = null; status('');
     if($('moderation-link'))$('moderation-link').hidden = true;
     if($('blog-control'))$('blog-control').hidden=true;

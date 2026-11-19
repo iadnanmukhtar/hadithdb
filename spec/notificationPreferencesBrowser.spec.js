@@ -21,6 +21,8 @@ test('preferences page loads, saves, unsubscribes and manages author subscriptio
     const form=d.getElementById('community-email-form');expect(form.hidden).toBe(false);
     form.elements.replies.checked=false;form.dispatchEvent(new w.Event('submit',{cancelable:true}));await settle();expect(preferences.replies).toBe(false);
     d.querySelector('#community-email-authors button').click();await settle();expect(d.querySelector('#community-email-authors button').textContent).toBe('Unsubscribe');
+    expect(d.getElementById('community-email-author-result').textContent).toBe('Author subscription updated.');
+    expect(d.getElementById('community-email-result').textContent).toBe('Email preferences saved.');
     d.getElementById('community-email-stop').click();await settle();expect(preferences.enabled).toBe(false);expect(d.getElementById('community-email-categories').disabled).toBe(true);
     form.elements.enabled.checked=true;form.elements.enabled.dispatchEvent(new w.Event('change'));form.dispatchEvent(new w.Event('submit',{cancelable:true}));await settle();expect(preferences.enabled).toBe(true);
     expect(d.querySelector('a[href="/settings#settings-email-section"]')).not.toBeNull();

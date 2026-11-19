@@ -1,0 +1,19 @@
+.email-preferences { width: min(100%, 54rem); margin-inline: auto; margin-bottom: 5rem; padding-inline: clamp(1rem, 4vw, 3rem); }
+.email-preferences .email-title { font: var(--ux-heading-weight) var(--ux-title-size)/1.2 var(--ux-font-ui); margin: .65rem 0 .4rem; }
+.email-back { display: inline-flex; gap: .4rem; align-items: center; min-height: 2.5rem; }
+.email-preferences a { color: var(--ux-accent); text-underline-offset: .18em; }
+.email-intro, .email-preferences section > p, .email-feedback { color: var(--ux-muted); }
+.email-preferences section { margin-top: 1.75rem; }
+.email-preferences h2 { font: var(--ux-heading-weight) var(--ux-section-size)/1.3 var(--ux-font-ui); margin-bottom: .65rem; }
+.email-preferences fieldset { margin-top: .75rem; padding: .75rem 0; border-block: 1px solid var(--ux-border); }
+.email-preferences legend { float: none; width: auto; font-size: .94rem; font-weight: 600; color: var(--ux-muted); margin-bottom: .3rem; }
+.email-category, .email-master { padding-block: .35rem; margin: 0; cursor: pointer; }
+.email-preferences fieldset:disabled .email-category { cursor: default; }
+.email-actions, .email-author-row { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; }
+.email-actions { margin-top: .85rem; }
+.email-author-row { justify-content: space-between; }
+.email-author-row a { overflow-wrap: anywhere; }
+.email-author-row + .email-author-row { border-top: 1px solid var(--ux-border); margin-top: .5rem; padding-top: .5rem; }
+.email-feedback { font-size: .94rem; margin: .65rem 0 0; }
+.email-feedback:empty, .email-preferences #community-status:empty { margin: 0; }
+.email-preferences a:focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }

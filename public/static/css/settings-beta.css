@@ -139,3 +139,5 @@
 @media (max-width: 700px) {
   .settings-beta-fields { padding: .85rem .75rem; }
 }
+
+.settings-beta #settings-email-section { scroll-margin-top: calc(var(--site-fixed-header-height, 5rem) + 1rem); }

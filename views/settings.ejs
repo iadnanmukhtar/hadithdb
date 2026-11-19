@@ -45,7 +45,7 @@
             <h2 class="fs-5 fw-bold mb-1">Email notifications</h2>
             <p class="text-muted small mb-0">Choose which emails you receive and manage your author subscriptions.</p>
           </div>
-          <a class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" href="/community/email-preferences">Email preferences</a>
+          <a class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" href="/community/email-preferences<%= settingsBeta || settingsPath !== '/settings' ? '?from=' + encodeURIComponent(settingsPath + (settingsBeta ? '/beta' : '')) : '' %>">Email preferences</a>
         </div>
       </section>
 <% } %>
@@ -374,6 +374,12 @@
       header.appendChild(toggle);
       section.appendChild(content);
     });
+    if (location.hash === '#settings-email-section') {
+      const section = document.getElementById('settings-email-section');
+      const disclosure = section.closest('details');
+      if (disclosure) disclosure.open = true;
+      else section.querySelector('.settings-section-toggle')?.click();
+    }
     const statusEl = document.getElementById('settings-account-status');
     const tafsirStatusEl = document.getElementById('settings-tafsir-status');
     const tafsirListEl = document.getElementById('settings-tafsir-list');

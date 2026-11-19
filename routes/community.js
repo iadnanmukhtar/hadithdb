@@ -128,7 +128,11 @@ router.get('/media/:id',wrap(async(req,res)=>{
   }
   res.send(image.data);
 }));
-router.get('/email-preferences', (req,res) => page(res,req,'email-preferences'));
+router.get('/email-preferences', (req,res) => {
+  const settingsRoutes = ['/settings', '/quran/settings', '/settings/beta', '/quran/settings/beta'];
+  const settingsReturn = settingsRoutes.includes(req.query.from) ? req.query.from : '/settings';
+  page(res, req, 'email-preferences', { settingsReturn });
+});
 router.get('/email-unsubscribe/:token/:category', wrap(async (req,res) => {
   await EmailPreferences.tokenRow(req.params.token,req.params.category);
   res.set('Referrer-Policy','no-referrer');
