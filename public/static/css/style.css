@@ -8003,6 +8003,14 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	text-indent: 2em;
 }
 
+/* Also cover cached reader HTML with an older embedded Markdown stylesheet. */
+.markdown-video-previews,
+.markdown-video-preview,
+.markdown-video-copy,
+.markdown-video-copy > * {
+	text-indent: 0;
+}
+
 .intro,
 .heading-intro {
 	text-indent: 0;
