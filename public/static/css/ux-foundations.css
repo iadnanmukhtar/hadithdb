@@ -69,5 +69,6 @@
 .ux-system .ux-secondary-action:hover { text-decoration: underline; }
 .ux-system .ux-primary-action:enabled:hover { filter: brightness(1.06); }
 .ux-system .ux-primary-action:enabled:active { transform: translateY(1px); box-shadow: none; }
-.ux-system .ux-primary-action:disabled { opacity: .74; cursor: default; }
+.ux-system :is(.ux-primary-action, .ux-secondary-action)[hidden] { display: none; }
+.ux-system :is(.ux-primary-action, .ux-secondary-action):disabled { opacity: .74; cursor: default; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 3px; }
