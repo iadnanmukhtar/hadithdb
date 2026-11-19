@@ -72,3 +72,51 @@
 .ux-system :is(.ux-primary-action, .ux-secondary-action)[hidden] { display: none; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action):disabled { opacity: .74; cursor: default; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 3px; }
+
+.ux-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  margin-bottom: .85rem;
+}
+.ux-panel-header:only-child { margin-bottom: 0; }
+.ux-system .ux-inset-card {
+  background: var(--ux-surface);
+  border: 1px solid var(--ux-border);
+  border-radius: .6rem;
+  padding: .9rem;
+}
+.ux-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  align-items: end;
+  gap: .75rem 1rem;
+}
+.ux-fields .form-label { min-width: 0; max-width: 100%; }
+.ux-fields .form-label > .small { font-size: .9rem; font-weight: 600; }
+.ux-fields :is(.form-select, .form-control, .input-group-text) {
+  min-height: 2.65rem;
+  padding-block: .45rem;
+  border-color: var(--ux-border);
+  border-radius: .45rem;
+  font: 400 1rem/1.4 var(--ux-font-ui);
+}
+.ux-fields .input-group > input { border-start-end-radius: 0; border-end-end-radius: 0; }
+.ux-fields .input-group-text { color: var(--ux-muted); border-start-start-radius: 0; border-end-start-radius: 0; }
+.ux-fields :is(.form-select, .form-control):focus { border-color: var(--ux-accent); box-shadow: none; }
+.ux-fields :is(.form-select, .form-control, .form-check-input):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
+.ux-fields .form-switch .form-check-input {
+  width: 2rem;
+  height: 1.12rem;
+  cursor: pointer;
+}
+.ux-fields .form-switch .form-check-input:disabled { cursor: default; }
+.ux-fields .form-switch .form-check-input:checked {
+  background-color: var(--ux-accent);
+  border-color: var(--ux-accent);
+}
+@media (max-width: 700px) {
+  .ux-panel-header { flex-direction: column; align-items: flex-start; }
+}

@@ -7,8 +7,8 @@
     site.admin = (req.admin);
     site.editMode = false;
     var paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
-    const panelHeader = (spacing = '') => settingsBeta ? 'settings-panel-header' : 'd-flex align-items-start justify-content-between gap-3 flex-wrap' + spacing;
-    const fieldGrid = settingsBeta ? 'settings-field-grid' : 'row g-2';
+    const panelHeader = (spacing = '') => settingsBeta ? 'ux-panel-header' : 'd-flex align-items-start justify-content-between gap-3 flex-wrap' + spacing;
+    const fieldGrid = settingsBeta ? 'ux-field-grid' : 'row g-2';
     const gridLabel = settingsBeta ? 'form-label mb-0' : 'col-sm-6 col-lg-3 form-label mb-0';
 %>
 
@@ -101,7 +101,7 @@
           </div>
         </div>
         <div class="settings-payment-panel">
-          <div class="settings-payment-balance">
+          <div class="settings-payment-balance<%= settingsBeta ? ' ux-inset-card' : '' %>">
             <span class="text-muted small">Points</span>
             <strong id="settings-payment-balance">0</strong>
           </div>
@@ -181,7 +181,7 @@
           </div>
           <a class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-primary btn-sm' %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
         </div>
-        <div class="settings-fsrs-card">
+        <div class="settings-fsrs-card<%= settingsBeta ? ' ux-inset-card' : '' %>">
           <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
             <div><h3 class="fs-6 fw-bold mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
             <button type="button" class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
@@ -196,11 +196,11 @@
         </div>
         <div class="memorization-session-settings mt-3">
           <div class="mb-2"><h3 class="fs-6 fw-bold mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
-          <div class="<%= settingsBeta ? 'settings-field-grid' : 'd-flex align-items-end gap-3 flex-wrap' %>">
+          <div class="<%= settingsBeta ? 'ux-field-grid' : 'd-flex align-items-end gap-3 flex-wrap' %>">
             <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
             <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
           </div>
-          <details class="memorization-advanced-settings mt-3">
+          <details class="memorization-advanced-settings mt-3<%= settingsBeta ? ' ux-inset-card' : '' %>">
             <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
             <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. The Hard limit includes both fragile āyāt and previously Good āyāt recovering after Again.</p>
             <div class="<%= fieldGrid %>">
@@ -310,7 +310,7 @@
           <% if (key === 'payments' && !paymentFeatureEnabled) { render(); return; } %>
           <details class="settings-beta-row">
             <summary><strong><%= title %></strong><span data-setting-summary="<%= key %>"><%= hint %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
-            <div class="settings-beta-fields"><% render(); %></div>
+            <div class="settings-beta-fields ux-fields"><% render(); %></div>
           </details>
         <% }); %>
       </section>
