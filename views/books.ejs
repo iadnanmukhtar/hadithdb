@@ -219,7 +219,7 @@
         <div class="btn-group h-menu text-nowrap" role="group">
           <label class="book-carousel-filter">
             <span class="bi bi-search" aria-hidden="true"></span>
-            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter mushaf, ḥadīth, sharḥ, tafsīr, and translation books" autocomplete="off" autofocus>
+            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter books in the selected collection" autocomplete="off" autofocus>
           </label>
           <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
           <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="ar" data-book-catalog-group-scope="tafsir" aria-pressed="false">Arabic</button>
@@ -587,8 +587,7 @@
     var normalize = function (value) {
       return window.normalizeContentFilterText(value);
     };
-    var cards = Array.from(document.querySelectorAll('.book-catalog-card'));
-    var tabPanes = Array.from(document.querySelectorAll('.book-catalog-tab-pane'));
+    var cards = [];
     var groupButtons = Array.from(document.querySelectorAll('[data-book-catalog-group-filter]'));
     var languageButtons = Array.from(document.querySelectorAll('[data-book-catalog-language-filter]'));
     var filterButtons = groupButtons.concat(languageButtons);
@@ -597,29 +596,10 @@
     var activeLanguage = '';
     var activeScope = '<%= initialBookCatalogType %>';
 
-    var getTabButton = function (pane) {
-      return document.querySelector('.book-catalog-tabs .nav-link[data-bs-target="#' + pane.id + '"]');
-    };
-
-    var activateFirstVisiblePane = function () {
-      var firstVisible = tabPanes.find(function (pane) {
-        return !pane.classList.contains('d-none');
-      });
-      if (!firstVisible)
-        return;
-      var button = getTabButton(firstVisible);
-      if (!button)
-        return;
-      var tab = window.bootstrap && window.bootstrap.Tab ? new window.bootstrap.Tab(button) : null;
-      if (tab)
-        tab.show();
-    };
-
     var applyFilters = function () {
       var query = normalize(filter.value);
       var activeSize = document.querySelector('.book-catalog-page').dataset.bookCatalogActiveSize || '';
       var visibleCount = 0;
-      var hasVisiblePane = false;
       cards.forEach(function (card) {
         var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.bookCatalogFilter).includes(query))
@@ -630,26 +610,12 @@
         if (match)
           visibleCount += 1;
       });
-      tabPanes.forEach(function (pane) {
-        var paneCards = Array.from(pane.querySelectorAll('.book-catalog-card'));
-        var paneHasVisible = paneCards.some(function (card) {
-          return !card.classList.contains('d-none');
-        });
-        if (query && !activeGroup) {
-          pane.classList.toggle('d-none', !paneHasVisible);
-        } else {
-          pane.classList.remove('d-none');
-        }
-        if (paneHasVisible)
-          hasVisiblePane = true;
-      });
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeSize));
-      if (query && !activeGroup && hasVisiblePane)
-        activateFirstVisiblePane();
+        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeLanguage && !activeSize));
     };
 
     var setGroupScope = function (paneId) {
+      cards = Array.from(document.getElementById(paneId).querySelectorAll('.book-catalog-card'));
       document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
         section.hidden = section.dataset.bookRailPane !== paneId;
       });

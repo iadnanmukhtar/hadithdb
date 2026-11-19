@@ -282,3 +282,23 @@ test.each([
  expect(Array.from(doc.querySelectorAll('[data-book-rail-pane]')).filter(node => !node.hidden).map(node => node.dataset.bookRailPane)).toEqual(['book-catalog-' + pane]);
  dom.window.close();
 });
+
+test('typing a book filter keeps Tafsir selected even when another collection matches', async () => {
+  const dom = browser(await render('books.ejs', false, [book], { tafsir: '' }));
+  const doc = dom.window.document;
+  const show = jest.fn();
+  dom.window.bootstrap = { Tab: function () { this.show = show; } };
+  const filter = doc.querySelector('.book-catalog-filter');
+  const empty = doc.querySelector('.book-catalog-filter-empty');
+  const tafsir = doc.querySelector('#book-catalog-tafsir-all .book-catalog-card');
+  doc.querySelector('#book-catalog-sharh .book-catalog-card').dataset.bookCatalogFilter = 'dorar sharh';
+  tafsir.dataset.bookCatalogFilter = 'dorar tafsir';
+  for (const [query, matches] of [['dorar', true], ['sharh', false], ['', true]]) {
+    filter.value = query;
+    filter.dispatchEvent(new dom.window.Event('input', { bubbles: true }));
+    expect(show).not.toHaveBeenCalled();
+    expect(tafsir.classList.contains('d-none')).toBe(!matches);
+    expect(empty.classList.contains('d-none')).toBe(matches);
+  }
+  dom.window.close();
+});
