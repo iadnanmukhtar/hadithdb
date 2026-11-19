@@ -7,6 +7,9 @@
     site.admin = (req.admin);
     site.editMode = false;
     var paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
+    const panelHeader = (spacing = '') => settingsBeta ? 'settings-panel-header' : 'd-flex align-items-start justify-content-between gap-3 flex-wrap' + spacing;
+    const fieldGrid = settingsBeta ? 'settings-field-grid' : 'row g-2';
+    const gridLabel = settingsBeta ? 'form-label mb-0' : 'col-sm-6 col-lg-3 form-label mb-0';
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
@@ -23,7 +26,7 @@
 
 <% function renderProfile() { %>
       <section class="border-top pt-3" id="settings-profile-section">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Profile</h2>
             <p class="text-muted small mb-0" id="settings-profile-status">Loading profile settings...</p>
@@ -37,7 +40,7 @@
 
 <% function renderEmail() { %>
       <section class="border-top pt-3 mt-3" id="settings-email-section">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Email notifications</h2>
             <p class="text-muted small mb-0">Choose which emails you receive and manage your author subscriptions.</p>
@@ -60,10 +63,10 @@
 
 <% function renderDrive() { %>
         <div class="settings-notes-drive mt-4 pt-3">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-2">
+        <div class="<%= panelHeader(' mb-2') %>">
           <div>
             <h3 class="fs-6 fw-bold mb-1">Google Drive</h3>
-            <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. Sign in to manage your connection.</p>
+            <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. <span data-drive-signin-hint>Sign in to manage your connection.</span></p>
           </div>
         </div>
         <div class="small" data-notebook-drive-panel data-notebook-drive-settings hidden>
@@ -71,8 +74,8 @@
           <span data-notebook-drive-message role="status"></span>
           <button type="button" class="<%= settingsBeta ? 'ux-primary-action ms-auto' : 'btn btn-sm btn-outline-secondary ms-auto' %>" data-notebook-drive-connect hidden>Connect Google Drive</button>
           <button type="button" class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-link notebook-drive-action ms-2 p-0' %>" data-notebook-drive-import hidden>Import from Google Drive</button>
-          <a data-notebook-drive-folder target="_blank" rel="noopener" class="notebook-drive-action ms-1" hidden>Open folder</a>
-          <button type="button" class="btn btn-link notebook-drive-action ms-2 p-0" data-notebook-drive-disconnect hidden>Disconnect</button>
+          <a data-notebook-drive-folder target="_blank" rel="noopener" class="<%= settingsBeta ? 'ux-text-action' : 'notebook-drive-action ms-1' %>" hidden>Open folder</a>
+          <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-link notebook-drive-action ms-2 p-0' %>" data-notebook-drive-disconnect hidden>Disconnect</button>
           <div class="mt-3 w-100" data-community-drive-controls hidden>
             <label class="form-check form-switch">
               <input type="checkbox" class="form-check-input" data-community-drive-enabled>
@@ -88,7 +91,7 @@
 
 <% function renderPayments() { %>
       <section class="border-top pt-3" id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Payments</h2>
             <p class="text-muted small mb-0" id="settings-payment-status">Loading payment settings...</p>
@@ -133,7 +136,7 @@
 
 <% function renderScript() { %>
       <section class="border-top pt-3 mt-3" id="settings-quran-reading-section">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Reading</h2>
             <p class="text-muted small mb-0" id="settings-quran-script-status">Choose the script used for Quran āyāt and words.</p>
@@ -171,7 +174,7 @@
 
 <% function renderMemorization() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Memorization</h2>
             <p class="text-muted small mb-0" id="settings-memorization-status">Tune review timing and the size of each review session.</p>
@@ -180,31 +183,31 @@
         </div>
         <div class="settings-fsrs-card">
           <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
-            <div><h3 class="fs-6 fw-bold mb-1"><i class="bi bi-brain me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
+            <div><h3 class="fs-6 fw-bold mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
             <button type="button" class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
           </div>
-          <div class="row g-2">
-            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Target Memory Goal</span><select class="form-select form-select-sm" id="settings-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select></label>
-            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Initial Memory Strength</span><select class="form-select form-select-sm" id="settings-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select></label>
-            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Mudhakkir Interval Multiplier</span><select class="form-select form-select-sm" id="settings-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select></label>
-            <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Lapse Recovery Speed</span><select class="form-select form-select-sm" id="settings-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select></label>
+          <div class="<%= fieldGrid %>">
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Target Memory Goal</span><select class="form-select form-select-sm" id="settings-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Initial Memory Strength</span><select class="form-select form-select-sm" id="settings-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Mudhakkir Interval Multiplier</span><select class="form-select form-select-sm" id="settings-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Lapse Recovery Speed</span><select class="form-select form-select-sm" id="settings-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select></label>
           </div>
           <p class="small text-muted mt-2 mb-0" id="settings-fsrs-status">Personalize after at least 100 reviews, then about once a month as your history grows.</p>
         </div>
         <div class="memorization-session-settings mt-3">
           <div class="mb-2"><h3 class="fs-6 fw-bold mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
-          <div class="d-flex align-items-end gap-3 flex-wrap">
+          <div class="<%= settingsBeta ? 'settings-field-grid' : 'd-flex align-items-end gap-3 flex-wrap' %>">
             <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
             <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
           </div>
           <details class="memorization-advanced-settings mt-3">
             <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
             <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. The Hard limit includes both fragile āyāt and previously Good āyāt recovering after Again.</p>
-            <div class="row g-2">
-              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Learning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-learning-limit"></label>
-              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Hard ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-weak-limit"></label>
-              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Maximum Good ayat</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-memorized-limit"></label>
-              <label class="col-sm-6 col-lg-3 form-label mb-0"><span class="small d-block mb-1">Order within each queue</span><select class="form-select form-select-sm" id="settings-review-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
+            <div class="<%= fieldGrid %>">
+              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Learning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-learning-limit"></label>
+              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Hard ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-weak-limit"></label>
+              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Good ayat</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-memorized-limit"></label>
+              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Order within each queue</span><select class="form-select form-select-sm" id="settings-review-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
             </div>
           </details>
         </div>
@@ -214,7 +217,7 @@
 
 <% function renderAudio() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
+        <div class="<%= panelHeader() %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Audio</h2>
             <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
@@ -234,7 +237,7 @@
 
 <% function renderTranslations() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Translations</h2>
             <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
@@ -249,7 +252,7 @@
 
 <% function renderTafsirs() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap mb-3">
+        <div class="<%= panelHeader(' mb-3') %>">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Tafsirs</h2>
             <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
@@ -1768,6 +1771,7 @@
       reviewOrderEl.disabled = !currentUser;
       [fsrsRetentionEl,fsrsLearningSpeedEl,fsrsGrowthEl,fsrsLapseEl,fsrsOptimizeBtn].forEach(element => { element.disabled = !currentUser; });
       memorizationSaveBtn.disabled = !currentUser;
+      document.querySelector('[data-drive-signin-hint]').hidden = !!currentUser;
       renderProfileSettings();
       renderBetaSummaries();
       window.NotebookThemes && window.NotebookThemes.apply(currentSettings.notebook.theme);

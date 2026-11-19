@@ -906,7 +906,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await context.route('**/*', route=> {
         const request=route.request(), url=request.url();
         if (url.includes('/static/js/script.js')) return route.fulfill({contentType:'application/javascript',body:headerOffsetHelper+';new ResizeObserver(()=>updateFixedHeaderOffset()).observe(document.querySelector(".site-navbar"));updateFixedHeaderOffset();'});
-        if (request.resourceType()==='script' && !url.includes('/static/js/community.js') && !url.includes('/static/js/community-media.js') && !url.includes('/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js')) return route.abort();
+        if (request.resourceType()==='script' && !url.includes('/static/js/community.js') && !url.includes('/static/js/community-media.js') && !url.includes('/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js')) return route.abort();
         if (url.includes('avatar.test/missing')) return route.fulfill({status:404,body:''});
         if (url.includes('avatar.test/') || url.includes('gravatar.com/avatar/')) return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><circle cx="24" cy="24" r="24" fill="#2c9be5"/></svg>'});
         if (request.resourceType()==='image' && !url.includes('/static/') && !url.includes('/community/media/')) return route.abort();

@@ -105,7 +105,80 @@
 .settings-filter-status:empty { margin: 0; }
 .settings-beta .settings-filter-miss, .settings-beta-index a[hidden] { display: none !important; }
 
-.settings-beta :is(#settings-reciter-list, #settings-translation-list, #settings-tafsir-list) .form-check-input:checked {
+.settings-beta .form-switch .form-check-input:checked {
   background-color: var(--ux-accent);
   border-color: var(--ux-accent);
+}
+
+.settings-beta-fields { padding: 1rem; }
+.settings-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: .5rem 1rem;
+  margin-bottom: .85rem;
+}
+.settings-panel-header:only-child { margin-bottom: 0; }
+.settings-panel-header p, .settings-beta-fields p.small {
+  font-size: .94rem;
+  line-height: 1.45;
+}
+.settings-beta-fields :is(.settings-fsrs-card, .settings-payment-balance, .memorization-advanced-settings) {
+  background: var(--ux-surface);
+  border: 1px solid var(--ux-border);
+  border-radius: .6rem;
+  padding: .9rem;
+}
+.settings-field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(13rem, 100%), 1fr));
+  align-items: end;
+  gap: .75rem 1rem;
+}
+.settings-beta-fields .form-label { min-width: 0; max-width: 100%; }
+.settings-beta-fields .form-label > .small { font-size: .9rem; font-weight: 600; }
+.settings-beta-fields :is(.form-select, .form-control, .input-group-text) {
+  min-height: 2.65rem;
+  padding-block: .45rem;
+  border-color: var(--ux-border);
+  border-radius: .45rem;
+  font: 400 1rem/1.4 var(--ux-font-ui);
+}
+.settings-beta-fields .input-group > input { border-start-end-radius: 0; border-end-end-radius: 0; }
+.settings-beta-fields .input-group-text { color: var(--ux-muted); border-start-start-radius: 0; border-end-start-radius: 0; }
+.settings-beta-fields :is(.form-select, .form-control):focus { border-color: var(--ux-accent); box-shadow: none; }
+.settings-beta-fields .form-switch .form-check-input {
+  width: 2rem;
+  height: 1.12rem;
+  cursor: pointer;
+}
+.settings-beta-fields .form-switch .form-check-input:disabled { cursor: default; }
+.settings-beta-fields .settings-preference-list-mini {
+  gap: .6rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(8.5rem, 100%), 1fr));
+}
+.settings-beta-fields .settings-preference-tile { min-height: 5rem; padding: .6rem; border-radius: .6rem; }
+.settings-beta-fields .settings-preference-tile .translation-setting-title { font-size: .95rem; line-height: 1.2; font-weight: 600; }
+.settings-beta-fields .settings-subsection-toggle { min-height: 2.5rem; justify-content: space-between; }
+.settings-beta-fields .settings-subsection-toggle .bi { order: 1; color: var(--ux-accent); font-size: .85rem; transform: rotate(180deg); }
+.settings-beta-fields .settings-subsection-toggle[aria-expanded="false"] .bi { transform: none; }
+.settings-beta-fields [data-notebook-drive-panel]:not([hidden]) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.settings-beta-fields [data-notebook-drive-message] { flex: 1 1 14rem; }
+.settings-beta-fields [data-notebook-drive-panel] .ux-text-action { text-decoration: none; }
+.settings-beta-fields [data-notebook-drive-panel] [hidden] { display: none; }
+.settings-beta-fields :is(.settings-payment-auto, [data-community-drive-controls]) {
+  padding-top: .85rem;
+  border-top: 1px solid var(--ux-border);
+}
+.settings-beta-fields .settings-payment-panel { gap: 1rem; }
+.settings-beta-fields .settings-payment-panel select { min-width: 0; }
+@media (max-width: 700px) {
+  .settings-panel-header { flex-direction: column; align-items: flex-start; }
+  .settings-beta-fields { padding: .85rem .75rem; }
 }
