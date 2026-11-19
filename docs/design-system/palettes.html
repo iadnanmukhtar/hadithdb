@@ -4,10 +4,11 @@
 <title>Light palettes · HadithDB</title>
 <link rel="stylesheet" href="../../public/static/css/ux-foundations.css">
 <link rel="stylesheet" href="library.css">
+<link rel="stylesheet" href="../../public/static/css/ivory.css">
 <style>
 @font-face { font-family: Quran; src: url('../../public/static/fonts/DigitalKhattV1.otf') format('opentype'); font-display: swap; }
 body { --canvas: #fff; background: var(--canvas); }
-body[data-palette="ivory"] { --canvas: #f8f6f0; --ux-surface: #fffefa; --ux-inset: #f1efe8; --ux-border: #dcd9cf; --ux-text: #292a31; --ux-muted: #5e6068; --ux-accent: #216a9a; }
+body[data-palette="ivory"] { --canvas: var(--ivory-canvas); --ux-surface: var(--ivory-surface); --ux-inset: var(--ivory-inset); --ux-border: var(--ivory-border); --ux-text: var(--ivory-text); --ux-muted: var(--ivory-muted); --ux-accent: var(--ivory-accent); }
 body[data-palette="stone"] { --canvas: #f3f2ee; --ux-surface: #fff; --ux-inset: #eceeea; --ux-border: #d4dad5; --ux-text: #273331; --ux-muted: #58635f; --ux-accent: #286855; }
 fieldset { display: flex; flex-wrap: wrap; gap: .4rem; margin: 1.5rem 0; padding: 0; border: 0; }
 legend { font-weight: 600; margin-bottom: .45rem; }
@@ -24,7 +25,7 @@ dd { margin: .15rem 0 0; font-variant-numeric: tabular-nums; color: var(--ux-mut
 </style></head>
 <body class="ux-system" data-palette="ivory">
 <header><img src="../../public/static/img/logo2.svg" width="32" height="32" alt=""><strong>HadithDB</strong><a href="library.html">Component library</a></header>
-<main><h1>Light palettes</h1><p class="intro">Compare the page background, reading surface, and controls with Midnight as the primary action.</p>
+<main><h1>Light palettes</h1><p class="intro">Ivory &amp; ink is the selected light palette. Compare its canvas and reading surface with the earlier options.</p>
 <fieldset><legend>Palette</legend>
 <label><input type="radio" name="palette" value="current"> Current white</label>
 <label><input type="radio" name="palette" value="ivory" checked> Ivory &amp; ink</label>

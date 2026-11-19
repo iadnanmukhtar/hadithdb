@@ -1,0 +1,24 @@
+/* The palette preview and the first live light-theme consumers share these values. */
+:where(body[data-palette="ivory"], html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader))) {
+  --ivory-canvas: #f8f6f0;
+  --ivory-surface: #fffefa;
+  --ivory-inset: #f1efe8;
+  --ivory-border: #dcd9cf;
+  --ivory-text: #292a31;
+  --ivory-muted: #5e6068;
+  --ivory-accent: #216a9a;
+}
+
+html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)) {
+  background-color: var(--ivory-canvas);
+  color: var(--ivory-text);
+}
+html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]) :is(.settings-beta, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)):not([data-bs-theme="dark"]) {
+  --bs-body-bg: var(--ivory-surface);
+  --bs-body-color: var(--ivory-text);
+  --bs-secondary-color: var(--ivory-muted);
+  --bs-tertiary-bg: var(--ivory-inset);
+  --bs-border-color: var(--ivory-border);
+  --c-link-dark: var(--ivory-accent);
+  --bs-link-color-rgb: 33, 106, 154;
+}
