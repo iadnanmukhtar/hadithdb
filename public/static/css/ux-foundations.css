@@ -47,3 +47,27 @@
 .ux-system :is(.ux-view-option, .ux-text-action):enabled:hover { text-decoration: underline; text-underline-offset: .15em; }
 .ux-system :is(.ux-view-option, .ux-text-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .ux-system .ux-text-action:disabled { opacity: .55; cursor: default; }
+
+.ux-system :is(.ux-primary-action, .ux-secondary-action) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: .5rem .9rem;
+  border: 1px solid transparent;
+  border-radius: .4rem;
+  font: 600 1rem/1.3 var(--ux-font-ui);
+  cursor: pointer;
+}
+.ux-system .ux-primary-action {
+  color: white;
+  border-color: #343a67;
+  background: linear-gradient(110deg, #535c9b, #323c6b 68%, #273053);
+  box-shadow: inset 0 1px #ffffff30;
+}
+.ux-system .ux-secondary-action { background: #eaeaf5; color: #444d85; text-decoration: none; }
+.ux-system .ux-secondary-action:hover { text-decoration: underline; }
+.ux-system .ux-primary-action:enabled:hover { filter: brightness(1.06); }
+.ux-system .ux-primary-action:enabled:active { transform: translateY(1px); box-shadow: none; }
+.ux-system .ux-primary-action:disabled { opacity: .74; cursor: default; }
+.ux-system :is(.ux-primary-action, .ux-secondary-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 3px; }
