@@ -12,7 +12,7 @@
 <main>
   <h1>Component library</h1>
   <p class="intro">Settings establishes the first patterns for navigation, preferences and feedback. Each entry records a control in use and the behavior another page can reuse.</p>
-  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#choices">Choices</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
+  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#choices">Choices</a><a href="#control-options">Control options</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
   <section id="foundations"><h2>Foundations</h2>
     <div class="grid">
       <article><h3>Interface type</h3><div class="type-sample">Reading &amp; listening</div><p>Source Sans 3 sets the interface rhythm. Page titles scale from 2 to 2.75 rem, group headings use 1.4 rem, and both use weight 650. Body text uses 1 rem with 1.5 line height. Use weight 600 for control labels.</p></article>
@@ -34,6 +34,28 @@
       <article><h3>View selector</h3><img src="settings/view.png" alt="Tile and Full view buttons"><p>Place mutually exclusive display modes in a compact button group near the collection. Expose the active mode with <code>aria-pressed</code> and retain it after reload.</p></article>
     </div>
   </section>
+  <section id="control-options"><h2>Control options</h2>
+    <p>Try each treatment with the same reciter preferences. Change the view, enable both reciters, or switch one off to try again.</p>
+    <div id="control-demos" class="grid"></div>
+    <template id="control-demo">
+      <article><h3></h3><p class="rationale"></p>
+        <div class="demo-panel">
+          <div class="demo-toolbar">
+            <button class="bulk" type="button">Enable all</button>
+            <div class="mode" role="group" aria-label="Reciter view">
+              <button type="button" data-mode="tile" aria-pressed="true">Tile</button>
+              <button type="button" data-mode="full" aria-pressed="false">Full</button>
+            </div>
+          </div>
+          <div class="reciters">
+            <label>Husari <input type="checkbox" role="switch" checked></label>
+            <label>Jalil <input type="checkbox" role="switch"></label>
+          </div>
+          <small role="status"></small>
+        </div>
+      </article>
+    </template>
+  </section>
   <section id="feedback"><h2>Actions &amp; feedback</h2>
     <div class="grid">
       <article><h3>Grouped edits &amp; advanced limits</h3><img src="settings/session.png" alt="Review session limits and the advanced session limits disclosure"><p>Show common fields first. Put category caps and queue order behind a named disclosure. A single save action applies the related fields together and reports the result near the form.</p></article>
@@ -45,4 +67,5 @@
     <p>The current examples come from <a href="../../views/settings.ejs">the Settings beta template</a>, its <a href="../../public/static/css/settings-beta.css">component styles</a>, and the <a href="../../public/static/js/settings-filter.js">local search implementation</a>. The catalog specimen uses sample account data. Use the <a href="index.html#controls">control comparisons</a> to find candidates as other pages are finalized.</p>
   </section>
 </main>
+<script src="control-options.js"></script>
 </body></html>

@@ -104,3 +104,8 @@
 .settings-filter-status { font-size: .85rem; margin: .25rem 0 0; color: var(--ux-muted); }
 .settings-filter-status:empty { margin: 0; }
 .settings-beta .settings-filter-miss, .settings-beta-index a[hidden] { display: none !important; }
+
+.settings-beta :is(#settings-reciter-list, #settings-translation-list, #settings-tafsir-list) .form-check-input:checked {
+  background-color: var(--ux-accent);
+  border-color: var(--ux-accent);
+}
