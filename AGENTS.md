@@ -1,0 +1,1 @@
+For HadithDB UX makeover work, page consistency audits, and design-system adoption, use [the HadithDB UX audit skill](skills/hadithdb-ux-audit/SKILL.md). Revisit it as each page is finalized and incorporate reusable lessons from observed misses.
