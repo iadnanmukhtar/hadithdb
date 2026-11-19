@@ -20,3 +20,30 @@
   font: 400 1rem/1.5 var(--ux-font-ui);
   color: var(--ux-text);
 }
+
+.ux-system .ux-view-selector {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: .55rem;
+  background: var(--bs-secondary-bg, #e8ecef);
+}
+.ux-system :is(.ux-view-option, .ux-text-action) {
+  min-height: 36px;
+  padding: .4rem .65rem;
+  border: 1px solid transparent;
+  border-radius: .4rem;
+  background: transparent;
+  color: var(--ux-muted);
+  font: 600 .94rem/1.25 var(--ux-font-ui);
+  cursor: pointer;
+}
+.ux-system .ux-text-action,
+.ux-system .ux-view-option[aria-pressed="true"] { color: var(--ux-accent); }
+.ux-system .ux-view-option[aria-pressed="true"] {
+  background: var(--ux-surface);
+  box-shadow: 0 1px 3px #18293726;
+}
+.ux-system :is(.ux-view-option, .ux-text-action):enabled:hover { text-decoration: underline; text-underline-offset: .15em; }
+.ux-system :is(.ux-view-option, .ux-text-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
+.ux-system .ux-text-action:disabled { opacity: .55; cursor: default; }

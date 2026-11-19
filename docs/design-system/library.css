@@ -36,8 +36,6 @@ dd { margin: 0 0 .6rem; }
 .demo-panel :is(button, select, input):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .demo-panel button:enabled:hover { text-decoration: underline; text-underline-offset: .15em; }
 .demo-panel button:disabled { opacity: .55; cursor: default; }
-.inset-mode .mode { padding: 3px; background: #e8ecef; border-radius: .55rem; }
-.inset-mode .mode button[aria-pressed="true"] { background: var(--ux-surface); border-radius: .4rem; color: var(--ux-accent); box-shadow: 0 1px 3px #18293726; }
 .tab-mode .mode button { border-bottom: 2px solid var(--ux-border); }
 .tab-mode .mode button[aria-pressed="true"] { border-bottom-color: var(--ux-accent); color: var(--ux-accent); }
 .tab-mode .bulk { background: color-mix(in srgb, var(--ux-accent) 10%, white); }

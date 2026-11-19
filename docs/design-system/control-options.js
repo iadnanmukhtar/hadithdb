@@ -12,6 +12,11 @@ for (const [style, title, description] of treatments) {
   const bulk = demo.querySelector('.bulk');
   const switches = [...demo.querySelectorAll('[role="switch"]')];
   const mode = demo.querySelector('.mode');
+  if (style === 'inset-mode') {
+    bulk.classList.add('ux-text-action');
+    mode.classList.add('ux-view-selector');
+    mode.querySelectorAll('button').forEach(button => button.classList.add('ux-view-option'));
+  }
   function setView(value) {
     demo.querySelector('.reciters').classList.toggle('full', value === 'full');
     for (const button of mode.querySelectorAll('button')) {

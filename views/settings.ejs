@@ -220,11 +220,11 @@
             <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-reciter-enable-all">Enable all</button>
-            <span class="text-muted small">Settings view</span>
-            <div class="btn-group btn-group-sm settings-view-toggle" role="group" aria-label="Settings view">
-              <button type="button" class="btn btn-outline-secondary" data-settings-view="tile">Tile</button>
-              <button type="button" class="btn btn-outline-secondary" data-settings-view="full">Full</button>
+            <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-reciter-enable-all">Enable all</button>
+            <% if (!settingsBeta) { %><span class="text-muted small">Settings view</span><% } %>
+            <div class="<%= settingsBeta ? 'ux-view-selector' : 'btn-group btn-group-sm settings-view-toggle' %>" role="group" aria-label="Settings view">
+              <button type="button" class="<%= settingsBeta ? 'ux-view-option' : 'btn btn-outline-secondary' %>" data-settings-view="tile">Tile</button>
+              <button type="button" class="<%= settingsBeta ? 'ux-view-option' : 'btn btn-outline-secondary' %>" data-settings-view="full">Full</button>
             </div>
           </div>
         </div>
@@ -240,7 +240,7 @@
             <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-translation-enable-all">Enable all</button>
+            <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-translation-enable-all">Enable all</button>
           </div>
         </div>
         <div id="settings-translation-list" class="d-flex flex-column gap-2"></div>
@@ -254,7 +254,7 @@
             <h2 class="fs-5 fw-bold mb-1">Quran Tafsirs</h2>
             <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
           </div>
-          <button type="button" class="btn btn-outline-secondary btn-sm" id="settings-tafsir-enable-all">Enable all</button>
+          <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-tafsir-enable-all">Enable all</button>
         </div>
         <div id="settings-tafsir-list" class="d-flex flex-column gap-2"></div>
       </section>
