@@ -1,0 +1,22 @@
+@font-face {
+  font-family: 'Source Sans 3';
+  src: url('../fonts/source-sans-3/upright.woff2') format('woff2');
+  font-weight: 200 900;
+  font-display: swap;
+}
+
+.ux-system {
+  --ux-font-ui: 'Source Sans 3', system-ui, sans-serif;
+  --ux-accent: var(--c-link-dark, #2379b1);
+  --ux-text: var(--bs-body-color, #212529);
+  --ux-muted: var(--bs-secondary-color, #595c5f);
+  --ux-surface: var(--bs-body-bg, #fff);
+  --ux-inset: var(--bs-tertiary-bg, #f8f9fa);
+  --ux-border: var(--bs-border-color, #dee2e6);
+  --ux-title-size: clamp(2rem, 3vw, 2.75rem);
+  --ux-section-size: 1.4rem;
+  --ux-heading-weight: 650;
+  --ux-focus-ring: 2px solid var(--ux-accent);
+  font: 400 1rem/1.5 var(--ux-font-ui);
+  color: var(--ux-text);
+}

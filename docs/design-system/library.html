@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Component library · HadithDB</title>
+  <link rel="stylesheet" href="../../public/static/css/ux-foundations.css">
+  <link rel="stylesheet" href="library.css">
+</head>
+<body class="ux-system">
+<header><img src="../../public/static/img/logo2.svg" width="32" height="32" alt=""><strong>HadithDB</strong><a href="index.html">UX audit</a></header>
+<main>
+  <h1>Component library</h1>
+  <p class="intro">Settings establishes the first patterns for navigation, preferences and feedback. Each entry records a control in use and the behavior another page can reuse.</p>
+  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#choices">Choices</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
+  <section id="foundations"><h2>Foundations</h2>
+    <div class="grid">
+      <article><h3>Interface type</h3><div class="type-sample">Reading &amp; listening</div><p>Source Sans 3 sets the interface rhythm. Page titles scale from 2 to 2.75 rem, group headings use 1.4 rem, and both use weight 650. Body text uses 1 rem with 1.5 line height. Use weight 600 for control labels.</p></article>
+      <article><h3>Color &amp; focus</h3><div class="palette"><span class="accent">Action</span><span class="text">Text</span><span class="muted">Summary</span><span class="inset">Inset</span></div><p>Use the site link color for actions, secondary text for current values, and a quiet inset surface for expanded controls. Show a two-pixel accent outline on keyboard focus.</p></article>
+    </div>
+    <p>Load the <a href="../../public/static/css/ux-foundations.css">foundation stylesheet</a> and apply <code>ux-system</code> to the adopting page container. Its tokens inherit the active site theme. Quran specimens retain their script-specific fonts. Prose and Markdown typography will enter the library with the first finalized reading or authoring page.</p>
+  </section>
+  <section id="navigation"><h2>Navigation &amp; discovery</h2>
+    <div class="grid">
+      <article><h3>Category rail &amp; local search</h3><picture><source media="(max-width: 700px)" srcset="settings/rail-mobile.png"><img src="settings/rail.png" alt="Compact Search settings field above the category links"></picture><p>Keep one compact search field in the category rail. Name its scope in the placeholder and accessible label. Below 701 px, the rail moves above the content and category links occupy two columns.</p><p>Match nested controls and asynchronously loaded catalogs. Announce the count or empty state. Clear and Escape restore the previous disclosures and return focus to the field.</p></article>
+      <article><h3>Disclosure with current value</h3><img src="settings/disclosures.png" alt="Reading and listening rows with their saved values"><p>Group settings by task. Use a native details/summary row with a short label, current value or count, and a chevron. Place the summary below the label on narrow screens. Opening one row keeps the others available.</p></article>
+    </div>
+  </section>
+  <section id="choices"><h2>Choices &amp; preferences</h2>
+    <div class="grid">
+      <article><h3>Script preview cards</h3><img src="settings/scripts.png" alt="Three radio cards showing the same ayah in Uthmani, Indo-Pak and Warsh"><p>Use one labeled radio group for an exclusive script choice. Each card pairs a name with the same referenced ayah in its own script and font. Preserve Arabic direction, marks, and line height. The entire card selects the option.</p></article>
+      <article><h3>Appearance swatches</h3><img src="settings/themes.png" alt="Six labeled note themes showing paper and ink colors"><p>Show the actual foreground and background together. Each button exposes its theme name and pressed state. Keep the selected outline visible alongside the sample.</p></article>
+      <article><h3>Catalog preferences</h3><img src="settings/catalog.png" alt="Translation cards with favorite hearts, switches and reorder handles"><p>Use a switch for inclusion, a heart for the preferred work, and a handle for ordering. Preserve protected entries and show the enabled count. Keep a single-language catalog flat. Offer “Enable all” when entries are disabled.</p></article>
+      <article><h3>View selector</h3><img src="settings/view.png" alt="Tile and Full view buttons"><p>Place mutually exclusive display modes in a compact button group near the collection. Expose the active mode with <code>aria-pressed</code> and retain it after reload.</p></article>
+    </div>
+  </section>
+  <section id="feedback"><h2>Actions &amp; feedback</h2>
+    <div class="grid">
+      <article><h3>Grouped edits &amp; advanced limits</h3><img src="settings/session.png" alt="Review session limits and the advanced session limits disclosure"><p>Show common fields first. Put category caps and queue order behind a named disclosure. A single save action applies the related fields together and reports the result near the form.</p></article>
+      <article><h3>Saving a preference</h3><dl><dt>Ready</dt><dd>Show the saved choice or enabled count in the collapsed row.</dd><dt>Saving</dt><dd>For an immediate choice such as Quran script, show the pending state and disable the choice while the request is in flight.</dd><dt>Saved</dt><dd>Update the row summary and confirm the change beside the control.</dd><dt>Failed</dt><dd>Restore the saved selection or switches. Keep a failed form draft available for retry and exclude it from unrelated saves.</dd><dt>Signed out</dt><dd>Explain when sign-in is needed. Keep account-backed writes unavailable.</dd></dl></article>
+    </div>
+  </section>
+  <section id="adoption"><h2>Adding a finalized page</h2>
+    <p>Find the existing control by the task it supports. If the behavior matches, reuse the foundation tokens and link the page as another example. For a new control or meaningful variation, add an entry in its functional category with the source, rendered specimen, and interaction states that matter. Record desktop and phone behavior wherever they differ.</p>
+    <p>The current examples come from <a href="../../views/settings.ejs">the Settings beta template</a>, its <a href="../../public/static/css/settings-beta.css">component styles</a>, and the <a href="../../public/static/js/settings-filter.js">local search implementation</a>. The catalog specimen uses sample account data. Use the <a href="index.html#controls">control comparisons</a> to find candidates as other pages are finalized.</p>
+  </section>
+</main>
+</body></html>

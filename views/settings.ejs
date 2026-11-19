@@ -12,6 +12,7 @@
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
 
 <% if (settingsBeta) { %>
+<link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/ux-foundations.css') %>?v=<%= utils.scriptAssetVersion() %>">
 <link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/settings-beta.css') %>?v=<%= utils.scriptAssetVersion() %>">
 <% } %>
 </head>
@@ -280,7 +281,7 @@
       ['payments', 'Payments', 'Points and billing', renderPayments]
     ] }
   ]; %>
-<main class="settings-beta">
+<main class="settings-beta ux-system">
   <div class="settings-beta-heading">
     <div><h1>Settings <small>Beta</small></h1><p id="settings-account-status" role="status">Loading account settings…</p></div>
     <a href="<%= settingsPath %>">Classic settings</a>
