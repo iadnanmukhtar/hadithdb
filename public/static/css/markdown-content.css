@@ -1,5 +1,7 @@
 @font-face { font-family: Hafs; font-style: normal; src: url('/static/fonts/kd-hafs.woff2'); }
 .markdown-video-previews { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; margin-block: 1.5rem; }
+/* Reader paragraphs indent their first line; preview titles and metadata must not. */
+.markdown-video-previews { text-indent: 0; }
 .markdown-video-preview { display: grid; grid-template-columns: minmax(0, 28%) minmax(0, 1fr); align-items: start; gap: 1rem; width: 100%; text-decoration: none; font-family: var(--bs-font-sans-serif, system-ui, sans-serif); text-align: start; direction: ltr; }
 :is(.notebook-markdown, .content-markdown) a.markdown-video-preview { color: inherit; text-decoration: none; }
 .markdown-video-thumbnail { display: grid; place-items: center; position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: .65rem; background: #20242a; color: white; overflow: hidden; }
