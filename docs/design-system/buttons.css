@@ -1,0 +1,24 @@
+.pairings { display: grid; gap: 1rem; margin-top: 1.5rem; }
+.pairings article { display: grid; grid-template-columns: minmax(12rem, 1fr) minmax(0, 1.25fr); column-gap: 2rem; align-items: center; }
+.pairings h2 { margin-bottom: .3rem; }
+.pairings p { grid-column: 1; margin: 0; color: var(--ux-muted); }
+.specimen { grid-column: 2; grid-row: 1 / 3; display: grid; justify-items: end; align-content: space-between; gap: 1.25rem; padding: 1rem; background: var(--ux-inset); border-radius: .55rem; }
+.save, .progress { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: .5rem .9rem; font: 600 1rem/1.3 var(--ux-font-ui); cursor: pointer; }
+.save { border: 1px solid transparent; color: white; min-width: 12.2rem; }
+.ocean .save { border-color: #175780; border-radius: .65rem; background: linear-gradient(175deg, #287cab, #206894 58%, #17577e); box-shadow: inset 0 1px #ffffff38, 0 2px 4px #12364826; }
+.indigo .save { border-color: #343a67; border-radius: .4rem; background: linear-gradient(110deg, #535c9b, #323c6b 68%, #273053); box-shadow: inset 0 1px #ffffff30; }
+.teal .save { border-color: #205d64; border-radius: 1.15rem; background: radial-gradient(ellipse at 22% 0%, #367f84, transparent 65%), linear-gradient(155deg, #286e78, #184c57); box-shadow: 0 3px 7px #174c5726; }
+.ocean .progress { color: var(--ux-accent); text-decoration: none; }
+.indigo .progress { background: #eaeaf5; color: #444d85; border-radius: .4rem; text-decoration: none; }
+.teal .progress { color: #225f69; text-underline-offset: .22em; }
+.progress:hover { text-decoration: underline; }
+.save:enabled:hover { filter: brightness(1.06); }
+.save:enabled:active { transform: translateY(1px); box-shadow: none; }
+.save:disabled { cursor: wait; opacity: .74; }
+.save:focus-visible { outline: var(--ux-focus-ring); outline-offset: 3px; }
+dialog { max-width: min(90vw, 25rem); padding: 1.5rem; border: 1px solid var(--ux-border); border-radius: .65rem; }
+dialog::backdrop { background: #192a3a55; }
+@media (max-width: 650px) {
+  .pairings article { display: block; }
+  .specimen { margin-top: .85rem; }
+}

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Button options · HadithDB</title>
+  <link rel="stylesheet" href="../../public/static/css/ux-foundations.css">
+  <link rel="stylesheet" href="library.css">
+  <link rel="stylesheet" href="buttons.css">
+</head>
+<body class="ux-system">
+<header><img src="../../public/static/img/logo2.svg" alt="" width="32" height="32"><strong>HadithDB</strong><a href="library.html">Component library</a></header>
+<main>
+  <h1>Button options</h1>
+  <p class="intro">Three treatments for the same review settings. Try Save to preview its pending state.</p>
+  <div class="pairings">
+    <article class="ocean">
+      <h2>1. Ocean blue</h2>
+      <p>A satin blue gradient with a quiet lower edge. The progress link uses the same text treatment as “Enable all”.</p>
+      <div class="specimen"><a class="progress" href="#progress-preview">Memorization Progress</a><button class="save">Save Quran Memorization</button></div>
+    </article>
+    <article class="indigo">
+      <h2>2. Midnight indigo</h2>
+      <p>A diagonal sweep from indigo to ink with a crisp, squared edge. A pale secondary button gives progress its own target.</p>
+      <div class="specimen"><a class="progress" href="#progress-preview">Memorization Progress</a><button class="save">Save Quran Memorization</button></div>
+    </article>
+    <article class="teal">
+      <h2>3. Deep teal</h2>
+      <p>A rounded primary with a soft highlight across the top. A simple underlined link keeps the second action light.</p>
+      <div class="specimen"><a class="progress" href="#progress-preview">Memorization Progress</a><button class="save">Save Quran Memorization</button></div>
+    </article>
+  </div>
+  <p id="save-status" role="status"></p>
+  <dialog id="progress-preview"><h2>Memorization Progress</h2><p>In Settings, this link opens your review progress.</p><form method="dialog"><button class="ux-text-action">Close preview</button></form></dialog>
+</main>
+<script>
+  const dialog = document.querySelector('dialog');
+  for (const link of document.querySelectorAll('.progress')) {
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      dialog.showModal();
+    });
+  }
+  for (const button of document.querySelectorAll('.save')) {
+    button.addEventListener('click', () => {
+      const label = button.textContent;
+      const status = document.querySelector('#save-status');
+      status.textContent = '';
+      button.disabled = true;
+      button.textContent = 'Saving…';
+      setTimeout(() => {
+        button.textContent = label;
+        button.disabled = false;
+        status.textContent = button.closest('article').querySelector('h2').textContent + ' save preview complete.';
+      }, 800);
+    });
+  }
+</script>
+</body>
+</html>
