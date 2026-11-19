@@ -45,3 +45,6 @@ docs/community-substack/**/*.jpeg
 docs/community-substack/**/*.png
 docs/community-substack/**/*.webp
 docs/community-substack/**/*.gif
+
+# Web design reference and its reviewed page captures.
+!docs/design-system/
