@@ -1319,7 +1319,7 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
 	  random.primaryNarratorOnly = true;
 	  if (random.remark != 2) {
 		await HdithMetadata.attachClassifications([random]);
-		random.hdithMetadata = await HdithMetadata.forHadith(random.actual ? random.actual.id : random.id, random) || {};
+		random.hdithMetadata = await HdithMetadata.forHadith(random.actual ? random.actual.id : random.id) || {};
 		random.hdithMetadata.grades = HdithMetadata.withPrimaryGrade(random.hdithMetadata.grades, random);
 	  }
 	  var admin = (req.admin);
@@ -1719,7 +1719,7 @@ router.get('/:bookAlias\::num', async function (req, res, next) {
   }
   results[0].single = true;
   if (results[0].book_alias !== 'quran' && results[0].doctype !== 'sirah') {
-	results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id, results[0]) || {};
+	results[0].hdithMetadata = await HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {};
     results[0].hdithMetadata.grades = HdithMetadata.withPrimaryGrade(results[0].hdithMetadata.grades, results[0]);
   }
   if (results[0].book_alias === 'quran')
