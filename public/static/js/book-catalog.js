@@ -16,6 +16,14 @@
     toolbar.append(cachedTabs); navigation.append(toolbar);
     header.insertBefore(navigation, header.querySelector('.site-navbar-search-row'));
   }
+  var picker = document.querySelector('.catalog-collection-picker select');
+  if (picker) {
+    picker.closest('label').hidden = false;
+    picker.addEventListener('change', function () { window.location.assign(picker.value); });
+    document.addEventListener('shown.bs.tab', function (event) {
+      if (event.target.matches('[data-book-catalog-tab]')) picker.value = event.target.getAttribute('href');
+    });
+  }
   if (page.querySelector('._e') || typeof HTMLDialogElement === 'undefined') return;
 
   var sizeLabels = { sm: 'S', md: 'M', lg: 'L' };

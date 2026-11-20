@@ -18,5 +18,12 @@
       </li>
       <% }); %>
     </ul>
+    <label class="catalog-collection-picker" hidden>Collection
+      <select aria-label="Book collection">
+        <% catalogNavigationTabs.forEach(function (tab) { %>
+        <option value="/books?<%= tab.query || tab.key %>"<% if (tab.key === catalogNavigationType) { %> selected<% } %>><%= tab.label %></option>
+        <% }); %>
+      </select>
+    </label>
   </div>
 </nav>

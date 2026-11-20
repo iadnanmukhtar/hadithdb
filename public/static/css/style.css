@@ -13704,17 +13704,14 @@ main.book-catalog-page {
 .book-catalog-dates .book-catalog-publication { flex-shrink: 0; }
 .book-catalog-dates .book-catalog-death { margin-top: 0; padding-top: 0; }
 
-.book-catalog-classifications { display: flex; flex-wrap: wrap; gap: .25rem; }
+.book-catalog-classifications { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .4rem; color: var(--bs-secondary-color); font-size: var(--ux-caption-size, .82rem); line-height: 1.5; }
 .book-catalog-size-filters { display: inline-flex; align-items: center; gap: .25rem; }
 .book-catalog-page [data-book-catalog-group-filter=""],
 .book-catalog-page [data-tafsir-group-filter=""] { flex: 0 0 auto; }
 .book-catalog-size-filters .btn { font-size: .75rem; border-radius: .25rem; }
-.book-catalog-pill {
-	display: inline-block; max-width: 100%; padding: .1rem .4rem;
-	border: 1px solid var(--bs-border-color); border-radius: 1rem;
-	font-size: var(--ux-caption-size, .65rem); line-height: 1.4; color: var(--bs-secondary-color); overflow-wrap: anywhere;
-}
-.book-catalog-type-pill { color: var(--c-accent); background: var(--c-primary-soft-08); }
+.book-catalog-pill { max-width: 100%; overflow-wrap: anywhere; }
+.book-catalog-type-pill { font-weight: 600; }
+.book-catalog-pill:not(:last-child)::after { content: "·" / ""; margin-inline-start: .4rem; }
 .book-catalog-summary .tafsir-book-title-pair,
 .book-catalog-summary .tafsir-book-meta { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
 .book-catalog-summary .tafsir-book-title-pair { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; }

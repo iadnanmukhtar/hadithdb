@@ -12,28 +12,33 @@
 .book-catalog-page :is(button, summary, a):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a, .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
-.book-catalog-summary .tafsir-book-title-pair { align-items: start; }
+/* Keep the two names together when they fit, and let a long title take its own line. */
+.book-catalog-summary .tafsir-book-title-pair { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .5rem; padding-inline-end: 1.65rem; }
+.book-catalog-summary .tafsir-book-title-line { min-width: 0; max-width: 100%; }
+.book-catalog-summary .tafsir-book-title-pair > .book-catalog-details-button { position: absolute; inset-block-start: 0; inset-inline-end: 0; min-width: 1.5rem; min-height: 1.5rem; }
 
 .book-catalog-page > h1 { --content-size-h1: var(--ux-title-size); font-family: inherit; font-weight: var(--ux-heading-weight); margin: 0 0 .65rem; }
 .book-catalog-summary .tafsir-book-title-line { --content-size-h3: var(--ux-item-size); font-weight: var(--ux-heading-weight); }
 .book-catalog-summary .tafsir-book-title-line:lang(ar),
-.book-catalog-summary .tafsir-book-title-line :lang(ar) { font-size: var(--ux-arabic-item-size) !important; line-height: 1.6; }
+.book-catalog-summary .tafsir-book-title-line :lang(ar) { font-size: var(--ux-item-size) !important; font-weight: 400; line-height: 1.55; }
 
 .top-nav-desktop-actions a.nav-link, .book-catalog-navigation .nav-link { font: 600 1rem/1.35 var(--ux-font-ui); }
+.book-catalog-navigation { background: transparent; padding-block: 0; }
 .book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
 .book-catalog-navigation .book-catalog-tabs {
-  flex-wrap: nowrap; justify-content: safe center; max-width: 100%; overflow-x: auto;
-  gap: .2rem; margin: 0; padding: .2rem; border: 0; background: var(--bs-tertiary-bg); border-radius: .5rem;
+  flex-wrap: nowrap; max-width: 100%; overflow-x: auto; gap: .75rem; margin: 0; border: 0;
 }
 .book-catalog-navigation .nav-item { flex: 0 0 auto; }
 .book-catalog-navigation .nav-link {
-  display: grid; place-items: center; min-height: 2.4rem; padding: .3rem .65rem; margin: 0;
-  border: 0; border-radius: .4rem; font-size: 1.05rem; white-space: nowrap; color: var(--bs-secondary-color);
+  display: grid; place-items: center; min-height: 2.55rem; padding: .45rem .35rem; margin: 0;
+  border: 0; border-bottom: 3px solid transparent; border-radius: 0; white-space: nowrap; color: var(--bs-secondary-color);
 }
-.book-catalog-navigation .nav-link:hover { color: var(--bs-body-color); background: var(--bs-body-bg); }
-.book-catalog-navigation .nav-link.active { background: var(--ux-midnight-fill); color: white; }
-.book-catalog-navigation .nav-link:focus-visible { outline: 2px solid var(--bs-emphasis-color); outline-offset: -2px; }
-.book-catalog-navigation .nav-link.active:focus-visible { outline-color: white; }
+.book-catalog-navigation .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }
+.site-navbar .book-catalog-navigation .nav-link.active {
+  color: var(--bs-emphasis-color); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
+}
+.book-catalog-navigation .nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
+.catalog-collection-picker { display: none; }
 
 .tafsir-group-rail { font-family: var(--ux-font-ui); }
 .tafsir-group-rail .heading-toc-book-name { font-size: 1.12rem; font-weight: 650; letter-spacing: normal; text-transform: none; }
@@ -41,5 +46,7 @@
 .tafsir-rail-group ul { font-size: .94rem; }
 @media (max-width: 700px) {
   .catalog-facets[open] { flex-basis: 100%; }
-  .book-catalog-navigation .book-catalog-tabs { justify-content: start; }
+  .book-catalog-navigation:has(.catalog-collection-picker:not([hidden])) .book-catalog-tabs { display: none; }
+  .catalog-collection-picker:not([hidden]) { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; color: var(--bs-secondary-color); font: 400 .95rem/1.4 var(--ux-font-ui); }
+  .catalog-collection-picker select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: 600 1rem/1.4 var(--ux-font-ui); }
 }
