@@ -14,6 +14,7 @@ beforeEach(() => {
       calls.push([sql, values]);
       if (sql.startsWith('SELECT id,shortName,shortName_en FROM graders WHERE id=')) return cb(null, missing ? [] : [{ id: 7, ...grader }]);
       if (sql.startsWith('SELECT id FROM graders WHERE (')) return cb(null, duplicate ? [{ id: 8 }] : []);
+      if (sql.includes('FROM hdith_hadith_grades hg')) return cb(null, [{ hadith_id: 456, alias: 'adab' }]);
       if (sql.includes('FROM hadiths h')) return cb(null, [{ hadith_id: 123, alias: 'bukhari' }]);
       if (failWrite) return cb(new Error('Database write failed'));
       cb(null, { insertId: 28, affectedRows: 1 });
@@ -25,13 +26,13 @@ afterEach(() => { jest.restoreAllMocks(); delete global.dbPool; delete global.qu
 
 test('creates a real legacy grader with an automatically assigned ID and all four names', async () => {
   const result = await Graders.save('new', grader);
-  expect(result).toMatchObject({ id: 28, ...grader, affected_hadith_ids: [] });
+  expect(result).toMatchObject({ id: 28, ...grader, affected_hadith_ids: [456] });
   expect(calls).toContainEqual(['INSERT INTO graders (shortName,shortName_en,name,name_en) VALUES (?,?,?,?)', Object.values(grader)]);
   expect(connection.commit).toHaveBeenCalled();
 });
 test('edits the existing ID and finds hadiths requiring cache and index refresh', async () => {
   const result = await Graders.save('7', grader);
-  expect(result).toMatchObject({ id: 7, affected_hadith_ids: [123], affected_book_aliases: ['bukhari'] });
+  expect(result).toMatchObject({ id: 7, affected_hadith_ids: [123, 456], affected_book_aliases: ['bukhari', 'adab'] });
   expect(calls).toContainEqual(['UPDATE graders SET shortName=?,shortName_en=?,name=?,name_en=? WHERE id=?', [...Object.values(grader), 7]]);
   expect(calls.some(([sql]) => /UPDATE hadiths|INSERT INTO graders/.test(sql))).toBe(false);
 });

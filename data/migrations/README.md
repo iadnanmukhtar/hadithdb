@@ -46,3 +46,15 @@ The exact expensive `SELECT * FROM v_hadiths WHERE hId=... LIMIT 1` pattern had 
 Commentary action-bar/source identity requests call `ContentItems.source` → `Sharh.entryById`. They now ask only for the owner's identity, bypassing Elasticsearch/full reader-view hydration entirely. Full Sharh reading still validates current structural identity and retains the scoped SQL fallback. Other corpus-wide `v_hadiths` consumers (indexing/downloads and legacy admin queries without this exact pattern) are outside this narrow change.
 
 Focused checks include `mysqlLoadReduction`, `sharhPassage`, `mcpQuranNavigation`, `quranCacheInvalidation`, `hadithMetadataBatch`, `contentItems`, and `communityActivitySource` Jest suites. Two existing `hdithMetadataDisplay` static assertions about CSS/markup fail against unchanged template/stylesheet files; they are unrelated to this SQL change. Existing unrelated worktree edits must not be included inadvertently in a deployment. Do not clear all caches as part of rollout; compare MySQL statement counts/rows examined and worker CPU after the approved migration and application deployment.
+
+### Elasticsearch grading opinions
+
+Deploy the reader and index writers together before backfilling. During the transition the reader accepts versioned opinions, including empty arrays, and loads missing grades from MySQL. Virtual references use the physical hadith ID.
+
+```sh
+node bin/utils/backfill-hadith-grade-index.js
+node bin/utils/backfill-hadith-grade-index.js --apply
+node bin/utils/backfill-hadith-grade-index.js
+```
+
+The first and last commands count existing physical documents that need upgrading. The last count should be zero. The backfill updates only grade fields and checks Elasticsearch document revisions so concurrent edits can be retried. SQL records without a matching Elasticsearch document are skipped.
