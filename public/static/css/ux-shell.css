@@ -26,8 +26,18 @@
 .ux-masthead .top-nav-menu-toggle,.ux-masthead .top-nav-icon-link,.ux-masthead .nav-auth-toggle { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; color: var(--shell-ink); }
 .ux-masthead .nav-google-signin,.ux-masthead .nav-google-placeholder { min-width: 44px; min-height: 44px; }
 .ux-masthead #icon-menu,.ux-masthead .top-nav-icon-link > i { font-size: 21px; line-height: 1; }
-.ux-masthead .command-search-compact-trigger { gap: .45rem; padding: .4rem .75rem; border: 1px solid var(--shell-line); border-radius: .55rem; font: 600 .95rem/1 var(--ux-font-ui); }
-.ux-masthead .top-nav-menu-toggle:hover,.ux-masthead .top-nav-icon-link:hover { background: var(--bs-tertiary-bg); }
+.ux-masthead .command-search-compact-trigger {
+  gap: .55rem; padding: .3rem .65rem .3rem .85rem; white-space: nowrap;
+  border: 0; border-radius: 2rem; background: var(--ivory-inset, var(--bs-tertiary-bg));
+  color: var(--shell-ink); font: 500 .95rem/1.25 var(--ux-font-ui);
+}
+.ux-masthead .command-search-compact-trigger > i { font-size: 18px; }
+.ux-masthead .command-search-compact-trigger kbd {
+  margin-inline-start: .45rem; padding: .15rem .35rem; border-radius: .3rem;
+  background: var(--shell-surface); color: var(--bs-secondary-color); font: 600 .76rem/1.2 var(--ux-font-ui);
+}
+.ux-masthead .command-search-mobile-trigger { padding: 0; border-radius: 50%; }
+.ux-masthead .top-nav-menu-toggle:hover,.ux-masthead .top-nav-icon-link:hover { background: var(--bs-secondary-bg); }
 .ux-masthead .book-catalog-navigation { border-top: 1px solid var(--shell-line); }
 .ux-masthead :is(a,button,select):focus-visible,.ux-footer a:focus-visible { outline: 2px solid var(--ivory-accent,var(--bs-primary)); outline-offset: -2px; }
 
