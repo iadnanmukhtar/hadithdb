@@ -9,7 +9,8 @@
   --ux-font-ui: 'Source Sans 3', system-ui, sans-serif;
   --ux-item-size: 1.24rem;
   --ux-caption-size: .82rem;
-  --ux-midnight-fill: linear-gradient(110deg, #535c9b, #323c6b 68%, #273053);
+  --ux-midnight-deep: #273053;
+  --ux-midnight-fill: linear-gradient(110deg, #535c9b, #323c6b 68%, var(--ux-midnight-deep));
 }
 
 .ux-system {

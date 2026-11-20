@@ -1,5 +1,5 @@
 /* The beta shell keeps the brand, menu, search and account in one stable row. */
-.ux-masthead, .ux-footer {
+.ux-masthead {
   --shell-surface: var(--ivory-surface, var(--bs-body-bg));
   --shell-ink: var(--ivory-text, var(--bs-emphasis-color));
   --shell-line: var(--ivory-border, var(--bs-border-color));
@@ -39,7 +39,7 @@
 .ux-masthead .command-search-mobile-trigger { padding: 0; border-radius: 50%; }
 .ux-masthead .top-nav-menu-toggle:hover,.ux-masthead .top-nav-icon-link:hover { background: var(--bs-secondary-bg); }
 .ux-masthead .book-catalog-navigation { border-top: 1px solid var(--shell-line); }
-.ux-masthead :is(a,button,select):focus-visible,.ux-footer a:focus-visible { outline: 2px solid var(--ivory-accent,var(--bs-primary)); outline-offset: -2px; }
+.ux-masthead :is(a,button,select):focus-visible { outline: 2px solid var(--ivory-accent,var(--bs-primary)); outline-offset: -2px; }
 
 .ux-masthead:has(.offcanvas:is(.show,.showing,.hiding)) { z-index: 1045; }
 .ux-masthead #offcanvas-topnav { --bs-offcanvas-width: min(22rem, 92vw); background: var(--shell-surface); }
@@ -48,20 +48,34 @@
 .ux-masthead .offcanvas-body { padding: .4rem 1.15rem 1.4rem; }
 .ux-menu-group + .ux-menu-group { border-top: 1px solid var(--shell-line); }
 .ux-menu-group { padding-block: .7rem; }
-.ux-menu-group h2,.ux-footer h2 { margin: 0 0 .3rem; font: 650 1.08rem/1.35 var(--ux-font-ui); }
+.ux-menu-group h2 { margin: 0 0 .3rem; font: 650 1.08rem/1.35 var(--ux-font-ui); }
 .ux-menu-group ul { list-style: none; margin: 0; padding: 0; }
 .ux-menu-group li > a { display: flex; gap: .7rem; align-items: center; min-height: 44px; padding: .35rem .5rem; color: inherit; text-decoration: none; border-radius: .35rem; }
 .ux-menu-group a:is(:hover,[aria-current]) { background: var(--bs-tertiary-bg); }
 .ux-menu-group .app-menu-icon,.ux-masthead [data-profile-menu] .app-menu-icon { flex: 0 0 20px; width: 20px; height: 20px; font-size: 18px; line-height: 20px; }
 
-.ux-footer { border-top: 3px solid; border-image: var(--ux-midnight-fill) 1; background: var(--shell-surface); margin-top: 3rem; padding: 2rem clamp(1rem,5vw,4rem) 6rem; }
-.ux-footer-inner { max-width: 70rem; margin: auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1.3rem 2rem; }
-.ux-footer a { color: inherit; text-decoration: none; }
+.ux-footer {
+  margin-top: 2rem;
+  padding: .75rem clamp(1rem, 5vw, 4rem);
+  background: var(--ux-midnight-deep);
+  color: #f8f6ee;
+  font: 400 .875rem/1.35 var(--ux-font-ui);
+}
+.ux-footer-inner, .ux-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 1rem;
+}
+.ux-footer-inner { max-width: 70rem; margin: auto; gap: .25rem 1.5rem; }
+.ux-footer a { display: inline-flex; align-items: center; min-height: 2rem; color: inherit; text-decoration: none; }
 .ux-footer a:hover { text-decoration: underline; }
-.ux-footer-brand { display: inline-flex; gap: .6rem; align-items: center; align-self: start; width: fit-content; font: 650 1.4rem/1.2 var(--ux-font-ui); }
-.ux-footer nav { display: grid; align-content: start; justify-items: start; }
-.ux-footer nav a { padding-block: .3rem; }
-.ux-footer .ux-footer-legal { grid-column: 1/-1; display: flex; flex-wrap: wrap; gap: 1.2rem; border-top: 1px solid var(--shell-line); padding-top: .8rem; font-size: .9rem; }
+.ux-footer a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.ux-footer-brand { margin-inline-end: auto; gap: .4rem; font-size: 1rem; font-weight: 650; }
+.ux-footer-legal { opacity: .85; }
+@media (pointer: coarse) {
+  .ux-footer a { min-height: 44px; }
+}
 @media(max-width:991.98px) {
   .ux-masthead .site-navbar-main > menu.d-md-block { display: none !important; }
   .ux-masthead .site-navbar-main > menu.d-md-none { display: block !important; }
@@ -72,8 +86,7 @@
   .ux-masthead .site-navbar-menu-toggle { margin-inline-end: .15rem; }
   .ux-masthead .site-header-brand .logo { width: 28px; height: 28px; }
   .ux-masthead .site-header-brand { gap: .3rem; }
-  .ux-footer-inner { grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .ux-footer-brand { grid-column: 1/-1; margin-bottom: .6rem; }
+  .ux-footer-inner { align-items: flex-start; flex-direction: column; }
 }
 
 .ux-masthead [data-profile-menu] {
