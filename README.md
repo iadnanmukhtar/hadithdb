@@ -40,6 +40,8 @@ and depth-dependent call/source limits bound work; inspect coverage and retrieve
 truncated or omitted sources when consequential. Research depth does not dictate
 answer length.
 
+`search_history` searches every book catalogued as History or Sirah. Use the event or person from the conversation as the search subject for historical follow-ups.
+
 `list_hadith_commentaries`, `search_hadith_commentary` and
 `lookup_hadith_commentary` expose the existing shuruh catalog and index. Search
 supports an exact commentary `source` alias and/or associated hadith `reference`;

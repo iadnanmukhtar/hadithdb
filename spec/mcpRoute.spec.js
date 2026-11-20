@@ -240,6 +240,7 @@ describe('public MCP Streamable HTTP route', () => {
       'lookup_tafsir',
       'search_tafsir',
       'search_hadith',
+      'search_history',
       'lookup_hadith_detail'
     ]);
     for (const tool of payload.result.tools) {
@@ -262,7 +263,7 @@ describe('public MCP Streamable HTTP route', () => {
       .toHaveProperty('ayah');
     expect(payload.result.tools.find(tool => tool.name === 'search_tafsir').outputSchema.properties.results.items.properties)
       .toEqual(expect.objectContaining({ source: expect.any(Object), text_arabic: expect.any(Object), text_english: expect.any(Object) }));
-    for (const name of ['search_quran', 'search_tafsir', 'search_hadith']) {
+    for (const name of ['search_quran', 'search_tafsir', 'search_hadith', 'search_history']) {
       const definition = payload.result.tools.find(tool => tool.name === name);
       expect(definition.inputSchema.properties).toHaveProperty('cursor');
       expect(definition.outputSchema.properties.pagination.properties).toEqual(expect.objectContaining({
@@ -500,10 +501,15 @@ describe('Hadith MCP tool service', () => {
     expect(result.structuredContent.canonical_url).toBe('https://hadith.example/bukhari:1');
   });
 
-  test.each(['sirah', 'history'])('searches every sirah and history book for the %s scope', async scope => {
+  test.each([
+    ['search_history', {}],
+    ['search_hadith', { books: ['sirah'] }],
+    ['search_hadith', { books: ['history'] }]
+  ])('%s searches every Sirah and History book with %j', async (tool, args) => {
     const previousBooks = global.books;
     global.books = [
       { alias: 'ibnhisham', type: 'sirah' },
+      { alias: 'yqsirah', type: 'sirah' },
       { alias: 'islamweb-history', type: 'history' },
       { alias: 'bukhari', type: 'hadith' }
     ];
@@ -516,19 +522,19 @@ describe('Hadith MCP tool service', () => {
     };
 
     try {
-      const result = await HadithMcp.callTool('search_hadith', {
-        query: 'migration',
-        books: [scope]
+      const result = await HadithMcp.callTool(tool, {
+        query: 'Abyssinia',
+        ...args
       }, { baseUrls: urls, search });
 
-      expect(requestedFilters).toEqual(['ibnhisham', 'islamweb-history']);
+      expect(requestedFilters).toEqual(['ibnhisham', 'yqsirah', 'islamweb-history']);
       expect(requestedOptions).toEqual(expect.objectContaining({
         excludeQuranAndTafsir: true,
         resultSize: 100,
         resultLimit: 600,
         redactLogs: true
       }));
-      expect(result.structuredContent.books).toEqual(['ibnhisham', 'islamweb-history']);
+      expect(result.structuredContent.books).toEqual(['ibnhisham', 'yqsirah', 'islamweb-history']);
       expect(result.structuredContent.pagination).toEqual(expect.objectContaining({
         returned: 0,
         has_more: false,

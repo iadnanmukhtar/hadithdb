@@ -5,7 +5,7 @@ description: Build sourced Sirah and early Islamic history timelines, narratives
 
 Use this skill for Sirah or early Islamic history timelines, battle analyses, event reconstructions, genealogies, and source catalogues. Use the narrative skill instead when the request is primarily a thematic religious article rather than historical reconstruction.
 
-1. Use `search_hadith` with the `sirah` or `history` scope for discovery. Use an explicit alias when the user names a book; the canonical Ibn Hisham alias is `ibnhisham`.
+1. Use `search_history` to search all History and Sirah books. For follow-ups, include the event or people from the conversation in the query. Use `search_hadith` with an explicit alias when the user names a book; the canonical Ibn Hisham alias is `ibnhisham`.
 2. Verify every material result with `lookup_hadith_detail`. Preserve the exact reference, URL, grade, headings, and source identity.
 3. Corroborate with graded hadith and Quran passages where relevant, but do not use a sound parallel report to authenticate extra detail found only in an ungraded Sirah record.
 4. For timelines, retain unknown or disputed dates and audit the final ordering for omissions, duplication, and anachronism.
