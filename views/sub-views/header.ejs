@@ -147,7 +147,7 @@
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, betaShell ? '/books/beta' : '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="bi bi-people-fill top-nav-community-icon" aria-hidden="true"></i> Community</a></li>
         <li class="nav-item command-search-compact-item">
-          <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="<%= betaShell ? 'Search the library' : 'Search' %>">
+          <button type="button" class="btn<%= betaShell ? '' : ' btn-link nav-link' %> top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="<%= betaShell ? 'Search the library' : 'Search' %>">
             <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
             <% if (betaShell) { %>
               <span>Search the library</span>

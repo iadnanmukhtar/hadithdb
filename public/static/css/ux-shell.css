@@ -27,7 +27,7 @@
 .ux-masthead .nav-google-signin,.ux-masthead .nav-google-placeholder { min-width: 44px; min-height: 44px; }
 .ux-masthead #icon-menu,.ux-masthead .top-nav-icon-link > i { font-size: 21px; line-height: 1; }
 .ux-masthead .command-search-compact-trigger {
-  gap: .55rem; padding: .3rem .65rem .3rem .85rem; white-space: nowrap;
+  gap: .55rem; padding: .3rem .85rem; white-space: nowrap;
   border: 0; border-radius: 2rem; background: var(--ivory-inset, var(--bs-tertiary-bg));
   color: var(--shell-ink); font: 500 .95rem/1.25 var(--ux-font-ui);
 }
