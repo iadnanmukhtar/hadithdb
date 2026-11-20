@@ -52,7 +52,7 @@
 .ux-menu-group ul { list-style: none; margin: 0; padding: 0; }
 .ux-menu-group li > a { display: flex; gap: .7rem; align-items: center; min-height: 44px; padding: .35rem .5rem; color: inherit; text-decoration: none; border-radius: .35rem; }
 .ux-menu-group a:is(:hover,[aria-current]) { background: var(--bs-tertiary-bg); }
-.ux-menu-group .app-menu-icon { flex: 0 0 20px; width: 20px; height: 20px; font-size: 18px; line-height: 20px; }
+.ux-menu-group .app-menu-icon,.ux-masthead [data-profile-menu] .app-menu-icon { flex: 0 0 20px; width: 20px; height: 20px; font-size: 18px; line-height: 20px; }
 
 .ux-footer { border-top: 3px solid; border-image: var(--ux-midnight-fill) 1; background: var(--shell-surface); margin-top: 3rem; padding: 2rem clamp(1rem,5vw,4rem) 6rem; }
 .ux-footer-inner { max-width: 70rem; margin: auto; display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1.3rem 2rem; }
@@ -75,3 +75,18 @@
   .ux-footer-inner { grid-template-columns: 1fr 1fr; gap: 1rem; }
   .ux-footer-brand { grid-column: 1/-1; margin-bottom: .6rem; }
 }
+
+.ux-masthead [data-profile-menu] {
+  width: min(15rem, calc(100vw - 1rem)); padding: .4rem; margin-top: .3rem;
+  background: var(--shell-surface); color: var(--shell-ink); border: 1px solid var(--shell-line);
+  border-radius: .7rem; box-shadow: 0 .5rem 1.5rem #1618251a;
+}
+.ux-account-name { padding: .55rem .65rem; margin-bottom: .25rem; border-bottom: 1px solid var(--shell-line); font-weight: 650; overflow-wrap: anywhere; }
+.ux-masthead [data-profile-menu] .dropdown-item {
+  display: flex; align-items: center; gap: .7rem; min-height: 44px; padding: .35rem .65rem;
+  border-radius: .35rem; color: inherit; font: 500 1rem/1.35 var(--ux-font-ui);
+}
+.ux-masthead [data-profile-menu] .dropdown-item:is(:hover,:focus) { background: var(--bs-tertiary-bg); }
+.ux-masthead [data-profile-signout] { margin-top: .2rem; padding-top: .2rem; border-top: 1px solid var(--shell-line); }
+:is(.ux-masthead, .books-beta) .app-menu-icon { color: inherit !important; }
+[data-bs-theme="dark"] :is(.ux-masthead, .books-beta) .app-menu-icon-img { filter: brightness(0) invert(1); }

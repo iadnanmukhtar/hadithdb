@@ -135,6 +135,9 @@
     var type = list.dataset.bookCatalogType || (/mushaf/.test(context) ? 'Mushaf'
       : /sharh/.test(context) ? 'Sharḥ' : /tafsir/.test(context) ? 'Tafsir'
       : /translations/.test(context) ? 'Translation' : /sirah|history/.test(context) ? 'History & Sirah' : 'Hadith');
+    var typeIcon = Array.from(page.querySelectorAll('template[data-catalog-icon]')).find(function (icon) {
+      return icon.dataset.catalogIcon === type;
+    });
     var cards = Array.from(list.querySelectorAll('.tafsir-book-row'));
     cards.sort(function (a, b) {
       return Number(a.dataset.bookSortYear || Infinity) - Number(b.dataset.bookSortYear || Infinity) || 0;
@@ -194,6 +197,7 @@
         var pill = document.createElement('span');
         pill.className = 'book-catalog-pill' + (index === 0 ? ' book-catalog-type-pill' : '');
         pill.textContent = label;
+        if (index === 0 && typeIcon) pill.prepend(typeIcon.content.firstElementChild.cloneNode(true));
         classifications.append(pill);
       });
       var languageBadge = details.querySelector('.book-language-badge');

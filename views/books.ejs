@@ -216,6 +216,9 @@
 
     <main class="book-catalog-page<%= betaCatalog ? ' ux-system' : '' %>">
     <% if (betaCatalog) { %>
+    <% for (const [label, icon] of Object.entries({ Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'sirah' })) { %>
+    <template data-catalog-icon="<%= label %>"><%- include('sub-views/menu_icon.ejs', { type: icon }) %></template>
+    <% } %>
     <div class="catalog-beta-heading"><h1 class="ux-page-title"><span data-catalog-title><%= catalogTypes[catalogType].title %></span> <small class="ux-beta-label">Beta</small></h1>
       <a data-catalog-switch href="/books?<%= catalogType %>">Classic books</a></div>
     <% } else { %>
