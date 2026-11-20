@@ -17,10 +17,10 @@
     return value;
   }
   function split(text) {
-    if (!/^---\r?\n/.test(text)) return { body: text, fields: {}, raw: '', header: '' };
+    if (!/^---\r?\n/.test(text)) return { body: text, raw: '' };
     const match = /^---\r?\n([\s\S]*?)^---(?:\r?\n|$)/m.exec(text);
-    if (!match) throw Error('Close YAML frontmatter with a line containing ---.');
-    return { body: text.slice(match[0].length), fields: fields(match[1]), raw: match[1], header: match[0] };
+    if (!match) return { body: text, raw: '' };
+    return { body: text.slice(match[0].length), raw: match[1] };
   }
   window.NotebookFrontmatterEditor = { install({ editor, titleEditor, tagEditor, context, changed, render }) {
     const button = document.getElementById('notebook-frontmatter');
@@ -39,7 +39,9 @@
       });
     }
     function values(data, loading = false) {
-      const saved = split(context().current?.markdown || '').fields;
+      let saved = {};
+      try { saved = fields(split(context().current?.markdown || '').raw); }
+      catch (_) { /* The stored header may be the one being repaired. */ }
       let linked = Object.hasOwn(data.fields, 'links') ? data.fields.links
         : Object.hasOwn(saved, 'links') ? [] : attachments();
       // Before migration, YAML held only the additional links. Show the original
@@ -68,9 +70,14 @@
     }
     function load(markdown) {
       const data = split(markdown || '');
-      const value = values(data, true);
-      input.value = dump(value); savedRaw = input.value; loaded = true;
-      displayedLinks = JSON.stringify(value.links); status.textContent = '';
+      try {
+        const value = values({ fields: fields(data.raw) }, true);
+        input.value = dump(value); displayedLinks = JSON.stringify(value.links); status.textContent = '';
+      } catch (err) {
+        input.value = data.raw; displayedLinks = undefined;
+        status.textContent = err.reason || err.message;
+      }
+      savedRaw = input.value; loaded = true;
       return data.body;
     }
     function markdown(body) {

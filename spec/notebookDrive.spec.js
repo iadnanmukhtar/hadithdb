@@ -594,6 +594,7 @@ test('discovers a directly saved Markdown file and standardizes its frontmatter 
 });
 
 test('imports Markdown without frontmatter using its filename and ignores other file types', async () => {
+  files.set('broken', { id: 'broken', name: 'Broken.md', mimeType: 'text/plain', parents: ['folder'], version: '1', body: '---\ntags: [\n---\nKeep this body' });
   for (const [id, name] of [['plain', 'Untitled.MD'], ['other', 'image.png']])
     files.set(id, { id, name, mimeType: 'text/plain', parents: ['folder'], version: '1', body: 'Note content\n',
       createdTime: '2026-10-16T00:00:00Z', modifiedTime: '2026-10-16T00:00:00Z' });
@@ -603,6 +604,7 @@ test('imports Markdown without frontmatter using its filename and ignores other 
   expect(result.notes[0]).toMatchObject({ title: 'Untitled', tags: [] });
   expect(files.get('plain').body).toContain('title: Untitled');
   expect(files.get('other').version).toBe('1');
+  expect(files.get('broken').version).toBe('1');
 });
 
 test('does not rewrite a directly saved note if Drive changes during discovery', async () => {
@@ -713,4 +715,26 @@ test('large Drive notes save and reopen without a note size cap', async () => {
   const saved = await Drive.save('alice', { ...note({ markdown }), version: 0 });
   expect(saved.markdown).toBe(markdown);
   expect((await Drive.get('alice', saved.source_key)).markdown).toBe(markdown);
+});
+
+test('lists readable files around a broken Drive header and preserves malformed Markdown as text', async () => {
+  const first = await Drive.save('alice', { ...note(), version: 0 });
+  const second = await Drive.save('alice', { ...note({ source_key: 'item:43', title: 'Second' }), version: 0 });
+  const damaged = files.get(mappings.get(first.source_key));
+  damaged.body = '---\nhadithunlocked: {bad json\n---\ntext';
+  const readable = files.get(mappings.get(second.source_key));
+  const body = '---\nbroken: [\n---\n<script>hello</script>';
+  readable.body = readable.body.slice(0, readable.body.lastIndexOf(second.markdown)) + body;
+  const response = await fetch(base, { headers: { Authorization: 'Bearer alice' } });
+  expect(response.status).toBe(200);
+  const page = await response.json();
+  expect(page.skipped).toBe(1);
+  expect(page.notes.map(note => note.source_key)).toEqual([second.source_key]);
+  expect(page.notes[0].markdown).toBe(body);
+  expect(page.notes[0].html).toContain('&lt;script&gt;hello&lt;/script&gt;');
+  expect(await Drive.tagList('alice')).toHaveLength(1);
+  await expect(Drive.get('alice', first.source_key)).rejects.toMatchObject({ status: 422 });
+  const repaired = '---\ntags: [study]\n---\nOriginal body';
+  expect((await Drive.save('alice', { ...page.notes[0], markdown: repaired })).tags).toEqual(['study']);
+  expect(damaged.body).toContain('{bad json');
 });

@@ -3,7 +3,7 @@ const fs = require('fs');
 const vm = require('vm');
 const script = fs.readFileSync(require.resolve('../public/static/js/script.js'), 'utf8');
 const notebook = fs.readFileSync(require.resolve('../public/static/js/notebook.js'), 'utf8');
-const helpers = ['isQuranSubdomainHost', 'quranApiPath'].map(name => script.match(new RegExp(`^function ${name}\\([^]*?^}`, 'm'))[0]).join('\n');
+const helpers = ['isQuranSubdomainHost', 'normalizeQuranScriptChoice', 'quranMushafEditionUrl', 'quranApiPath'].map(name => script.match(new RegExp(`^function ${name}\\([^]*?^}`, 'm'))[0]).join('\n');
 const api = notebook.match(/  async function api\([^]*?\n  }/)[0];
 
 test.each([
@@ -13,7 +13,7 @@ test.each([
   ['localhost', '/notebook', '/api']
 ])('notebook requests stay on their API mount at %s%s', async (hostname, pathname, prefix) => {
   const fetch = jest.fn(async () => ({ ok: true, json: async () => ({}) }));
-  const context = vm.createContext({ window: { location: { hostname, pathname }, hadithAuth: { getToken: async () => 'test-token' } }, fetch });
+  const context = vm.createContext({ URLSearchParams, window: { location: { hostname, pathname }, hadithAuth: { getToken: async () => 'test-token' } }, fetch });
   vm.runInContext(helpers + '\n' + api, context);
   for (const [path, method] of [['?source=tafsir:mokhtasar:2:14', 'GET'], ['/floating', 'GET'], ['/floating', 'PUT'], ['/status', 'POST'], ['/preview', 'POST'], ['/expand', 'POST'], ['', 'PUT'], ['', 'DELETE'], ['?offset=12', 'GET']]) {
     await context.api(path, method);
@@ -21,4 +21,17 @@ test.each([
   }
   const downloadPath = notebook.match(/fetch\((quranApiPath\('\/notebook\/download'\)),/)[1];
   expect(vm.runInContext(downloadPath, context)).toBe(prefix + '/notebook/download');
+});
+
+test.each(['?offset=0', '?source=general%3A12345678-1234-4123-8123-123456789abc'])(
+  'the notebook retries an HTML gateway response once for %s', async path => {
+  const html = { ok: false, status: 502, json: async () => { throw new SyntaxError('Unexpected token <'); } };
+  const page = { notes: [], hasMore: false };
+  const fetch = jest.fn().mockResolvedValue(html).mockResolvedValueOnce(html)
+    .mockResolvedValueOnce({ ok: true, json: async () => page });
+  const context = vm.createContext({ window: { hadithAuth: { getToken: async () => 'token' } }, quranApiPath: path => path, fetch });
+  vm.runInContext(api, context);
+  expect(await context.api(path)).toEqual(page);
+  await expect(context.api(path)).rejects.toThrow('HTTP 502');
+  expect(fetch).toHaveBeenCalledTimes(4);
 });

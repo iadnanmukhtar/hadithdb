@@ -603,3 +603,8 @@ test.each(['baqarah','al-baqarah','BAQARAH'])('surah alias %s expands to the can
   expect(manual.markdown).toContain('/quran:2:255');
  } finally {surahs.pop();}
 });
+
+test('malformed stored tag JSON leaves the note and its inline tags readable', async () => {
+  global.query.mockResolvedValue([{ source_key: 'item:42', markdown: 'Read #later', tags: '[broken' }]);
+  expect((await Notebook.list('alice')).notes[0]).toMatchObject({ markdown: 'Read #later', hashtags: ['later'], tags: [] });
+});

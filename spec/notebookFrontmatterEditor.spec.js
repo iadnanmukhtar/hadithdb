@@ -121,3 +121,18 @@ test('imported frontmatter is kept out of the body editor and round-trips throug
   expect(combined).toContain('author: أحمد');
   expect(combined).toMatch(/---\n# Body$/);
 });
+
+test('opens a note with broken YAML and keeps the original header available for repair', async () => {
+  await page.evaluate(() => {
+    state.current.markdown = '---\ntags: [\n---\n\nOriginal body';
+    editor.value = controls.load(state.current.markdown);
+  });
+  expect(await page.locator('#notebook-editor').inputValue()).toBe('\nOriginal body');
+  expect(await page.evaluate(() => controls.dirty())).toBe(false);
+  expect(await page.evaluate(() => controls.valid())).toBe(false);
+  await page.getByRole('button', { name: 'Show frontmatter', exact: true }).click();
+  expect(await page.locator('#notebook-frontmatter-editor').inputValue()).toBe('tags: [\n');
+  await page.locator('#notebook-frontmatter-editor').fill('tags: [study]');
+  expect(await page.evaluate(() => controls.valid())).toBe(true);
+  expect(await page.evaluate(() => controls.markdown(editor.value))).toContain('---\n\nOriginal body');
+});
