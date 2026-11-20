@@ -13,7 +13,15 @@
 <main>
   <h1>Component library</h1>
   <p class="intro">Settings, email preferences, and the book catalog establish the first patterns for navigation, preferences and feedback. Each entry records a control in use and the behavior another page can reuse.</p>
-  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#catalog">Book discovery</a><a href="#choices">Choices</a><a href="#panels">Panels &amp; forms</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
+  <nav aria-label="Library sections"><a href="#makeover-status">Makeover status</a><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#catalog">Book discovery</a><a href="#choices">Choices</a><a href="#panels">Panels &amp; forms</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
+  <section id="makeover-status"><h2>Current decisions and route status</h2>
+    <p>Makeover work lives on <code>ux-makeover</code>. Ivory is the selected palette, Midnight is the primary action treatment, and Settings beta is the reference for interface hierarchy. The shared tokens and specimens are recorded under <a href="#foundations">Foundations</a>.</p>
+    <dl>
+      <dt>Settings · beta</dt><dd><code>/settings</code> opens classic Settings. <code>/settings/beta</code> holds the preview. The category rail belongs on the right at desktop widths. Search stays in the rail and comes before the panels on phones.</dd>
+      <dt>Books · under review</dt><dd><code>/books</code> opens classic Books. <code>/books/beta</code> holds the preview. The page title must match Settings beta at the same viewport. The revised collection navigation, bilingual titles and classification treatment await visual approval. <a href="#catalog">Current Books specimens</a></dd>
+    </dl>
+    <p>When a decision changes, update its entry here or in the linked component section. Record explicit approval to replace a classic route here before changing its default.</p>
+  </section>
   <section id="foundations"><h2>Foundations</h2>
     <div class="grid">
       <article><h3>Interface type</h3><div class="type-sample">Reading &amp; listening</div><p>Source Sans 3 sets the interface rhythm. Settings and Books beta share <code>ux-page-title</code>, which follows the responsive site heading scale at weight 650. Their titles measure 30.96 px at 1280 px and 25 px at 390 px with the default text size. Body text uses 1 rem with 1.5 line height. Use weight 600 for control labels.</p></article>

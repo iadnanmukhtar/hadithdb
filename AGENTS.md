@@ -1,1 +1,3 @@
-For HadithDB UX makeover work, page consistency audits, and design-system adoption, use [the HadithDB UX audit skill](skills/hadithdb-ux-audit/SKILL.md). Revisit it as each page is finalized and incorporate reusable lessons from observed misses.
+For HadithDB UX makeover work, read the [current decisions and route status](docs/design-system/library.html#makeover-status) and use the [UX audit skill](skills/hadithdb-ux-audit/SKILL.md) before editing. Check the active branch and the real classic and beta entry points. Carry earlier decisions forward when the next request changes only one component or moves to another route.
+
+Record each user decision in the existing library entry in the same change. Label a proposed treatment as under review until the user accepts it. Approval of a component applies to that component. Keep the classic route available until the user explicitly approves replacing it. Update the audit skill when feedback reveals a missed check.
