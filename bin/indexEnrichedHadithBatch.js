@@ -27,7 +27,7 @@ const query = util.promisify(connection.query).bind(connection);
 		rows.forEach(row => { row.hasSupplementaryTransmissions = Boolean(row.hasSupplementaryTransmissions); });
 		await attachNavigation(rows);
 		await attachSharh(rows, idList);
-		await require('../lib/HadithGradeIndex').attach(rows, query);
+		await attachGrades(rows, idList);
 		await require('../lib/HadithNarratorIndex').attach(rows, query);
 		await ensureLiveMapping();
 		await updatePartial(rows);
@@ -68,6 +68,20 @@ async function attachNavigation(rows) {
 		row.next_ref = row.nextId ? `${row._bookAlias}:${next.num}` : null;
 		delete row._bookId;
 		delete row._bookAlias;
+	});
+}
+
+async function attachGrades(rows, idList) {
+	const source = await query(`SELECT hadith_id, source_slug, grader, grade, grade_category_id,
+		source_name, book_page, source_url FROM hdith_hadith_grades
+		WHERE hadith_id IN (${idList}) ORDER BY hadith_id, ordinal`);
+	const grouped = groupByHadith(source);
+	rows.forEach(row => {
+		row.grader_opinions = (grouped.get(Number(row.hId)) || []).map(item => ({
+			source_slug: item.source_slug, grader: item.grader, grade: item.grade,
+			grade_category_id: item.grade_category_id, source: item.source_name,
+			book_page: item.book_page, source_url: item.source_url
+		}));
 	});
 }
 

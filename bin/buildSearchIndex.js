@@ -79,9 +79,41 @@ async function getHadithData(book) {
 		WHERE book_id = ${book.id}
 		${require('./utils/misc-index-scope').miscReferenceFilter(book)}
 		ORDER BY ordinal`);
+	await attachHadithGraderOpinions(rows, book.id);
 	if (Number(book.id) === 0)
 		await attachQuranScriptWords(rows);
 	return rows;
+}
+
+async function attachHadithGraderOpinions(rows, bookId) {
+	if (!rows.length || !(await tableExists('hdith_hadith_grades')))
+		return;
+	const opinionRows = await global.query(`
+		SELECT hg.hadith_id, hg.source_slug, hg.grader, hg.grade, hg.grade_category_id,
+			hg.source_name, hg.book_page, hg.source_url
+		FROM hdith_hadith_grades hg
+		JOIN hadiths h ON h.id=hg.hadith_id
+		WHERE h.bookId=${Number(bookId)}
+		ORDER BY hg.hadith_id, hg.ordinal`);
+	const byHadith = new Map();
+	opinionRows.forEach(opinion => {
+		if (!byHadith.has(opinion.hadith_id)) byHadith.set(opinion.hadith_id, []);
+		byHadith.get(opinion.hadith_id).push({
+			source_slug: opinion.source_slug,
+			grader: opinion.grader,
+			grade: opinion.grade,
+			grade_category_id: opinion.grade_category_id,
+			source: opinion.source_name,
+			book_page: opinion.book_page,
+			source_url: opinion.source_url
+		});
+	});
+	rows.forEach(row => { row.grader_opinions = byHadith.get(row.id) || []; });
+}
+
+async function tableExists(table) {
+	const rows = await global.query(`SHOW TABLES LIKE '${table.replace(/'/g, "''")}'`);
+	return rows.length > 0;
 }
 
 async function attachQuranScriptWords(rows) {

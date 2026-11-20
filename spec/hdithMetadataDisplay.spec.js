@@ -67,7 +67,7 @@ describe('hdith.com metadata display', () => {
 		const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'hadith_metadata.ejs'), 'utf8');
 		const scripts = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'scripts.ejs'), 'utf8');
 		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
-		expect(route).toContain('HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id, results[0]) || {}');
+		expect(route).toContain('HdithMetadata.forHadith(results[0].actual ? results[0].actual.id : results[0].id) || {}');
 		expect(template).toContain('grade.primary && site.editMode');
 		expect(template).toContain('data-prop="hadith.gradeId"');
 		expect(template).toContain('data-prop="hadith.graderId"');
