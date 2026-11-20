@@ -11166,7 +11166,7 @@ function initPageHelpTips(root) {
 		tour.innerHTML = '<div class="quran-help-tips-click-shield" aria-hidden="true"></div>'
 			+ '<div class="quran-help-tips-spotlight" data-quran-help-tips-spotlight aria-hidden="true"></div>'
 			+ '<section class="quran-help-tips-card" data-quran-help-tips-card role="dialog" aria-modal="true" aria-labelledby="quran-help-tips-heading" aria-describedby="quran-help-tips-copy">'
-			+ '<button type="button" class="quran-help-tips-close" data-quran-help-tips-close aria-label="Dismiss tips for this session"><span class="bi bi-x-lg" aria-hidden="true"></span></button>'
+			+ '<button type="button" class="ux-overlay-close quran-help-tips-close" data-quran-help-tips-close aria-label="Dismiss tips for this session"></button>'
 			+ `<span class="quran-help-tips-kicker">${labels[mode]} guide</span>`
 			+ '<h2 id="quran-help-tips-heading" data-quran-help-tips-heading></h2>'
 			+ '<p id="quran-help-tips-copy" data-quran-help-tips-copy></p>'
@@ -18295,7 +18295,7 @@ function openBookPrintRange() {
 	pane.id = 'book-print-range';
 	pane.className = 'content-share-pane';
 	pane.setAttribute('aria-labelledby', 'book-print-heading');
-	pane.innerHTML = '<form><header><h2 id="book-print-heading">Print book</h2><button type="button" data-cancel class="content-share-close" aria-label="Close">×</button></header>'
+	pane.innerHTML = '<form><header><h2 id="book-print-heading">Print book</h2><button type="button" data-cancel class="ux-overlay-close content-share-close" aria-label="Close"></button></header>'
 		+ '<p>Choose an inclusive range to print.</p><label class="d-block mb-3">Print <select name="kind" class="form-select"><option value="sections">Sections in this chapter</option><option value="chapters">Chapters</option></select></label>'
 		+ '<p data-chapter></p><div class="d-flex gap-3 mb-3"><label>Start <input class="form-control" name="start" type="number" min="0" step="any" required></label><label>End <input class="form-control" name="end" type="number" min="0" step="any" required></label></div>'
 		+ '<p role="status" aria-live="polite"></p><div class="d-flex flex-wrap gap-2"><button class="btn btn-primary" type="submit">Print range</button><button class="btn btn-outline-secondary" type="button" data-current>Print current page</button><button class="btn btn-outline-secondary" type="button" data-cancel>Cancel</button></div></form>';
@@ -18404,7 +18404,7 @@ function openContentSharePane(modalRoot, card) {
 		pane.id = 'content-share-pane';
 		pane.className = 'content-share-pane';
 		pane.setAttribute('aria-labelledby', 'content-share-heading');
-		pane.innerHTML = '<header><h2 id="content-share-heading">Share</h2><button type="button" class="content-share-close" aria-label="Close"><i class="bi bi-x-lg" aria-hidden="true"></i></button></header><p class="content-share-source" dir="auto"></p><div class="content-share-options"></div><p class="content-share-status" role="status" aria-live="polite"></p>';
+		pane.innerHTML = '<header><h2 id="content-share-heading">Share</h2><button type="button" class="ux-overlay-close content-share-close" aria-label="Close"></button></header><p class="content-share-source" dir="auto"></p><div class="content-share-options"></div><p class="content-share-status" role="status" aria-live="polite"></p>';
 		document.body.appendChild(pane);
 		pane.querySelector('.content-share-close').addEventListener('click', function () { pane.close(); });
 		pane.addEventListener('click', function (event) { if (event.target === pane) { var rect = pane.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) pane.close(); } });

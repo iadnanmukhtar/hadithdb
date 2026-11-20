@@ -1494,10 +1494,39 @@ nav .nav-link[aria-current="page"] {
 	margin: 0;
 }
 
-.command-search-close {
-	flex: 0 0 auto;
-	margin-top: 0.15rem;
+/* Bootstrap dismiss buttons and custom dialog buttons share one overlay control. */
+button:is(.ux-overlay-close, .btn-close[data-bs-dismiss="modal"], .btn-close[data-bs-dismiss="offcanvas"], dialog .btn-close[aria-label^="Close"]) {
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bs-tertiary-bg, #f1efe8);
+  color: var(--bs-emphasis-color, #292a31);
+  opacity: 1;
+  filter: none;
+  box-shadow: none;
+  cursor: pointer;
+  &::before {
+    content: "";
+    grid-area: 1 / 1;
+    width: 18px;
+    height: 18px;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='m4 4 10 10M14 4 4 14' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  &:enabled:hover { background-color: var(--bs-secondary-bg, #e5e3de); }
+  &:focus-visible { outline: 2px solid var(--ivory-accent, var(--bs-primary)); outline-offset: 2px; }
+  &:disabled { opacity: .45; cursor: default; }
 }
+
+/* Header layouts align the shared target to the trailing edge. */
+:is(.modal-header, .offcanvas-header) > .btn-close { margin: 0; margin-inline-start: auto; }
 
 .command-search-mode-switch {
 	align-items: stretch;
@@ -4587,26 +4616,7 @@ del em strong {
 	z-index: 2052;
 }
 
-.quran-help-tips-close {
-	align-items: center;
-	appearance: none;
-	background: transparent;
-	border: 0;
-	color: var(--bs-secondary-color);
-	display: inline-flex;
-	height: 2rem;
-	justify-content: center;
-	padding: 0;
-	position: absolute;
-	right: .6rem;
-	top: .55rem;
-	width: 2rem;
-}
-
-.quran-help-tips-close:hover,
-.quran-help-tips-close:focus-visible {
-	color: var(--bs-body-color);
-}
+.quran-help-tips-close { position: absolute; right: .6rem; top: .55rem; }
 
 .quran-help-tips-kicker {
 	color: var(--bs-primary);
@@ -8797,9 +8807,6 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	font-size: 1rem;
 }
 
-#quran-audio-range-modal .btn-close {
-	font-size: .7rem;
-}
 
 .quran-audio-range-grid {
 	display: grid;
@@ -9231,10 +9238,6 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	color: var(--c-black-soft);
 }
 
-.quran-ayah-modal-toolbar .btn-close {
-	flex: 0 0 auto;
-	margin: 0;
-}
 
 .quran-ayah-modal-mode-toggle {
 	flex: 0 0 auto;
@@ -13768,7 +13771,6 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 .book-catalog-dialog[open] { display: flex; flex-direction: column; }
 .book-catalog-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--bs-border-color); }
 .book-catalog-dialog-header h2 { margin: 0; font-size: 1rem; }
-.book-catalog-dialog-header .btn-close { flex-shrink: 0; }
 .book-catalog-dialog-body { padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
 .book-catalog-dialog .tafsir-book-row-main { gap: .8rem; }
 .book-catalog-dialog .tafsir-book-title-line { font-size: 1.1rem !important; line-height: 1.6; }
@@ -13838,7 +13840,6 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 .content-share-pane::backdrop { background: #0006; }
 .content-share-pane header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .content-share-pane h2 { margin: 0; font: inherit; font-size: 1.2rem; font-weight: 600; }
-.content-share-close { border: 0; background: transparent; color: inherit; width: 36px; height: 36px; border-radius: 50%; }
 .content-share-source { margin: 4px 0 24px; font-size: .88rem; opacity: .65; overflow-wrap: anywhere; }
 .content-share-options { display: grid; grid-template-columns: repeat(var(--share-option-count, 5), minmax(0, 1fr)); gap: 8px; }
 .content-share-options button { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-size: .8rem; }

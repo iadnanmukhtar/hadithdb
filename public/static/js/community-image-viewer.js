@@ -20,7 +20,7 @@
       dialog = document.createElement('dialog');
       dialog.className = 'community-image-viewer';
       dialog.setAttribute('aria-label', 'Image viewer');
-      dialog.innerHTML = '<button type="button" class="community-image-viewer-close" data-image-close aria-label="Close image viewer"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button><div class="community-image-viewer-stage"><img alt=""></div>';
+      dialog.innerHTML = '<button type="button" class="ux-overlay-close community-image-viewer-close" data-image-close aria-label="Close image viewer"></button><div class="community-image-viewer-stage"><img alt=""></div>';
       document.body.append(dialog);
       preview = dialog.querySelector('img');
       dialog.querySelector('[data-image-close]').addEventListener('click', () => dialog.close());

@@ -1,8 +1,6 @@
 .quran-navigation-rail { --quran-navigation-ink: color-mix(in srgb, var(--c-accent) 70%, var(--bs-body-color) 30%); --bs-offcanvas-width: 420px; max-width: 100vw; background: var(--bs-body-bg, #fff); color: var(--bs-body-color, #212529); }
 .quran-navigation-rail .offcanvas-header { padding: 1.25rem; margin-bottom: 1rem; border-bottom: 1px solid var(--c-accent-18); background: linear-gradient(115deg, var(--c-accent-08), transparent); }
 .quran-navigation-rail .offcanvas-title { color: var(--quran-navigation-ink); font-weight: 600; }
-.quran-navigation-rail .btn-close { border-radius: 50%; padding: .6rem; }
-.quran-navigation-rail .btn-close:hover, .quran-navigation-rail .btn-close:focus-visible { background-color: var(--c-accent-12); opacity: 1; }
 .quran-navigation-tabs { display: flex; margin: 0 1.25rem .65rem; }
 .quran-navigation-tabs .btn { flex: 1; min-width: 0; justify-content: center; }
 .quran-navigation-rail :focus-visible { outline: 2px solid var(--bs-primary, #0d6efd); outline-offset: -2px; }
