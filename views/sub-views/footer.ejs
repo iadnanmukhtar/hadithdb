@@ -12,6 +12,23 @@
 			))
 		);
 %>
+<% if (locals.booksBeta || locals.settingsBeta) {
+  const quranBrand = req.quranArea || /^\/quran(?:\/|$)/.test(req.originalUrl || '');
+%>
+<footer class="site-footer ux-footer">
+  <div class="ux-footer-inner">
+    <a class="ux-footer-brand" href="<%= quranBrand ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/') %>"><img src="<%= quranBrand ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg' %>" width="34" height="34" alt=""><%= quranBrand ? 'Quran Unlocked' : site.name %></a>
+    <nav aria-label="Explore"><h2>Explore</h2>
+      <a href="<%= utils.quranUrl(req, '/quran') %>">Quran</a><a href="<%= utils.urlFor(req, '/books/beta') %>">Books</a><a href="<%= utils.urlFor(req, '/community') %>">Community</a>
+    </nav>
+    <nav aria-label="About and support"><h2>About &amp; support</h2>
+      <a href="/about">About</a><a href="https://linktr.ee/i.adnan.mukhtar">@i.adnan.mukhtar</a>
+      <% if (!hideBuyMeCoffeeFooter) { %><a href="https://www.buymeacoffee.com/adnanmukhtar" data-buy-me-coffee>Buy me a coffee</a><% } %>
+    </nav>
+    <nav class="ux-footer-legal" aria-label="Legal"><a href="/html/privacy.html">Privacy Policy</a><a href="/terms">Terms of Service</a></nav>
+  </div>
+</footer>
+<% } else { %>
 <footer class="site-footer col-lg-8 mx-auto p-3 py-md-5 text-center">
   <nav class="mb-2 d-flex flex-wrap justify-content-center gap-3 small" aria-label="Footer">
     <a class="text-muted" href="/about">About</a>
@@ -23,6 +40,7 @@
 		<a href="https://www.buymeacoffee.com/adnanmukhtar"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=adnanmukhtar&button_colour=FF5F5F&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" width="200" /></a>
 	</aside><% } %>
 </footer>
+<% } %>
 
 <script>
 	(function () {

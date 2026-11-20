@@ -1,0 +1,37 @@
+<%
+  const groups = [
+    ['Read & study', [
+      ['Quran', utils.quranUrl(req, '/quran'), 'quran'],
+      ['Study by ayah', utils.quranUrl(req, '/quran/1'), 'text-paragraph'],
+      ['Mushaf', utils.quranUrl(req, '/quran/page'), 'book'],
+      ['Translations', utils.urlFor(req, '/books/beta?translation'), 'translate'],
+      ['Tafsir', utils.urlFor(req, '/books/beta?tafsir'), 'tafsir'],
+      ['Hadith', utils.hadithBaseUrl(req), 'hadith'],
+      ['Sirah', utils.urlFor(req, '/ibnhisham'), 'sirah']
+    ]],
+    ['Memorize', [
+      ['Practice', utils.quranUrl(req, '/quran/page?memorize'), 'eye-slash'],
+      ['Mudhakkir review', utils.quranUrl(req, '/quran/review'), 'arrow-repeat']
+    ]],
+    ['Community', [
+      ['Community feed', utils.urlFor(req, '/community'), 'people'],
+      ['Blog', utils.urlFor(req, '/blog'), 'newspaper']
+    ]],
+    ['Personal', [
+      ['My Notebook', utils.urlFor(req, '/notebook'), 'sticky'],
+      ['My Bookmarks', utils.urlFor(req, '/bookmarks'), 'bookmark'],
+      ['Settings', settingsHref, 'gear']
+    ]]
+  ];
+%>
+<% for (const [group, entries] of groups) { %>
+<section class="ux-menu-group"><h2><%= group %></h2>
+  <ul class="<%= group === 'Personal' ? 'offcanvas-col1' : '' %>">
+    <% for (const [label, href, icon] of entries) { %>
+    <li<% if (label === 'My Notebook') { %> data-notebook-auth<% } %>><a href="<%= href %>"<% if ((label === 'Settings' && isSettingsArea) || (locals.booksBeta && ((icon === 'translate' && page.context.bookCatalogInitialType === 'translations') || (icon === 'tafsir' && page.context.bookCatalogInitialType === 'tafsir-all')))) { %> aria-current="page"<% } %>>
+      <% if (['quran', 'tafsir', 'hadith', 'sirah'].includes(icon)) { %><%- include('menu_icon.ejs', { type: icon, label }) %><% } else { %><i class="app-menu-icon bi bi-<%= icon %>" aria-hidden="true"></i><% } %><%= label %>
+    </a></li>
+    <% } %>
+  </ul>
+</section>
+<% } %>

@@ -15,6 +15,7 @@
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
 
 <% if (settingsBeta) { %>
+<link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/ux-foundations.css') %>?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/settings-beta.css') %>?v=<%= utils.styleAssetVersion() %>">
 <% } %>

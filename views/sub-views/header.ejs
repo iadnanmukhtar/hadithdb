@@ -1,5 +1,6 @@
 <!--hadithdb-cache:header:start-->
-<nav class="navbar site-navbar fixed-top">
+<% var betaShell = !!(locals.booksBeta || locals.settingsBeta); %>
+<nav class="navbar site-navbar fixed-top<%= betaShell ? ' ux-masthead' : '' %>">
   <%
     var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
       ? utils.globalSearchBaseUrl(req)
@@ -94,6 +95,7 @@
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
     var headerLogoAlt = headerBrandName;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
+    if (betaShell) settingsHref += '/beta';
     var alternateModeLabel = isQuranArea ? 'Hadith' : 'Quran';
     var alternateModeHref = isQuranArea ? utils.hadithBaseUrl(req) : utils.quranUrl(req, '/quran');
     var commandHadithSearchAction = typeof utils.globalSearchBaseUrl === 'function' ? utils.globalSearchBaseUrl(req) : navSearchAction;
@@ -105,12 +107,19 @@
   <div class="container-fluid d-block">
   <div class="row g-0 site-navbar-main">
     
+    <% function renderMenuToggle() { %>
+    <div class="col-auto d-flex align-items-center site-navbar-menu-toggle">
+      <button type="button" class="btn btn-link p-0 border-0 top-nav-menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav" aria-controls="offcanvas-topnav" aria-label="Open menu">
+        <i id="icon-menu" class="bi bi-list"></i>
+      </button>
+    </div>
+    <% } if (betaShell) renderMenuToggle(); %>
     <header class="col col-md-4 d-flex site-header-brand">
       <span class="site-header-logo-wrap">
         <a href="<%= headerBrandHref %>"><img class="logo" src="<%= headerLogo %>" width="56" height="56" alt="<%= headerLogoAlt %>"></a>
-        <a class="site-mode-switch" href="<%= alternateModeHref %>" aria-label="Switch to <%= alternateModeLabel %>" title="Switch to <%= alternateModeLabel %>">
+        <% if (!betaShell) { %><a class="site-mode-switch" href="<%= alternateModeHref %>" aria-label="Switch to <%= alternateModeLabel %>" title="Switch to <%= alternateModeLabel %>">
           <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-        </a>
+        </a><% } %>
       </span>
       <div>
         <h6 class="title fs-4 mb-0">
@@ -119,7 +128,7 @@
           </a>
         </h6>
 <!--hadithdb-cache:header:end-->
-        <% if (page.subtitle_en) { %>
+        <% if (page.subtitle_en && !betaShell) { %>
         <div class="subtitle fs-6 text-muted" data-page-subtitle>
           <%- page.subtitle_en %>
           <%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
@@ -133,13 +142,14 @@
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, '/books?tafsir') %>">Tafsir</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, betaShell ? '/books/beta?tafsir' : '/books?tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, betaShell ? '/books/beta' : '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="bi bi-people-fill top-nav-community-icon" aria-hidden="true"></i> Community</a></li>
         <li class="nav-item command-search-compact-item">
           <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
             <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
+            <% if (betaShell) { %><span>Search</span><% } %>
           </button>
         </li>
         <li class="nav-item d-flex align-items-center" id="nav-auth-desktop" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></li>
@@ -159,19 +169,18 @@
       </div>
     </menu>
 
-    <div class="col-auto d-flex align-items-center site-navbar-menu-toggle">
-      <button type="button" class="btn btn-link p-0 border-0 top-nav-menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav" aria-controls="offcanvas-topnav" aria-label="Open menu">
-        <i id="icon-menu" class="bi bi-list"></i>
-      </button>
-    </div>
+    <% if (!betaShell) renderMenuToggle(); %>
 
     <!--hadithdb-cache:left-rail:start-->
-    <nav id="offcanvas-topnav" class="offcanvas offcanvas-start collapse" tabindex="-1" data-bs-static="true" data-bs-backdrop="true">
+    <nav aria-labelledby="offcanvasLabel" id="offcanvas-topnav" class="offcanvas offcanvas-start<%= betaShell ? '' : ' collapse' %>" tabindex="-1" data-bs-static="true" data-bs-backdrop="true">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title fs-4" id="offcanvasLabel">Menu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        <button type="button" aria-label="Close menu" class="btn-close" data-bs-dismiss="offcanvas"></button>
       </div>
       <div class="offcanvas-body">
+        <% if (betaShell) { %>
+          <%- include('beta_menu.ejs', { settingsHref, isSettingsArea }) %>
+        <% } else { %>
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>" title="Books" aria-label="Books"><span class="offcanvas-books-icon" aria-hidden="true"></span></a>
           <a class="offcanvas-quick-action<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>" title="Community" aria-label="Community"><i class="bi bi-people" aria-hidden="true"></i></a>
@@ -233,6 +242,7 @@
             } %>
           </ul>
         </div>
+        <% } %>
       </div>
     </nav>
     <!--hadithdb-cache:left-rail:end-->
@@ -288,13 +298,13 @@
   <%- include('chapter_section_menu.ejs'); %>
   <% } %>
 
-  <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
+  <% if (!betaShell) { %><div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
     <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith, Sharh, Tafsir, and Quran (Command or Control K)">
       <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
       <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="<%= headerSearchPlaceholder %>" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || headerSearchPlaceholder %></span>
       <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
     </button>
-  </div>
+  </div><% } %>
 
   </div>
 </nav>

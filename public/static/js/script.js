@@ -69,11 +69,11 @@ $(function () {
 	setDirection($('#search-bar'));
 
 	$(window).scroll(function() {
-		$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
+		$('.site-navbar:not(.ux-masthead)').toggleClass('shrink', $(document).scrollTop() > 50);
 		updateFixedHeaderOffset();
 	});
 
-	$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
+	$('.site-navbar:not(.ux-masthead)').toggleClass('shrink', $(document).scrollTop() > 50);
 	updateFixedHeaderOffset();
 	initFixedHeaderOffsetObserver();
 	$(window).on('resize', updateFixedHeaderOffset);

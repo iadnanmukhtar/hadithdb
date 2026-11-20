@@ -202,6 +202,7 @@
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
 <% if (betaCatalog) { %>
+<link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/books.css?v=<%= utils.styleAssetVersion() %>">
 <% } %>
