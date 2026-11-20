@@ -34,7 +34,7 @@ async function main() {
 			last = ids.at(-1);
 			if (checked % 10000 === 0) console.log({ checked, indexed, last });
 		}
-		if (apply && indexed) await SearchHttp.post(domain + '/hadiths/_refresh', {});
+		if (apply && indexed) await SearchHttp.post(domain + '/hadiths/_refresh');
 		console.log({ checked, [apply ? 'updated' : 'wouldUpdate']: indexed });
 	} finally { db.end(); }
 }
