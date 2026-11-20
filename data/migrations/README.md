@@ -49,7 +49,7 @@ Focused checks include `mysqlLoadReduction`, `sharhPassage`, `mcpQuranNavigation
 
 ### Elasticsearch grading opinions
 
-Deploy the reader and index writers together before backfilling. During the transition the reader accepts versioned opinions, including empty arrays, and loads missing grades from MySQL. Virtual references use the physical hadith ID.
+The reader uses versioned opinions, including empty arrays, when the physical hadith document already contains them. Missing opinions, virtual references, and book downloads use MySQL with the physical hadith ID. Normal indexing populates the fields over time. The optional corpus backfill reads every physical document and updates older documents, so schedule it during a quiet period if needed.
 
 ```sh
 node bin/utils/backfill-hadith-grade-index.js

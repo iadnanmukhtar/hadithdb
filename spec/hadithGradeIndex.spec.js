@@ -21,16 +21,19 @@ test('builds complete ordered opinions and distinguishes empty, virtual and lega
 	expect(GradeIndex.indexedRows({...doc, grader_opinions_version: undefined}, 7)).toBeNull();
 });
 
-test('single reader skips grade SQL for an indexed empty array and downloads query only missing IDs', async () => {
+test('single reader skips grade SQL for an indexed empty array and downloads load the canonical SQL rows in one batch', async () => {
 	global.settings = {search:{domain:'http://test'}};
 	global.query = jest.fn(async sql => sql.includes('FROM hdith_hadith_grades hg') ? [{hadith_id: 8, ...grade}] : []);
 	jest.spyOn(Pairs,'managed').mockResolvedValue([]);
 	await Metadata.forHadith(7, doc);
 	expect(global.query.mock.calls.some(([s]) => s.includes('FROM hdith_hadith_grades hg'))).toBe(false);
-	const fetch = jest.spyOn(SearchHttp,'post').mockResolvedValue({data:{docs:[{_id:'7', _source:doc},{_id:'8',found:false}]}});
+	const fetch = jest.spyOn(SearchHttp,'post');
 	const result = await Metadata.forHadiths([7,8]);
-	expect(fetch).toHaveBeenCalledTimes(1);
-	expect(global.query.mock.calls.filter(([s]) => s.includes('FROM hdith_hadith_grades hg'))[0][0]).toContain('IN (8)');
+	expect(fetch).not.toHaveBeenCalled();
+	const queries = global.query.mock.calls.map(([s]) => s).filter(s => s.includes('FROM hdith_hadith_grades hg'));
+	expect(queries).toHaveLength(1);
+	expect(queries[0]).toContain('IN (7,8)');
+	expect(queries[0]).toContain('MIN(id)');
 	expect(result.get(7).grades).toEqual([]);
 	expect(result.get(8).grades[0]).toMatchObject({id:18});
 });
@@ -50,17 +53,13 @@ test('refresh rereads SQL after a concurrent edit and never upserts an absent do
 	expect(payload).not.toContain('upsert');
 });
 
-test('virtual reader uses canonical grades and recovers through SQL when Elasticsearch is down', async () => {
+test('virtual reader loads grades for the underlying hadith without a second Elasticsearch read', async () => {
 	global.settings = {search:{domain:'http://test'}};
-	global.query = jest.fn(async () => []);
+	global.query = jest.fn(async sql => sql.includes('FROM hdith_hadith_grades hg') ? [grade] : []);
 	jest.spyOn(Pairs, 'managed').mockResolvedValue([]);
-	const post = jest.spyOn(SearchHttp, 'post').mockResolvedValueOnce({data:{docs:[
-		{_id:'7', _source:{...doc, grader_opinions:[grade]}}
-	]}}).mockRejectedValueOnce(Error('offline'));
+	const post = jest.spyOn(SearchHttp, 'post');
 	const virtual = {...doc, hId:999, actual:{id:7}};
 	expect((await Metadata.forHadith(7, virtual)).grades[0]).toMatchObject({id:18, source_name:'Book'});
-	expect(post.mock.calls[0][1]).toEqual({ids:['7']});
-	expect(global.query.mock.calls.some(([s]) => s.includes('FROM hdith_hadith_grades hg'))).toBe(false);
-	await Metadata.forHadith(7, virtual);
-	expect(global.query.mock.calls.some(([s]) => s.includes('FROM hdith_hadith_grades hg'))).toBe(true);
+	expect(post).not.toHaveBeenCalled();
+	expect(global.query.mock.calls.find(([s]) => s.includes('FROM hdith_hadith_grades hg'))[0]).toContain('hg.hadith_id=7');
 });

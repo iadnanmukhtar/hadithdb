@@ -1533,21 +1533,22 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     }
     return res.end(Utils.toMarkdown([selectedAyahs[0]]));
   }
+  var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
+  var containingSections = [];
+  if (selectedAyahs.length > 0 && defaultPassage && !('tsv' in req.query))
+    containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
   if (selectedAyahs.length > 0) {
-    section = await selectedAyahs[0].getSection();
+    section = containingSections[0] || await selectedAyahs[0].getSection();
     if (selectedAyahs.length === 1)
       await addQuranAdjacentRefs(selectedAyahs[0]);
-    // await section.getPrev();
-    // await section.getNext();
     chapter = await section.getChapter();
     await chapter.getPrev();
     await chapter.getNext();
     await chapter.getSections();
-    section.prev = section.next = undefined;
-    section.page = {
-      offset: 0,
-      number: 0
-    };
+    if (!containingSections.length) {
+      section.prev = section.next = undefined;
+      section.page = { offset: 0, number: 0 };
+    }
   }
   if ('tsv' in req.query) {
     res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
@@ -1559,7 +1560,6 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
     res.end(Utils.toTSV(results, keyNames));
   } else {
 
-    var defaultPassage = req.query.passage != undefined || req.path.startsWith('/passage:') || req.params.bookAlias === 'quran';
     var similarAyahs = [];
     var mutashabihatPhrases = [];
     const isSingleAyahPassage = ayah1 === ayah2 && selectedAyahs.length === 1;
@@ -1573,9 +1573,7 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
       return next(gone(`Route parameters 'surah=${surah.num}', 'ayah1=${ayah1}'${ayah2 !== ayah1 ? `, and 'ayah2=${ayah2}'` : ''} did not match any Quran ayat`));
     if (defaultPassage) {
       var quranSurahs = await getQuranSurahsFromIndex();
-      var containingSections = await getQuranSectionsForAyahRange(surah.num, ayah1, ayah2, selectedAyahs[0]);
       if (containingSections.length > 0) {
-        section = containingSections[0];
         await applySameBookHeadingNavigation(section);
         // A selected range can render several complete passages. Continue after
         // the last rendered passage so infinite scrolling does not repeat it.
@@ -1585,10 +1583,6 @@ async function a_getPassage(surah, ayah1, ayah2, req, res, next) {
           section.next = lastContainingSection.next;
         }
         section.mushafPage = await QuranMushaf.pageForRef(surah.num, ayah1);
-        chapter = await section.getChapter();
-        await chapter.getPrev();
-        await chapter.getNext();
-        await chapter.getSections();
         results = [];
         quranSubsections = [];
         for (const containingSection of containingSections) {
