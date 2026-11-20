@@ -349,10 +349,6 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         status.message = `${status.pair.merged_count} pairs merged. All matching metadata references now use the target pair.`;
         try {
           await HadithPairRefresh.refresh(status.pair);
-          if (['grader', 'grade'].includes(bilingualPairType)) {
-            await reindexEnrichedHadithIds(status.pair.affected_hadith_ids);
-            await Index.refresh('hadiths');
-          }
         } catch (error) {
           debug.error(`Pair merge committed but refresh failed: ${error.stack || error}`);
           status.warning = true;
@@ -369,7 +365,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 		if (bilingualPairType === 'narrator')
 		  await HadithNarratorIndex.reindex(status.pair.affected_hadith_ids || []);
 		if (['grader', 'grade'].includes(bilingualPairType) && status.pair.affected_hadith_ids?.length)
-		  safeBackground(`reindexing ${bilingualPairType} pair`, () => reindexEnrichedHadithIds(status.pair.affected_hadith_ids));
+		  await HadithPairRefresh.refresh(status.pair);
         status.message = 'Bilingual pair saved';
       } else if (col === 'delete') {
         if (!bilingualPairOriginalArabic && !bilingualPairArabic)
@@ -471,6 +467,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       await HdithMetadata.ensureEditableColumns();
       var gradeId = parseInt(ids[0], 10);
       var gradeHadithId = null;
+      var affectedGrades = [];
+      var affectedLegacyGraders = [];
       if (col === 'add' || col === 'reorder') {
         gradeHadithId = gradeId;
         if (!Number.isInteger(gradeHadithId) || gradeHadithId <= 0)
@@ -497,6 +495,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
             (hadith_id, ordinal, source_slug, grader, grader_en, grade, grade_en, grade_category_id, grade_color, source_driver, source_url)
             VALUES (${gradeHadithId}, ${gradeOrdinal}, ${MySQL.escape(sourceSlug)}, 'محدّث', 'Scholar', 'غير محدد', 'Unspecified', 0, ${MySQL.escape(HdithMetadata.gradeColorForCategory(0))}, 'admin', '')`);
           status.createdGradeId = Number(insertGrade.insertId);
+          affectedGrades = await require('../lib/HadithGradeIndex').affected(`id=${Number(insertGrade.insertId)}`);
           status.code = 200;
           status.message = 'Scholarly grade added';
         }
@@ -507,6 +506,13 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         if (!gradeRow)
           throw createError(404, 'Scholarly grade not found');
         gradeHadithId = Number(gradeRow.hadith_id);
+        if (['delete', 'grader', 'grader_en'].includes(col)) {
+          const names = [gradeRow.grader, col === 'grader' ? status.value : req.body.pairedBilingualValue].filter(Boolean);
+          const donor = col === 'grader_en'
+            ? `grader=${MySQL.escape(gradeRow.grader)} OR grader_source_id=${MySQL.escape(gradeRow.grader_source_id || null)}`
+            : `id=${gradeId}`;
+          affectedGrades = await require('../lib/HadithGradeIndex').affected(donor, names);
+        }
         if (col === 'delete') {
           await global.query(`DELETE FROM hdith_hadith_grades WHERE id=${gradeId}`);
           status.code = 200;
@@ -536,7 +542,11 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 			  ? `(grader_source_id=${Number(gradeRow.grader_source_id)} OR grader=${MySQL.escape(gradeRow.grader)})`
 			  : `grader=${MySQL.escape(gradeRow.grader)}`;
 			await global.query(`UPDATE hdith_hadith_grades SET grader_en=${sql(status.value)} WHERE ${sharedGraderWhere}`);
-			await global.query(`UPDATE graders SET shortName_en=${sql(status.value)} WHERE shortName=${MySQL.escape(gradeRow.grader)}`);
+			const legacyUpdate = await global.query(`UPDATE graders SET shortName_en=${sql(status.value)} WHERE shortName=${MySQL.escape(gradeRow.grader)}`);
+			if (legacyUpdate.changedRows) {
+			  affectedLegacyGraders = await global.query(`SELECT h.id AS hadith_id,b.alias FROM hadiths h
+				JOIN graders g ON g.id=h.graderId JOIN books b ON b.id=h.bookId WHERE g.shortName=${MySQL.escape(gradeRow.grader)}`);
+			}
 		  }
           status.code = 200;
           status.message = 'Scholarly grade updated';
@@ -545,6 +555,16 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         }
       }
       await runHadithPostUpdateTasks(gradeHadithId);
+      if (affectedLegacyGraders.length) {
+        await HadithPairRefresh.refresh({ type: 'legacy_grader',
+          affected_hadith_ids: affectedLegacyGraders.map(row => Number(row.hadith_id)),
+          affected_book_aliases: affectedLegacyGraders.map(row => row.alias) });
+      }
+      if (affectedGrades.length) {
+        await HadithPairRefresh.refresh({ type: 'grade_opinions',
+          affected_hadith_ids: [...new Set(affectedGrades.map(row => Number(row.hadith_id)))],
+          affected_book_aliases: affectedGrades.map(row => row.alias) });
+      }
 
     } else if (type === 'hdith_sharh') {
       await HdithMetadata.ensureEditableColumns();
@@ -3256,22 +3276,6 @@ async function refreshVirtualHadithEdit(selected) {
   await require('../lib/SharhNavigationIndex').syncSourceBooks([selected.bookId]);
   for (const hadithId of selected.hadithIds)
     await safeBackground(`indexing saved virtual hadith source ${hadithId}`, () => runHadithPostUpdateTasks(hadithId, { refreshSnapshot: false }));
-}
-
-async function reindexEnrichedHadithIds(hadithIds) {
-  var ids = [...new Set((hadithIds || []).map(Number).filter(id => Number.isSafeInteger(id) && id > 0))];
-  for (var offset = 0; offset < ids.length; offset += 100) {
-    var batch = ids.slice(offset, offset + 100).map(String);
-    await new Promise((resolve, reject) => {
-      var child = spawn(process.execPath, ['bin/indexEnrichedHadithBatch.js'].concat(batch), {
-        cwd: path.resolve(__dirname, '..'), stdio: ['ignore', 'ignore', 'pipe']
-      });
-      var stderr = '';
-      child.stderr.on('data', chunk => { stderr += chunk.toString(); });
-      child.on('error', reject);
-      child.on('close', code => code === 0 ? resolve() : reject(new Error(stderr.trim() || `index process exited ${code}`)));
-    });
-  }
 }
 
 function isArabicKnowledgeSourceColumn(col) {
