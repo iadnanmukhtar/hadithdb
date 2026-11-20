@@ -12,8 +12,8 @@
 <header><img src="../../public/static/img/logo2.svg" width="32" height="32" alt=""><strong>HadithDB</strong><a href="index.html">UX audit</a></header>
 <main>
   <h1>Component library</h1>
-  <p class="intro">Settings and Community email preferences establish the first patterns for navigation, preferences and feedback. Each entry records a control in use and the behavior another page can reuse.</p>
-  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#choices">Choices</a><a href="#panels">Panels &amp; forms</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
+  <p class="intro">Settings, email preferences, and the book catalog establish the first patterns for navigation, preferences and feedback. Each entry records a control in use and the behavior another page can reuse.</p>
+  <nav aria-label="Library sections"><a href="#foundations">Foundations</a><a href="#navigation">Navigation</a><a href="#catalog">Book discovery</a><a href="#choices">Choices</a><a href="#panels">Panels &amp; forms</a><a href="#feedback">Actions &amp; feedback</a><a href="#adoption">Adding a page</a></nav>
   <section id="foundations"><h2>Foundations</h2>
     <div class="grid">
       <article><h3>Interface type</h3><div class="type-sample">Reading &amp; listening</div><p>Source Sans 3 sets the interface rhythm. Page titles scale from 2 to 2.75 rem, group headings use 1.4 rem, and both use weight 650. Body text uses 1 rem with 1.5 line height. Use weight 600 for control labels.</p></article>
@@ -27,6 +27,10 @@
       <article><h3>Disclosure with current value</h3><img src="settings/disclosures.png" alt="Reading and listening rows with their saved values"><p>Group settings by task. Use a native details/summary row with a short label, current value or count, and a chevron. Place the summary below the label on narrow screens. Opening one row keeps the others available.</p></article>
     </div>
   </section>
+  <section id="catalog"><h2>Book discovery</h2><div class="grid">
+      <article><h3>Collection navigation &amp; local filters</h3><img src="catalog/filters.png" alt="Search books with expanded size and collection filters"><p>The six collection links live in the header. Keep search inside the catalog and group optional size, language, and classification choices under Filters. Summarize active choices on the closed disclosure. Returning from a book restores the search and filters for that history entry.</p></article>
+      <article><h3>Bilingual catalog card</h3><img src="catalog/book.png" alt="Book title and author in English and Arabic with classification and details controls"><p>Keep the canonical title link separate from the details button. Give Arabic its own direction and typeface, and keep source classifications and dates attached to their book. Escape closes details and returns focus to its opener.</p></article>
+    </div></section>
   <section id="choices"><h2>Choices &amp; preferences</h2>
     <div class="grid">
       <article><h3>Script preview cards</h3><img src="settings/scripts.png" alt="Three radio cards showing the same ayah in Uthmani, Indo-Pak and Warsh"><p>Use one labeled radio group for an exclusive script choice. Each card pairs a name with the same referenced ayah in its own script and font. Preserve Arabic direction, marks, and line height. The entire card selects the option.</p></article>

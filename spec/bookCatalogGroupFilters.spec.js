@@ -6,9 +6,9 @@ const path = require('path');
 const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'books.ejs'), 'utf8');
 
 describe('books catalog group filters', () => {
-	test('uses the wrapped Hadith-home filter layout', () => {
-		expect(template).toContain('home-hadith-book-nav book-catalog-group-filters');
-		expect(template).toContain('book-carousel-filter-input book-catalog-filter');
+	test('keeps the local search separate from the optional collection filters', () => {
+		expect(template).toContain('<details class="catalog-facets">');
+		expect(template).toContain('class="book-catalog-filter" placeholder="Search books"');
 	});
 
 	test('switches between Hadith and Tafsir search groups with the catalog tabs', () => {

@@ -89,6 +89,10 @@
       sizeFilters.classList.add('mb-3');
       search.parentElement.after(sizeFilters);
     }
+    if (Object.hasOwn(sizeLabels, page.dataset.bookCatalogRestoreSize)) {
+      setSize(page.dataset.bookCatalogRestoreSize);
+      delete page.dataset.bookCatalogRestoreSize;
+    }
   }
 
   var groups = new Map();
