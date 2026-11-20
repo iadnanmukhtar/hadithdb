@@ -1869,22 +1869,7 @@ async function renderQuranAyahPassage(selectedAyah, req, res) {
 async function loadQuranSimilarAyahs(selectedAyah, req) {
   var rows = await QuranSimilarAyahs.forAyah(selectedAyah);
   var items = rows.map(row => new Item(row));
-  var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
-  var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
-  if (!selectedTranslation || selectedTranslation.source !== 'local')
-    return items;
-  var bySurah = new Map();
-  items.forEach(function (item) {
-    var surah = Number((item.num || '').toString().split(':')[0]);
-    if (!Number.isInteger(surah))
-      return;
-    if (!bySurah.has(surah))
-      bySurah.set(surah, []);
-    bySurah.get(surah).push(item);
-  });
-  await Promise.all(Array.from(bySurah.entries()).map(function ([surah, ayahs]) {
-    return applySelectedQuranTranslation(ayahs, selectedTranslation, surah, { dbFallbackOnUnavailable: false });
-  }));
+  await applyRelatedQuranTranslation(items, req);
   return items;
 }
 
@@ -1893,30 +1878,24 @@ async function loadQuranMutashabihat(selectedAyah, req) {
   var itemsById = new Map();
   phrases.forEach(function (phrase) {
     phrase.matches.forEach(function (match) {
-      var item = new Item(match.document);
-      match.item = item;
-      var id = Number(item.hId || item.id);
-      if (Number.isInteger(id))
-        itemsById.set(id, item);
+      const id = Number(match.document.hId || match.document.id);
+      if (!itemsById.has(id)) itemsById.set(id, new Item(match.document));
+      match.item = itemsById.get(id);
     });
   });
-  var selectedTranslationAlias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
-  var selectedTranslation = selectedTranslationAlias ? visibleQuranTranslationByAlias(selectedTranslationAlias) : null;
-  if (selectedTranslation && selectedTranslation.source === 'local') {
-    var bySurah = new Map();
-    itemsById.forEach(function (item) {
-      var surah = Number((item.num || '').toString().split(':')[0]);
-      if (!Number.isInteger(surah))
-        return;
-      if (!bySurah.has(surah))
-        bySurah.set(surah, []);
-      bySurah.get(surah).push(item);
-    });
-    await Promise.all(Array.from(bySurah.entries()).map(function ([surah, ayahs]) {
-      return applySelectedQuranTranslation(ayahs, selectedTranslation, surah, { dbFallbackOnUnavailable: false });
-    }));
-  }
+  await applyRelatedQuranTranslation([...itemsById.values()], req);
   return phrases;
+}
+
+async function applyRelatedQuranTranslation(items, req) {
+  const alias = validQuranTranslationAlias(req.quranSelectedTranslationAlias || req.query.translation);
+  const book = alias && visibleQuranTranslationByAlias(alias);
+  if (!book || book.source !== 'local' || !items.length) return;
+  const html = await Tafsir.relatedTranslationHtml(book, items.map(item => String(item.num)));
+  for (const item of items) {
+    item.body_en = item.en.body = html.get(String(item.num)) || 'Content is not available for this ayah.';
+    item.quranTranslationAlias = book.alias;
+  }
 }
 
 function escapeQuranMarkdownFields(item) {
