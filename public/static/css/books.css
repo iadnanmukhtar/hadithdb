@@ -12,10 +12,24 @@
 .book-catalog-page :is(button, summary, a):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a, .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
-/* Keep the two names together when they fit, and let a long title take its own line. */
-.book-catalog-summary .tafsir-book-title-pair { position: relative; display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .5rem; padding-inline-end: 1.65rem; }
-.book-catalog-summary .tafsir-book-title-line { min-width: 0; max-width: 100%; }
-.book-catalog-summary .tafsir-book-title-pair > .book-catalog-details-button { position: absolute; inset-block-start: 0; inset-inline-end: 0; min-width: 1.5rem; min-height: 1.5rem; }
+.book-catalog-summary { container: book-summary / inline-size; }
+.book-catalog-summary .tafsir-book-title-pair {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .15rem .5rem;
+}
+.book-catalog-summary .tafsir-book-title-line:not(:lang(ar)) {
+  display: flex; align-items: baseline; gap: .3rem; min-width: 0;
+}
+.book-catalog-summary .tafsir-book-title-line :is(.hadith-size-indicator, .tafsir-size-indicator) {
+  flex-shrink: 0; margin: 0;
+}
+.book-catalog-summary .tafsir-book-title-pair > [lang="ar"] { grid-column: 1 / -1; text-align: start; }
+.book-catalog-summary .book-catalog-details-button { grid-column: -2; grid-row: 1; min-width: 1.5rem; min-height: 1.5rem; }
+@container book-summary (min-width: 24rem) {
+  .book-catalog-summary .tafsir-book-title-pair:has(> [lang="ar"]) {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: baseline;
+  }
+  .book-catalog-summary .tafsir-book-title-pair > [lang="ar"] { grid-column: 2; grid-row: 1; }
+}
 
 .catalog-beta-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .35rem 1rem; margin-bottom: .65rem; }
 .book-catalog-summary .tafsir-book-title-line { --content-size-h3: var(--ux-item-size); font-weight: var(--ux-heading-weight); }
