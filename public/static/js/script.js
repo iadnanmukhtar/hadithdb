@@ -1003,6 +1003,32 @@ async function getHadithAuthToken(message) {
 	return auth.getToken ? auth.getToken() : null;
 }
 
+if (document.querySelector('meta[name="admin-only-book-downloads"]')) {
+	function syncBookDownloadLinks() {
+		document.documentElement.classList.toggle('book-download-admin', readHadithLoginSessionCache()?.admin === true);
+	}
+	$(syncBookDownloadLinks);
+	document.addEventListener('hadithAuthChanged', syncBookDownloadLinks);
+	window.addEventListener('pageshow', syncBookDownloadLinks);
+	window.addEventListener('storage', syncBookDownloadLinks);
+	$(document).on('click', '.book-download-links a, a.book-download-link', async function (event) {
+		event.preventDefault();
+		try {
+			const url = new URL(this.href);
+			if (url.origin !== window.location.origin)
+				throw new Error('Book download requires a same-site link.');
+			const token = await getHadithAuthToken('Sign in as an administrator to download this book.');
+			if (!token) return;
+			const response = await fetch('/admin/session', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+			if (!response.ok)
+				throw new Error('Unable to authorize this book download.');
+			window.location.assign('/admin/downloads' + url.pathname + url.search);
+		} catch (error) {
+			toastr.error(error.message);
+		}
+	});
+}
+
 function syncHadithAdminForCachedPage() {
 	var cachedSession = readHadithLoginSessionCache();
 	if (!cachedSession) {

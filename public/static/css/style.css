@@ -2106,6 +2106,10 @@ nav .nav-link[aria-current="page"] {
 	transform: rotate(-90deg);
 }
 
+html:has(meta[name="admin-only-book-downloads"]):not(.book-download-admin) :is(.book-download-links, .book-download-link) {
+  display: none;
+}
+
 .book-download-links {
 	align-items: center;
 	display: flex;

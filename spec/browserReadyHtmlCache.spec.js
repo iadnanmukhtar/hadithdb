@@ -36,6 +36,17 @@ describe('browser-ready HTML cache artifacts', () => {
     fs.rmSync(directory, { recursive: true, force: true });
   });
 
+  test('updates download visibility in already cached book pages when the restriction changes', () => {
+    fs.writeFileSync(`${cachedFile}.gz`, zlib.gzipSync('<html><head></head><body><a class="book-download-link">JSON</a></body></html>'));
+    const flag = jest.spyOn(Utils, 'bookDownloadsAdminOnly').mockReturnValue(false);
+    const readHtml = () => zlib.gunzipSync(Utils.readCachedHtmlResponse(cachedFile, req).body).toString();
+    expect(readHtml()).not.toContain('admin-only-book-downloads');
+    flag.mockReturnValue(true);
+    expect(readHtml()).toContain('<meta name="admin-only-book-downloads">');
+    flag.mockReturnValue(false);
+    expect(readHtml()).not.toContain('admin-only-book-downloads');
+  });
+
   test('reuses the completed gzip without gunzipping the source cache', () => {
     const first = Utils.readCachedHtmlResponse(cachedFile, req);
     expect(first.complete).toBe(true);

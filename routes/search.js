@@ -2457,9 +2457,9 @@ async function applyRandomQuranTranslation(random, translationBook) {
 }
 
 // QURAN SEARCH PROXY
-router.get('/:bookAlias.:format(json|epub)', BookDownloads.sendHadithBook);
+router.get('/:bookAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.sendHadithBook);
 
-router.get('/quran/:translationAlias.:format(json|epub)', BookDownloads.sendTranslationBook);
+router.get('/quran/:translationAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.sendTranslationBook);
 
 router.get('/quran', throttleSearchRequest, async function (req, res, next) {
   if (!req.query.q)
@@ -2933,7 +2933,7 @@ router.get('/:bookAlias', async function (req, res, next) {
   if (book) {
     if ('json' in req.query || ('download' in req.query && 'epub' in req.query)) {
       req.params.format = 'download' in req.query && 'epub' in req.query ? 'epub' : 'json';
-      return BookDownloads.sendHadithBook(req, res, next);
+      return BookDownloads.authorizeDownload(req, res, () => BookDownloads.sendHadithBook(req, res, next));
     }
     var prevBook = null;
     var nextBook = null;
