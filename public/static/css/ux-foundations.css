@@ -27,6 +27,16 @@
   color: var(--ux-text);
 }
 
+.ux-page-title { font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
+.ux-beta-label {
+  font: 600 .78rem/1.5 'Source Sans 3', sans-serif;
+  color: var(--ux-accent);
+  vertical-align: middle;
+  border: 1px solid var(--ux-border);
+  border-radius: .35rem;
+  padding: .1rem .45rem;
+}
+
 .ux-system .ux-view-selector {
   display: inline-flex;
   align-items: center;

@@ -60,14 +60,18 @@ function applyContentLanguageBadges(books, englishBooks, key) {
   }));
 }
 
-router.get('/', async function (req, res, next) {
+router.get('/', renderCatalog);
+router.get('/beta', renderCatalog);
+
+async function renderCatalog(req, res) {
+  const booksBeta = req.route?.path === '/beta';
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
-  const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
-  const cachedFile = Utils.cacheFileFromFilename('_books-types-v3', 'html', 'books', 'hadith');
+  const cacheableHtml = !booksBeta && !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
+  const cachedFile = Utils.cacheFileFromFilename('_books-classic-v4', 'html', 'books', 'hadith');
   const flushCache = Utils.shouldFlushCache(req);
-  if (flushCache) {
+  if (flushCache && !booksBeta) {
     await Utils.flushCachedFile(cachedFile, { strict: true });
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -104,6 +108,7 @@ router.get('/', async function (req, res, next) {
     var translations = await Tafsir.visibleTranslations();
     const sharhBooks = await Sharh.catalog();
     const renderLocals = {
+      booksBeta,
       sharhBooks,
       BookDownloads: BookDownloads,
       mushafs: QuranMushafBooks.catalog(),
@@ -124,7 +129,7 @@ router.get('/', async function (req, res, next) {
     }
     res.render('books', renderLocals);
   }
-});
+}
 
 function bookCatalogCacheRefs(books, tafsirs, translations, sharhBooks) {
   const refs = new Set(['books', 'tafsirs', 'tafsir:books', 'translations:books']);

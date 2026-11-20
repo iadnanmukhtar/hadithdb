@@ -16,15 +16,6 @@
   padding-bottom: 1.5rem;
 }
 .settings-beta h1, .settings-beta h2, .settings-beta h3 { font-family: inherit; }
-.settings-beta h1 { font-size: var(--ux-title-size); font-weight: var(--ux-heading-weight); margin: 0; }
-.settings-beta-heading small {
-  font: 600 .78rem/1.5 'Source Sans 3', sans-serif;
-  color: var(--ux-accent);
-  vertical-align: middle;
-  border: 1px solid var(--ux-border);
-  border-radius: .35rem;
-  padding: .1rem .45rem;
-}
 .settings-beta-heading p { color: var(--ux-muted); margin: .25rem 0 0; }
 .settings-beta-heading a { color: var(--ux-accent); text-underline-offset: .2em; }
 .settings-beta-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(12rem, 1fr); grid-template-areas: "content rail"; gap: 2rem; margin-top: 1.5rem; }
