@@ -18,7 +18,7 @@ async function render(template, editMode = false, records = [book], query = {}) 
   return ejs.renderFile(path.join(__dirname, '../views', template), {
     req: { admin: editMode, editMode, query }, books: records, tafsirs: records, translations: records.map(record => ({ ...record, lang: 'en' })), sharhBooks: records, mushafs: [{ ...book, href: '/quran/page/1' }],
     BookGroups, Tafsir, BookDownloads,
-    utils: { scriptAssetVersion: () => 'test', sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => '<p>' + value + '</p>', quranUrl: (_req, url) => url, urlFor: (_req, url) => url, jsonLdScript: () => '' }
+    utils: { styleAssetVersion: () => 'test', scriptAssetVersion: () => 'test', sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => '<p>' + value + '</p>', quranUrl: (_req, url) => url, urlFor: (_req, url) => url, jsonLdScript: () => '' }
   }, { includer: (name) => /(?:^|\/)header\.ejs$/.test(name)
     ? { template: '<nav class="navbar site-navbar fixed-top"><% if (page.context.bookCatalogInitialType) { %><%- include("book_catalog_navigation.ejs", { page }); %><% } %></nav>' }
     : /(?:head|footer|scripts|mobile_navigation)\.ejs$/.test(name) ? { template: ' ' } : undefined });

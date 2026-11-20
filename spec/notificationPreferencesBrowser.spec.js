@@ -4,7 +4,7 @@ const settle=async()=>{for(let i=0;i<20;i++)await new Promise(resolve=>setImmedi
 test('preferences page loads, saves, unsubscribes and manages author subscriptions',async()=>{
   const previous=global.settings;global.settings={site:{}};
   let html;
-  try {html=ejs.render(fs.readFileSync('views/community.ejs','utf8'),{view:'email-preferences',author:null,post:null,initial:null,unsubscribed:false,page:{title_en:'Email preferences',context:{}},utils:{scriptAssetVersion:()=>''}},{filename:path.resolve('views/community.ejs'),includer:()=>({template:' '})});}finally{global.settings=previous;}
+  try {html=ejs.render(fs.readFileSync('views/community.ejs','utf8'),{view:'email-preferences',author:null,post:null,initial:null,unsubscribed:false,page:{title_en:'Email preferences',context:{}},utils:{styleAssetVersion: () => 'test', scriptAssetVersion:()=>''}},{filename:path.resolve('views/community.ejs'),includer:()=>({template:' '})});}finally{global.settings=previous;}
   const dom=new JSDOM(html,{url:'https://example.test/community/email-preferences',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document;
   w.quranApiPath=p=>'/api'+p;w.hadithAuth={getToken:async()=>'token'};
   let preferences={enabled:true,likes:true,reflections:true,replies:true,reactions:true,articles:true};

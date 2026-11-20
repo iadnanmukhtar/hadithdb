@@ -5,8 +5,15 @@
   font-display: swap;
 }
 
-.ux-system {
+:root {
   --ux-font-ui: 'Source Sans 3', system-ui, sans-serif;
+  --ux-item-size: 1.24rem;
+  --ux-arabic-item-size: 1.5rem;
+  --ux-caption-size: .82rem;
+  --ux-midnight-fill: linear-gradient(110deg, #535c9b, #323c6b 68%, #273053);
+}
+
+.ux-system {
   --ux-accent: var(--c-link-dark, #2379b1);
   --ux-text: var(--bs-body-color, #212529);
   --ux-muted: var(--bs-secondary-color, #595c5f);
@@ -62,7 +69,7 @@
 .ux-system .ux-primary-action {
   color: white;
   border-color: #343a67;
-  background: linear-gradient(110deg, #535c9b, #323c6b 68%, #273053);
+  background: var(--ux-midnight-fill);
   box-shadow: inset 0 1px #ffffff30;
 }
 .ux-system .ux-secondary-action { background: #eaeaf5; color: #444d85; text-decoration: none; }

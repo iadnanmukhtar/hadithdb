@@ -13,10 +13,32 @@
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a, .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
 .book-catalog-summary .tafsir-book-title-pair { align-items: start; }
-body:has(.catalog-tools) .book-catalog-navigation .book-catalog-tabs { gap: .2rem; padding: .2rem; background: var(--bs-tertiary-bg); border-radius: .5rem; }
-body:has(.catalog-tools) .book-catalog-navigation .nav-item { margin: 0; }
-body:has(.catalog-tools) .book-catalog-navigation .nav-link { display: grid; place-items: center; min-height: 2.4rem; padding: .3rem .65rem; border: 0; border-radius: .4rem; font: 600 .95rem/1.25 'Source Sans 3', sans-serif; color: var(--bs-secondary-color); background: transparent; }
-body:has(.catalog-tools) .book-catalog-navigation .nav-link:is(.active,:hover,:focus-visible) { color: var(--ivory-accent,var(--c-link-dark)); background: var(--bs-body-bg); }
+
+.book-catalog-page > h1 { --content-size-h1: var(--ux-title-size); font-family: inherit; font-weight: var(--ux-heading-weight); margin: 0 0 .65rem; }
+.book-catalog-summary .tafsir-book-title-line { --content-size-h3: var(--ux-item-size); font-weight: var(--ux-heading-weight); }
+.book-catalog-summary .tafsir-book-title-line:lang(ar),
+.book-catalog-summary .tafsir-book-title-line :lang(ar) { font-size: var(--ux-arabic-item-size) !important; line-height: 1.6; }
+
+.top-nav-desktop-actions a.nav-link, .book-catalog-navigation .nav-link { font: 600 1rem/1.35 var(--ux-font-ui); }
+.book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
+.book-catalog-navigation .book-catalog-tabs {
+  flex-wrap: nowrap; justify-content: safe center; max-width: 100%; overflow-x: auto;
+  gap: .2rem; margin: 0; padding: .2rem; border: 0; background: var(--bs-tertiary-bg); border-radius: .5rem;
+}
+.book-catalog-navigation .nav-item { flex: 0 0 auto; }
+.book-catalog-navigation .nav-link {
+  display: grid; place-items: center; min-height: 2.4rem; padding: .3rem .65rem; margin: 0;
+  border: 0; border-radius: .4rem; font-size: 1.05rem; white-space: nowrap; color: var(--bs-secondary-color);
+}
+.book-catalog-navigation .nav-link:hover { color: var(--bs-body-color); background: var(--bs-body-bg); }
+.book-catalog-navigation .nav-link.active { background: var(--ux-midnight-fill); color: white; }
+.book-catalog-navigation .nav-link:focus-visible { outline: 2px solid var(--bs-emphasis-color); outline-offset: -2px; }
+.book-catalog-navigation .nav-link.active:focus-visible { outline-color: white; }
+
+.tafsir-group-rail { font-family: var(--ux-font-ui); }
+.tafsir-group-rail .heading-toc-book-name { font-size: 1.12rem; font-weight: 650; letter-spacing: normal; text-transform: none; }
+.tafsir-rail-group h2 { font: 600 1rem/1.35 var(--ux-font-ui); }
+.tafsir-rail-group ul { font-size: .94rem; }
 @media (max-width: 700px) {
   .catalog-facets[open] { flex-basis: 100%; }
   .book-catalog-navigation .book-catalog-tabs { justify-content: start; }

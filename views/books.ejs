@@ -197,8 +197,8 @@
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
-<link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.scriptAssetVersion() %>">
-<link rel="stylesheet" href="/static/css/books.css?v=<%= utils.scriptAssetVersion() %>">
+<link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
+<link rel="stylesheet" href="/static/css/books.css?v=<%= utils.styleAssetVersion() %>">
 </head>
 <body>
 
@@ -208,6 +208,7 @@
 <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 
     <main class="book-catalog-page ux-system">
+    <h1><%= catalogTypes[catalogType].title %></h1>
 
     <%- utils.jsonLdScript({
       '@context': 'https://schema.org',
@@ -711,6 +712,7 @@
           var type = types[tab.getAttribute('href').split('?')[1]];
           if (type) {
             document.title = 'Hadith Unlocked | ' + type.title;
+            document.querySelector('.book-catalog-page > h1').textContent = type.title;
             var description = document.querySelector('meta[name="description"]');
             if (description) description.content = type.description;
             var canonical = document.querySelector('link[rel="canonical"]');
