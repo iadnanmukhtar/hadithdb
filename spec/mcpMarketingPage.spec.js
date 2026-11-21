@@ -49,7 +49,7 @@ describe('MCP marketing page', () => {
 
     expect(res.locals).toEqual({ req, res });
     expect(res.setHeader).toHaveBeenCalledWith('Cache-Control', 'private, max-age=0, must-revalidate');
-    expect(res.render).toHaveBeenCalledWith('mcp_server');
+    expect(res.render).toHaveBeenCalledWith('mcp_server', { tools: HadithMcp.TOOLS });
   });
 
   test('documents the production endpoint and supported clients', () => {

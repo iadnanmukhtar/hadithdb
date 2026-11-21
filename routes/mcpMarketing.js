@@ -20,7 +20,7 @@ router.get('/', function (req, res) {
   res.locals.req = req;
   res.locals.res = res;
   res.setHeader('Cache-Control', 'private, max-age=0, must-revalidate');
-  res.render('mcp_server');
+  res.render('mcp_server', { tools: HadithMcp.TOOLS });
 });
 
 module.exports = router;

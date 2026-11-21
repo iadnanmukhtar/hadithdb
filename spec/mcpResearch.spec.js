@@ -50,6 +50,32 @@ test('catalog discovery preserves commentary identity and paginates', async () =
   await expect(Mcp.callTool('search_hadith_commentary', { query: 'x', source: 'absent' }, context)).rejects.toThrow('Unknown commentary');
 });
 
+test('book catalog and exact lookups preserve public roles and virtual identities', async () => {
+  global.books = [
+    { alias: 'compiled', type: 'hadith', virtual: 1 },
+    { alias: 'history', type: 'sirah' },
+    { alias: 'dual', type: 'tafsir', properties: { quran: { display_as: ['translation'] } } },
+    { alias: 'sharh-work', type: 'sharh', hidden: 1 },
+    { alias: 'hidden', type: 'trans', hidden: 1 }
+  ];
+  const call = async (name, args) => (await Mcp.callTool(name, args, context)).structuredContent;
+  const first = await call('list_books', { limit: 2 });
+  const next = await call('list_books', { offset: first.next_offset });
+  const books = [...first.books, ...next.books];
+  expect(books.map(book => book.alias)).toEqual(['compiled', 'dual', 'history', 'sharh-work']);
+  for (const book of books) expect((await call('lookup_book', { alias: book.alias })).book).toEqual(book);
+  expect(books[0].virtual).toBe(true);
+  expect((await call('list_books', { type: 'trans' })).books).toEqual([books[1]]);
+  expect((await call('list_books', { type: 'history' })).books).toEqual([books[2]]);
+  await expect(call('lookup_book', { alias: 'hidden' })).rejects.toThrow('Unknown book');
+  const entries = jest.spyOn(require('../lib/Tafsir'), 'localTranslationEntry').mockResolvedValueOnce({ html: '<p>Translation</p>' }).mockResolvedValueOnce(null);
+  expect(await call('lookup_quran_translation', { translation: 'dual', surah: 2, ayah: 1 })).toMatchObject({
+    book: books[1], reference: 'quran:2:1', text_english: 'Translation'
+  });
+  expect(entries).toHaveBeenCalledWith(expect.objectContaining({ alias: 'dual', type: 'trans' }), 2, 1);
+  await expect(call('lookup_quran_translation', { translation: 'dual', surah: 2, ayah: 2 })).rejects.toThrow('No translation text');
+});
+
 function researchCaller() {
   return jest.fn(async (tool, args) => {
     if (tool === 'lookup_quran_ayah') return result({ ayah: { reference: `quran:${args.surah}:${args.ayah}`, text_arabic: 'آية', text_english: 'Verse' } });
