@@ -6,6 +6,28 @@
     const heading = group.querySelector('h2');
     return { group, heading, link: document.querySelector(`.settings-beta-index a[href="#${heading.id}"]`), rows: group.querySelectorAll('.settings-beta-row') };
   });
+  const navigation = document.querySelector('.settings-navigation');
+  const picker = navigation?.querySelector('select');
+  function syncNavigation() {
+    if (!picker) return;
+    const target = document.getElementById(location.hash.slice(1));
+    const selected = entries.find(({ group }) => !group.hidden && group.contains(target));
+    picker.value = selected ? '#' + selected.heading.id : '';
+    picker.disabled = entries.every(({ group }) => group.hidden);
+    for (const link of navigation.querySelectorAll('.nav-link')) {
+      const active = link.hash === picker.value;
+      link.classList.toggle('active', active);
+      if (active) link.setAttribute('aria-current', 'location');
+      else link.removeAttribute('aria-current');
+    }
+  }
+  if (picker) {
+    picker.closest('label').hidden = false;
+    picker.options[0].disabled = true;
+    picker.addEventListener('change', () => { location.hash = picker.value; });
+    window.addEventListener('hashchange', syncNavigation);
+    syncNavigation();
+  }
   const catalogs = '[data-tafsir-setting-row], [data-translation-setting-row], .reciter-setting-row';
   const normalize = text => text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   const keywords = {
@@ -63,8 +85,13 @@
         }
       }
       group.hidden = link.hidden = groupCount === 0;
+      if (picker) {
+        navigation.querySelector(`a[href="#${heading.id}"]`).parentElement.hidden = group.hidden;
+        navigation.querySelector(`option[value="#${heading.id}"]`).disabled = group.hidden;
+      }
       count += groupCount;
     }
+    syncNavigation();
     const message = !input.value.trim() ? '' : count ? `${count} matching setting${count === 1 ? '' : 's'}` : 'No matching settings. Try a different search.';
     if (status.textContent !== message) status.textContent = message;
   }

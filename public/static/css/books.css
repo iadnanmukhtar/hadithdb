@@ -30,33 +30,9 @@ main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
 .book-catalog-summary .tafsir-book-title-line:lang(ar),
 .book-catalog-summary .tafsir-book-title-line :lang(ar) { font-size: var(--ux-item-size) !important; font-weight: var(--ux-body-weight); line-height: 1.55; }
 
-.book-catalog-navigation .nav-link { font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui); }
-.book-catalog-navigation { background: transparent; padding-block: 0; }
-.book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
-.book-catalog-navigation .book-catalog-tabs {
-  flex-wrap: nowrap; max-width: 100%; overflow-x: auto; gap: .75rem; margin: 0; border: 0;
-}
-.book-catalog-navigation .nav-item { flex: 0 0 auto; }
-.book-catalog-navigation .nav-link {
-  display: grid; place-items: center; min-height: 2.55rem; padding: .45rem .35rem; margin: 0;
-  border: 0; border-bottom: 3px solid transparent; border-radius: 0; white-space: nowrap; color: var(--bs-secondary-color);
-}
-.book-catalog-navigation .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }
-.site-navbar .book-catalog-navigation .nav-link.active {
-  font-weight: var(--ux-emphasis-weight); color: var(--ivory-accent, var(--bs-emphasis-color)); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
-}
-.book-catalog-navigation .nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
-.catalog-collection-picker { display: none; }
-
 .tafsir-group-rail { font-family: var(--ux-font-ui); }
 .tafsir-rail-group .catalog-rail-group-title { font: var(--ux-emphasis-weight) 1rem/1.35 var(--ux-font-ui); }
 .tafsir-rail-group ul { font-size: .94rem; }
-@media (max-width: 700px) {
-  .book-catalog-navigation:has(.catalog-collection-picker:not([hidden])) .book-catalog-tabs { display: none; }
-  .catalog-collection-picker:not([hidden]) { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; color: var(--bs-secondary-color); font: var(--ux-body-weight) .95rem/1.4 var(--ux-font-ui); }
-  .catalog-collection-picker select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: var(--ux-emphasis-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui); }
-}
-
 .book-catalog-classifications { align-items: center; gap: .3rem; }
 .book-catalog-pill { padding: .05rem .4rem; text-decoration: none; font: var(--ux-light-weight) .75rem/1.35 var(--ux-font-ui); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
 .book-catalog-type-pill { color: var(--ivory-accent, var(--c-accent)); background: var(--ivory-selected, var(--c-primary-soft-08)); }

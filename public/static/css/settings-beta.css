@@ -125,5 +125,6 @@
 }
 @media (max-width: 991.98px) {
   main.settings-beta { margin-top: var(--ux-page-start); padding-top: 0; }
+  body:has(.settings-category-picker:not([hidden])) .settings-beta-index > a { display: none; }
   .settings-beta-index.hadith-heading-toc { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); margin-bottom: 1.25rem; position: static; width: 100%; margin-top: 0; max-height: none; }
 }
