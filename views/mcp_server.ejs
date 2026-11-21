@@ -160,7 +160,7 @@
             <details class="mcp-technical-details">
               <summary>For technical users: view the available tools</summary>
               <div class="mcp-tool-pills" aria-label="MCP tools">
-                <span>search_blog</span><span>lookup_blog_post</span><span>research_islamic_topic</span><span>research_quran_ayah</span><span>list_hadith_commentaries</span><span>search_hadith_commentary</span><span>lookup_hadith_commentary</span><span>lookup_quran_page</span><span>list_quran_sections</span><span>lookup_quran_passage</span><span>get_quran_audio</span><span>list_quran_reciters</span><span>search_quran</span><span>lookup_quran_ayah</span><span>list_tafsirs</span><span>search_tafsir</span><span>lookup_tafsir</span><span>search_hadith</span><span>search_history</span><span>lookup_hadith_detail</span>
+                <% tools.forEach(function (tool) { %><span><%= tool.name %></span><% }); %>
               </div>
             </details>
           </div>

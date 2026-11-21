@@ -222,6 +222,9 @@ describe('public MCP Streamable HTTP route', () => {
     const response = await request('POST', { jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} });
     const payload = await response.json();
     expect(payload.result.tools.map(tool => tool.name)).toEqual([
+      'list_books',
+      'lookup_book',
+      'lookup_quran_translation',
       'search_blog',
       'lookup_blog_post',
       'list_hadith_commentaries',
@@ -244,6 +247,8 @@ describe('public MCP Streamable HTTP route', () => {
       'lookup_hadith_detail'
     ]);
     for (const tool of payload.result.tools) {
+      for (const argument of Object.values(tool.inputSchema.properties))
+        expect(argument.description).toEqual(expect.stringMatching(/\S/));
       expect(tool.inputSchema.type).toBe('object');
       expect(tool.outputSchema).toEqual(expect.objectContaining({
         type: 'object',
