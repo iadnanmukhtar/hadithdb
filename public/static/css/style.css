@@ -600,7 +600,7 @@ main.book-catalog-page {
 
 main.quran-review-top-offset,
 main.quran-mushaf-reader,
-body:has(.site-navbar .chapter-toc) main:not(.search-results-layout > main) {
+body:has(.site-navbar .chapter-toc) main:not(.search-results-layout > main):not(:where(.book-catalog-page.ux-system, .settings-beta)) {
 	margin-top: max(9rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)) !important;
 }
 

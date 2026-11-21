@@ -579,13 +579,12 @@
     if (!filter)
       return;
     const tools = filter.closest('.catalog-tools');
-    const railSlot = tools.parentElement;
     const mobileSlot = document.querySelector('[data-mobile-catalog-tools]');
     const desktop = window.matchMedia('(min-width: 992px)');
     function positionTools() {
-      (desktop.matches ? railSlot : mobileSlot).append(tools);
+      if (desktop.matches) document.querySelector('[data-book-rail-pane]:not([hidden]) .ux-rail-title').after(tools);
+      else mobileSlot.append(tools);
     }
-    positionTools();
     desktop.addEventListener('change', positionTools);
     var tabStrip = document.querySelector('.book-catalog-navigation [role="tablist"]');
     var currentTab = tabStrip && tabStrip.querySelector('[aria-selected="true"]');
@@ -624,6 +623,7 @@
       document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
         section.hidden = section.dataset.bookRailPane !== paneId;
       });
+      positionTools();
       activeGroup = '';
       activeBadge = '';
       applyFilters();

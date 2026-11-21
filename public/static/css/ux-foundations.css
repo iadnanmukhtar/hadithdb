@@ -19,6 +19,10 @@
 
 :root {
   --ux-font-ui: 'Inter', system-ui, sans-serif;
+  --ux-page-start: calc(var(--site-fixed-header-height, 4rem) + 1rem);
+  --ux-title-row: 2.25rem;
+  --ux-title-gap: 1rem;
+  --ux-title-line: 1.18;
   --ux-light-weight: 300;
   --ux-body-weight: 400;
   --ux-emphasis-weight: 500;
@@ -56,7 +60,7 @@
 
 .ux-system :is(strong, b), .ux-emphasis { font-weight: var(--ux-emphasis-weight); }
 
-.ux-page-title { color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
+.ux-page-title { line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
 
 .ux-system .ux-view-selector {
   display: inline-flex;
@@ -189,3 +193,14 @@
 .ux-rail-search input::-webkit-search-cancel-button { appearance: none; }
 .ux-rail-search input:placeholder-shown + button { display: none; }
 .ux-rail-search button { width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: inherit; }
+
+.ux-rail-title {
+  margin: 0 .7rem var(--ux-title-gap);
+  --content-size-h2: 1.12rem;
+  font: var(--ux-heading-weight) 1.12rem/1.35 var(--ux-font-ui);
+}
+@media (min-width: 992px) {
+  :is(.ux-page-title, .ux-rail-title) { min-block-size: var(--ux-title-row); align-content: center; }
+  .hadith-heading-toc:has(.ux-rail-title) { margin-top: var(--ux-page-start); top: var(--ux-page-start); }
+  .hadith-heading-toc:has(.ux-rail-title) .ux-rail-filter-slot { padding-top: 0; }
+}

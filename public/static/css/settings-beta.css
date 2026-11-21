@@ -13,7 +13,7 @@
 .settings-beta-heading {
   justify-content: space-between;
   border-bottom: 1px solid var(--ux-border);
-  padding-bottom: 1.5rem;
+  padding-bottom: var(--ux-title-gap);
 }
 .settings-beta h1, .settings-beta h2, .settings-beta h3 { font-family: inherit; }
 .settings-beta-heading p { color: var(--ux-muted); margin: .25rem 0 0; }
@@ -40,7 +40,7 @@
 .settings-beta-fields > section > div:first-child h2, .settings-beta-fields > .settings-notes-drive h3 { display: none; }
 .settings-beta :is(summary, a, button, select, input):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 @media (max-width: 700px) {
-  .settings-beta { padding-top: .25rem; }
+
   .settings-beta-layout { display: block; margin-top: .5rem; }
   .settings-beta-index a { padding-inline: .25rem; gap: .45rem; font-size: .95rem; }
   .settings-beta-row > summary { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 .75rem; }
@@ -120,10 +120,11 @@
   main.settings-beta { max-width: none; margin-top: 0; padding-block: 0; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
   .settings-beta-layout { display: contents; }
   .settings-beta-heading, #settings-groups { grid-column: 2; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
-  .settings-beta-heading { grid-row: 1; margin-top: var(--heading-rail-sticky-top, calc(var(--site-fixed-header-height, 0px) + 1rem)); }
+  .settings-beta-heading { grid-row: 1; margin-top: var(--ux-page-start); }
   #settings-groups { grid-row: 2; margin-top: 1rem; }
   .settings-beta .settings-beta-index { grid-area: 1 / 4 / 3 / 6; overflow-y: auto; border-inline-start: 1px solid var(--ux-border); }
 }
 @media (max-width: 991.98px) {
+  main.settings-beta { margin-top: var(--ux-page-start); padding-top: 0; }
   .settings-beta-index.hadith-heading-toc { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); margin-bottom: 1.25rem; position: static; width: 100%; margin-top: 0; max-height: none; }
 }
