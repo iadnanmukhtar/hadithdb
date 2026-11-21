@@ -43,8 +43,20 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 [data-toc-mobile-tools]:not(:empty) { margin-block-end: var(--ux-title-gap); }
 [data-toc-heading-rail] .ux-menu-list a[hidden] { display: none; }
 .toc-heading-rail:has([data-toc-tools]) .ux-menu-list { margin-inline: .35rem; }
-.toc-details { border-block-end: 1px solid var(--ux-border); }
-.toc-details { margin-block-end: var(--ux-title-gap); }
+.toc-details {
+  --toc-details-inset: clamp(.75rem, 2vw, 1.25rem);
+  margin-block-end: var(--ux-title-gap);
+  border-block-end: 1px solid var(--ux-border);
+}
+.toc-details-toolbar { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding-block: .25rem; }
+.toc-details-toolbar .ux-text-action {
+  display: inline-flex; align-items: center; gap: .4rem;
+  padding-inline: var(--toc-details-inset) .25rem; border: 0; min-height: 44px; text-align: start;
+}
+.toc-details-toolbar [aria-expanded="true"] i { transform: rotate(180deg); }
+.toc-details-toolbar .toc-actions { margin: 0; }
+.toc-details-body { padding: 1rem var(--toc-details-inset) 1.25rem; background: var(--ux-inset); }
+.toc-details-body > :last-child { margin-block-end: 0 !important; }
 [data-toc-heading-rail]:has([data-toc-tools]) { border-inline-start: 1px solid var(--bs-border-color); }
 [data-toc-heading-rail]:has([data-toc-tools]) .hadith-heading-toc-nav { border: 0; }
 .ux-book-toc #toc-view-juz td:nth-child(2), .ux-book-toc #toc-view-manzils td:nth-child(2) { white-space: normal; }

@@ -19,8 +19,9 @@ test.each([false, true])('shared metadata renders with admin editing=%s', async 
  expect($('[data-prop="book.name_en"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-prop="book.author"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-edit-format="md"]')).toHaveLength(editMode ? 1 : 0);
- expect($('details.toc-details').text()).toContain(book.description);
- expect($('details.toc-details').is('[open]')).toBe(editMode);
+ expect($('#toc-details-content').text()).toContain(book.description);
+ expect($('#toc-details-content').hasClass('show')).toBe(editMode);
+ expect($('#toc-details-toggle').attr('aria-expanded')).toBe(String(editMode));
 });
 
 test('book route supplies coverage and does not load a passage TOC', async () => {
