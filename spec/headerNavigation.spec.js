@@ -90,9 +90,10 @@ describe('shared header navigation', () => {
     expect(header).not.toMatch(/<button[^>]*id="nav-auth-mobile"/);
   });
 
-  test('links to Quran home and the Tafsir catalog and offers reading modes in the drawer', () => {
+  test('links to Quran home in the masthead and keeps Tafsir in the drawer', () => {
     expect(header).toContain("utils.quranUrl(req, '/quran')");
-    expect(header).toContain("utils.urlFor(req, '/books?tafsir')");
+    expect(header).not.toContain('>Tafsir</a>');
+    expect(offcanvasPrimaryNav).toContain("utils.urlFor(req, '/books?tafsir')");
     for (const label of ['Study by ayah', 'Translations', 'Mushaf', 'Practice', 'Mudhakkir review']) {
       expect(offcanvasPrimaryNav).toContain("['" + label + "',");
     }
