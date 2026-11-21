@@ -48,7 +48,7 @@
 
         <section class="toc-details" aria-labelledby="toc-details-toggle">
           <div class="toc-details-toolbar">
-            <button id="toc-details-toggle" type="button" class="ux-text-action" data-bs-toggle="collapse" data-bs-target="#toc-details-content" aria-controls="toc-details-content" aria-expanded="<%= !!site.editMode %>">Book details <i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+            <button id="toc-details-toggle" type="button" class="ux-text-action" data-bs-toggle="collapse" data-bs-target="#toc-details-content" aria-controls="toc-details-content" aria-expanded="<%= !!site.editMode %>"><i class="bi bi-info-circle" aria-hidden="true"></i><span>Book details</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
             <% if (locals.actions) { %><%- include('toc_actions.ejs', actions) %><% } %>
           </div>
           <div id="toc-details-content" class="collapse<%= site.editMode ? ' show' : '' %>">
