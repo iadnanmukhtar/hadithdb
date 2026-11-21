@@ -61,10 +61,6 @@ function applyContentLanguageBadges(books, englishBooks, key) {
 }
 
 router.get('/', renderCatalog);
-router.get('/beta', (req, res) => {
-  const query = req.originalUrl.indexOf('?');
-  res.redirect(302, req.baseUrl + (query < 0 ? '' : req.originalUrl.slice(query)));
-});
 
 async function renderCatalog(req, res) {
   res.locals.req = req;

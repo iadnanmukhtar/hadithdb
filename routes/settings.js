@@ -5,11 +5,6 @@ const express = require('express');
 
 const router = express.Router();
 
-router.get('/beta', (req, res) => {
-  const query = req.originalUrl.indexOf('?');
-  res.redirect(302, req.baseUrl + (query < 0 ? '' : req.originalUrl.slice(query)));
-});
-
 router.get('/', async function (req, res, next) {
   try {
     res.locals.req = req;
