@@ -52,7 +52,7 @@ describe('books catalog performance path', () => {
   test('serves a disk cache hit before Elasticsearch, SQL, or Tafsir lookups', async () => {
     const req = request();
     const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books-makeover-v9.html`;
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books-makeover-v10.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
@@ -70,7 +70,7 @@ describe('books catalog performance path', () => {
   test('uses the same versioned cache path for rendering and metadata invalidation', () => {
     const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'books.js'), 'utf8');
     const updates = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
-    expect(route).toContain("Utils.cacheFileFromFilename('_books-makeover-v9', 'html', 'books', 'hadith')");
+    expect(route).toContain("Utils.cacheFileFromFilename('_books-makeover-v10', 'html', 'books', 'hadith')");
     expect(updates).toContain("Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'))");
   });
 

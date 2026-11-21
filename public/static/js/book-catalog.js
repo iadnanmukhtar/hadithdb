@@ -8,7 +8,7 @@
   var header = document.querySelector('.site-navbar');
   if (cachedTabs && header && !header.querySelector('.book-catalog-navigation')) {
     var navigation = document.createElement('nav');
-    navigation.className = 'row g-0 chapter-toc book-catalog-navigation';
+    navigation.className = 'row g-0 chapter-toc ux-subnav book-catalog-navigation';
     navigation.setAttribute('aria-label', 'Book collections');
     var toolbar = document.createElement('div');
     toolbar.className = 'col-12 chapter-toc-toolbar';

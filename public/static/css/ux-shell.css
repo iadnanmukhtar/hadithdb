@@ -38,7 +38,7 @@
 }
 .ux-masthead .command-search-mobile-trigger { padding: 0; border-radius: 50%; }
 .ux-masthead .top-nav-menu-toggle:hover,.ux-masthead .top-nav-icon-link:hover { background: var(--bs-secondary-bg); }
-.ux-masthead :is(.book-catalog-navigation, .settings-navigation) { border-top: 1px solid var(--shell-line); }
+.ux-masthead .ux-subnav { border-top: 1px solid var(--shell-line); }
 .ux-masthead :is(a,button,select):focus-visible { outline: 2px solid var(--ivory-accent,var(--bs-primary)); outline-offset: -2px; }
 
 .ux-masthead:has(.offcanvas:is(.show,.showing,.hiding)) { z-index: 1045; }
@@ -123,26 +123,26 @@ body:has(> .ux-footer) {
 :is(.ux-masthead, .books-beta) .app-menu-icon { color: inherit !important; }
 [data-bs-theme="dark"] :is(.ux-masthead, .books-beta) .app-menu-icon-img { filter: brightness(0) invert(1); }
 
-:is(.book-catalog-navigation, .settings-navigation) .nav-link { font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui); }
-:is(.book-catalog-navigation, .settings-navigation) { background: transparent; padding-block: 0; }
-:is(.book-catalog-navigation, .settings-navigation) .chapter-toc-toolbar { justify-content: center; min-width: 0; }
-:is(.book-catalog-navigation, .settings-navigation) .nav-tabs {
+.ux-subnav .nav-link { font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui); }
+.ux-subnav { background: transparent; padding-block: 0; }
+.ux-subnav .chapter-toc-toolbar { justify-content: center; min-width: 0; }
+.ux-subnav .nav-tabs {
   flex-wrap: nowrap; max-width: 100%; overflow-x: auto; gap: .75rem; margin: 0; border: 0;
 }
-:is(.book-catalog-navigation, .settings-navigation) .nav-item { flex: 0 0 auto; }
-:is(.book-catalog-navigation, .settings-navigation) .nav-link {
+.ux-subnav .nav-item { flex: 0 0 auto; }
+.ux-subnav .nav-link {
   display: grid; place-items: center; min-height: 2.55rem; padding: .45rem .35rem; margin: 0;
   border: 0; border-bottom: 3px solid transparent; border-radius: 0; white-space: nowrap; color: var(--bs-secondary-color);
 }
-:is(.book-catalog-navigation, .settings-navigation) .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }
-.site-navbar :is(.book-catalog-navigation, .settings-navigation) .nav-link.active {
+.ux-subnav .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }
+.site-navbar .ux-subnav .nav-link.active {
   font-weight: var(--ux-emphasis-weight); color: var(--ivory-accent, var(--bs-emphasis-color)); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
 }
-:is(.book-catalog-navigation, .settings-navigation) .nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
-:is(.catalog-collection-picker, .settings-category-picker) { display: none; }
+.ux-subnav .nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
+.ux-subnav-picker { display: none; }
 
 @media (max-width: 700px) {
-  :is(.book-catalog-navigation, .settings-navigation):has(:is(.catalog-collection-picker, .settings-category-picker):not([hidden])) .nav-tabs { display: none; }
-  :is(.catalog-collection-picker, .settings-category-picker):not([hidden]) { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; color: var(--bs-secondary-color); font: var(--ux-body-weight) .95rem/1.4 var(--ux-font-ui); }
-  :is(.catalog-collection-picker, .settings-category-picker) select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: var(--ux-emphasis-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui); }
+  .ux-subnav:has(.ux-subnav-picker:not([hidden])) .nav-tabs { display: none; }
+  .ux-subnav-picker:not([hidden]) { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; color: var(--bs-secondary-color); font: var(--ux-body-weight) .95rem/1.4 var(--ux-font-ui); }
+  .ux-subnav-picker select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: var(--ux-emphasis-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui); }
 }

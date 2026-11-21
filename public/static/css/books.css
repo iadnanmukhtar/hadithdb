@@ -1,8 +1,6 @@
 .catalog-tools { display: grid; gap: .3rem; }
 .tafsir-group-rail:has(.catalog-tools) > .hadith-heading-toc-sticky { padding: 0 0 .75rem; }
 .catalog-mobile-tools { margin-block-end: var(--ux-title-gap); }
-.catalog-mobile-tools > .catalog-tools { padding-block: 0; }
-.book-catalog-page :is(button, summary, a):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a:not(.book-catalog-pill), .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
 .book-catalog-summary { container: book-summary / inline-size; }
@@ -25,14 +23,13 @@
 }
 
 main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
-.catalog-beta-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .35rem 1rem; margin-bottom: var(--ux-title-gap); }
 .book-catalog-summary .tafsir-book-title-line { --content-size-h3: var(--ux-item-size); font-weight: var(--ux-emphasis-weight); }
 .book-catalog-summary .tafsir-book-title-line:lang(ar),
 .book-catalog-summary .tafsir-book-title-line :lang(ar) { font-size: var(--ux-item-size) !important; font-weight: var(--ux-body-weight); line-height: 1.55; }
 
 .tafsir-group-rail { font-family: var(--ux-font-ui); }
 .tafsir-rail-group .catalog-rail-group-title { font: var(--ux-emphasis-weight) 1rem/1.35 var(--ux-font-ui); }
-.tafsir-rail-group ul { font-size: .94rem; }
+.tafsir-rail-group ul { font-size: var(--ux-secondary-size); }
 .book-catalog-classifications { align-items: center; gap: .3rem; }
 .book-catalog-pill { padding: .05rem .4rem; text-decoration: none; font: var(--ux-light-weight) .75rem/1.35 var(--ux-font-ui); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
 .book-catalog-type-pill { color: var(--ivory-accent, var(--c-accent)); background: var(--ivory-selected, var(--c-primary-soft-08)); }

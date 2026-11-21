@@ -29,6 +29,8 @@
   --ux-heading-weight: 600;
   --ux-item-size: 1.24rem;
   --ux-local-nav-size: .9rem;
+  --ux-card-radius: .6rem;
+  --ux-secondary-size: .94rem;
   --ux-caption-size: .82rem;
   --ux-midnight-deep: #273053;
   --ux-midnight-fill: linear-gradient(110deg, #535c9b, #323c6b 68%, var(--ux-midnight-deep));
@@ -60,6 +62,10 @@
 }
 
 .ux-system :is(strong, b), .ux-emphasis { font-weight: var(--ux-emphasis-weight); }
+
+.ux-page-heading { margin-block-end: var(--ux-title-gap); }
+.ux-page-heading p { margin: .25rem 0 0; color: var(--ux-muted); }
+.ux-system :is(summary, a, button, select, input):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 
 .ux-page-title { line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
 
@@ -135,7 +141,7 @@
 .ux-system .ux-inset-card {
   background: var(--ux-surface);
   border: 1px solid var(--ux-border);
-  border-radius: .6rem;
+  border-radius: var(--ux-card-radius);
   padding: .9rem;
 }
 .ux-field-grid {
@@ -208,6 +214,9 @@
   margin: 0 .7rem var(--ux-title-gap);
   --content-size-h2: 1.12rem;
   font: var(--ux-heading-weight) 1.12rem/1.35 var(--ux-font-ui);
+}
+@media (max-width: 991.98px) {
+  .ux-rail-filter-slot { padding: 0; }
 }
 @media (min-width: 992px) {
   :is(.ux-page-title, .ux-rail-title) { min-block-size: var(--ux-title-row); align-content: center; }

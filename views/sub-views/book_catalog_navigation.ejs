@@ -9,21 +9,10 @@
     { key: 'sirah', query: 'history', label: 'History & Sirah' }
   ];
 %>
-<nav class="row g-0 chapter-toc book-catalog-navigation" aria-label="Book collections">
-  <div class="col-12 chapter-toc-toolbar">
-    <ul class="nav nav-tabs book-catalog-tabs" role="tablist" aria-label="Book collections">
-      <% catalogNavigationTabs.forEach(function (tab) { var id = `book-catalog-${tab.key}`; var active = tab.key === catalogNavigationType; %>
-      <li class="nav-item" role="presentation">
-        <a href="<%= page.context.catalogPath || '/books' %>?<%= tab.query || tab.key %>" class="nav-link<%= active ? ' active' : '' %>" id="<%= id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= id %>" role="tab" aria-controls="<%= id %>" aria-selected="<%= active ? 'true' : 'false' %>"><%= tab.label %></a>
-      </li>
-      <% }); %>
-    </ul>
-    <label class="catalog-collection-picker" hidden>Collection
-      <select aria-label="Book collection">
-        <% catalogNavigationTabs.forEach(function (tab) { %>
-        <option value="<%= page.context.catalogPath %>?<%= tab.query || tab.key %>"<% if (tab.key === catalogNavigationType) { %> selected<% } %>><%= tab.label %></option>
-        <% }); %>
-      </select>
-    </label>
-  </div>
-</nav>
+<%- include('section_navigation.ejs', {
+  tabs: true, label: 'Book collections', pickerLabel: 'Collection', pickerName: 'Book collection',
+  items: catalogNavigationTabs.map(tab => ({
+    label: tab.label, href: (page.context.catalogPath || '/books') + '?' + (tab.query || tab.key),
+    id: 'book-catalog-' + tab.key, active: tab.key === catalogNavigationType
+  }))
+}); %>

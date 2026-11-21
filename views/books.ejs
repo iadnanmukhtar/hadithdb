@@ -215,7 +215,7 @@
     <% for (const [label, icon] of Object.entries({ Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'sirah' })) { %>
     <template data-catalog-icon="<%= label %>"><%- include('sub-views/menu_icon.ejs', { type: icon }) %></template>
     <% } %>
-    <div class="catalog-beta-heading"><h1 class="ux-page-title"><span data-catalog-title><%= catalogTypes[catalogType].title %></span></h1></div>
+    <div class="ux-page-heading"><h1 class="ux-page-title"><span data-catalog-title><%= catalogTypes[catalogType].title %></span></h1></div>
 
     <%- utils.jsonLdScript({
       '@context': 'https://schema.org',

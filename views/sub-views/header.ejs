@@ -293,7 +293,10 @@
   <% } %>
 
   <% if (locals.settingsGroups) { %>
-  <%- include('settings_navigation.ejs', { groups: settingsGroups }); %>
+  <%- include('section_navigation.ejs', {
+    tabs: false, label: 'Settings sections', pickerLabel: 'Category', pickerName: 'Settings category',
+    items: settingsGroups.map(group => ({ label: group.title, href: '#' + group.id }))
+  }); %>
   <% } %>
 
   <% if (isQuranArea) { %>

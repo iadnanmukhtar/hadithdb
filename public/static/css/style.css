@@ -13725,7 +13725,7 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 }
 .book-catalog-compact .tafsir-book-row {
 	min-width: 0; padding: .9rem;
-	border: 1px solid var(--bs-border-color); border-radius: .6rem;
+	border: 1px solid var(--bs-border-color); border-radius: var(--ux-card-radius, .6rem);
 	background: var(--bs-tertiary-bg, var(--bs-body-bg));
 	box-shadow: 0 2px 5px rgb(0 0 0 / .035);
 }
