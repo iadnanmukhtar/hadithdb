@@ -98,8 +98,8 @@
       return active ? ' active" aria-current="page' : '';
     }
   %>
-<nav class="navbar site-navbar fixed-top ux-masthead">
-  <div class="container-fluid d-block">
+<div class="navbar site-navbar fixed-top ux-masthead">
+  <nav class="container-fluid d-block" aria-label="Site navigation">
   <div class="row g-0 site-navbar-main">
     
     <div class="col-auto d-flex align-items-center site-navbar-menu-toggle">
@@ -206,11 +206,9 @@
   <%- include('community_navigation.ejs', { page, req }); %>
   <% } %>
 
-  <% if (showQuranModes) { %>
-  <%- include('quran_bar.ejs', { quranBar: quranBar }); %>
-  <% } else if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
+  <% if (!showQuranModes && typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
-  <% } else if (page.menu === 'Chapter' || page.menu === 'Section') { %>
+  <% } else if (!showQuranModes && (page.menu === 'Chapter' || page.menu === 'Section')) { %>
   <%- include('chapter_section_menu.ejs'); %>
   <% } %>
 
@@ -222,7 +220,10 @@
   <%- include('settings_navigation.ejs'); %>
   <% } %>
 
-  </div>
-</nav>
+  </nav>
+  <% if (showQuranModes) { %>
+  <%- include('quran_bar.ejs', { quranBar }); %>
+  <% } %>
+</div>
 
 <% if (showQuranModes) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranBar.navigationMode, navigationBook: quranBar.navigationBook }); %><% } %>

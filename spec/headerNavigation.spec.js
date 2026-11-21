@@ -64,8 +64,8 @@ describe('shared header navigation', () => {
   });
 
   test('uses the full page width', () => {
-    expect(header).toContain('<nav class="navbar site-navbar fixed-top');
-    expect(header).toContain('<div class="container-fluid d-block">');
+    expect(header).toContain('<div class="navbar site-navbar fixed-top');
+    expect(header).toContain('<nav class="container-fluid d-block" aria-label="Site navigation">');
     expect(header).not.toContain('site-navbar fixed-top container col-lg-8');
     expect(styles).toContain('.site-navbar > .container-fluid > .site-navbar-main');
     expect(styles).not.toContain('.site-navbar > .site-navbar-main');
