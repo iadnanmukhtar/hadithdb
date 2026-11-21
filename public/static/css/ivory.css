@@ -8,15 +8,11 @@
   --ivory-muted: #5e6068;
   --ivory-heading: #202e54;
   --ivory-selected: #e6effb;
-  --ivory-light: radial-gradient(ellipse 55rem 25rem at 10% 0, #dfeafb 0%, transparent 78%),
-    radial-gradient(ellipse 42rem 21rem at 94% 2rem, #fff0cf 0%, transparent 80%);
   --ivory-accent: #185d96;
 }
 
 html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)) {
   background-color: var(--ivory-canvas);
-  background-image: var(--ivory-light);
-  background-repeat: no-repeat;
   color: var(--ivory-text);
 }
 html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]) :is(.settings-beta, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)):not([data-bs-theme="dark"]) {
