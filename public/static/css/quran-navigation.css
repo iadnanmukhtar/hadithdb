@@ -1,4 +1,4 @@
-.quran-mode-nav { width: 100%; min-width: 0; padding: .3rem 0; border-top: 1px solid var(--bs-border-color); }
+.quran-mode-nav { container: quran-toolbar / inline-size; width: 100%; min-width: 0; padding: .3rem 0; border-top: 1px solid var(--bs-border-color); }
 .quran-mode-toolbar { display: flex; justify-content: center; align-items: center; gap: .65rem; }
 .quran-mode-toolbar :is(.ux-secondary-action, .ux-view-option) { display: inline-flex; gap: .4rem; align-items: center; white-space: nowrap; text-decoration: none; }
 .site-navbar .quran-mode-toolbar a.ux-view-option { color: var(--ux-muted); }
@@ -7,7 +7,11 @@
 .quran-mode-toolbar .dropdown-menu { font: var(--ux-body-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui); }
 .quran-mode-toolbar .quran-script-switcher .dropdown-item { font-family: var(--ux-font-ui); }
 .quran-mode-toolbar .quran-script-switcher .dropdown-item:is(.active, :hover, :focus-visible) { background: var(--ux-midnight-deep); color: white; }
-@media (max-width: 991.98px) {
+@container quran-toolbar (max-width: 900px) {
+  .quran-mode-toolbar .quran-navigate { justify-content: center; inline-size: 44px; min-block-size: 44px; padding-inline: 0; flex: none; }
+  .quran-mode-toolbar .quran-navigate span { display: none; }
+}
+@container quran-toolbar (max-width: 774px) {
   .quran-mode-toolbar:has(.quran-mode-picker:not([hidden])) [data-quran-reader-mode-link] { display: none; }
   .quran-mode-toolbar .quran-mode-picker:not([hidden]) { display: inline-block; max-width: 9rem; }
   .quran-mode-toolbar { flex-wrap: wrap; gap: .3rem; }
@@ -18,7 +22,6 @@
   .quran-mode-toolbar .ux-secondary-action, .quran-mode-toolbar .ux-view-option { padding-inline: .45rem; font-size: var(--ux-local-nav-size); }
 }
 @media (max-width: 375px) {
-  .quran-mode-toolbar .quran-navigate i { display: none; }
   .quran-mode-toolbar .quran-mode-picker { width: 5.5rem; }
 }
 .quran-navigation-rail { --bs-offcanvas-width: min(26rem, 100vw); --drawer-pad: clamp(.75rem, 3vw, 1.15rem); }
