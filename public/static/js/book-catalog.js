@@ -151,6 +151,7 @@
       var details = card.querySelector('.tafsir-book-row-main');
       if (!details) return;
       var size = sizeOf(card);
+      card.classList.add('ux-card');
       card.dataset.bookCatalogSize = size;
       if (size && !details.querySelector('.tafsir-size-indicator, .hadith-size-indicator')) {
         var title = details.querySelector('.tafsir-book-title-line:not([lang="ar"])');

@@ -138,10 +138,13 @@
   margin-bottom: .85rem;
 }
 .ux-panel-header:only-child { margin-bottom: 0; }
-.ux-system .ux-inset-card {
+.ux-panel-header p, .ux-fields p.small { font-size: var(--ux-secondary-size); line-height: 1.45; }
+.ux-system :is(.ux-card, .ux-inset-card) {
   background: var(--ux-surface);
   border: 1px solid var(--ux-border);
   border-radius: var(--ux-card-radius);
+}
+.ux-system .ux-inset-card {
   padding: .9rem;
 }
 .ux-field-grid {

@@ -49,9 +49,6 @@
   align-items: center;
   gap: .4rem .55rem;
   padding: .75rem 1rem;
-  background: var(--ux-surface);
-  border: 1px solid var(--ux-border);
-  border-radius: var(--ux-card-radius);
   cursor: pointer;
 }
 .script-choice input { accent-color: var(--ux-accent); }
@@ -69,16 +66,12 @@
 .settings-beta .settings-filter-miss, .settings-beta-index a[hidden] { display: none !important; }
 
 
-.ux-panel-header p, .settings-beta-fields p.small {
-  font-size: var(--ux-secondary-size);
-  line-height: 1.45;
-}
 
 .settings-beta-fields .settings-preference-list-mini {
   gap: .6rem;
   grid-template-columns: repeat(auto-fill, minmax(min(8.5rem, 100%), 1fr));
 }
-.settings-beta-fields .settings-preference-tile { min-height: 5rem; padding: .6rem; border-radius: var(--ux-card-radius); }
+.settings-beta-fields .settings-preference-tile { min-height: 5rem; padding: .6rem; }
 .settings-beta-fields .settings-preference-tile .translation-setting-title { font-size: var(--ux-secondary-size); line-height: 1.2; font-weight: var(--ux-emphasis-weight); }
 .settings-beta-fields .settings-subsection-toggle { min-height: 2.5rem; justify-content: space-between; }
 .settings-beta-fields .settings-subsection-toggle .bi { order: 1; color: var(--ux-accent); font-size: .85rem; transform: rotate(180deg); }

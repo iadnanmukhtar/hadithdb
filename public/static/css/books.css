@@ -1,7 +1,6 @@
 .catalog-tools { display: grid; gap: .3rem; }
 .tafsir-group-rail:has(.catalog-tools) > .hadith-heading-toc-sticky { padding: 0 0 .75rem; }
 .catalog-mobile-tools { margin-block-end: var(--ux-title-gap); }
-.book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a:not(.book-catalog-pill), .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
 .book-catalog-summary { container: book-summary / inline-size; }
 .book-catalog-summary .tafsir-book-title-pair {

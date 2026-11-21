@@ -133,7 +133,7 @@
               ['indo-pak', 'Indo-Pak', 'قُلْ هُوَ اللّٰهُ اَحَدٌ ۝١ۚ'],
               ['warsh', 'Warsh', 'قُلْ هُوَ اَ۬للَّهُ أَحَدٌۖ']
             ]) { %>
-              <label class="script-choice">
+              <label class="script-choice ux-card">
                 <input type="radio" name="settings-quran-script" value="<%= slug %>" aria-label="<%= name %>" disabled>
                 <strong><%= name %></strong>
                 <span class="script-sample sample-<%= slug %>" lang="ar" dir="rtl"><%= sample %></span>
@@ -1261,7 +1261,7 @@
       const isDisabled = disabled.has(book.alias);
       const mini = settingsView() === 'tile';
       row.className = mini
-        ? 'tafsir-setting-row settings-preference-tile d-flex flex-column gap-2'
+        ? 'tafsir-setting-row settings-preference-tile ux-card d-flex flex-column gap-2'
         : 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
       row.draggable = !!currentUser && !book.builtinDefault && !isDisabled;
       row.setAttribute('data-tafsir-setting-row', '1');
@@ -1377,7 +1377,7 @@
       const isDisabled = disabled.has(book.alias);
       const mini = settingsView() === 'tile';
       row.className = mini
-        ? 'tafsir-setting-row settings-preference-tile d-flex flex-column gap-2'
+        ? 'tafsir-setting-row settings-preference-tile ux-card d-flex flex-column gap-2'
         : 'tafsir-setting-row d-flex align-items-start justify-content-between gap-3 border-bottom py-2';
       row.draggable = !!currentUser && !book.builtinDefault && !isDisabled;
       row.setAttribute('data-translation-setting-row', '1');
@@ -1572,7 +1572,7 @@
         const mini = settingsView() === 'tile';
         const row = document.createElement('div');
         row.className = mini
-          ? 'reciter-setting-row settings-preference-tile d-flex flex-column gap-2'
+          ? 'reciter-setting-row settings-preference-tile ux-card d-flex flex-column gap-2'
           : 'reciter-setting-row d-flex align-items-center justify-content-between gap-3 border-bottom py-2';
         row.classList.toggle('is-preferred', preferred);
         row.classList.toggle('is-disabled', disabled);
