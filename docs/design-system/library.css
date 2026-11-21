@@ -7,7 +7,9 @@ body[data-palette="ivory"] {
   --bs-border-color: var(--ivory-border);
   --c-link-dark: var(--ivory-accent);
   margin: 0;
-  background: var(--ivory-canvas);
+  background-color: var(--ivory-canvas);
+  background-image: var(--ivory-light);
+  background-repeat: no-repeat;
 }
 main, header { max-width: 67rem; margin: auto; padding-inline: clamp(1rem, 4vw, 3rem); }
 header { display: flex; align-items: center; gap: .65rem; min-height: 4rem; border-bottom: 1px solid var(--ux-border); }

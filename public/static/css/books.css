@@ -7,7 +7,7 @@
 .catalog-facet-selection { overflow-wrap: anywhere; }
 .catalog-options { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; padding: .65rem; border-radius: .55rem; background: var(--ux-inset); }
 .catalog-options .btn { color: var(--ux-text); background: var(--ux-surface); border: 1px solid var(--ux-border); border-radius: .45rem; min-height: 2rem; font: 600 .875rem/1.2 var(--ux-font-ui); }
-.catalog-options .btn[aria-pressed=true] { color: var(--ux-accent); border-color: var(--ux-accent); background: var(--ux-surface); }
+.catalog-options .btn[aria-pressed=true] { color: var(--ux-accent); border-color: var(--ux-accent); background: var(--ivory-selected, var(--ux-surface)); }
 .book-catalog-page :is(button, summary, a):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a, .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
@@ -48,7 +48,7 @@
 }
 .book-catalog-navigation .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }
 .site-navbar .book-catalog-navigation .nav-link.active {
-  color: var(--bs-emphasis-color); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
+  color: var(--ivory-accent, var(--bs-emphasis-color)); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
 }
 .book-catalog-navigation .nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
 .catalog-collection-picker { display: none; }

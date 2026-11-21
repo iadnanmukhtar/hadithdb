@@ -33,6 +33,7 @@
 .settings-beta-row > summary strong { flex: 1; font-weight: 600; }
 .settings-beta-row > summary span { color: var(--ux-muted); font-size: .95em; }
 .settings-beta-row > summary i { font-size: .8em; color: var(--ux-accent); }
+.settings-beta-row[open] > summary strong { color: var(--ivory-accent, var(--ux-text)); }
 .settings-beta-row[open] > summary i { transform: rotate(180deg); }
 .settings-beta-fields { padding: .85rem 1rem 1.25rem; background: var(--ux-inset); border-radius: .45rem; }
 .settings-beta-fields > section, .settings-beta-fields > .settings-notes-drive { border: 0 !important; padding: 0 !important; margin: 0 !important; }

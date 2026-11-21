@@ -26,7 +26,7 @@
 }
 
 .ux-system {
-  --ux-accent: var(--c-link-dark, #2379b1);
+  --ux-accent: var(--ivory-accent, var(--c-link-dark, #2379b1));
   --ux-text: var(--bs-body-color, #212529);
   --ux-muted: var(--bs-secondary-color, #595c5f);
   --ux-surface: var(--bs-body-bg, #fff);
@@ -51,7 +51,7 @@
   opacity: 1;
 }
 
-.ux-page-title { font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
+.ux-page-title { color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
 
 .ux-system .ux-view-selector {
   display: inline-flex;
