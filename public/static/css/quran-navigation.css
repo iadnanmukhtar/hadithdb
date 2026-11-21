@@ -80,3 +80,10 @@
 @media (prefers-reduced-motion: reduce) { .quran-navigation-tabs button, .quran-navigation-column input, .quran-navigation-item { transition: none; } }
 
 .quran-navigation-rail .offcanvas-title .bi-compass { margin-inline-end: .3rem; color: var(--ux-accent); }
+
+.quran-page-group-title {
+  display: flex; justify-content: space-between; align-items: baseline; gap: .5rem;
+  margin: 0; padding: .5rem .7rem; border-bottom: 1px solid var(--ux-border);
+  font: var(--ux-emphasis-weight) 1rem/1.35 var(--ux-font-ui);
+}
+.quran-page-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); padding-block: .25rem .75rem; }

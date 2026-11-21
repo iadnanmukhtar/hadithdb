@@ -12,7 +12,7 @@ jest.mock('../lib/QuranHeadings', () => ({ sectionForAyah: jest.fn() }));
 const Headings = require('../lib/QuranHeadings');
 const Rail = require('../lib/QuranNavigationRail');
 const surahs = [{num:1,name_en:'Al-Fatihah',name_ar:'الفاتحة',ayahs:7,aliases:['Umm al-Kitāb','أُمّ الْكِتَاب']}, {num:2,name_en:'Al-Baqarah',name_ar:'البقرة',ayahs:286}];
-const data = {surahs:surahs.map(s => ({num:s.num,name:s.name_en,arabic:s.name_ar,ayahs:s.ayahs})),manzil:[{num:1,title:'الأول',ref:'1:1'},{num:2,title:'الثاني',ref:'2:142'}],juz:[{num:1,title:'الم',ref:'1:1'},{num:2,title:'سيقول',ref:'2:142'}],pages:604};
+const data = {surahs:surahs.map(s => ({num:s.num,name:s.name_en,arabic:s.name_ar,ayahs:s.ayahs})),manzil:[{num:1,title:'الأول',ref:'1:1'},{num:2,title:'الثاني',ref:'2:142'}],juz:[{num:1,title:'الم',ref:'1:1',startPage:1},{num:2,title:'سيقول',ref:'2:142',startPage:22}],pages:604};
 function response() { const res = {json:jest.fn(),redirect:jest.fn(),send:jest.fn(),status:jest.fn()}; res.status.mockReturnValue(res); return res; }
 beforeEach(() => { jest.clearAllMocks(); global.surahs = surahs; Juz.manzilRows.mockResolvedValue([{num:1,start:'1:1',title:'الأول'},{num:2,start:'2:142',title:'الثاني'}]); Mushaf.info.mockResolvedValue({number_of_pages:604}); });
 
@@ -180,5 +180,21 @@ test('catalog navigation links keep the configured reader origin', async () => {
   rail.dataset.navigationJump = 'https://reader.example/navigate';
   doc.querySelector('[data-navigation-tab="page"]').click();
   expect(doc.querySelector('.quran-navigation-item').origin).toBe('https://reader.example');
+  dom.window.close();
+});
+
+test('page groups follow juz boundaries and filter by page or Arabic juz name', async () => {
+  const {doc, dom} = await browser();
+  doc.querySelector('[data-navigation-tab="page"]').click();
+  const groups = [...doc.querySelectorAll('.quran-navigation-list section')];
+  expect(groups.map(g => g.querySelector('a').textContent)).toEqual(['Page 1', 'Page 22']);
+  expect(groups[0].querySelector('a:last-child').textContent).toBe('Page 21');
+  const input = doc.querySelector('.quran-navigation-filter input');
+  for (const [term, count] of [['سيقول', 583], ['٦٠٤', 1], ['none', 0], ['', 604]]) {
+    input.value = term;
+    input.dispatchEvent(new dom.window.Event('input'));
+    expect(doc.querySelectorAll('.quran-navigation-list a:not([hidden])')).toHaveLength(count);
+    expect(groups[0].hidden).toBe(Boolean(term));
+  }
   dom.window.close();
 });
