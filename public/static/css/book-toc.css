@@ -11,6 +11,7 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
   .ux-book-toc .ux-page-heading:has(> .toc-arabic-title) {
     display: flex;
     align-items: baseline;
+    justify-content: space-between;
     gap: .75rem;
   }
   .ux-book-toc .toc-arabic-title { margin: 0; }
