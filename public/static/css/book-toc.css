@@ -7,6 +7,7 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
   text-align: start;
   overflow-wrap: anywhere;
 }
+.toc-arabic-title > span { font-size: inherit; }
 @media (min-width: 576px) {
   .ux-book-toc .ux-page-heading:has(> .toc-arabic-title) {
     display: flex;
