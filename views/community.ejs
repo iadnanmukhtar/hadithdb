@@ -4,18 +4,20 @@
 <%- include('sub-views/head.ejs', { site, page: view === 'everyone' ? { ...page, title_en: 'Hadith Unlocked Community' } : page }); %>
 <style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 <% if (view === 'email-preferences') { %>
+<link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
-<link rel="stylesheet" href="/static/css/email-preferences.css?v=<%= utils.scriptAssetVersion() %>">
+<link rel="stylesheet" href="/static/css/email-preferences.css?v=<%= utils.styleAssetVersion() %>">
 <% } %>
 </head><body class="community-page">
 <%- include('sub-views/header.ejs', { site, page }); %>
 
 <% if (readingArticle) { %><div class="container-fluid community-article-layout"><% } %>
-<main class="<%= readingArticle ? '' : view === 'email-preferences' ? 'email-preferences ux-system ux-fields' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> <%= readingArticle ? 'community-article' : 'py-4' %> community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
+<main class="<%= readingArticle ? '' : view === 'email-preferences' ? 'email-preferences ux-system ux-fields' : view === 'post' ? 'container-fluid community-article-layout' : 'container' %> <%= readingArticle ? 'community-article' : view === 'email-preferences' ? '' : 'py-4' %> community" id="community" data-view="<%= view %>" data-author="<%= author?.handle || '' %>" data-post="<%= post?.id || '' %>">
   <% if (!readingArticle && (view !== 'post' || post.title?.trim())) { %>
-  <div class="<%= view === 'email-preferences' ? 'email-heading' : 'community-heading' %>">
-    <% if (view === 'email-preferences') { %><a href="<%= locals.settingsReturn || '/settings' %>#settings-email-section" class="email-back"><i class="bi bi-arrow-left me-1" aria-hidden="true"></i>Back to My Settings</a><% } %>
-    <div><h1 class="<%= view === 'email-preferences' ? 'email-title' : '' %>" id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
+  <div class="<%= view === 'email-preferences' ? 'ux-page-heading' : 'community-heading' %>">
+    <% if (view === 'email-preferences') { %><a href="<%= locals.settingsReturn || '/settings' %>#settings-email-section" class="email-back"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back to My Settings</a><% } %>
+    <div><h1 class="<%= view === 'email-preferences' ? 'ux-page-title' : '' %>" id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
+    <% if (view === 'email-preferences') { %><p>Choose which emails you receive and manage your author subscriptions.</p><% } %>
     <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your posts, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Posts, articles, and discussions from the community.' %></p><% } %>
     </div>
   </div>
@@ -180,10 +182,9 @@
   <% } %>
   <% if (view === 'moderation') { %><p class="text-muted">Review first publications and reported content. Approval allows the author’s future posts to publish immediately.</p><div id="community-moderation"></div><% } %>
   <% if (view === 'email-preferences') { %>
-  <p class="email-intro">Choose which emails you receive and manage your author subscriptions.</p>
   <form id="community-email-form" hidden>
     <section aria-labelledby="email-notifications-title">
-      <h2 id="email-notifications-title">Email notifications</h2>
+      <h2 class="ux-section-title" id="email-notifications-title">Email notifications</h2>
       <div class="ux-inset-card">
         <label class="form-check form-switch email-master">
           <input id="community-email-enabled" class="form-check-input" type="checkbox" role="switch" name="enabled">
@@ -206,7 +207,7 @@
       </div>
     </section>
     <section aria-labelledby="email-authors-title">
-      <h2 id="email-authors-title">Author subscriptions</h2>
+      <h2 class="ux-section-title" id="email-authors-title">Author subscriptions</h2>
       <p>Choose whose notes and articles arrive by email. Enable notes and articles notifications above to receive them.</p>
       <div class="ux-inset-card"><div id="community-email-authors"></div><p id="community-email-author-result" class="email-feedback" role="status"></p></div>
     </section>

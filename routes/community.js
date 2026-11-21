@@ -131,7 +131,7 @@ router.get('/media/:id',wrap(async(req,res)=>{
 router.get('/email-preferences', (req,res) => {
   const settingsRoutes = ['/settings', '/quran/settings'];
   const settingsReturn = settingsRoutes.includes(req.query.from) ? req.query.from : '/settings';
-  page(res, req, 'email-preferences', { settingsReturn });
+  page(res, req, 'email-preferences', { settingsReturn, makeoverShell: true });
 });
 router.get('/email-unsubscribe/:token/:category', wrap(async (req,res) => {
   await EmailPreferences.tokenRow(req.params.token,req.params.category);
