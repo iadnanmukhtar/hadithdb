@@ -1,5 +1,5 @@
 <!--hadithdb-cache:header:start-->
-<% var betaShell = !!(locals.booksBeta || locals.settingsBeta); %>
+<% var betaShell = !!locals.makeoverShell; %>
 <nav class="navbar site-navbar fixed-top<%= betaShell ? ' ux-masthead' : '' %>">
   <%
     var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
@@ -95,7 +95,6 @@
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
     var headerLogoAlt = headerBrandName;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
-    if (betaShell) settingsHref += '/beta';
     var alternateModeLabel = isQuranArea ? 'Hadith' : 'Quran';
     var alternateModeHref = isQuranArea ? utils.hadithBaseUrl(req) : utils.quranUrl(req, '/quran');
     var commandHadithSearchAction = typeof utils.globalSearchBaseUrl === 'function' ? utils.globalSearchBaseUrl(req) : navSearchAction;
@@ -142,9 +141,9 @@
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, betaShell ? '/books/beta?tafsir' : '/books?tafsir') %>">Tafsir</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, '/books?tafsir') %>">Tafsir</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, betaShell ? '/books/beta' : '/books') %>">Books</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="bi bi-people-fill top-nav-community-icon" aria-hidden="true"></i> Community</a></li>
         <li class="nav-item command-search-compact-item">
           <button type="button" class="btn<%= betaShell ? '' : ' btn-link nav-link' %> top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="<%= betaShell ? 'Search the library' : 'Search' %>">

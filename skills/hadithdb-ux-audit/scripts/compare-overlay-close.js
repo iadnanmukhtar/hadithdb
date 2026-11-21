@@ -10,7 +10,7 @@ const surfaces = [
 ];
 
 async function verify(page) {
-  await page.goto('http://localhost:3004/books/beta?hadith', { waitUntil: 'domcontentloaded' });
+  await page.goto('http://localhost:3004/books?hadith', { waitUntil: 'domcontentloaded' });
   await page.locator('.book-catalog-summary:visible').first().waitFor();
   // Exercise the shared modal without signing in or creating a note.
   await page.evaluate(() => {

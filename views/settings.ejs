@@ -7,46 +7,29 @@
     site.admin = (req.admin);
     site.editMode = false;
     var paymentFeatureEnabled = locals.paymentFeatureEnabled === true;
-    const panelHeader = (spacing = '') => settingsBeta ? 'ux-panel-header' : 'd-flex align-items-start justify-content-between gap-3 flex-wrap' + spacing;
-    const fieldGrid = settingsBeta ? 'ux-field-grid' : 'row g-2';
-    const gridLabel = settingsBeta ? 'form-label mb-0' : 'col-sm-6 col-lg-3 form-label mb-0';
+    const fieldGrid = 'ux-field-grid';
+    const gridLabel = 'form-label mb-0';
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
 
-<% if (settingsBeta) { %>
 <link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/ux-foundations.css') %>?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/settings-beta.css') %>?v=<%= utils.styleAssetVersion() %>">
-<% } %>
 </head>
 
 <body>
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
-<% function renderProfile() { %>
-      <section class="border-top pt-3" id="settings-profile-section">
-        <div class="<%= panelHeader(' mb-3') %>">
-          <div>
-            <h2 class="fs-5 fw-bold mb-1">Profile</h2>
-            <p class="text-muted small mb-0" id="settings-profile-status">Loading profile settings...</p>
-          </div>
-        </div>
-        <label class="form-label settings-language-field">
-          <select class="form-select form-select-sm" id="settings-preferred-language" aria-label="Preferred language"></select>
-        </label>
-      </section>
-<% } %>
-
 <% function renderEmail() { %>
       <section class="border-top pt-3 mt-3" id="settings-email-section">
-        <div class="<%= panelHeader(' mb-3') %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Email notifications</h2>
             <p class="text-muted small mb-0">Choose which emails you receive and manage your author subscriptions.</p>
           </div>
-          <a class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" href="/community/email-preferences<%= settingsBeta || settingsPath !== '/settings' ? '?from=' + encodeURIComponent(settingsPath + (settingsBeta ? '/beta' : '')) : '' %>">Email preferences</a>
+          <a class="ux-secondary-action" href="/community/email-preferences<%= '?from=' + encodeURIComponent(settingsPath) %>">Email preferences</a>
         </div>
       </section>
 <% } %>
@@ -58,13 +41,12 @@
           <p class="text-muted small mb-0" id="settings-notebook-theme-status">Choose the background used for all your notes.</p>
         </div>
         <div class="notebook-theme-options settings-notebook-theme-options" data-notebook-theme-options role="group" aria-label="Default note background"></div>
-        <% if (!settingsBeta) renderDrive(); %>
       </section>
 <% } %>
 
 <% function renderDrive() { %>
         <div class="settings-notes-drive mt-4 pt-3">
-        <div class="<%= panelHeader(' mb-2') %>">
+        <div class="ux-panel-header">
           <div>
             <h3 class="fs-6 fw-bold mb-1">Google Drive</h3>
             <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. <span data-drive-signin-hint>Sign in to manage your connection.</span></p>
@@ -73,10 +55,10 @@
         <div class="small" data-notebook-drive-panel data-notebook-drive-settings hidden>
           <%- include('sub-views/notebook_drive_icon.ejs'); %>
           <span data-notebook-drive-message role="status"></span>
-          <button type="button" class="<%= settingsBeta ? 'ux-primary-action ms-auto' : 'btn btn-sm btn-outline-secondary ms-auto' %>" data-notebook-drive-connect hidden>Connect Google Drive</button>
-          <button type="button" class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-link notebook-drive-action ms-2 p-0' %>" data-notebook-drive-import hidden>Import from Google Drive</button>
-          <a data-notebook-drive-folder target="_blank" rel="noopener" class="<%= settingsBeta ? 'ux-text-action' : 'notebook-drive-action ms-1' %>" hidden>Open folder</a>
-          <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-link notebook-drive-action ms-2 p-0' %>" data-notebook-drive-disconnect hidden>Disconnect</button>
+          <button type="button" class="ux-primary-action ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
+          <button type="button" class="ux-secondary-action" data-notebook-drive-import hidden>Import from Google Drive</button>
+          <a data-notebook-drive-folder target="_blank" rel="noopener" class="ux-text-action" hidden>Open folder</a>
+          <button type="button" class="ux-text-action" data-notebook-drive-disconnect hidden>Disconnect</button>
           <div class="mt-3 w-100" data-community-drive-controls hidden>
             <label class="form-check form-switch">
               <input type="checkbox" class="form-check-input" data-community-drive-enabled>
@@ -92,17 +74,17 @@
 
 <% function renderPayments() { %>
       <section class="border-top pt-3" id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
-        <div class="<%= panelHeader(' mb-3') %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Payments</h2>
             <p class="text-muted small mb-0" id="settings-payment-status">Loading payment settings...</p>
           </div>
           <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-payment-manage">Manage payments</button>
+            <button type="button" class="ux-secondary-action" id="settings-payment-manage">Manage payments</button>
           </div>
         </div>
         <div class="settings-payment-panel">
-          <div class="settings-payment-balance<%= settingsBeta ? ' ux-inset-card' : '' %>">
+          <div class="settings-payment-balance ux-inset-card">
             <span class="text-muted small">Points</span>
             <strong id="settings-payment-balance">0</strong>
           </div>
@@ -111,7 +93,7 @@
               <span class="small text-muted d-block mb-1">Buy points</span>
               <select class="form-select form-select-sm" id="settings-payment-package"></select>
             </label>
-            <button type="button" class="<%= settingsBeta ? 'ux-primary-action' : 'btn btn-primary btn-sm' %>" id="settings-payment-buy">Buy</button>
+            <button type="button" class="ux-primary-action" id="settings-payment-buy">Buy</button>
           </div>
           <div class="settings-payment-auto">
             <div class="form-check form-switch">
@@ -127,7 +109,7 @@
                 <span class="small text-muted d-block mb-1">Recharge pack</span>
                 <select class="form-select form-select-sm" id="settings-auto-recharge-package"></select>
               </label>
-              <button type="button" class="<%= settingsBeta ? 'ux-primary-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-auto-recharge-save">Save</button>
+              <button type="button" class="ux-primary-action" id="settings-auto-recharge-save">Save</button>
             </div>
           </div>
           <div id="settings-payment-ledger" class="settings-payment-ledger small text-muted"></div>
@@ -137,13 +119,12 @@
 
 <% function renderScript() { %>
       <section class="border-top pt-3 mt-3" id="settings-quran-reading-section">
-        <div class="<%= panelHeader(' mb-3') %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Reading</h2>
             <p class="text-muted small mb-0" id="settings-quran-script-status">Choose the script used for Quran āyāt and words.</p>
           </div>
         </div>
-        <% if (settingsBeta) { %>
         <fieldset class="script-choices">
           <legend class="small text-muted">Al-Ikhlas 112:1</legend>
           <div class="script-choice-grid">
@@ -160,32 +141,22 @@
             <% } %>
           </div>
         </fieldset>
-        <% } else { %>
-        <label class="form-label mb-0">
-          <span class="small d-block mb-1">Quran script</span>
-          <select class="form-select form-select-sm" id="settings-quran-script">
-            <option value="uthmani">Uthmani</option>
-            <option value="indo-pak">Indo-Pak</option>
-            <option value="warsh">Warsh</option>
-          </select>
-        </label>
-        <% } %>
       </section>
 <% } %>
 
 <% function renderMemorization() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="<%= panelHeader(' mb-3') %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Memorization</h2>
             <p class="text-muted small mb-0" id="settings-memorization-status">Tune review timing and the size of each review session.</p>
           </div>
-          <a class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-primary btn-sm' %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
+          <a class="ux-secondary-action" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
         </div>
-        <div class="settings-fsrs-card<%= settingsBeta ? ' ux-inset-card' : '' %>">
+        <div class="settings-fsrs-card ux-inset-card">
           <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
             <div><h3 class="fs-6 fw-bold mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
-            <button type="button" class="<%= settingsBeta ? 'ux-secondary-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
+            <button type="button" class="ux-secondary-action" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
           </div>
           <div class="<%= fieldGrid %>">
             <label class="<%= gridLabel %>"><span class="small d-block mb-1">Target Memory Goal</span><select class="form-select form-select-sm" id="settings-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select></label>
@@ -197,11 +168,11 @@
         </div>
         <div class="memorization-session-settings mt-3">
           <div class="mb-2"><h3 class="fs-6 fw-bold mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
-          <div class="<%= settingsBeta ? 'ux-field-grid' : 'd-flex align-items-end gap-3 flex-wrap' %>">
+          <div class="ux-field-grid">
             <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
             <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
           </div>
-          <details class="memorization-advanced-settings mt-3<%= settingsBeta ? ' ux-inset-card' : '' %>">
+          <details class="memorization-advanced-settings mt-3 ux-inset-card">
             <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
             <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. The Hard limit includes both fragile āyāt and previously Good āyāt recovering after Again.</p>
             <div class="<%= fieldGrid %>">
@@ -212,23 +183,22 @@
             </div>
           </details>
         </div>
-        <div class="d-flex justify-content-end mt-3"><button type="button" class="<%= settingsBeta ? 'ux-primary-action' : 'btn btn-primary btn-sm' %>" id="settings-memorization-save">Save Quran Memorization</button></div>
+        <div class="d-flex justify-content-end mt-3"><button type="button" class="ux-primary-action" id="settings-memorization-save">Save Quran Memorization</button></div>
       </section>
 <% } %>
 
 <% function renderAudio() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="<%= panelHeader() %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Audio</h2>
             <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
-            <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-reciter-enable-all">Enable all</button>
-            <% if (!settingsBeta) { %><span class="text-muted small">Settings view</span><% } %>
-            <div class="<%= settingsBeta ? 'ux-view-selector' : 'btn-group btn-group-sm settings-view-toggle' %>" role="group" aria-label="Settings view">
-              <button type="button" class="<%= settingsBeta ? 'ux-view-option' : 'btn btn-outline-secondary' %>" data-settings-view="tile">Tile</button>
-              <button type="button" class="<%= settingsBeta ? 'ux-view-option' : 'btn btn-outline-secondary' %>" data-settings-view="full">Full</button>
+            <button type="button" class="ux-text-action" id="settings-reciter-enable-all">Enable all</button>
+            <div class="ux-view-selector" role="group" aria-label="Settings view">
+              <button type="button" class="ux-view-option" data-settings-view="tile">Tile</button>
+              <button type="button" class="ux-view-option" data-settings-view="full">Full</button>
             </div>
           </div>
         </div>
@@ -238,13 +208,13 @@
 
 <% function renderTranslations() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="<%= panelHeader(' mb-3') %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Translations</h2>
             <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
-            <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-translation-enable-all">Enable all</button>
+            <button type="button" class="ux-text-action" id="settings-translation-enable-all">Enable all</button>
           </div>
         </div>
         <div id="settings-translation-list" class="d-flex flex-column gap-2"></div>
@@ -253,19 +223,19 @@
 
 <% function renderTafsirs() { %>
       <section class="border-top pt-3 mt-3">
-        <div class="<%= panelHeader(' mb-3') %>">
+        <div class="ux-panel-header">
           <div>
             <h2 class="fs-5 fw-bold mb-1">Quran Tafsirs</h2>
             <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
           </div>
-          <button type="button" class="<%= settingsBeta ? 'ux-text-action' : 'btn btn-outline-secondary btn-sm' %>" id="settings-tafsir-enable-all">Enable all</button>
+          <button type="button" class="ux-text-action" id="settings-tafsir-enable-all">Enable all</button>
         </div>
         <div id="settings-tafsir-list" class="d-flex flex-column gap-2"></div>
       </section>
 <% } %>
 
 
-<% if (settingsBeta) {
+<%
   const groups = [
     { id: 'reading', title: 'Reading & listening', icon: 'book', rows: [
       ['script', 'Quran script', 'Script used in the reader', renderScript],
@@ -287,8 +257,7 @@
   ]; %>
 <main class="settings-beta ux-system">
   <div class="settings-beta-heading">
-    <div><h1 class="ux-page-title">Settings <small class="ux-beta-label">Beta</small></h1><p id="settings-account-status" role="status">Loading account settings…</p></div>
-    <a href="<%= settingsPath %>">Classic settings</a>
+    <div><h1 class="ux-page-title">Settings</h1><p id="settings-account-status" role="status">Loading account settings…</p></div>
   </div>
   <div class="settings-beta-layout">
     <nav class="settings-beta-index" aria-label="Settings categories">
@@ -320,25 +289,6 @@
   </div>
 </main>
 <script defer src="<%= utils.staticAssetUrl('/static/js/settings-filter.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
-<% } else { %>
-  <div class="container col-lg-8 mx-auto">
-    <main class="search-results settings-page">
-      <div class="settings-page-heading mb-3">
-        <div class="d-flex justify-content-between align-items-center gap-3"><h1 class="fs-4 mb-0">My Settings</h1><a class="small" href="<%= settingsPath %>/beta">Try Settings beta</a></div>
-        <p class="text-muted small mb-0" id="settings-account-status">Loading account settings...</p>
-      </div>
-      <% renderProfile();
-         renderEmail();
-         renderNotebook();
-         renderPayments();
-         renderScript();
-         renderMemorization();
-         renderAudio();
-         renderTranslations();
-         renderTafsirs(); %>
-    </main>
-  </div>
-<% } %>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
@@ -1598,13 +1548,6 @@
       currentTranslationBooks = books;
       const disabled = new Set(currentSettings.translations.disabledAliases);
       translationListEl.innerHTML = '';
-      let body = translationListEl;
-      <% if (!settingsBeta) { %>
-      const section = document.createElement('section');
-      section.className = 'mb-3';
-      body = renderSettingsSubsection(section, 'settings-translations-en', 'English Translations');
-      translationListEl.appendChild(section);
-      <% } %>
       const list = document.createElement('div');
       list.className = settingsView() === 'tile'
         ? 'settings-preference-list settings-preference-list-mini'
@@ -1612,7 +1555,7 @@
       list.appendChild(renderTranslationRow(defaultTranslationBook, disabled));
       orderedTranslations(books.filter(book => book.source !== 'default')).forEach(book => list.appendChild(renderTranslationRow(book, disabled)));
       bindTranslationDragList(list);
-      body.appendChild(list);
+      translationListEl.appendChild(list);
       updateTranslationStatus();
     };
 

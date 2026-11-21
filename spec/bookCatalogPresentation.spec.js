@@ -12,12 +12,12 @@ const book = {
   title_en: 'Jami al-Bayan', title: 'جامع البيان', death: '310', description: 'Full book description.', lang: 'ar', type: 'hadith',
   properties: { searchGroups: [{ id: 'tafsir-major', scope: 'tafsir', label: 'major tafsirs' }, { id: 'sihah', scope: 'hadith', label: 'sihah' }] }
 };
-async function render(template, editMode = false, records = [book], query = {}, booksBeta = false) {
+async function render(template, editMode = false, records = [book], query = {}) {
   global.settings = { site: {} };
   global.books = records;
   return ejs.renderFile(path.join(__dirname, '../views', template), {
     req: { admin: editMode, editMode, query }, books: records, tafsirs: records, translations: records.map(record => ({ ...record, lang: 'en' })), sharhBooks: records, mushafs: [{ ...book, href: '/quran/page/1' }],
-    booksBeta, BookGroups, Tafsir, BookDownloads,
+    BookGroups, Tafsir, BookDownloads,
     utils: { styleAssetVersion: () => 'test', scriptAssetVersion: () => 'test', sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => '<p>' + value + '</p>', quranUrl: (_req, url) => url, urlFor: (_req, url) => url, jsonLdScript: () => '' }
   }, { includer: (name) => /(?:^|\/)header\.ejs$/.test(name)
     ? { template: '<nav class="navbar site-navbar fixed-top"><% if (page.context.bookCatalogInitialType) { %><%- include("book_catalog_navigation.ejs", { page }); %><% } %></nav>' }
@@ -107,14 +107,15 @@ test('keeps inline admin editors in place', async () => {
 });
 
 
-test.each([false, true])('keeps the collection and variant when opening Books beta or classic (beta=%s)', async booksBeta => {
-  const doc = browser(await render('books.ejs', false, [book], { tafsir: '' }, booksBeta)).window.document;
-  const base = booksBeta ? '/books/beta' : '/books';
-  expect(Boolean(doc.querySelector('main .ux-page-title'))).toBe(booksBeta);
-  expect(Boolean(doc.querySelector('.catalog-facets'))).toBe(booksBeta);
-  expect(Boolean(doc.querySelector('link[href*="/css/books.css"]'))).toBe(booksBeta);
-  expect(doc.querySelector('[data-catalog-switch]').getAttribute('href')).toBe((booksBeta ? '/books' : '/books/beta') + '?tafsir');
-  expect(doc.querySelector('#book-catalog-tafsir-all-tab').getAttribute('href')).toBe(base + '?tafsir');
+test('opens the redesigned catalog at its canonical collection URL', async () => {
+  const dom = browser(await render('books.ejs', false, [book], { tafsir: '' }));
+  const doc = dom.window.document;
+  expect(doc.querySelector('main .ux-page-title').textContent.trim()).toBe('Tafsir Books');
+  expect(doc.querySelector('.catalog-facets')).not.toBeNull();
+  expect(doc.querySelector('link[href*="/css/books.css"]')).not.toBeNull();
+  expect(doc.querySelector('[data-catalog-switch]')).toBeNull();
+  expect(doc.querySelector('#book-catalog-tafsir-all-tab').getAttribute('href')).toBe('/books?tafsir');
+  dom.window.close();
 });
 
 test('renders book tabs inside the fixed header and connects them to the existing panes', async () => {

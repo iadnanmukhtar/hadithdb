@@ -29,7 +29,7 @@ async function compare(reference, candidate) {
   }
 }
 
-compare(process.argv[2] || '/settings/beta', process.argv[3] || '/books/beta').catch(error => {
+compare(process.argv[2] || '/settings', process.argv[3] || '/books').catch(error => {
   console.error(error);
   process.exitCode = 1;
 });

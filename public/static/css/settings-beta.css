@@ -17,7 +17,6 @@
 }
 .settings-beta h1, .settings-beta h2, .settings-beta h3 { font-family: inherit; }
 .settings-beta-heading p { color: var(--ux-muted); margin: .25rem 0 0; }
-.settings-beta-heading a { color: var(--ux-accent); text-underline-offset: .2em; }
 .settings-beta-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(12rem, 1fr); grid-template-areas: "content rail"; gap: 2rem; margin-top: 1.5rem; }
 .settings-beta-layout > #settings-groups { grid-area: content; }
 .settings-beta-index { grid-area: rail; display: flex; flex-direction: column; align-self: start; }

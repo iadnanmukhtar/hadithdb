@@ -18,7 +18,6 @@
       </li>
       <% }); %>
     </ul>
-    <% if (page.context.catalogPath === '/books/beta') { %>
     <label class="catalog-collection-picker" hidden>Collection
       <select aria-label="Book collection">
         <% catalogNavigationTabs.forEach(function (tab) { %>
@@ -26,6 +25,5 @@
         <% }); %>
       </select>
     </label>
-    <% } %>
   </div>
 </nav>

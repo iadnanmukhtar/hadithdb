@@ -130,7 +130,7 @@ router.get('/media/:id',wrap(async(req,res)=>{
 }));
 router.get('/email-preferences', (req,res) => {
   const settingsRoutes = ['/settings', '/quran/settings', '/settings/beta', '/quran/settings/beta'];
-  const settingsReturn = settingsRoutes.includes(req.query.from) ? req.query.from : '/settings';
+  const settingsReturn = settingsRoutes.includes(req.query.from) ? req.query.from.replace(/\/beta$/, '') : '/settings';
   page(res, req, 'email-preferences', { settingsReturn });
 });
 router.get('/email-unsubscribe/:token/:category', wrap(async (req,res) => {

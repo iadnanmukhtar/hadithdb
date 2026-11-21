@@ -29,10 +29,9 @@
     var catalogQuery = req.query || {};
     var catalogType = Object.keys(catalogTypes).find(function (key) { return Object.prototype.hasOwnProperty.call(catalogQuery, key); })
       || (catalogTypes[catalogQuery.tab] ? catalogQuery.tab : 'hadith');
-    var betaCatalog = locals.booksBeta === true;
-    var catalogPath = betaCatalog ? '/books/beta' : '/books';
+    var catalogPath = '/books';
     page.context.catalogPath = catalogPath;
-    page.noindex = betaCatalog;
+    page.noindex = false;
     var initialBookCatalogType = catalogTypes[catalogType].pane;
     page.title_en = 'Hadith Unlocked | ' + catalogTypes[catalogType].title;
     page.subtitle_en = catalogTypes[catalogType].title;
@@ -201,29 +200,22 @@
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
-<% if (betaCatalog) { %>
 <link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/books.css?v=<%= utils.styleAssetVersion() %>">
-<% } %>
 </head>
-<body<% if (betaCatalog) { %> class="books-beta"<% } %>>
+<body class="books-beta">
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
   <div class="container-fluid hadith-heading-layout toc-heading-layout">
 <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 
-    <main class="book-catalog-page<%= betaCatalog ? ' ux-system' : '' %>">
-    <% if (betaCatalog) { %>
+    <main class="book-catalog-page ux-system">
     <% for (const [label, icon] of Object.entries({ Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'sirah' })) { %>
     <template data-catalog-icon="<%= label %>"><%- include('sub-views/menu_icon.ejs', { type: icon }) %></template>
     <% } %>
-    <div class="catalog-beta-heading"><h1 class="ux-page-title"><span data-catalog-title><%= catalogTypes[catalogType].title %></span> <small class="ux-beta-label">Beta</small></h1>
-      <a data-catalog-switch href="/books?<%= catalogType %>">Classic books</a></div>
-    <% } else { %>
-    <a data-catalog-switch href="/books/beta?<%= catalogType %>">Try Books beta</a>
-    <% } %>
+    <div class="catalog-beta-heading"><h1 class="ux-page-title"><span data-catalog-title><%= catalogTypes[catalogType].title %></span></h1></div>
 
     <%- utils.jsonLdScript({
       '@context': 'https://schema.org',
@@ -232,22 +224,12 @@
       about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
     }) %>
 
-    <% if (betaCatalog) { %>
     <nav class="book-catalog-group-filters catalog-tools" aria-label="Filter books">
       <label class="catalog-search"><i class="bi bi-search" aria-hidden="true"></i>
         <input type="search" class="book-catalog-filter" placeholder="Search books" aria-label="Search books in this collection" autocomplete="off">
       </label>
       <details class="catalog-facets"><summary>Filters<span class="catalog-facet-selection"></span></summary>
         <div class="catalog-options" role="group" aria-label="Collection filters">
-    <% } else { %>
-    <nav class="h-menu-wrap home-hadith-book-nav book-catalog-group-filters mb-3" aria-label="Filter books">
-      <div class="h-menu-scroller">
-        <div class="btn-group h-menu text-nowrap" role="group">
-          <label class="book-carousel-filter">
-            <span class="bi bi-search" aria-hidden="true"></span>
-            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter books in the selected collection" autocomplete="off" autofocus>
-          </label>
-    <% } %>
           <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
           <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="ar" data-book-catalog-group-scope="tafsir" aria-pressed="false">Arabic</button>
           <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="sharh" aria-pressed="false">English</button>
@@ -255,7 +237,7 @@
             <button type="button" class="btn btn-outline-primary<%= scope === 'hadith' ? '' : ' d-none' %>" data-book-catalog-group-filter="<%= group.id %>" data-book-catalog-group-scope="<%= scope %>" aria-pressed="false"><%= group.label %></button>
           <% }); }); %>
         </div>
-      <% if (betaCatalog) { %></details><% } else { %></div><% } %>
+      </details>
     </nav>
 
     <section class="book-catalog-tabs-section mb-4">
@@ -744,7 +726,6 @@
             document.title = 'Hadith Unlocked | ' + type.title;
             var title = document.querySelector('[data-catalog-title]');
             if (title) title.textContent = type.title;
-            document.querySelector('[data-catalog-switch]').search = tab.search;
             var description = document.querySelector('meta[name="description"]');
             if (description) description.content = type.description;
             var canonical = document.querySelector('link[rel="canonical"]');

@@ -61,17 +61,19 @@ function applyContentLanguageBadges(books, englishBooks, key) {
 }
 
 router.get('/', renderCatalog);
-router.get('/beta', renderCatalog);
+router.get('/beta', (req, res) => {
+  const query = req.originalUrl.indexOf('?');
+  res.redirect(302, req.baseUrl + (query < 0 ? '' : req.originalUrl.slice(query)));
+});
 
 async function renderCatalog(req, res) {
-  const booksBeta = req.route?.path === '/beta';
   res.locals.req = req;
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
-  const cacheableHtml = !booksBeta && !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
-  const cachedFile = Utils.cacheFileFromFilename('_books-classic-v4', 'html', 'books', 'hadith');
+  const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
+  const cachedFile = Utils.cacheFileFromFilename('_books-makeover-v1', 'html', 'books', 'hadith');
   const flushCache = Utils.shouldFlushCache(req);
-  if (flushCache && !booksBeta) {
+  if (flushCache) {
     await Utils.flushCachedFile(cachedFile, { strict: true });
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -108,7 +110,7 @@ async function renderCatalog(req, res) {
     var translations = await Tafsir.visibleTranslations();
     const sharhBooks = await Sharh.catalog();
     const renderLocals = {
-      booksBeta,
+      makeoverShell: true,
       sharhBooks,
       BookDownloads: BookDownloads,
       mushafs: QuranMushafBooks.catalog(),

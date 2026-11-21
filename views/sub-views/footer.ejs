@@ -12,14 +12,14 @@
 			))
 		);
 %>
-<% if (locals.booksBeta || locals.settingsBeta) {
+<% if (locals.makeoverShell) {
   const quranBrand = req.quranArea || /^\/quran(?:\/|$)/.test(req.originalUrl || '');
 %>
 <footer class="site-footer ux-footer">
   <div class="ux-footer-inner">
     <a class="ux-footer-brand" href="<%= quranBrand ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/') %>"><img src="<%= quranBrand ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg' %>" width="24" height="24" alt=""><%= quranBrand ? 'Quran Unlocked' : site.name %></a>
     <nav aria-label="Explore">
-      <a href="<%= utils.quranUrl(req, '/quran') %>">Quran</a><a href="<%= utils.urlFor(req, '/books/beta') %>">Books</a><a href="<%= utils.urlFor(req, '/community') %>">Community</a>
+      <a href="<%= utils.quranUrl(req, '/quran') %>">Quran</a><a href="<%= utils.urlFor(req, '/books') %>">Books</a><a href="<%= utils.urlFor(req, '/community') %>">Community</a>
     </nav>
     <nav aria-label="About and support">
       <a href="/about">About</a><a href="https://linktr.ee/i.adnan.mukhtar">@i.adnan.mukhtar</a>

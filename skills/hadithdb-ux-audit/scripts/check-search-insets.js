@@ -24,7 +24,7 @@ async function check(page, route, width) {
   const browser = await chromium.launch({ channel: 'chrome' });
   try {
     const page = await browser.newPage();
-    for (const route of ['/settings/beta', '/books/beta'])
+    for (const route of ['/settings', '/books'])
       for (const width of [992, 1280]) await check(page, route, width);
   } finally {
     await browser.close();
