@@ -213,12 +213,10 @@
         if (groups.has(id)) classifications.append(makePill(groups.get(id), 'group', id));
       });
       var languageBadge = details.querySelector('.book-language-badge');
-      var language = languageBadge ? languageBadge.textContent.trim()
-        : (card.dataset.bookCatalogLanguage || card.dataset.tafsirLanguage || '').trim().toUpperCase().replace(/\s+/g, '-');
-      // Cached catalog markup can still contain the older uppercase badge.
-      if (language === 'EN-AR') language = 'en-ar';
+      var language = (languageBadge ? languageBadge.textContent
+        : card.dataset.bookCatalogLanguage || card.dataset.tafsirLanguage || '').trim().toLowerCase().replace(/\s+/g, '-');
       if (language) {
-        card.dataset.catalogBadge = language.toLowerCase();
+        card.dataset.catalogBadge = language;
         var languagePill = makePill(language, 'badge', card.dataset.catalogBadge);
         languagePill.classList.add('book-catalog-language-pill');
         classifications.insertBefore(languagePill, classifications.children[1] || null);

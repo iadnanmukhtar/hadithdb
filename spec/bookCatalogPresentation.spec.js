@@ -46,7 +46,7 @@ test.each(['books.ejs', 'tafsir_books.ejs', 'translation_books.ejs', 'sharh_cata
   expect(original.hidden).toBe(true);
   const type = template === 'tafsir_books.ejs' ? 'Tafsir' : template === 'translation_books.ejs' ? 'Translation' : template === 'sharh_catalog.ejs' ? 'Sharḥ' : 'Hadith';
   expect(card.querySelector('.book-catalog-type-pill').textContent).toBe(type);
-  expect(card.querySelector('.book-catalog-language-pill').textContent).toBe(template === 'translation_books.ejs' ? 'EN' : 'AR');
+  expect(card.querySelector('.book-catalog-language-pill').textContent).toBe(template === 'translation_books.ejs' ? 'en' : 'ar');
   expect(card.querySelector('.book-catalog-summary .book-language-badge')).toBeNull();
   const trigger = card.querySelector('.book-catalog-details-button');
   trigger.click();
@@ -89,7 +89,7 @@ test('keeps categories and controls English-only and hides empty sections after 
   expect(doc.querySelector('.book-catalog-summary .tafsir-book-meta [lang="ar"]').textContent).toContain('ابن جرير الطبري');
   const card = category.querySelector('.tafsir-book-row');
   expect(card.dataset.tafsirBookFilter).toContain('tabari');
-  expect(Array.from(card.querySelectorAll('.book-catalog-summary .book-catalog-pill')).map(pill => pill.textContent)).toEqual(['Tafsir', 'AR', 'Major Tafsirs']);
+  expect(Array.from(card.querySelectorAll('.book-catalog-summary .book-catalog-pill')).map(pill => pill.textContent)).toEqual(['Tafsir', 'ar', 'Major Tafsirs']);
   card.classList.add('d-none');
   await Promise.resolve();
   expect(category.hidden).toBe(true);

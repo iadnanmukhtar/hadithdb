@@ -136,8 +136,8 @@
       if (languages.indexOf('en') >= 0 && languages.indexOf('ar') >= 0)
         return 'en-ar';
       if (languages.indexOf('en') >= 0)
-        return 'EN';
-      return 'AR';
+        return 'en';
+      return 'ar';
     };
     var catalogLanguageCodes = function (book) {
       return Tafsir.commentaryLanguages(book).join(' ');

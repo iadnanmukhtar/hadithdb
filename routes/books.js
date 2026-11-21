@@ -56,7 +56,7 @@ function applyContentLanguageBadges(books, englishBooks, key) {
   const hasEnglish = new Set(englishBooks.map(normalize));
   return books.map(book => ({
     ...book,
-    catalog_language_badge: hasEnglish.has(normalize(book[key])) ? 'en-ar' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'EN' : 'AR')
+    catalog_language_badge: hasEnglish.has(normalize(book[key])) ? 'en-ar' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'en' : 'ar')
   }));
 }
 
@@ -67,7 +67,7 @@ async function renderCatalog(req, res) {
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
   const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
-  const cachedFile = Utils.cacheFileFromFilename('_books-makeover-v3', 'html', 'books', 'hadith');
+  const cachedFile = Utils.cacheFileFromFilename('_books-makeover-v4', 'html', 'books', 'hadith');
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
     await Utils.flushCachedFile(cachedFile, { strict: true });
