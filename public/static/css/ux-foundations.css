@@ -1,12 +1,24 @@
 @font-face {
-  font-family: 'Source Sans 3';
-  src: url('../fonts/source-sans-3/upright.woff2') format('woff2');
-  font-weight: 200 900;
+  font-family: 'Inter';
+  font-style: normal;
   font-display: swap;
+  font-weight: 100 900;
+  src: url(../fonts/inter/inter-latin-ext-wght-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+/* inter-latin-wght-normal */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url(../fonts/inter/inter-latin-wght-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
 }
 
 :root {
-  --ux-font-ui: 'Source Sans 3', system-ui, sans-serif;
+  --ux-font-ui: 'Inter', system-ui, sans-serif;
   --ux-item-size: 1.24rem;
   --ux-caption-size: .82rem;
   --ux-midnight-deep: #273053;
@@ -26,6 +38,17 @@
   --ux-focus-ring: 2px solid var(--ux-accent);
   font: 400 1rem/1.5 var(--ux-font-ui);
   color: var(--ux-text);
+}
+
+/* Native hints, the search launcher, and inline editor hints share one treatment. */
+:is(.ux-system, .command-search-dialog) :is(input, textarea)::placeholder,
+.ux-masthead .command-search-compact-trigger > span,
+.ux-system.book-catalog-page ._e[data-placeholder]:empty::before {
+  font-family: var(--ux-font-ui);
+  font-weight: 300;
+  font-style: normal;
+  color: var(--ivory-muted, var(--bs-secondary-color));
+  opacity: 1;
 }
 
 .ux-page-title { font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
