@@ -13816,7 +13816,7 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 	display: inline;
 }
 .tafsir-rail-group li + li::before {
-	content: " • ";
+	content: " · ";
 	color: var(--bs-secondary-color);
 }
 .tafsir-rail-group a {
