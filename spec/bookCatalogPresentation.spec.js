@@ -52,6 +52,8 @@ test.each(['books.ejs', 'tafsir_books.ejs', 'translation_books.ejs', 'sharh_cata
   trigger.click();
   const dialog = doc.querySelector('dialog');
   expect(dialog.open).toBe(true);
+  expect(dialog.querySelector('#book-catalog-dialog-title').textContent.trim()).toBe(original.querySelector('.tafsir-book-title-line a').textContent.trim());
+  expect(dialog.querySelector('.ux-primary-action').href).toBe(original.querySelector('.tafsir-book-title-line a').href);
   expect(dialog.textContent).toContain('Jami al-Bayan');
   const arabicTitle = dialog.querySelector('.tafsir-book-full-name [lang="ar"]');
   expect(arabicTitle.textContent).toBe('جامع البيان');

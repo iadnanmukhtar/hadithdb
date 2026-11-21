@@ -111,11 +111,21 @@
   });
 
   var dialog = document.createElement('dialog');
-  dialog.className = 'book-catalog-dialog';
+  dialog.className = 'book-catalog-dialog ux-system';
   dialog.setAttribute('aria-labelledby', 'book-catalog-dialog-title');
-  dialog.innerHTML = '<div class="book-catalog-dialog-header"><h2 id="book-catalog-dialog-title">Book details</h2><button type="button" class="btn-close" aria-label="Close book details"></button></div><div class="book-catalog-dialog-body"></div>';
+  dialog.innerHTML = `
+    <header class="book-catalog-dialog-header">
+      <h2 id="book-catalog-dialog-title">Book details</h2>
+      <span lang="ar" dir="rtl"></span>
+      <button type="button" class="btn-close" aria-label="Close book details"></button>
+    </header>
+    <div class="book-catalog-dialog-body"></div>
+    <div class="book-catalog-dialog-actions"><a class="ux-primary-action">Open book</a></div>`;
   document.body.append(dialog);
   var body = dialog.querySelector('.book-catalog-dialog-body');
+  var dialogTitle = dialog.querySelector('h2');
+  var arabicHeading = dialog.querySelector('header [lang="ar"]');
+  var openBook = dialog.querySelector('.ux-primary-action');
   var current = null;
   var opener = null;
   dialog.querySelector('button').addEventListener('click', function () { dialog.close(); });
@@ -236,6 +246,15 @@
       button.setAttribute('aria-label', 'Book details: ' + (summary.querySelector('a') || summary).textContent.trim());
       button.addEventListener('click', function () {
         current = { card: card, details: details }; opener = button;
+        var titleLink = detailTitles && detailTitles.querySelector('a[href]');
+        var arabic = detailTitles && detailTitles.querySelector('[lang="ar"]');
+        var indicator = detailTitles && detailTitles.querySelector('.tafsir-size-indicator, .hadith-size-indicator');
+        dialogTitle.textContent = titleLink ? titleLink.textContent.trim() : 'Book details';
+        if (indicator) dialogTitle.append(' ', indicator.cloneNode(true));
+        arabicHeading.textContent = arabic ? arabic.textContent.trim() : '';
+        openBook.parentElement.hidden = !titleLink;
+        if (titleLink) openBook.href = titleLink.href;
+        else openBook.removeAttribute('href');
         details.hidden = false;
         details.querySelectorAll('.toc-book-description-summary').forEach(function (node) { node.hidden = true; });
         details.querySelectorAll('.toc-book-description-full').forEach(function (node) { node.classList.remove('d-none'); });
