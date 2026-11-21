@@ -224,21 +224,7 @@
       about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
     }) %>
 
-    <nav class="book-catalog-group-filters catalog-tools" aria-label="Filter books">
-      <label class="catalog-search"><i class="bi bi-search" aria-hidden="true"></i>
-        <input type="search" class="book-catalog-filter" placeholder="Search books" aria-label="Search books in this collection" autocomplete="off">
-      </label>
-      <details class="catalog-facets"><summary>Filters<span class="catalog-facet-selection"></span></summary>
-        <div class="catalog-options" role="group" aria-label="Collection filters">
-          <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
-          <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="ar" data-book-catalog-group-scope="tafsir" aria-pressed="false">Arabic</button>
-          <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="sharh" aria-pressed="false">English</button>
-          <% Object.keys(catalogBookGroups).forEach(function (scope) { catalogBookGroups[scope].forEach(function (group) { %>
-            <button type="button" class="btn btn-outline-primary<%= scope === 'hadith' ? '' : ' d-none' %>" data-book-catalog-group-filter="<%= group.id %>" data-book-catalog-group-scope="<%= scope %>" aria-pressed="false"><%= group.label %></button>
-          <% }); }); %>
-        </div>
-      </details>
-    </nav>
+    <details class="catalog-mobile-tools d-lg-none"><summary>Filter books</summary><div data-mobile-catalog-tools></div></details>
 
     <section class="book-catalog-tabs-section mb-4">
       <div class="tab-content">
@@ -574,7 +560,7 @@
 
     </main>
   </div>
-<%- include('sub-views/book_group_rail.ejs', { initialBookCatalogType: initialBookCatalogType, railTitle: 'Books', railHomeHref: utils.urlFor(req, catalogPath), railCollections: [
+<%- include('sub-views/book_group_rail.ejs', { catalogBookGroups, showCatalogFilters: true, initialBookCatalogType: initialBookCatalogType, railTitle: 'Books', railHomeHref: utils.urlFor(req, catalogPath), railCollections: [
       { pane: 'book-catalog-hadith', railTitle: 'Hadith Books', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
       { pane: 'book-catalog-sirah', railTitle: 'History Books', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
       { pane: 'book-catalog-tafsir-all', railTitle: 'Tafsir Books', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
@@ -592,6 +578,15 @@
     var filter = document.querySelector('.book-catalog-filter');
     if (!filter)
       return;
+    const tools = filter.closest('.catalog-tools');
+    const railSlot = tools.parentElement;
+    const mobileSlot = document.querySelector('[data-mobile-catalog-tools]');
+    const desktop = window.matchMedia('(min-width: 992px)');
+    function positionTools() {
+      (desktop.matches ? railSlot : mobileSlot).append(tools);
+    }
+    positionTools();
+    desktop.addEventListener('change', positionTools);
     var tabStrip = document.querySelector('.book-catalog-navigation [role="tablist"]');
     var currentTab = tabStrip && tabStrip.querySelector('[aria-selected="true"]');
     if (currentTab && tabStrip.scrollWidth > tabStrip.clientWidth) {

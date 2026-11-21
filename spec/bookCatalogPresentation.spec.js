@@ -25,6 +25,7 @@ async function render(template, editMode = false, records = [book], query = {}) 
 }
 function browser(html) {
   const dom = new JSDOM(html, { url: 'https://example.test/books', runScripts: 'outside-only' });
+  dom.window.matchMedia = () => ({ matches: true, addEventListener() {} });
   dom.window.HTMLDialogElement.prototype.showModal = function () { this.open = true; };
   dom.window.HTMLDialogElement.prototype.close = function () { this.open = false; this.dispatchEvent(new dom.window.Event('close')); };
   dom.window.normalizeContentFilterText = value => (value || '').toLowerCase();

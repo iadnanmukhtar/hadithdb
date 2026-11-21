@@ -17,9 +17,8 @@
 }
 .settings-beta h1, .settings-beta h2, .settings-beta h3 { font-family: inherit; }
 .settings-beta-heading p { color: var(--ux-muted); margin: .25rem 0 0; }
-.settings-beta-layout { display: grid; grid-template-columns: minmax(0, 3fr) minmax(12rem, 1fr); grid-template-areas: "content rail"; gap: 2rem; margin-top: 1.5rem; }
-.settings-beta-layout > #settings-groups { grid-area: content; }
-.settings-beta-index { grid-area: rail; display: flex; flex-direction: column; align-self: start; }
+.settings-beta-layout { margin-top: 1.5rem; }
+.settings-beta-index { display: flex; flex-direction: column; align-self: start; }
 .settings-beta-index a {
   display: flex; align-items: center; gap: .7rem; padding: .55rem .7rem;
   min-height: 44px; color: inherit; text-decoration: none; border-radius: .4rem;
@@ -42,7 +41,6 @@
 @media (max-width: 700px) {
   .settings-beta { padding-top: .25rem; }
   .settings-beta-layout { display: block; margin-top: .5rem; }
-  .settings-beta-index { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); margin-bottom: 1.25rem; }
   .settings-beta-index a { padding-inline: .25rem; gap: .45rem; font-size: .95rem; }
   .settings-beta-row > summary { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 .75rem; }
   .settings-beta-row > summary span { grid-column: 1; }
@@ -76,22 +74,8 @@
 .script-choice .sample-warsh { font-family: QuranWarsh, serif; }
 
 .settings-filter-slot { min-width: 0; max-width: 13rem; margin: .25rem .5rem .25rem 0; align-self: center; width: calc(100% - .5rem); }
-.settings-filter {
-  display: flex;
-  align-items: center;
-  gap: .35rem;
-  padding-inline: .5rem .15rem;
-  font-size: .9rem;
-  background: var(--ux-surface);
-  color: var(--ux-muted);
-  border: 1px solid var(--ux-border);
-  border-radius: .55rem;
-}
-.settings-filter:focus-within { border-color: var(--ux-accent); outline: var(--ux-focus-ring); outline-offset: 1px; }
-.settings-filter input { flex: 1; min-width: 0; height: 32px; border: 0; padding: 0; background: transparent; color: var(--ux-text); font: inherit; }
-.settings-beta .settings-filter input:focus-visible { outline: none; }
-.settings-filter input::-webkit-search-cancel-button { appearance: none; }
-.settings-filter button { width: 32px; height: 32px; background: transparent; border: 0; color: inherit; }
+.settings-filter-slot input::-webkit-search-cancel-button { appearance: none; }
+.settings-filter-slot button { width: 32px; height: 32px; background: transparent; border: 0; color: inherit; }
 .settings-filter-status { font-size: .85rem; margin: .25rem 0 0; color: var(--ux-muted); }
 .settings-filter-status:empty { margin: 0; }
 .settings-beta .settings-filter-miss, .settings-beta-index a[hidden] { display: none !important; }
@@ -132,3 +116,16 @@
 }
 
 .settings-beta #settings-email-section { scroll-margin-top: calc(var(--site-fixed-header-height, 5rem) + 1rem); }
+
+@media (min-width: 992px) {
+  main.settings-beta { max-width: none; margin-top: 0; padding-block: 0; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
+  .settings-beta-layout { display: contents; }
+  .settings-beta-heading, #settings-groups { grid-column: 2; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
+  .settings-beta-heading { grid-row: 1; margin-top: var(--heading-rail-sticky-top, calc(var(--site-fixed-header-height, 0px) + 1rem)); }
+  #settings-groups { grid-row: 2; margin-top: 1rem; }
+  .settings-beta .settings-beta-index { grid-area: 1 / 4 / 3 / 6; overflow-y: auto; border-inline-start: 1px solid var(--ux-border); }
+  .settings-filter-slot { align-self: flex-start; margin-inline-start: .7rem; }
+}
+@media (max-width: 991.98px) {
+  .settings-beta-index.hadith-heading-toc { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); margin-bottom: 1.25rem; position: static; width: 100%; margin-top: 0; max-height: none; }
+}
