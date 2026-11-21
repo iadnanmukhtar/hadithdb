@@ -47,7 +47,6 @@ const BLOCKED_HTTP_METHODS = new Set(['TRACE', 'TRACK']);
 const PUBLIC_DIRECTORY = path.join(__dirname, 'public');
 const STATIC_DIRECTORY = path.join(PUBLIC_DIRECTORY, 'static');
 const STARTUP_FALLBACK_FILE = path.join(PUBLIC_DIRECTORY, 'html', '_app_restarting.html');
-const TERMS_FILE = path.join(PUBLIC_DIRECTORY, 'html', 'terms.html');
 const PUBLIC_STATIC_OPTIONS = {
   dotfiles: 'ignore',
   fallthrough: true,
@@ -479,8 +478,21 @@ const startupPromise = (async () => {
   });
   app.use(require('./lib/BookAliases').middleware);
   app.use('/', express.static(PUBLIC_DIRECTORY, PUBLIC_STATIC_OPTIONS));
-  app.get('/terms', function termsOfService(req, res) {
-    res.sendFile(TERMS_FILE, { cacheControl: false });
+  app.get(['/terms', '/html/terms.html', '/html/privacy.html'], function legalPage(req, res) {
+    const privacy = req.path === '/html/privacy.html';
+    res.render('legal', {
+      req, res, privacy,
+      site: { ...global.settings.site, admin: false, editMode: false },
+      page: {
+        menu: 'Legal',
+        title_en: privacy ? 'Privacy Policy' : 'Terms of Service',
+        description_en: privacy
+          ? 'How Hadith Unlocked collects, uses, stores, and shares information, including Google sign-in and optional Google Drive notebook data.'
+          : 'Terms governing use of Hadith Unlocked and its Quran, tafsir, hadith, and MCP lookup services.',
+        canonical: privacy ? '/html/privacy.html' : '/terms',
+        context: {}
+      }
+    });
   });
   app.use('/admin', require('./routes/admin'));
   app.get('/about', function aboutPage(req, res) {

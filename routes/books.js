@@ -111,7 +111,6 @@ async function renderCatalog(req, res) {
     var translations = await Tafsir.visibleTranslations();
     const sharhBooks = await Sharh.catalog();
     const renderLocals = {
-      makeoverShell: true,
       sharhBooks,
       BookDownloads: BookDownloads,
       mushafs: QuranMushafBooks.catalog(),

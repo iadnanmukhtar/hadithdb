@@ -55,13 +55,12 @@ describe('shared header navigation', () => {
   const bookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'bookNav.ejs'), 'utf8');
   const tafsirLanguageSwitch = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'tafsirCarouselLanguageSwitch.ejs'), 'utf8');
 
-  test('puts Community first in quick links and removes retired activity menus', () => {
-    const quick = header.slice(header.indexOf('<div class="offcanvas-quick-actions"'), header.indexOf('<div class="row">',header.indexOf('<div class="offcanvas-quick-actions"')));
-    expect(quick.indexOf("'/community'")).toBeLessThan(quick.indexOf("'/notebook'"));
-    expect(quick).toContain('bi bi-people');
-    for (const route of ['/liked','/highlights','/commented']) {
-      expect(header).not.toContain(route);expect(offcanvasPrimaryNav).not.toContain(route);
-    }
+  test('groups drawer destinations by task and keeps Personal after Community', () => {
+    const groups = ['Read & study', 'Memorize', 'Community', 'Personal'];
+    const positions = groups.map(group => offcanvasPrimaryNav.indexOf("['" + group + "', ["));
+    expect(positions.every(position => position >= 0)).toBe(true);
+    expect(positions).toEqual([...positions].sort((a, b) => a - b));
+    expect(offcanvasPrimaryNav).toContain('data-drawer-profile');
   });
 
   test('uses the full page width', () => {
@@ -91,41 +90,23 @@ describe('shared header navigation', () => {
     expect(header).not.toMatch(/<button[^>]*id="nav-auth-mobile"/);
   });
 
-  test('links the desktop Quran item to the Quran home and keeps the off-canvas submenu', () => {
-    const quranLabels = ['Quran', 'Translations', 'Study', 'Mushaf', 'Practice', 'Mudhakkir'];
-
-    expect(header).toContain('<li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, \'/quran\') %>">Quran</a></li>');
-    expect(header).not.toContain('dropdown-toggle<%- activeNavAttrs(isQuranArea && !isQuranTafsirArea)');
-    expect(header).toContain('href="<%= utils.quranUrl(req, \'/quran/tafsir\') %>">Tafsir</a>');
-    expect(offcanvasPrimaryNav).not.toMatch(/nav-link ps-4[^\n]*\/quran\/tafsir/);
-
-    quranLabels.slice(1).reduce((lastPosition, label) => {
-      const position = offcanvasPrimaryNav.indexOf(`> ${label}</a>`);
-      expect(position).toBeGreaterThan(lastPosition);
-      return position;
-    }, offcanvasPrimaryNav.indexOf("label: 'Quran'"));
+  test('links to Quran home and the Tafsir catalog and offers reading modes in the drawer', () => {
+    expect(header).toContain("utils.quranUrl(req, '/quran')");
+    expect(header).toContain("utils.urlFor(req, '/books?tafsir')");
+    for (const label of ['Study by ayah', 'Translations', 'Mushaf', 'Practice', 'Mudhakkir review']) {
+      expect(offcanvasPrimaryNav).toContain("['" + label + "',");
+    }
   });
 
-	test('uses a desktop-only second header row for the full-width command search', () => {
-		expect(header).toContain('class="col-12 d-none d-md-flex site-navbar-search-row"');
-		expect(header).toContain('Search Hadith or Quran + Tafsir');
-		expect(header.indexOf('<nav class="row g-0 chapter-toc">')).toBeLessThan(header.indexOf('class="col-12 d-none d-md-flex site-navbar-search-row"'));
-		expect(header).not.toContain('command-search-nav-item');
-		expect(header).toContain('command-search-compact-item');
-		expect(styles).toContain('--site-header-search-height: 3.25rem;');
-		expect(styles).toContain('--site-header-shrink-height: var(--site-header-primary-shrink-height);');
-		expect(styles).toMatch(/\.site-navbar > \.container-fluid > \.site-navbar-main \{\s*height: auto;\s*min-height: var\(--site-header-primary-height\);/);
-		expect(styles).toContain('.site-navbar-search-row');
-		expect(styles).toMatch(/\.command-search-shortcut \{[\s\S]*?background: var\(--c-accent\);[\s\S]*?color: var\(--c-white\);/);
-		expect(styles).toContain('.site-navbar.shrink .command-search-compact-item');
-		expect(styles).toMatch(/\.site-navbar\.shrink \.site-navbar-search-row \{\s*display: none !important;/);
-		expect(styles).toMatch(/\.top-nav-desktop-actions \{\s*column-gap: 1\.15rem;/);
-		expect(styles).toMatch(/@media \(max-width: 1199\.98px\) and \(min-width: 768px\)[\s\S]*?\.top-nav-desktop-actions \{\s*column-gap: 0\.75rem;/);
-		expect(styles).toContain('margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem));');
-	});
+  test('renders the compact command search in the masthead', () => {
+    expect(header).toContain('fixed-top ux-masthead');
+    expect(header).toContain('command-search-compact-trigger');
+    expect(header).not.toContain('site-navbar-search-row');
+  });
+
 
 	test('uses one command search dialog from desktop and mobile without a rail search form', () => {
-		expect(header.match(/data-command-search-open/g)).toHaveLength(3);
+		expect(header.match(/data-command-search-open/g)).toHaveLength(2);
 		expect(header).toContain("include('global_search_dialog.ejs'");
 		expect(header).not.toContain('search-click-toggle');
 		expect(header).not.toMatch(/<div class="offcanvas-body">\s*<form[^>]*>/);
@@ -214,7 +195,7 @@ describe('shared header navigation', () => {
 	});
 
 	test('preselects the current Hadith, Tafsir, or translation context', () => {
-		expect(header).toContain("requestPath !== '/' && pageBook");
+		expect(header).toContain("requestPath !== '/' && searchContextBook");
 		expect(header).toContain("quranSearchContext: quranSearchContext");
 		expect(header).toContain('page.context.fromSearch === true');
 		expect(header).toContain('hadithSearchBookAliases: hadithSearchBookAliases');
@@ -257,7 +238,7 @@ describe('shared header navigation', () => {
 	});
 
 	test('shows the same Quran bar independently of chapter sections', () => {
-		expect(header).toContain("if (isQuranArea) {");
+		expect(header).toContain("if (showQuranModes) {");
 		expect(header).toContain("include('quran_bar.ejs'");
 		expect(quranBar).not.toContain('sections.length');
 	});

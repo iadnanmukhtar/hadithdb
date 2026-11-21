@@ -1,4 +1,4 @@
-/* The beta shell keeps the brand, menu, search and account in one stable row. */
+/* The shared shell keeps the brand, menu, search and account in one stable row. */
 .ux-masthead {
   --shell-surface: var(--ivory-surface, var(--bs-body-bg));
   --shell-ink: var(--ivory-text, var(--bs-emphasis-color));
@@ -31,6 +31,7 @@
   border: 0; border-radius: 2rem; background: var(--ivory-inset, var(--bs-tertiary-bg));
   color: var(--shell-ink); font: var(--ux-emphasis-weight) .95rem/1.25 var(--ux-font-ui);
 }
+.ux-masthead .command-search-trigger-label { max-inline-size: 11rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ux-masthead .command-search-compact-trigger > i { font-size: 18px; }
 .ux-masthead .command-search-compact-trigger kbd {
   margin-inline-start: .45rem; padding: .15rem .35rem; border-radius: .3rem;
@@ -78,6 +79,10 @@ body:has(> .ux-footer) {
 .ux-footer-legal { opacity: .85; }
 @media (pointer: coarse) {
   .ux-footer a { min-height: 44px; }
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+  .ux-masthead .command-search-compact-trigger { padding: 0; }
+  .ux-masthead .command-search-compact-trigger :is(.command-search-trigger-label, kbd) { display: none; }
 }
 @media(max-width:991.98px) {
   .ux-masthead .site-navbar-main > menu.d-md-block { display: none !important; }

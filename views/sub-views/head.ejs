@@ -352,8 +352,6 @@
 }) %>
 <% } %>
 
-<% if (locals.makeoverShell || locals.useUxStyles || req.quranArea || isQuranHeadPage || /^\/quran(?:[/:]|$)/.test(headRequestPath)) { %>
 <link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
-<% } %>
 <link rel="stylesheet" href="/static/css/quran-navigation.css?v=<%= utils.styleAssetVersion() %>">

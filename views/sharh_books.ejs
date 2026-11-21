@@ -20,11 +20,11 @@ if (sharhBook) {
   }
 }
 %>
-<%- include('sub-views/head.ejs', { useUxStyles: true, site, page }); %>
+<%- include('sub-views/head.ejs', { site, page }); %>
   <%- include('sub-views/toc_styles.ejs'); %>
 </head>
 <body>
-<%- include('sub-views/header.ejs', { tocCollection: 'sharh', makeoverShell: true, site, page }); %>
+<%- include('sub-views/header.ejs', { tocCollection: 'sharh', site, page }); %>
 <div class="container-fluid hadith-heading-layout toc-heading-layout">
 <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 <main class="ux-system ux-book-toc toc hadith-toc-page">
@@ -71,7 +71,7 @@ if (sharhBook) {
 </div>
 <% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>
 <% if (sharhBook) { %><%- include('sub-views/mobile_navigation.ejs', { site, page }); %><% } %>
-<%- include('sub-views/footer.ejs', { makeoverShell: true, site, page }); %>
+<%- include('sub-views/footer.ejs', { site, page }); %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>
 </body>
 </html>

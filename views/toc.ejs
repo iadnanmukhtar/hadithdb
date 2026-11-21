@@ -534,14 +534,14 @@
     ] : [{ mode: 'chapters', items: tocHeadingRailItems }];
 	%>
   
-  <%- include('sub-views/head.ejs', { useUxStyles: true, site: site, page: page }); %>
+  <%- include('sub-views/head.ejs', { site: site, page: page }); %>
   
   <%- include('sub-views/toc_styles.ejs'); %>
 </head>
 
 <body>
   
-  <%- include('sub-views/header.ejs', { tocCollection, makeoverShell: true, site: site, page: page, quranHeaderJuzLinks: quranHeaderJuzLinks }); %>
+  <%- include('sub-views/header.ejs', { tocCollection, site: site, page: page, quranHeaderJuzLinks: quranHeaderJuzLinks }); %>
   
   <div class="container-fluid hadith-heading-layout toc-heading-layout">
     <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
@@ -886,7 +886,7 @@
   </div>
   
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/footer.ejs', { makeoverShell: true, site: site, page: page }); %>
+  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   
 </body>
