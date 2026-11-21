@@ -1,19 +1,24 @@
 <%
-  var tocHeadingRailItems = Array.isArray(locals.tocHeadingRailItems) ? locals.tocHeadingRailItems : [];
-  var tocHeadingRailTitle = (locals.tocHeadingRailTitle || '').toString();
-  var tocHeadingRailBookHref = (locals.tocHeadingRailBookHref || '').toString();
-  var tocHeadingRailInitialItem = tocHeadingRailItems.find(function (item) { return item.track !== false; });
-  var tocHeadingRailInitialKey = tocHeadingRailInitialItem ? tocHeadingRailInitialItem.key : '';
+  const names = { chapters: 'chapters', covered: 'covered books', surahs: 'surahs', juz: 'juz', manzils: 'manzils' };
+  const resultId = mode === 'chapters' ? 'toc' : 'toc-' + mode;
 %>
-<% if (tocHeadingRailItems.length > 0) { %>
 <aside class="hadith-heading-toc toc-heading-rail d-none d-lg-block" data-toc-heading-rail aria-labelledby="toc-heading-rail-title">
   <div class="hadith-heading-toc-sticky">
-    <%- include('toc_rail_header.ejs', { titleId: 'toc-heading-rail-title', title: tocHeadingRailTitle, href: tocHeadingRailBookHref, linkLabel: 'Book overview' }) %>
-    <nav class="nav flex-column hadith-heading-toc-nav ux-menu-list" data-toc-heading-rail-nav aria-label="Chapters in <%= tocHeadingRailTitle %>">
-      <% tocHeadingRailItems.forEach(function (heading) { %>
-      <a class="nav-link hadith-heading-toc-link<%= heading.key === tocHeadingRailInitialKey ? ' active' : '' %>" href="<%= heading.href %>"<% if (heading.track !== false) { %> data-toc-heading-key="<%= heading.key %>"<% } %><% if (heading.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %><% if (heading.key === tocHeadingRailInitialKey) { %> aria-current="location"<% } %>><% if (heading.number) { %><%= heading.number %> <% } %><%= heading.title %></a>
-      <% }); %>
+    <%- include('rail_title.ejs', { titleId: 'toc-heading-rail-title', title: 'Book contents' }) %>
+    <div data-toc-desktop-tools>
+      <div class="ux-system ux-rail-filter-slot" data-toc-tools>
+        <%- include('rail_search.ejs', { inputId: 'toc-filter', resultsId: resultId, placeholder: 'Search ' + names[mode], label: 'Search ' + names[mode], clearLabel: 'Clear search', tocFilter: true }) %>
+        <p class="small text-muted mb-0" role="status" data-toc-empty></p>
+      </div>
+    </div>
+    <nav class="hadith-heading-toc-nav ux-menu-list" data-toc-heading-rail-nav aria-label="Contents">
+      <% for (const group of groups) { %>
+      <div data-toc-mode="<%= group.mode %>" data-search-label="Search <%= names[group.mode] %>"<% if (group.mode !== mode) { %> hidden<% } %>>
+        <% for (const item of group.items) { %>
+        <a href="<%= item.href %>" data-toc-index-key="<%= item.key %>"<% if (item.track !== false) { %> data-toc-heading-key="<%= item.key %>"<% } %><% if (item.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %>><%= [item.number, item.title].filter(Boolean).join(' ') %></a>
+        <% } %>
+      </div>
+      <% } %>
     </nav>
   </div>
 </aside>
-<% } %>

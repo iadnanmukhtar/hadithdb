@@ -24,28 +24,29 @@ if (sharhBook) {
   <%- include('sub-views/toc_styles.ejs'); %>
 </head>
 <body>
-<%- include('sub-views/header.ejs', { makeoverShell: true, site, page }); %>
+<%- include('sub-views/header.ejs', { tocCollection: 'sharh', makeoverShell: true, site, page }); %>
 <div class="container-fluid hadith-heading-layout toc-heading-layout">
 <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 <main class="ux-system ux-book-toc toc hadith-toc-page">
   <% if (sharhBook) { %>
     <article>
     <%- include('sub-views/book_metadata.ejs', {
-      site, book: sharhBook, tocDisplayBook: sharhBook,
+      site, book: sharhBook,
+      actions: { primaryHref: coveredBooks.length ? '/' + encodeURIComponent(coveredBooks[0].alias) : '',
+        primaryLabel: coveredBooks.length ? 'Open ' + (coveredBooks[0].shortName_en || coveredBooks[0].alias) : '',
+        links: { json: canonical + '.json', epub: canonical + '.epub' } }, tocDisplayBook: sharhBook,
       tocDisplayBookNameEn: sharhBook.name_en || title,
       tocDisplayBookTitle: sharhBook.name || sharhBook.title || sharhBook.shortName,
       showBookLayout: true, showBookMetadata: true,
       quranCommentaryBook: null, isEnglishQuranTranslation: false
     }); %>
-    <%- include('sub-views/toc_book_picker.ejs', { family: 'sharh', sharhBook, books }); %>
-    <%- include('sub-views/toc_downloads.ejs', { json: canonical + '.json', epub: canonical + '.epub', download: true }); %>
     <section aria-labelledby="sharh-covered-books-title">
       <h2 id="sharh-covered-books-title" class="ux-section-title">Commentary on</h2>
       <% if (coveredBooks.length) { %>
-      <table class="table ux-toc-table" aria-label="Books with commentary and hadith counts">
+      <table id="toc-covered" class="table ux-toc-table" aria-label="Books with commentary and hadith counts">
         <thead><tr><th scope="col">Book</th><th scope="col" lang="ar" dir="rtl">الكتاب</th><th scope="col" class="text-end">Hadiths</th></tr></thead>
         <tbody><% coveredBooks.forEach(function(book) { %>
-          <tr class="chapter">
+          <tr class="chapter" data-toc-chapter="<%= book.alias %>" data-toc-heading-target data-toc-heading-key="<%= book.alias %>">
             <td><a href="/<%= encodeURIComponent(book.alias) %>"><%= book.shortName_en || book.name_en || book.alias %></a></td>
             <td lang="ar" dir="rtl"><a href="/<%= encodeURIComponent(book.alias) %>"><%= book.shortName || book.name || book.title %></a></td>
             <td class="text-end"><%= Number(book.hadith_count).toLocaleString('en-US') %></td>
@@ -64,7 +65,9 @@ if (sharhBook) {
   <% } %>
 </main>
 </div>
-<%- include('sub-views/book_group_rail.ejs', { tocRail: true, railTitle: 'Sharḥ books', railHomeHref: utils.urlFor(req, '/books?sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railCurrentAlias: sharhBook && sharhBook.alias, railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
+<% if (sharhBook && coveredBooks.length) { %>
+<%- include('sub-views/toc_heading_rail.ejs', { mode: 'covered', groups: [{ mode: 'covered', items: coveredBooks.map(book => ({ key: book.alias, title: book.shortName_en || book.name_en || book.alias, href: '/' + encodeURIComponent(book.alias) })) }] }); %>
+<% } %>
 </div>
 <% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>
 <% if (sharhBook) { %><%- include('sub-views/mobile_navigation.ejs', { site, page }); %><% } %>

@@ -7,9 +7,10 @@
   var tabs = Array.from(rail.querySelectorAll('[data-navigation-tab]'));
   // Cached HTML can predate the button-group markup while loading current assets.
   var tabList = rail.querySelector('.quran-navigation-tabs');
-  if (tabList) tabList.classList.add('quran-reader-modes', 'btn-group', 'btn-group-sm');
+  var sharedTabs = tabList && tabList.classList.contains('ux-view-selector');
+  if (tabList && !sharedTabs) tabList.classList.add('quran-reader-modes', 'btn-group', 'btn-group-sm');
   tabs.forEach(button => {
-    button.classList.add('btn', 'btn-outline-secondary');
+    if (!sharedTabs) button.classList.add('btn', 'btn-outline-secondary');
     button.classList.toggle('active', button.getAttribute('aria-selected') === 'true');
   });
   var data, loading, tab = 'surah', surah = 1, currentRef = '', currentPage = 0, currentJuz = 0;

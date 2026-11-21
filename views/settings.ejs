@@ -234,7 +234,7 @@
       <h2 class="ux-section-title" id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>
       <% group.rows.forEach(([key, title, hint, render]) => { %>
         <% if (key === 'payments' && !paymentFeatureEnabled) { render(); return; } %>
-        <details class="settings-beta-row">
+        <details class="settings-beta-row ux-disclosure">
           <summary><strong><%= title %></strong><span data-setting-summary="<%= key %>"><%= hint %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
           <div class="settings-beta-fields ux-fields"><% render(); %></div>
         </details>

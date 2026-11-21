@@ -1048,6 +1048,14 @@ function initHadithAdminGear() {
 	syncHadithAdminForCachedPage();
 }
 
+function setTocExpanded(button, expanded) {
+	button.setAttribute('aria-expanded', String(expanded));
+	button.title = expanded ? 'Hide sections' : 'Show sections';
+	const icon = button.querySelector('.toc-expand-icon');
+	icon.classList.toggle('bi-chevron-right', !expanded);
+	icon.classList.toggle('bi-chevron-down', expanded);
+}
+
 function initTocExpandCollapse(root) {
 	var scope = root || document;
 	$(scope).find('[data-toc-toggle]').each(function () {
@@ -1060,11 +1068,7 @@ function initTocExpandCollapse(root) {
 			var rows = $('[data-toc-parent="' + targetId + '"]');
 			var expanded = button.attr('aria-expanded') === 'true';
 			rows.toggleClass('d-none', expanded);
-			button.attr('aria-expanded', expanded ? 'false' : 'true');
-			button.attr('title', expanded ? 'Show sections' : 'Hide sections');
-			button.find('.toc-expand-icon')
-				.toggleClass('bi-chevron-right', expanded)
-				.toggleClass('bi-chevron-down', !expanded);
+			setTocExpanded(button.get(0), !expanded);
 			scheduleTocHeadingRailUpdate();
 		});
 	});
@@ -1091,53 +1095,88 @@ function normalizeTocFilterText(value) {
 }
 
 function initTocContentFilters(root) {
-	var scope = root || document;
-	$(scope).find('[data-toc-content-filter]').each(function () {
-		var input = $(this);
-		if (input.data('tocContentFilterBound'))
-			return;
-		input.data('tocContentFilterBound', true);
+	const scope = root || document;
+	const picker = scope.querySelector('.toc-collection-picker');
+	if (picker && picker.hidden) {
+		picker.hidden = false;
+		picker.querySelector('select').addEventListener('change', event => location.assign(event.target.value));
+	}
+	const input = scope.querySelector('[data-toc-content-filter]');
+	if (!input || input.dataset.tocBound) return;
+	input.dataset.tocBound = 'true';
+	const tools = input.closest('[data-toc-tools]');
+	const desktop = window.matchMedia('(min-width: 992px)');
+	const desktopSlot = scope.querySelector('[data-toc-desktop-tools]');
+	const mobileSlot = scope.querySelector('[data-toc-mobile-tools]');
+	function placeTools() {
+		if (tools && desktopSlot && mobileSlot) (desktop.matches ? desktopSlot : mobileSlot).append(tools);
+	}
+	placeTools();
+	desktop.addEventListener('change', placeTools);
 
-		var table = $(input.attr('data-toc-content-filter'));
-		if (!table.length)
-			return;
-
-		var update = function () {
-			var query = normalizeTocFilterText(input.val());
-			var filtering = query.length > 0;
-			table.toggleClass('toc-filtering', filtering);
-
-			table.find('[data-toc-chapter]').each(function () {
-				var chapter = $(this);
-				var chapterId = chapter.attr('data-toc-chapter');
-				var sections = table.find('[data-toc-parent="' + chapterId + '"]');
-				var chapterMatches = normalizeTocFilterText(chapter.text()).indexOf(query) !== -1;
-				var matchingSections = sections.filter(function () {
-					return normalizeTocFilterText($(this).text()).indexOf(query) !== -1;
-				});
-				var showChapter = !filtering || chapterMatches || matchingSections.length > 0;
-
-				chapter.prop('hidden', !showChapter);
-				sections.each(function () {
-					var section = $(this);
-					if (!filtering) {
-						section.prop('hidden', false);
-						section.toggleClass('d-none', table.find('[data-toc-toggle="' + chapterId + '"]').attr('aria-expanded') !== 'true');
-						return;
-					}
-					var showSection = chapterMatches || matchingSections.filter(this).length > 0;
-					section.prop('hidden', !showSection);
-					section.toggleClass('d-none', !showSection);
-				});
-			});
-			scheduleTocHeadingRailUpdate();
-		};
-
-		input.on('input', update);
-		if (input.is('[autofocus]'))
-			input.get(0).focus({ preventScroll: true });
-		update();
+	function filterRows() {
+		const table = document.querySelector(input.dataset.tocContentFilter);
+		if (!table) return;
+		const query = normalizeTocFilterText(input.value);
+		const indexKeys = new Set();
+		const destinations = new Set();
+		const sections = new Map();
+		for (const row of table.querySelectorAll('[data-toc-parent]')) {
+			const key = row.dataset.tocParent;
+			if (!sections.has(key)) sections.set(key, []);
+			sections.get(key).push(row);
+		}
+		let count = 0;
+		table.classList.toggle('toc-filtering', !!query);
+		for (const row of table.querySelectorAll('tbody tr:not([data-toc-parent])')) {
+			const chapterMatches = !query || normalizeTocFilterText(row.textContent).includes(query);
+			const children = sections.get(row.dataset.tocChapter) || [];
+			const toggle = row.querySelector('[data-toc-toggle]');
+			if (toggle && query && toggle.dataset.beforeFilter === undefined) toggle.dataset.beforeFilter = toggle.getAttribute('aria-expanded');
+			const expanded = (toggle?.dataset.beforeFilter ?? toggle?.getAttribute('aria-expanded')) === 'true';
+			let visible = chapterMatches;
+			for (const child of children) {
+				const matches = chapterMatches || normalizeTocFilterText(child.textContent).includes(query);
+				child.hidden = !matches;
+				child.classList.toggle('d-none', query ? !matches : !expanded);
+				visible ||= matches;
+			}
+			if (toggle && (query || toggle.dataset.beforeFilter !== undefined)) {
+				setTocExpanded(toggle, query ? children.some(child => !child.hidden) : expanded);
+				if (!query) delete toggle.dataset.beforeFilter;
+			}
+			row.hidden = !visible;
+			if (visible) {
+				count++;
+				indexKeys.add(row.dataset.tocHeadingKey);
+				destinations.add(row.querySelector('a')?.getAttribute('href'));
+			}
+		}
+		for (const link of scope.querySelectorAll('[data-toc-mode]:not([hidden]) [data-toc-index-key]')) {
+			link.hidden = !!query && !indexKeys.has(link.dataset.tocIndexKey) && !destinations.has(link.getAttribute('href'));
+		}
+		const status = tools?.querySelector('[data-toc-empty]');
+		if (status) status.textContent = query && !count ? 'No matching entries.' : '';
+		scheduleTocHeadingRailUpdate();
+	}
+	input.addEventListener('input', filterRows);
+	scope.addEventListener('shown.bs.tab', event => {
+		const panel = document.querySelector(event.target.dataset.bsTarget || '#toc-view-surahs');
+		const table = panel?.querySelector('.ux-toc-table');
+		if (!table) return;
+		for (const group of scope.querySelectorAll('[data-toc-mode]')) {
+			group.hidden = table.id !== 'toc-' + group.dataset.tocMode;
+			if (!group.hidden) {
+				input.placeholder = group.dataset.searchLabel;
+				input.setAttribute('aria-label', input.placeholder);
+				input.closest('[role="search"]').setAttribute('aria-label', input.placeholder);
+			}
+		}
+		input.dataset.tocContentFilter = '#' + table.id;
+		input.setAttribute('aria-controls', table.id);
+		filterRows();
 	});
+	filterRows();
 }
 
 function initTocInlineDescriptionExpanders(root) {

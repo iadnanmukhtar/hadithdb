@@ -50,6 +50,8 @@
   color: var(--ux-text);
 }
 
+[data-bs-theme="dark"] .ux-system { --ux-accent: var(--bs-link-color); }
+
 /* Native hints, the search launcher, and inline editor hints share one treatment. */
 :is(.ux-system, .command-search-dialog) :is(input, textarea)::placeholder,
 .ux-masthead .command-search-compact-trigger > span,
@@ -123,12 +125,12 @@
   cursor: pointer;
 }
 .ux-system .ux-text-action,
-.ux-system .ux-view-option[aria-pressed="true"] { color: var(--ux-accent); }
-.ux-system .ux-view-option[aria-pressed="true"] {
+.ux-system .ux-view-option:is([aria-pressed="true"], [aria-selected="true"], [aria-current="page"]) { color: var(--ux-accent); }
+.ux-system .ux-view-option:is([aria-pressed="true"], [aria-selected="true"], [aria-current="page"]) {
   background: var(--ux-surface);
   box-shadow: 0 1px 3px #18293726;
 }
-.ux-system :is(.ux-view-option, .ux-text-action):enabled:hover { text-decoration: underline; text-underline-offset: .15em; }
+.ux-system :is(.ux-view-option, .ux-text-action):is(:enabled, a[href]):hover { text-decoration: underline; text-underline-offset: .15em; }
 .ux-system :is(.ux-view-option, .ux-text-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .ux-system .ux-text-action:disabled { opacity: .55; cursor: default; }
 
@@ -151,8 +153,8 @@
 }
 .ux-system .ux-secondary-action { background: #eaeaf5; color: #444d85; text-decoration: none; }
 .ux-system .ux-secondary-action:hover { text-decoration: underline; }
-.ux-system .ux-primary-action:enabled:hover { filter: brightness(1.06); }
-.ux-system .ux-primary-action:enabled:active { transform: translateY(1px); box-shadow: none; }
+.ux-system .ux-primary-action:is(:enabled, a[href]):hover { filter: brightness(1.06); }
+.ux-system .ux-primary-action:is(:enabled, a[href]):active { transform: translateY(1px); box-shadow: none; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action)[hidden] { display: none; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action):disabled { opacity: .74; cursor: default; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action):focus-visible { outline: var(--ux-focus-ring); outline-offset: 3px; }
@@ -254,3 +256,17 @@
   .hadith-heading-toc:has(.ux-rail-title) { margin-top: var(--ux-page-start); top: var(--ux-page-start); }
   .hadith-heading-toc:has(.ux-rail-title) .ux-rail-filter-slot { padding-top: 0; }
 }
+
+.ux-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.ux-disclosure > summary:hover { background: var(--ux-inset); }
+.ux-disclosure > summary { min-height: 3.45rem; padding: .65rem .5rem; cursor: pointer; list-style: none; }
+.ux-disclosure > summary::-webkit-details-marker { display: none; }
+.ux-disclosure > summary strong { flex: 1; font-weight: var(--ux-emphasis-weight); }
+.ux-disclosure > summary span { color: var(--ux-muted); font-size: var(--ux-secondary-size); }
+.ux-disclosure > summary i { font-size: .8em; color: var(--ux-accent); }
+.ux-disclosure[open] > summary strong { color: var(--ivory-accent, var(--ux-text)); }
+.ux-disclosure[open] > summary i { transform: rotate(180deg); }

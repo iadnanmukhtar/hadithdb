@@ -2,19 +2,12 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 .ux-book-toc .ux-page-title { overflow-wrap: anywhere; }
 .ux-book-toc .toc-arabic-title { font-size: var(--ux-item-size); line-height: 1.65; text-align: start; }
 .ux-book-toc .tafsir-book-meta { font-size: var(--ux-secondary-size); }
-.toc-book-picker { margin-block: var(--ux-title-gap); border-block: 1px solid var(--ux-border); }
-.toc-book-picker > summary { padding-block: .65rem; color: var(--ux-accent); font-weight: var(--ux-emphasis-weight); cursor: pointer; }
-.toc-downloads { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-block: var(--ux-title-gap); font-size: var(--ux-secondary-size); }
-.ux-book-toc .ux-rail-search { margin-block-end: var(--ux-title-gap); }
 .ux-book-toc .ux-section-title { margin-block: var(--ux-title-gap) .5rem; }
 .ux-toc-table { --bs-table-bg: var(--ux-surface); --bs-table-border-color: var(--ux-border); }
 .ux-book-toc .ux-toc-table tr > td { padding-block: .6rem; vertical-align: middle; }
 .ux-book-toc .ux-toc-table a { color: var(--ux-accent); }
 
-.toc-heading-layout:has(.ux-book-toc) .hadith-heading-toc-sticky { padding-block-start: 0; }
-.toc-rail-home { display: block; margin: 0 .7rem .5rem; font: var(--ux-body-weight) var(--ux-local-nav-size)/1.5 var(--ux-font-ui); }
-.toc-book-picker > summary { display: flex; align-items: center; justify-content: space-between; }
-.toc-book-picker[open] > summary i { transform: rotate(180deg); }
+.toc-heading-layout:has(.ux-book-toc) .hadith-heading-toc-sticky { padding: 0 0 .75rem; }
 .ux-book-toc tr.chapter { font-weight: var(--ux-emphasis-weight); }
 @media (max-width: 575.98px) {
   .ux-book-toc #toc { table-layout: fixed; }
@@ -24,13 +17,29 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
   .ux-book-toc #toc .toc-section-number { white-space: normal; }
   .ux-book-toc #toc td.ps-5 { padding-inline-start: .5rem !important; }
 }
-.toc-book-picker .h-menu .btn-outline-primary {
-  --bs-btn-color: var(--ux-text);
-  --bs-btn-border-color: var(--ux-border);
-  --bs-btn-hover-color: white;
-  --bs-btn-hover-bg: var(--ux-midnight-deep);
-  --bs-btn-hover-border-color: var(--ux-midnight-deep);
-  --bs-btn-active-color: white;
-  --bs-btn-active-bg: var(--ux-midnight-deep);
-  --bs-btn-active-border-color: var(--ux-midnight-deep);
+
+.toc-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-block: var(--ux-title-gap); }
+.toc-actions a { gap: .4rem; text-decoration: none; }
+.toc-actions .ux-text-action { align-content: center; }
+.toc-actions .ux-text-action:hover { text-decoration: underline; }
+[data-toc-mobile-tools]:not(:empty) { margin-block-end: var(--ux-title-gap); }
+[data-toc-heading-rail] .ux-menu-list a[hidden] { display: none; }
+.toc-heading-rail:has([data-toc-tools]) .ux-menu-list { margin-inline: .35rem; }
+.toc-details { border-block-end: 1px solid var(--ux-border); }
+.toc-details, .toc-reader-tools { margin-block-end: var(--ux-title-gap); }
+.toc-reader-actions, .toc-reader-options > .ux-view-selector { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
+.toc-reader-tools :is(.ux-view-option, .ux-secondary-action) { display: inline-flex; align-items: center; gap: .35em; }
+.toc-reader-tools .quran-script-switcher .quran-script-label-long { display: inline; }
+.toc-reader-tools .quran-script-label-short { display: none; }
+[data-toc-heading-rail]:has([data-toc-tools]) { border-inline-start: 1px solid var(--bs-border-color); }
+[data-toc-heading-rail]:has([data-toc-tools]) .hadith-heading-toc-nav { border: 0; }
+.ux-book-toc #toc-view-juz td:nth-child(2), .ux-book-toc #toc-view-manzils td:nth-child(2) { white-space: normal; }
+.ux-book-toc .toc-expand-btn {
+  display: inline-grid; place-items: center; width: 24px; height: 28px; padding: 0;
+  border: 0; border-radius: .3rem; background: transparent; color: var(--ux-accent);
 }
+.ux-book-toc .toc-expand-btn:is(:hover, :focus-visible) { background: var(--ux-midnight-deep); color: white; }
+.ux-book-toc .toc-expand-spacer { width: 24px; }
+.quran-navigation-rail.ux-system .quran-navigation-tabs { display: flex; }
+.quran-navigation-rail.ux-system .ux-view-option { flex: 1; padding-inline: .3rem; }
+.quran-navigation-rail.ux-system .quran-navigation-item:is(:hover, :focus-visible) { background: var(--ux-midnight-deep); color: white; }

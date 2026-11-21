@@ -5,23 +5,10 @@
   padding-top: .75rem;
   padding-inline: var(--bs-gutter-x, 1.5rem);
 }
-.settings-beta-row > summary {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
 .settings-beta-index { display: flex; flex-direction: column; align-self: start; }
-.settings-beta-row > summary:hover { background: var(--ux-inset); }
 .settings-beta-group { margin-bottom: 2rem; }
 .settings-beta-group > h2 { scroll-margin-top: calc(var(--site-fixed-header-height, 5rem) + 1rem); }
 .settings-beta-row + .settings-beta-row { border-top: 1px solid var(--ux-border); }
-.settings-beta-row > summary { min-height: 3.45rem; padding: .65rem .5rem; cursor: pointer; list-style: none; }
-.settings-beta-row > summary::-webkit-details-marker { display: none; }
-.settings-beta-row > summary strong { flex: 1; font-weight: var(--ux-emphasis-weight); }
-.settings-beta-row > summary span { color: var(--ux-muted); font-size: var(--ux-secondary-size); }
-.settings-beta-row > summary i { font-size: .8em; color: var(--ux-accent); }
-.settings-beta-row[open] > summary strong { color: var(--ivory-accent, var(--ux-text)); }
-.settings-beta-row[open] > summary i { transform: rotate(180deg); }
 .settings-beta-fields { padding: 1rem; background: var(--ux-inset); border-radius: .45rem; }
 @media (max-width: 700px) {
 

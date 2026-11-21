@@ -1,15 +1,15 @@
-<nav class="row g-0 chapter-toc ux-subnav <%= tabs ? 'book-catalog-navigation' : 'settings-navigation' %>" aria-label="<%= label %>">
+<nav class="row g-0 chapter-toc ux-subnav <%= (tabs || locals.routeLinks) ? 'book-catalog-navigation' : 'settings-navigation' %>" aria-label="<%= label %>">
   <div class="col-12 chapter-toc-toolbar">
     <ul class="nav nav-tabs<%= tabs ? ' book-catalog-tabs' : '' %>"<% if (tabs) { %> role="tablist" aria-label="<%= label %>"<% } %>>
       <% items.forEach(item => { %>
       <li class="nav-item"<% if (tabs) { %> role="presentation"<% } %>>
-        <a href="<%= item.href %>" class="nav-link<%= item.active ? ' active' : '' %>"<% if (tabs) { %> id="<%= item.id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= item.id %>" role="tab" aria-controls="<%= item.id %>" aria-selected="<%= !!item.active %>"<% } %>><%= item.label %></a>
+        <a href="<%= item.href %>" class="nav-link<%= item.active ? ' active' : '' %>"<% if (tabs) { %> id="<%= item.id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= item.id %>" role="tab" aria-controls="<%= item.id %>" aria-selected="<%= !!item.active %>"<% } else if (locals.routeLinks && item.active) { %> aria-current="location"<% } %>><%= item.label %></a>
       </li>
       <% }); %>
     </ul>
-    <label class="ux-subnav-picker <%= tabs ? 'catalog-collection-picker' : 'settings-category-picker' %>" hidden><%= pickerLabel %>
+    <label class="ux-subnav-picker <%= locals.routeLinks ? 'toc-collection-picker' : tabs ? 'catalog-collection-picker' : 'settings-category-picker' %>" hidden><%= pickerLabel %>
       <select aria-label="<%= pickerName %>">
-        <% if (!tabs) { %><option value="">Choose category</option><% } %>
+        <% if (!tabs && !locals.routeLinks) { %><option value="">Choose category</option><% } %>
         <% items.forEach(item => { %><option value="<%= item.href %>"<% if (item.active) { %> selected<% } %>><%= item.label %></option><% }); %>
       </select>
     </label>

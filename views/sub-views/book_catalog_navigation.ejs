@@ -1,5 +1,5 @@
 <%
-  var catalogNavigationType = page.context.bookCatalogInitialType;
+  var catalogNavigationType = locals.tocCollection || page.context.bookCatalogInitialType;
   var catalogNavigationTabs = [
     { key: 'mushaf', label: 'Mushaf' },
     { key: 'tafsir-all', query: 'tafsir', label: 'Tafsir' },
@@ -10,9 +10,9 @@
   ];
 %>
 <%- include('section_navigation.ejs', {
-  tabs: true, label: 'Book collections', pickerLabel: 'Collection', pickerName: 'Book collection',
+  tabs: !locals.tocCollection, routeLinks: !!locals.tocCollection, label: 'Book collections', pickerLabel: 'Collection', pickerName: 'Book collection',
   items: catalogNavigationTabs.map(tab => ({
-    label: tab.label, href: (page.context.catalogPath || '/books') + '?' + (tab.query || tab.key),
+    label: tab.label, href: (locals.tocCollection ? utils.urlFor(req, '/books') : (page.context.catalogPath || '/books')) + '?' + (tab.query || tab.key),
     id: 'book-catalog-' + tab.key, active: tab.key === catalogNavigationType
   }))
 }); %>

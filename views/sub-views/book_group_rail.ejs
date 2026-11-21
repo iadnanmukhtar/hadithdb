@@ -7,7 +7,7 @@
       <% } %>
       <% railCollections.forEach(function (collection) { %>
       <div<% if (collection.pane) { %> data-book-rail-pane="<%= collection.pane %>"<% if (collection.pane !== 'book-catalog-' + initialBookCatalogType) { %> hidden<% } %><% } %>>
-        <% if (locals.tocRail) { %><%- include('toc_rail_header.ejs', { titleId: 'book-rail-title', title: railTitle, href: railHomeHref, linkLabel: 'Browse collection' }) %><% } else if (!locals.showCatalogFilters) { %><a class="heading-toc-book-name" href="<%= railHomeHref %>"><%= railTitle %></a><% } %>
+        <% if (!locals.showCatalogFilters) { %><a class="heading-toc-book-name" href="<%= railHomeHref %>"><%= railTitle %></a><% } %>
         <%- include('book_group_links.ejs', collection); %>
       </div>
       <% }); %>
