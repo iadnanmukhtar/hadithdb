@@ -535,27 +535,22 @@
   
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
   
+  <%- include('sub-views/toc_styles.ejs'); %>
 </head>
 
 <body>
   
-  <%- include('sub-views/header.ejs', { site: site, page: page, quranHeaderJuzLinks: quranHeaderJuzLinks }); %>
+  <%- include('sub-views/header.ejs', { makeoverShell: true, site: site, page: page, quranHeaderJuzLinks: quranHeaderJuzLinks }); %>
   
   <div class="<%= showTocHeadingRail ? `container-fluid hadith-heading-layout toc-heading-layout${isQuranToc && !quranCommentaryBook ? ' toc-heading-layout-quran' : ''}` : 'container col-lg-8 mx-auto' %>">
     <% if (showTocHeadingRail) { %><div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content"><% } %>
     
-    <main class="toc<%= !isQuranToc ? ' hadith-toc-page' : '' %><%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? ' tafsir-toc-page' : '' %><%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
+    <main class="ux-system ux-book-toc toc<%= !isQuranToc ? ' hadith-toc-page' : '' %><%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? ' tafsir-toc-page' : '' %><%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
       <% if (isQuranToc && !quranCommentaryBook) { %>
-        <%- include('sub-views/home_about.ejs', { quranAbout: true }); %>
+        <header class="ux-page-heading"><h1 class="ux-page-title">Quran contents</h1></header>
+        <%- include('sub-views/home_about.ejs', { quranAbout: true, secondaryHeading: true }); %>
       <% } %>
       
-      <% if (showHadithBookChrome) { %>
-        <%- include('sub-views/bookNav.ejs'); %>
-      <% } %>
-      <% if (quranCommentaryBook) { %>
-        <%- include('sub-views/quran_commentary_book_nav.ejs', { quranCommentaryBook: quranCommentaryBook, quranCommentaryBooks: quranCommentaryBooks, Tafsir: Tafsir }); %>
-      <% } %>
-
       <article>
         <%- include('sub-views/book_metadata.ejs', {
           site, book, tocDisplayBook, tocDisplayBookNameEn, tocDisplayBookTitle,
@@ -563,20 +558,15 @@
         }); %>
 
         <% if (showBookLayout) { %>
-	      <aside class="h"><div class="tags">
-        <a class="book-download-link me-3" href="<%= bookDownloadLinks.json %>" type="button" rel="nofollow"><span class="bi bi-filetype-json"></span> Download JSON</a>
-        <a class="book-download-link" href="<%= bookDownloadLinks.epub %>" type="button" rel="nofollow"><span class="bi bi-book"></span> Download EPUB</a>
-      </div></aside>
+        <%- include('sub-views/toc_book_picker.ejs', { family: showHadithBookChrome ? 'hadith' : 'commentary', page, quranCommentaryBook, quranCommentaryBooks }); %>
+        <%- include('sub-views/toc_downloads.ejs', bookDownloadLinks); %>
         <% } %>
 
-        <% if (showHadithBookChrome) { %>
-        <hr class="mt-3">
-        <% } %>
         <% if (showRandomTocItem) { %>
         <section data-random-toc-item data-src="<%= utils.urlFor(req, randomTocItemSrc) %>">
           <% if (showRandomTocTitle) { %>
           <header class="row">
-            <h3 class="col-12 fs-4">Random <%= isQuranToc ? 'āyah' : (book.type === 'sirah' ? 'heading' : 'ḥadīth') %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h3>
+            <h2 class="col-12 ux-section-title">Random <%= isQuranToc ? 'āyah' : (book.type === 'sirah' ? 'heading' : 'ḥadīth') %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h2>
           </header>
           <% } %>
         </section>
@@ -585,7 +575,7 @@
         <hr>
         <% } %>
 
-      <section class="row">
+      <section>
         
         <%- utils.jsonLdScript({
           '@context': 'https://schema.org',
@@ -650,15 +640,12 @@
         </ul>
 
         <div class="tab-content" id="quran-toc-view-content">
-          <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" aria-labelledby="toc-tab-juz">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" tabindex="0" aria-labelledby="toc-tab-juz">
             <% if (!quranCommentaryBook || quranCommentaryBook.type !== 'trans') { %>
-            <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-              <input type="search" class="form-control" placeholder="Filter Juz/Siparas" aria-label="Filter Juz/Siparas" autocomplete="off" data-toc-content-filter="#toc-juz">
-            </div>
+            <%- include('sub-views/rail_search.ejs', { inputId: 'toc-juz-filter', resultsId: 'toc-juz', placeholder: 'Filter Juz/Siparas', label: 'Filter Juz/Siparas', clearLabel: 'Clear filter', tocFilter: true }) %>
             <% } %>
-            <h2 class="fs-4 mt-2">Juz/Siparas</h2>
-            <table id="toc-juz" class="table" title="<%- `Juz and Siparas for ${book.name_en} (فهرس ${book.title})` %>">
+            <h2 class="ux-section-title">Juz/Siparas</h2>
+            <table id="toc-juz" class="table ux-toc-table" title="<%- `Juz and Siparas for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
                 <% for (var j = 0; j < quranJuzRows.length; j++) {
                   var juz = quranJuzRows[j];
@@ -685,18 +672,15 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade <%= quranTocDefaultView === 'surahs' ? 'show active' : '' %>" id="toc-view-surahs" role="tabpanel" aria-labelledby="toc-tab-surahs">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'surahs' ? 'show active' : '' %>" id="toc-view-surahs" role="tabpanel" tabindex="0" aria-labelledby="toc-tab-surahs">
             <% if (!quranCommentaryBook || quranCommentaryBook.type !== 'trans') { %>
-            <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-              <input type="search" class="form-control" placeholder="Filter surahs" aria-label="Filter surahs" autocomplete="off" data-toc-content-filter="#toc-surahs">
-            </div>
+            <%- include('sub-views/rail_search.ejs', { inputId: 'toc-surahs-filter', resultsId: 'toc-surahs', placeholder: 'Filter surahs', label: 'Filter surahs', clearLabel: 'Clear filter', tocFilter: true }) %>
             <% } %>
-            <h2 class="fs-4 mt-2">Surahs</h2>
+            <h2 class="ux-section-title">Surahs</h2>
             <% if (quranCommentaryIntroductionAdminHref && !quranCommentaryIntroductionHref) { %>
             <p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= quranCommentaryIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
             <% } %>
-            <table id="toc-surahs" class="table" title="<%- `Surahs for ${book.name_en} (فهرس ${book.title})` %>">
+            <table id="toc-surahs" class="table ux-toc-table" title="<%- `Surahs for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
                 <% quranCommentaryIntroductionArticles.forEach(function (article) { %>
                 <% if (quranCommentaryIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
@@ -777,15 +761,12 @@
               </tbody>
             </table>
           </div>
-          <div class="tab-pane fade <%= quranTocDefaultView === 'manzils' ? 'show active' : '' %>" id="toc-view-manzils" role="tabpanel" aria-labelledby="toc-tab-manzils">
+          <div class="tab-pane fade <%= quranTocDefaultView === 'manzils' ? 'show active' : '' %>" id="toc-view-manzils" role="tabpanel" tabindex="0" aria-labelledby="toc-tab-manzils">
             <% if (!quranCommentaryBook || quranCommentaryBook.type !== 'trans') { %>
-            <div class="page-content-filter toc-content-filter input-group mb-3">
-              <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-              <input type="search" class="form-control" placeholder="Filter Manzils" aria-label="Filter Manzils" autocomplete="off" data-toc-content-filter="#toc-manzils">
-            </div>
+            <%- include('sub-views/rail_search.ejs', { inputId: 'toc-manzils-filter', resultsId: 'toc-manzils', placeholder: 'Filter Manzils', label: 'Filter Manzils', clearLabel: 'Clear filter', tocFilter: true }) %>
             <% } %>
-            <h2 class="fs-4 mt-2">Manzils</h2>
-            <table id="toc-manzils" class="table" title="<%- `Manzils for ${book.name_en} (فهرس ${book.title})` %>">
+            <h2 class="ux-section-title">Manzils</h2>
+            <table id="toc-manzils" class="table ux-toc-table" title="<%- `Manzils for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
                 <% for (var m = 0; m < quranManzilRows.length; m++) {
                   var manzil = quranManzilRows[m];
@@ -814,20 +795,19 @@
           </div>
         </div>
         <% } else { %>
-        <div class="page-content-filter toc-content-filter input-group mb-3">
-          <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-          <input type="search" class="form-control" placeholder="Filter chapter headings" aria-label="Filter chapter headings" autocomplete="off" data-toc-content-filter="#toc">
-        </div>
+        <%- include('sub-views/rail_search.ejs', { inputId: 'toc-filter', resultsId: 'toc', placeholder: 'Filter chapter headings', label: 'Filter chapter headings', clearLabel: 'Clear filter', tocFilter: true }) %>
 
-        <h2 class="fs-4 mt-3">Chapters Headings</h2>
+        <h2 class="ux-section-title">Chapters</h2>
         <%- include('sub-views/book_toc_editor.ejs', { site, book }); %>
 		<% if (hadithIntroductionAdminHref && !hadithIntroductionHref) { %>
 		<p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= hadithIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
 		<% } %>
         
-        <table id="toc" class="table<%= book.type === 'sirah' ? ' sirah-toc' : '' %>" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
+        <table id="toc" class="table ux-toc-table<%= book.type === 'sirah' ? ' sirah-toc' : '' %>" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
           <% if (book.type === 'sirah') { %>
           <colgroup><col class="sirah-toc-number-column"><col><col></colgroup>
+          <% } else { %>
+          <colgroup><% if (showTocStartNumbers) { %><col class="toc-start-column"><% } %><col class="toc-number-column"><col><col></colgroup>
           <% } %>
           <tbody>
 			<% hadithIntroductionArticles.forEach(function (article) { %>
@@ -916,7 +896,7 @@
     </main>
     <% if (showTocHeadingRail) { %></div>
     <% if (showTafsirGroupRail) { %>
-    <%- include('sub-views/tafsir_group_rail.ejs', { tafsirRailBooks: quranCommentaryBooks, tafsirRailCurrentAlias: quranCommentaryBook.alias }); %>
+    <%- include('sub-views/tafsir_group_rail.ejs', { tocRail: true, tafsirRailBooks: quranCommentaryBooks, tafsirRailCurrentAlias: quranCommentaryBook.alias }); %>
     <% } else { %>
     <%- include('sub-views/toc_heading_rail.ejs', {
       tocHeadingRailItems: tocHeadingRailItems,
@@ -928,9 +908,10 @@
   </div>
   
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/footer.ejs', { makeoverShell: true, site: site, page: page }); %>
   <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
   
+<script defer src="/static/js/rail-search.js?v=<%= utils.scriptAssetVersion() %>"></script>
 </body>
 
 </html>

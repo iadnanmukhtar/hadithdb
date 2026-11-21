@@ -21,19 +21,14 @@ if (sharhBook) {
 }
 %>
 <%- include('sub-views/head.ejs', { site, page }); %>
+  <%- include('sub-views/toc_styles.ejs'); %>
 </head>
 <body>
-<%- include('sub-views/header.ejs', { site, page }); %>
+<%- include('sub-views/header.ejs', { makeoverShell: true, site, page }); %>
 <div class="container-fluid hadith-heading-layout toc-heading-layout">
 <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
-<main class="toc hadith-toc-page">
+<main class="ux-system ux-book-toc toc hadith-toc-page">
   <% if (sharhBook) { %>
-    <nav class="h-menu-wrap mb-3" aria-label="Sharḥ books">
-      <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap" role="group">
-        <a class="btn btn-outline-primary" href="/books?sharh">Sharḥ books</a>
-        <% books.forEach(function(book) { %><a class="btn btn-outline-primary text-nowrap<%= book.id === sharhBook.id ? ' active' : '' %>" href="/sharh/<%= encodeURIComponent(book.alias) %>"<% if (book.id === sharhBook.id) { %> aria-current="page" data-current-book="true"<% } %>><%= (book.shortName_en || book.name_en || book.alias) %></a><% }); %>
-      </div></div>
-    </nav>
     <article>
     <%- include('sub-views/book_metadata.ejs', {
       site, book: sharhBook, tocDisplayBook: sharhBook,
@@ -42,15 +37,12 @@ if (sharhBook) {
       showBookLayout: true, showBookMetadata: true,
       quranCommentaryBook: null, isEnglishQuranTranslation: false
     }); %>
-    <div class="book-download-links">
-      <a href="/sharh/<%= encodeURIComponent(sharhBook.alias) %>.json" download>JSON</a>
-      <a href="/sharh/<%= encodeURIComponent(sharhBook.alias) %>.epub" download>EPUB</a>
-    </div>
-    <hr class="mt-3">
+    <%- include('sub-views/toc_book_picker.ejs', { family: 'sharh', sharhBook, books }); %>
+    <%- include('sub-views/toc_downloads.ejs', { json: canonical + '.json', epub: canonical + '.epub', download: true }); %>
     <section aria-labelledby="sharh-covered-books-title">
-      <h2 id="sharh-covered-books-title" class="fs-4">Commentary on</h2>
+      <h2 id="sharh-covered-books-title" class="ux-section-title">Commentary on</h2>
       <% if (coveredBooks.length) { %>
-      <table class="table" aria-label="Books with commentary and hadith counts">
+      <table class="table ux-toc-table" aria-label="Books with commentary and hadith counts">
         <thead><tr><th scope="col">Book</th><th scope="col" lang="ar" dir="rtl">الكتاب</th><th scope="col" class="text-end">Hadiths</th></tr></thead>
         <tbody><% coveredBooks.forEach(function(book) { %>
           <tr class="chapter">
@@ -64,7 +56,7 @@ if (sharhBook) {
     </section>
     </article>
   <% } else { %>
-    <h1 class="fs-3">Sharḥ books</h1>
+    <h1 class="ux-page-title">Sharḥ books</h1>
     <div class="list-group"><% books.forEach(function(book) { %><div class="list-group-item">
       <div class="row" dir="ltr"><a class="col-md-6" href="/sharh/<%= encodeURIComponent(book.alias) %>"><%= (book.shortName_en || book.name_en || book.alias) %></a><span class="col-md-6" lang="ar" dir="rtl"><%= book.shortName || book.title %></span></div>
       <% if (site.editMode) { %><button type="button" class="btn btn-sm btn-outline-secondary mt-2" data-bs-toggle="modal" data-bs-target="#sharh-book-<%= book.id %>">Edit book metadata</button><% } %>
@@ -72,11 +64,11 @@ if (sharhBook) {
   <% } %>
 </main>
 </div>
-<%- include('sub-views/book_group_rail.ejs', { railTitle: 'Hadith Explanations', railHomeHref: utils.urlFor(req, '/books?sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railCurrentAlias: sharhBook && sharhBook.alias, railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
+<%- include('sub-views/book_group_rail.ejs', { tocRail: true, railTitle: 'Sharḥ books', railHomeHref: utils.urlFor(req, '/books?sharh'), railCollections: [{ railBooks: books, railScope: 'sharh', railLabel: 'Sharḥ Books', railCurrentAlias: sharhBook && sharhBook.alias, railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } }] }); %>
 </div>
 <% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>
 <% if (sharhBook) { %><%- include('sub-views/mobile_navigation.ejs', { site, page }); %><% } %>
-<%- include('sub-views/footer.ejs', { site, page }); %>
+<%- include('sub-views/footer.ejs', { makeoverShell: true, site, page }); %>
 <%- include('sub-views/scripts.ejs', { site, page }); %>
 </body>
 </html>

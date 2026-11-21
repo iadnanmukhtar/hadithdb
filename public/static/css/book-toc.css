@@ -1,0 +1,36 @@
+main.ux-book-toc { margin-block-start: var(--ux-page-start); }
+.ux-book-toc .ux-page-title { overflow-wrap: anywhere; }
+.ux-book-toc .toc-arabic-title { font-size: var(--ux-item-size); line-height: 1.65; text-align: start; }
+.ux-book-toc .tafsir-book-meta { font-size: var(--ux-secondary-size); }
+.toc-book-picker { margin-block: var(--ux-title-gap); border-block: 1px solid var(--ux-border); }
+.toc-book-picker > summary { padding-block: .65rem; color: var(--ux-accent); font-weight: var(--ux-emphasis-weight); cursor: pointer; }
+.toc-downloads { display: flex; flex-wrap: wrap; gap: .5rem 1rem; margin-block: var(--ux-title-gap); font-size: var(--ux-secondary-size); }
+.ux-book-toc .ux-rail-search { margin-block-end: var(--ux-title-gap); }
+.ux-book-toc .ux-section-title { margin-block: var(--ux-title-gap) .5rem; }
+.ux-toc-table { --bs-table-bg: var(--ux-surface); --bs-table-border-color: var(--ux-border); }
+.ux-book-toc .ux-toc-table tr > td { padding-block: .6rem; vertical-align: middle; }
+.ux-book-toc .ux-toc-table a { color: var(--ux-accent); }
+
+.toc-heading-layout:has(.ux-book-toc) .hadith-heading-toc-sticky { padding-block-start: 0; }
+.toc-rail-home { display: block; margin: 0 .7rem .5rem; font: var(--ux-body-weight) var(--ux-local-nav-size)/1.5 var(--ux-font-ui); }
+.toc-book-picker > summary { display: flex; align-items: center; justify-content: space-between; }
+.toc-book-picker[open] > summary i { transform: rotate(180deg); }
+.ux-book-toc tr.chapter { font-weight: var(--ux-emphasis-weight); }
+@media (max-width: 575.98px) {
+  .ux-book-toc #toc { table-layout: fixed; }
+  .ux-book-toc .toc-start-column { width: 2.9rem; }
+  .ux-book-toc .toc-number-column { width: 4rem; }
+  .ux-book-toc #toc td { overflow-wrap: anywhere; padding-inline: .25rem; }
+  .ux-book-toc #toc .toc-section-number { white-space: normal; }
+  .ux-book-toc #toc td.ps-5 { padding-inline-start: .5rem !important; }
+}
+.toc-book-picker .h-menu .btn-outline-primary {
+  --bs-btn-color: var(--ux-text);
+  --bs-btn-border-color: var(--ux-border);
+  --bs-btn-hover-color: white;
+  --bs-btn-hover-bg: var(--ux-midnight-deep);
+  --bs-btn-hover-border-color: var(--ux-midnight-deep);
+  --bs-btn-active-color: white;
+  --bs-btn-active-bg: var(--ux-midnight-deep);
+  --bs-btn-active-border-color: var(--ux-midnight-deep);
+}

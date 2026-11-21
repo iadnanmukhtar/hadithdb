@@ -8,7 +8,7 @@ const read = relativePath => fs.readFileSync(path.join(__dirname, '..', relative
 describe('hadith book size UI', () => {
 	const books = read('views/books.ejs');
 	const carousel = read('views/sub-views/bookNav.ejs');
-	const toc = read('views/toc.ejs');
+	const toc = read('views/sub-views/book_metadata.ejs');
 	const styles = read('public/static/css/style.css');
 
 	test('shows the filled size indicator in book listings and hadith carousels', () => {

@@ -14,7 +14,7 @@ test.each([false, true])('shared metadata renders with admin editing=%s', async 
   utils: { sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
  });
  const $ = cheerio.load(html);
- expect($('heading').text()).toContain(book.name_en);
+ expect($('header h1.ux-page-title').text()).toContain(book.name_en);
  expect($('.tafsir-book-meta').text()).toContain('463 AH');
  expect($('[data-prop="book.name_en"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-prop="book.author"]')).toHaveLength(editMode ? 1 : 0);

@@ -1,5 +1,5 @@
 /* The palette preview and the first live light-theme consumers share these values. */
-:where(body[data-palette="ivory"], html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader))) {
+:where(body[data-palette="ivory"], html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, .ux-book-toc, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader))) {
   --ivory-canvas: #fafaf9;
   --ivory-surface: #ffffff;
   --ivory-inset: #f3f5fa;
@@ -11,11 +11,11 @@
   --ivory-accent: #185d96;
 }
 
-html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)) {
+html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, .ux-book-toc, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)) {
   background-color: var(--ivory-canvas);
   color: var(--ivory-text);
 }
-html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]) :is(.settings-beta, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)):not([data-bs-theme="dark"]) {
+html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]) :is(.settings-beta, .ux-book-toc, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader)):not([data-bs-theme="dark"]) {
   --bs-body-bg: var(--ivory-surface);
   --bs-body-color: var(--ivory-text);
   --bs-secondary-color: var(--ivory-muted);

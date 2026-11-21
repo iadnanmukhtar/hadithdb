@@ -108,7 +108,7 @@ describe('Quran Study translation editing', () => {
   });
 
   test('shows the Arabic short-name editor on English translation TOCs', () => {
-    const toc = fs.readFileSync(path.join(__dirname, '..', 'views', 'toc.ejs'), 'utf8');
+    const toc = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'book_metadata.ejs'), 'utf8');
     const updateRoute = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
     const metadataEditor = toc.slice(
       toc.indexOf('<% if (editableBook) { %>', toc.indexOf('<% if (showBookMetadata) {')),
