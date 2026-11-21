@@ -37,8 +37,12 @@
 .quran-navigation-list .quran-navigation-item { justify-content: space-between; }
 .quran-navigation-list .quran-navigation-item[hidden] { display: none; }
 .quran-navigation-item [lang="ar"] { text-align: end; font-size: 1rem; }
-.has-ayahs .quran-navigation-column:first-child .quran-navigation-item { display: grid; gap: .15rem; justify-content: stretch; }
 .has-ayahs .quran-navigation-ayahs { flex: 0 0 max(5.7rem, 27%); }
+@media (max-width: 389px) {
+  .quran-navigation-content.has-ayahs { gap: .35rem; padding-inline: .5rem; }
+  .has-ayahs .quran-navigation-ayahs { flex-basis: 4.5rem; }
+  .has-ayahs .quran-navigation-item { gap: .35rem; padding-inline: .35rem; }
+}
 .quran-mushaf-navigation-label {
   background: transparent; border: 0; border-bottom: 1px dotted transparent; color: inherit;
   cursor: pointer; font: inherit; letter-spacing: inherit; line-height: inherit; padding: 0; text-align: inherit;
