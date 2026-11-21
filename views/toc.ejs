@@ -14,10 +14,6 @@
     var quranCommentaryBook = locals.quranCommentaryBook;
     var quranCommentaryBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
     var quranCommentaryBookSlug = quranCommentaryBook && (quranCommentaryBook.quranBookSlug || quranCommentaryBook.slug || quranCommentaryBook.alias);
-    var bookDownloadLinks = locals.BookDownloads ? locals.BookDownloads.relativeDownloadLinks(quranCommentaryBook || book) : {
-      json: `/${book.alias}.json`,
-      epub: `/${book.alias}.epub`
-    };
     function displayName(value) {
       return (value || '').toString().replace(/\s+/g, ' ').trim();
     }
@@ -527,7 +523,7 @@
 	});
     const tocCollection = isQuranToc ? ({ tafsir: 'tafsir-all', trans: 'translations' }[quranCommentaryBook?.type] || 'mushaf') : (book.type === 'sirah' ? 'sirah' : 'hadith');
     const firstReading = tocHeadingRailItems.find(item => item.track !== false && item.href);
-    const actions = { primaryHref: firstReading?.href, primaryLabel: 'Start reading', links: showBookLayout ? bookDownloadLinks : null };
+    const actions = { primaryHref: firstReading?.href, primaryLabel: 'Start reading' };
     const railGroups = quranTocSectionViews ? [
       { mode: 'juz', items: quranJuzRows.filter(juz => quranJuzSurahLinks(juz).length).map(juz => ({ key: 'toc-juz-' + juz.num, title: 'Juz ' + juz.num, arabicName: juz.title, href: quranJuzStartHref(juz) })) },
       { mode: 'surahs', items: tocHeadingRailItems },

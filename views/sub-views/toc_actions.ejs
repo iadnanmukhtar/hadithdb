@@ -1,7 +1,5 @@
+<% if (primaryHref) { %>
 <nav class="toc-actions" aria-label="Book actions">
-  <% if (links) { %>
-    <a class="<%= primaryHref ? 'ux-secondary-action' : 'ux-primary-action' %>" aria-label="Download EPUB" href="<%= links.epub %>" rel="nofollow" download><i class="bi bi-download" aria-hidden="true"></i> EPUB</a>
-    <a class="ux-text-action" aria-label="Download JSON" href="<%= links.json %>" rel="nofollow" download>JSON</a>
-  <% } %>
-  <% if (primaryHref) { %><a class="ux-primary-action ms-auto" href="<%= primaryHref %>"><%= primaryLabel %></a><% } %>
+  <a class="ux-primary-action ms-auto" href="<%= primaryHref %>"><%= primaryLabel %></a>
 </nav>
+<% } %>

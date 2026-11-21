@@ -36,7 +36,7 @@ describe('book download access', () => {
 
   const bearer = uid => ({ Authorization: 'Bearer ' + LocalAuth.signUser({ uid }) });
 
-  test.each(['/sample.json', '/sample.epub', '/sample?json', '/sample?download&epub',
+  test.each(['/sample.json', '/sample.epub', '/sample?json', '/sample?download&epub', '/sample?download&tsv',
     '/sharh/sample.epub', '/quran/translation.json', '/quran/tafsir/sample.epub'])(
     'requires verified admin membership before loading %s', async path => {
       global.query.mockClear();
@@ -48,25 +48,25 @@ describe('book download access', () => {
       expect(global.query).not.toHaveBeenCalled();
     });
 
-  test('admin bearer and scoped browser session can download the same attachment', async () => {
+  test('full-book exports are paused for admin bearer and scoped browser sessions', async () => {
     const api = await fetch(origin + '/sample.json', { headers: bearer('admin') });
-    expect(api.status).toBe(200);
+    expect(api.status).toBe(503);
     const session = await fetch(origin + '/admin/session', { method: 'POST', headers: bearer('admin') });
     expect(session.status).toBe(200);
     const cookie = session.headers.get('set-cookie').split(';')[0];
     const browser = await fetch(origin + '/admin/downloads/sample.json', { headers: { Cookie: cookie } });
-    expect(browser.status).toBe(200);
-    expect(browser.headers.get('content-disposition')).toContain('hadithunlocked_sample.json');
+    expect(browser.status).toBe(503);
+    expect(browser.headers.get('content-disposition')).toBeNull();
     expect(browser.headers.get('cache-control')).toContain('no-store');
-    expect(await browser.json()).toEqual(await api.json());
+    expect(await browser.text()).toBe(await api.text());
   });
 
-  test('public access is the default when the flag is absent', async () => {
+  test('exports are paused even when the admin-only flag is absent', async () => {
     delete global.settings.bookDownloads;
     try {
       const publicBook = await fetch(origin + '/sample.json');
-      expect(publicBook.status).toBe(200);
-      expect(publicBook.headers.get('content-disposition')).toContain('attachment');
+      expect(publicBook.status).toBe(503);
+      expect(publicBook.headers.get('content-disposition')).toBeNull();
     } finally {
       global.settings.bookDownloads = { adminOnly: true };
     }

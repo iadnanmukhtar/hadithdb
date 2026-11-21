@@ -526,9 +526,9 @@ In the table below, **Records** is the number of entries in each work, **English
 | 33 | `tabarani-saghir` | al-Muʿjam al-Ṣaghīr, Ṭabarānī | Source | 0 | 0 | 0 | N/A |
 | 1000 | `suyuti` | Jamʿ al-Jawāmiʿ, Suyūṭī | Source | 45,909 | 1,430 | 45,908 | Albānī, Arnaʾūṭ, Bayhaqī, Bukhārī, Dhahabī, Ḥākim, Haythamī, Ibn al-Jawzī, Ibn Ḥajar, Luʿluʿ wa-al-Marjān, Mudhiri, Muslim, Nawawī, Suyūṭī, Tirmidhī |
 
-### Admin-only book downloads
+### Book downloads
 
-Set `bookDownloads.adminOnly` to `true` in `~/.hadithdb/settings.json` and restart the app to restrict full-book JSON and EPUB downloads to signed-in administrators. The default is `false`.
+Full-book downloads are temporarily disabled, including for administrators.
 
 ### Admin-only content translations
 

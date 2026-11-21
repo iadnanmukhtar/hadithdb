@@ -26,9 +26,6 @@
     var translationBookUrl = function (translation) {
       return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
     };
-    var downloadLinksFor = function (book) {
-      return BookDownloads.relativeDownloadLinks(book);
-    };
     var translationDeathLabel = function (translation) {
       if (translation.translationDeathLabel) return translation.translationDeathLabel;
       var death = utils.emptyIfNull(translation.death || '').toString().trim();
@@ -143,13 +140,6 @@
                       <% } %>
                     </div>
                     <% if (!isEnglishTranslation && (site.editMode || translation.author)) { %><div lang="ar" dir="rtl"><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author" data-placeholder="اسم المؤلف"<% } %>><%- translation.author || '' %></span></div><% } %>
-                  </div>
-                  <%
-                    var translationDownloadLinks = downloadLinksFor(translation);
-                  %>
-                  <div class="book-download-links">
-                    <a href="<%= translationDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- translation.shortName_en || translation.name_en || translation.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                    <a href="<%= translationDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- translation.shortName_en || translation.name_en || translation.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
                   </div>
                   <% if (site.editMode) { %>
                     <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">

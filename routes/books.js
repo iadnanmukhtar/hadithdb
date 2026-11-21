@@ -8,7 +8,6 @@ const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
 const Sharh = require('../lib/Sharh');
-const BookDownloads = require('../lib/BookDownloads');
 const QuranMushafBooks = require('../lib/QuranMushafBooks');
 
 const router = express.Router();
@@ -112,7 +111,6 @@ async function renderCatalog(req, res) {
     const sharhBooks = await Sharh.catalog();
     const renderLocals = {
       sharhBooks,
-      BookDownloads: BookDownloads,
       mushafs: QuranMushafBooks.catalog(),
       books: results,
       Tafsir: Tafsir,

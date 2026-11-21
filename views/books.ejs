@@ -12,14 +12,14 @@
     var page = {
     menu: 'Books',
     title_en: `Hadith Unlocked | All Books`,
-    description_en: 'Browse hadith collections with Arabic source texts, English translations, chapter navigation, references, and downloadable editions.',
+    description_en: 'Browse hadith collections with Arabic source texts, English translations, chapter navigation, and references.',
     subtitle_en: `Available Books`,
     subtitle: ``,
     canonical: `/books`,
     context: {}
     };
     var catalogTypes = {
-      hadith: { pane: 'hadith', title: 'Hadith Books', description: 'Browse hadith collections with Arabic texts, English translations, references, and downloadable editions.' },
+      hadith: { pane: 'hadith', title: 'Hadith Books', description: 'Browse hadith collections with Arabic texts, English translations, and references.' },
       translation: { pane: 'translations', title: 'Quran Translations', description: 'Browse English Quran translations by century, translator, and publication date.' },
       tafsir: { pane: 'tafsir-all', title: 'Tafsir Books', description: 'Browse Quran tafsir books and explanations in Arabic and English.' },
       sharh: { pane: 'sharh', title: 'Hadith Explanations', description: 'Browse hadith commentary books grouped by the hadith collection they explain.' },
@@ -46,9 +46,6 @@
     var translationGroups = BookGroups.translationGroups(translations || []);
     var translationBookUrl = function (translation) {
       return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
-    };
-    var downloadLinksFor = function (book) {
-      return BookDownloads.relativeDownloadLinks(book);
     };
     var tafsirDeathLabel = function (tafsir) {
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
@@ -301,13 +298,6 @@
                     <% if (site.editMode || book.aqidah) { %><div><span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.aqidah" data-placeholder="Aqidah"<% } %>><%- book.aqidah || '' %></span></div><% } %>
                   </div>
                   <% if (site.editMode || book.published_year || book.publisher) { %><small class="tafsir-book-publication text-muted">Pub. <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.published_year" data-placeholder="Year"<% } %>><%- book.published_year || '' %></span><% if (site.editMode || book.publisher) { %>, <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.publisher" data-placeholder="Publisher"<% } %>><%- book.publisher || '' %></span><% } %></small><% } %>
-                  <%
-                    var hadithDownloadLinks = downloadLinksFor(book);
-                  %>
-                  <div class="book-download-links">
-                    <a href="<%= hadithDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- book.shortName_en || book.name_en || book.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                    <a href="<%= hadithDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- book.shortName_en || book.name_en || book.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
-                  </div>
                   <% if (site.editMode) { %>
                     <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
                       <div class="_e tafsir-book-description-editor" data-id="<%= book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
@@ -410,13 +400,6 @@
                         <% } %>
                         <% if (site.editMode || tafsir.aqidah) { %><div><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah" data-placeholder="Aqidah"<% } %>><%- tafsir.aqidah || '' %></span></div><% } %>
                       </div>
-                      <%
-                        var tafsirDownloadLinks = downloadLinksFor(tafsir);
-                      %>
-                      <div class="book-download-links">
-                        <a href="<%= tafsirDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                        <a href="<%= tafsirDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
-                      </div>
                       <% if (site.editMode) { %>
                         <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
                           <div class="_e tafsir-book-description-editor" data-id="<%= editableBookId %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
@@ -517,13 +500,6 @@
                         <% } %>
                       </div>
                       <% if (site.editMode || translation.author) { %><div lang="ar" dir="rtl"><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author" data-placeholder="اسم المؤلف"<% } %>><%- translation.author || '' %></span></div><% } %>
-                    </div>
-                    <%
-                      var translationDownloadLinks = downloadLinksFor(translation);
-                    %>
-                    <div class="book-download-links">
-                      <a href="<%= translationDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- translation.shortName_en || translation.name_en || translation.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                      <a href="<%= translationDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- translation.shortName_en || translation.name_en || translation.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
                     </div>
                     <% if (site.editMode) { %>
                       <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">

@@ -33,8 +33,7 @@ if (sharhBook) {
     <%- include('sub-views/book_metadata.ejs', {
       site, book: sharhBook,
       actions: { primaryHref: coveredBooks.length ? '/' + encodeURIComponent(coveredBooks[0].alias) : '',
-        primaryLabel: coveredBooks.length ? 'Open ' + (coveredBooks[0].shortName_en || coveredBooks[0].alias) : '',
-        links: { json: canonical + '.json', epub: canonical + '.epub' } }, tocDisplayBook: sharhBook,
+        primaryLabel: coveredBooks.length ? 'Open ' + (coveredBooks[0].shortName_en || coveredBooks[0].alias) : '' }, tocDisplayBook: sharhBook,
       tocDisplayBookNameEn: sharhBook.name_en || title,
       tocDisplayBookTitle: sharhBook.name || sharhBook.title || sharhBook.shortName,
       showBookLayout: true, showBookMetadata: true,

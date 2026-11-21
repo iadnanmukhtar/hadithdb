@@ -26,9 +26,6 @@
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
     };
-    var downloadLinksFor = function (book) {
-      return BookDownloads.relativeDownloadLinks(book);
-    };
     var tafsirDeathLabel = function (tafsir) {
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
       if (!death)
@@ -265,13 +262,6 @@
                         <% if (site.editMode || tafsir.aqidah) { %>
                           <div><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah" data-placeholder="Aqidah"<% } %>><%- tafsir.aqidah || '' %></span></div>
                         <% } %>
-                      </div>
-                      <%
-                        var tafsirDownloadLinks = downloadLinksFor(tafsir);
-                      %>
-                      <div class="book-download-links">
-                        <a href="<%= tafsirDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                        <a href="<%= tafsirDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
                       </div>
                       <% if (site.editMode) { %>
                         <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">

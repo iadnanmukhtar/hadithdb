@@ -11,7 +11,6 @@ const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
-const BookDownloads = require('../lib/BookDownloads');
 const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const HttpRange = require('../lib/HttpRange');
@@ -331,7 +330,6 @@ async function renderTafsirPassage(req, res, next) {
       commentarySurahHeading = await CommentaryHeadings.ensureChapter(tafsir.id, surahNum, '');
   }
   const renderLocals = {
-    BookDownloads: BookDownloads,
     Tafsir: Tafsir,
     ayah: focusAyah,
     ayahs: ayahs,
@@ -411,7 +409,6 @@ async function renderTafsirBookToc(req, res, tafsir) {
     quranTafsirPassages: quranTafsirPassages,
     quranCommentaryAvailableSurahs: quranCommentaryAvailableSurahs,
     quranTocDefaultView: quranTocDefaultView,
-    BookDownloads: BookDownloads,
     commentaryIntroductionArticles: commentaryIntroductionArticles,
     prevBook: null,
     nextBook: null,
