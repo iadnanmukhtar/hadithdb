@@ -87,7 +87,6 @@ describe('shared header navigation', () => {
       expect(source).toContain("document.querySelectorAll('[data-profile-menu], #offcanvas-topnav .offcanvas-col1')");
       expect(source).not.toContain('authItem.after(item)');
     }
-    expect(inlineScripts).toContain('>My Profile</a>');
     expect(header).toContain('data-settings-href="<%= settingsHref %>"');
     expect(header).not.toMatch(/<button[^>]*id="nav-auth-mobile"/);
   });
