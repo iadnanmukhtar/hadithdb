@@ -28,35 +28,38 @@ async function withContentLanguageBadges(books) {
   } catch (err) {
     debug.error(`catalog language badge index lookup failed; using database fallback: ${err.message}\n${err.stack || ''}`);
   }
-  if (Array.isArray(englishBookAliases))
-    return applyContentLanguageBadges(books, englishBookAliases, 'alias');
-
-  const physicalIds = books.filter(book => Number(book.virtual) !== 1).map(book => Number(book.id)).filter(Number.isFinite);
+  const physical = books.filter(book => Number(book.virtual) !== 1);
   const virtualIds = books.filter(book => Number(book.virtual) === 1).map(book => Number(book.id)).filter(Number.isFinite);
-  const englishRows = [];
-  if (physicalIds.length)
-    englishRows.push(...await global.query(`
-      SELECT DISTINCT bookId AS book_id
-      FROM hadiths
-      WHERE bookId IN (${physicalIds.join(',')})
-        AND NULLIF(TRIM(body_en), '') IS NOT NULL
-    `));
-  if (virtualIds.length)
-    englishRows.push(...await global.query(`
-      SELECT DISTINCT book_id
-      FROM v_hadiths_virtual_snapshot
-      WHERE book_id IN (${virtualIds.join(',')})
-        AND NULLIF(TRIM(body_en), '') IS NOT NULL
-    `));
-  return applyContentLanguageBadges(books, englishRows.map(row => row.book_id), 'id');
-}
-
-function applyContentLanguageBadges(books, englishBooks, key) {
-  const normalize = key === 'id' ? Number : String;
-  const hasEnglish = new Set(englishBooks.map(normalize));
+  const englishIds = new Set();
+  if (Array.isArray(englishBookAliases)) {
+    const aliases = new Set(englishBookAliases);
+    physical.forEach(book => {
+      if (aliases.has(book.alias)) englishIds.add(Number(book.id));
+    });
+  } else if (physical.length) {
+    const physicalIds = physical.map(book => Number(book.id)).filter(Number.isFinite);
+    if (physicalIds.length) {
+      const rows = await global.query(`
+        SELECT DISTINCT bookId AS book_id FROM hadiths
+        WHERE bookId IN (${physicalIds.join(',')}) AND NULLIF(TRIM(body_en), '') IS NOT NULL
+      `);
+      rows.forEach(row => englishIds.add(Number(row.book_id)));
+    }
+  }
+  // Virtual collections share indexed hadiths with their originals. Check the resolved reader rows.
+  if (virtualIds.length) {
+    const rows = await global.query(`
+      SELECT b.id AS book_id FROM books b
+      WHERE b.id IN (${virtualIds.join(',')}) AND EXISTS (
+        SELECT 1 FROM v_hadiths_virtual_snapshot s
+        WHERE s.book_id=b.id AND NULLIF(TRIM(s.body_en), '') IS NOT NULL
+      )
+    `);
+    rows.forEach(row => englishIds.add(Number(row.book_id)));
+  }
   return books.map(book => ({
     ...book,
-    catalog_language_badge: hasEnglish.has(normalize(book[key])) ? 'en-ar' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'en' : 'ar')
+    catalog_language_badge: englishIds.has(Number(book.id)) ? 'en-ar' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'en' : 'ar')
   }));
 }
 
@@ -67,7 +70,7 @@ async function renderCatalog(req, res) {
   res.locals.res = res;
   const editMode = req.admin && req.editMode;
   const cacheableHtml = !('json' in req.query) && !('tsv' in req.query) && !['tab', 'hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].some(key => key in req.query);
-  const cachedFile = Utils.cacheFileFromFilename('_books-makeover-v4', 'html', 'books', 'hadith');
+  const cachedFile = Utils.cacheFileFromFilename('_books-makeover-v5', 'html', 'books', 'hadith');
   const flushCache = Utils.shouldFlushCache(req);
   if (flushCache) {
     await Utils.flushCachedFile(cachedFile, { strict: true });
