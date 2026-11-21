@@ -4,8 +4,6 @@
 <%- include('sub-views/head.ejs', { site, page: view === 'everyone' ? { ...page, title_en: 'Hadith Unlocked Community' } : page }); %>
 <style><%- include('sub-views/notebook_content_styles.ejs'); %></style>
 <% if (view === 'email-preferences') { %>
-<link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
-<link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/email-preferences.css?v=<%= utils.styleAssetVersion() %>">
 <% } %>
 </head><body class="community-page">

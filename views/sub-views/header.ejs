@@ -1,6 +1,4 @@
 <!--hadithdb-cache:header:start-->
-<% var betaShell = !!locals.makeoverShell; %>
-<nav class="navbar site-navbar fixed-top<%= betaShell ? ' ux-masthead' : '' %>">
   <%
     var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
       ? utils.globalSearchBaseUrl(req)
@@ -16,7 +14,9 @@
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
-    var quranBar = isQuranArea ? utils.quranReaderBar(req, page, locals) : null;
+    var showQuranModes = isQuranArea || !!page.context?.quranCatalog;
+    var betaShell = !!locals.makeoverShell || showQuranModes;
+    var quranBar = showQuranModes ? utils.quranReaderBar(req, page, locals) : null;
     var isQuranStudyArea = /^\/quran\/(?:[A-Za-z0-9_-]+\/)?(?:\d+|quran:\d+:\d+)(?:\/|$)/.test(requestPath);
     var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
@@ -73,7 +73,7 @@
       ? searchResultsTafsirFilters
       : (quranSearchCommentaryBook ? [quranSearchCommentaryBook.alias] : []);
         var isHistoryCatalogArea = !isQuranArea && requestPath === '/books' && req && req.query && req.query.tab === 'history';
-        var isBooksArea = !!locals.tocCollection || (!isQuranArea && !isHistoryCatalogArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0));
+        var isBooksArea = !!locals.tocCollection && !isQuranArea || (!isQuranArea && !isHistoryCatalogArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0));
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog' || pageMenu === 'Blog Post';
     var isCommunityArea = isBlogArea || pageMenu === 'Community' || pageMenu === 'Notebook' || requestPath === '/community' || requestPath.indexOf('/community/') === 0;
     var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
@@ -104,6 +104,7 @@
       return active ? ' active" aria-current="page' : '';
     }
   %>
+<nav class="navbar site-navbar fixed-top<%= betaShell ? ' ux-masthead' : '' %>">
   <div class="container-fluid d-block">
   <div class="row g-0 site-navbar-main">
     
@@ -289,18 +290,15 @@
   <%- include('community_navigation.ejs', { page, req }); %>
   <% } %>
 
-  <% if (locals.tocCollection || (page.menu === 'Books' && page.context.bookCatalogInitialType)) { %>
+  <% if (!showQuranModes && (locals.tocCollection || (page.menu === 'Books' && page.context.bookCatalogInitialType))) { %>
   <%- include('book_catalog_navigation.ejs', { page }); %>
   <% } %>
 
-  <% if (locals.settingsGroups) { %>
-  <%- include('section_navigation.ejs', {
-    tabs: false, label: 'Settings sections', pickerLabel: 'Category', pickerName: 'Settings category',
-    items: settingsGroups.map(group => ({ label: group.title, href: '#' + group.id }))
-  }); %>
+  <% if (locals.settingsGroups && !showQuranModes) { %>
+  <%- include('settings_navigation.ejs'); %>
   <% } %>
 
-  <% if (isQuranArea && !locals.tocCollection) { %>
+  <% if (showQuranModes) { %>
   <%- include('quran_bar.ejs', { quranBar: quranBar }); %>
   <% } else if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
@@ -319,4 +317,4 @@
   </div>
 </nav>
 
-<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranBar.navigationMode, navigationBook: quranBar.navigationBook }); %><% } %>
+<% if (showQuranModes) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranBar.navigationMode, navigationBook: quranBar.navigationBook }); %><% } %>

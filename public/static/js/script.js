@@ -11657,7 +11657,7 @@ function initQuranReaderBar() {
 	if (!bar) return;
 	updateQuranReaderModeHrefs(document.querySelector('main'));
 	bar.addEventListener('click', function (event) {
-		if (event.target.closest('[data-quran-reader-mode-link], [href="#quran-navigation-rail"]'))
+		if (event.target.closest('[data-quran-reader-mode-link], .quran-mode-picker, [aria-controls="quran-navigation-rail"]'))
 			updateQuranReaderModeHrefs(bar.quranReaderMarker || document.querySelector('main'));
 	});
 }

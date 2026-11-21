@@ -1,7 +1,6 @@
-<nav class="<%= locals.tocControls ? 'toc-reader-tools' : 'row g-0 chapter-toc quran-section-menu' %>" aria-label="Quran navigation" data-quran-bar data-quran-current-ref="<%= quranBar.ref %>" data-quran-current-page="<%= quranBar.page %>" data-quran-study-book="<%= quranBar.studyBook %>" data-quran-tafsir-book="<%= quranBar.tafsirBook %>" data-quran-current-mode="<%= quranBar.mode %>">
-  <div class="<%= locals.tocControls ? 'toc-reader-actions' : 'col-12 chapter-toc-toolbar' %>">
+<nav class="chapter-toc ux-system quran-mode-nav" aria-label="Quran reading mode" data-quran-bar data-quran-current-ref="<%= quranBar.ref %>" data-quran-current-page="<%= quranBar.page %>" data-quran-study-book="<%= quranBar.studyBook %>" data-quran-tafsir-book="<%= quranBar.tafsirBook %>" data-quran-current-mode="<%= quranBar.mode %>">
+  <div class="quran-mode-toolbar">
     <%- include('quran_navigation_trigger.ejs'); %>
-    <span class="<%= locals.tocControls ? 'toc-reader-options' : 'chapter-toc-reader-modes' %>">
       <%- include('quran_reader_modes.ejs', {
         readerMode: quranBar.mode,
         passageHref: utils.quranUrl(req, quranBar.paths.passage),
@@ -10,6 +9,5 @@
         memorizeHref: utils.quranUrl(req, quranBar.paths.memorize),
         reviewHref: utils.quranUrl(req, quranBar.paths.review)
       }); %>
-    </span>
   </div>
 </nav>

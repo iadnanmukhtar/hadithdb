@@ -64,6 +64,8 @@ async function withContentLanguageBadges(books) {
 }
 
 router.get('/', renderCatalog);
+// Catalogs and readers can live on different hosts. Load drawer data on the catalog origin.
+router.get('/quran-navigation', require('../lib/QuranNavigationRail').data);
 
 async function renderCatalog(req, res) {
   res.locals.req = req;

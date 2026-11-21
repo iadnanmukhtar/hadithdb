@@ -37,8 +37,8 @@ test.each([
 ])('one consistent bar on %s',async(url,ctx,mode,ref)=>{
  const {html,bar}=await render(url,ctx),dom=new JSDOM(html),doc=dom.window.document;
  expect(doc.querySelectorAll('[data-quran-bar]')).toHaveLength(1);
- expect(doc.querySelectorAll('.chapter-toc-toggle')).toHaveLength(1);
- expect(doc.querySelector('.chapter-toc-toggle').textContent.trim()).toBe('Nav');
+ expect(doc.querySelectorAll('.quran-navigate')).toHaveLength(1);
+ expect(doc.querySelector('.quran-navigate').textContent.trim()).toBe('Navigate Quran');
  expect(doc.querySelector('.bi-compass')).not.toBeNull();
  expect(doc.querySelector('[href="#toc2"]')).toBeNull();
  expect(doc.querySelector('[data-quran-script-switcher]')).not.toBeNull();

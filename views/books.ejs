@@ -38,6 +38,7 @@
     page.description_en = catalogTypes[catalogType].description;
     page.canonical = '/books?' + catalogType;
     page.context.bookCatalogInitialType = initialBookCatalogType;
+    page.context.quranCatalog = ['mushaf', 'tafsir', 'translation'].includes(catalogType);
     var tafsirBookUrl = function (tafsir) {
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
@@ -200,8 +201,6 @@
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
-<link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
-<link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/books.css?v=<%= utils.styleAssetVersion() %>">
 </head>
 <body class="books-beta">
@@ -226,6 +225,7 @@
       about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
     }) %>
 
+    <% if (page.context.quranCatalog || req.quranArea) { %><%- include('sub-views/book_catalog_navigation.ejs', { page }); %><% } %>
     <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
 
     <div id="book-catalog-results" class="tab-content mb-4">

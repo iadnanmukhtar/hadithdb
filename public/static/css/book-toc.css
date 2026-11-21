@@ -26,11 +26,7 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 [data-toc-heading-rail] .ux-menu-list a[hidden] { display: none; }
 .toc-heading-rail:has([data-toc-tools]) .ux-menu-list { margin-inline: .35rem; }
 .toc-details { border-block-end: 1px solid var(--ux-border); }
-.toc-details, .toc-reader-tools { margin-block-end: var(--ux-title-gap); }
-.toc-reader-actions, .toc-reader-options > .ux-view-selector { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; }
-.toc-reader-tools :is(.ux-view-option, .ux-secondary-action) { display: inline-flex; align-items: center; gap: .35em; }
-.toc-reader-tools .quran-script-switcher .quran-script-label-long { display: inline; }
-.toc-reader-tools .quran-script-label-short { display: none; }
+.toc-details { margin-block-end: var(--ux-title-gap); }
 [data-toc-heading-rail]:has([data-toc-tools]) { border-inline-start: 1px solid var(--bs-border-color); }
 [data-toc-heading-rail]:has([data-toc-tools]) .hadith-heading-toc-nav { border: 0; }
 .ux-book-toc #toc-view-juz td:nth-child(2), .ux-book-toc #toc-view-manzils td:nth-child(2) { white-space: normal; }
@@ -40,6 +36,3 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 }
 .ux-book-toc .toc-expand-btn:is(:hover, :focus-visible) { background: var(--ux-midnight-deep); color: white; }
 .ux-book-toc .toc-expand-spacer { width: 24px; }
-.quran-navigation-rail.ux-system .quran-navigation-tabs { display: flex; }
-.quran-navigation-rail.ux-system .ux-view-option { flex: 1; padding-inline: .3rem; }
-.quran-navigation-rail.ux-system .quran-navigation-item:is(:hover, :focus-visible) { background: var(--ux-midnight-deep); color: white; }

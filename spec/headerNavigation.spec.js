@@ -283,12 +283,9 @@ describe('shared header navigation', () => {
 	});
 
 	test('compacts Quran section menus on mobile', () => {
-		expect(quranBar).toContain('chapter-toc quran-section-menu');
-		expect(quranBar).toContain('chapter-toc quran-section-menu');
-		expect(styles).toMatch(/@media \(max-width: 576px\)[\s\S]*?\.quran-section-menu \.chapter-toc-toggle,[\s\S]*?display: none;/);
-		expect(readerModes).toContain('data-quran-script-short-label');
-		expect(scripts).toContain("return { uthmani: 'Uth', 'indo-pak': 'Ind', warsh: 'War' }");
-		expect(styles).toMatch(/@media \(max-width: 576px\)[\s\S]*?\.quran-reader-modes \.quran-script-label-short \{\s*display: inline;/);
+		expect(quranBar).toContain('quran-mode-nav');
+		expect(readerModes).toContain('class="quran-mode-picker ux-view-option"');
+		expect(readerModes).toContain('data-quran-script-label');
 	});
 
 	test('keeps Mushaf disk caches separate for each resolved Quran script', () => {
@@ -301,9 +298,13 @@ describe('shared header navigation', () => {
 
 	test('uses a single consistent reader-mode group with Tafsir after Study', () => {
 		expect(readerModes).not.toContain('commentaryReaderMode');
-		expect(readerModes.match(/data-quran-reader-mode-link="tafsir"/g)).toHaveLength(1);
-		expect(readerModes.indexOf('data-quran-reader-mode-link="tafsir"')).toBeGreaterThan(readerModes.indexOf('data-quran-reader-mode-link="passage"'));
-		expect(readerModes.indexOf('data-quran-reader-mode-link="mushaf"')).toBeGreaterThan(readerModes.indexOf('data-quran-reader-mode-link="tafsir"'));
+		const html = require('ejs').render(readerModes, {
+			readerMode: 'tafsir', passageHref: '/study', mushafHref: '/mushaf', tafsirHref: '/tafsir',
+			req: {}, utils: { quranUrl: (_, url) => url }
+		});
+		const $ = require('cheerio').load(html);
+		expect($('[data-quran-reader-mode-link]').map((_, el) => $(el).attr('data-quran-reader-mode-link')).get())
+			.toEqual(['passage', 'tafsir', 'mushaf', 'memorize', 'review']);
 		expect(scripts).toContain('getLastVisitedQuranTafsirSlug()');
 	});
 

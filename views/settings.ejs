@@ -13,8 +13,6 @@
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %>
 
-<link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
-<link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/ux-foundations.css') %>?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="<%= utils.staticAssetUrl('/static/css/settings-beta.css') %>?v=<%= utils.styleAssetVersion() %>">
 </head>
 
@@ -229,6 +227,7 @@
     <% }); %>
   </nav>
   <div id="settings-groups">
+    <% if (settingsPath === '/quran/settings' || req.quranArea) { %><%- include('sub-views/settings_navigation.ejs', { settingsGroups: groups }); %><% } %>
   <% groups.forEach(group => { %>
     <section class="settings-beta-group" aria-labelledby="<%= group.id %>">
       <h2 class="ux-section-title" id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>

@@ -534,7 +534,7 @@
     ] : [{ mode: 'chapters', items: tocHeadingRailItems }];
 	%>
   
-  <%- include('sub-views/head.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/head.ejs', { useUxStyles: true, site: site, page: page }); %>
   
   <%- include('sub-views/toc_styles.ejs'); %>
 </head>
@@ -559,12 +559,6 @@
         }); %>
 
 
-        <% if (isQuranToc) { %>
-        <details class="ux-disclosure toc-details">
-          <summary><strong>Quran reading tools</strong><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
-          <%- include('sub-views/quran_bar.ejs', { tocControls: true, quranBar: utils.quranReaderBar(req, page, locals) }); %>
-        </details>
-        <% } %>
       <section>
         
         <%- utils.jsonLdScript({

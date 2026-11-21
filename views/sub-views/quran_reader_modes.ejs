@@ -1,15 +1,14 @@
 <%
-  const modeAction = locals.tocControls ? 'ux-view-option' : 'btn btn-outline-secondary';
   var modePassageHref = locals.passageHref || utils.quranUrl(req, req.path);
   var modeMushafHref = locals.mushafHref || utils.quranUrl(req, '/quran/page');
   var modeTafsirHref = locals.tafsirHref || utils.urlFor(req, '/books?tafsir');
   var modeMemorizeHref = locals.memorizeHref || `${modeMushafHref}${modeMushafHref.indexOf('?') >= 0 ? '&' : '?'}memorize`;
   var modeReviewHref = utils.quranUrl(req, '/quran/review');
 %>
-<span class="quran-reader-modes <%= locals.tocControls ? 'ux-view-selector' : 'btn-group btn-group-sm' %>" role="group" aria-label="Quran reading mode">
-  <span class="quran-script-switcher btn-group" data-quran-script-switcher>
-    <button type="button" class="<%= modeAction %> dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Quran script" aria-label="Choose Quran script">
-      <i class="bi bi-fonts" aria-hidden="true"></i><span class="quran-script-label-long" data-quran-script-label>Script</span><span class="quran-script-label-short" data-quran-script-short-label aria-hidden="true">Scr</span>
+<span class="quran-reader-modes ux-view-selector" role="group" aria-label="Quran reading mode">
+  <span class="quran-script-switcher dropdown" data-quran-script-switcher>
+    <button type="button" class="ux-view-option dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose Quran script">
+      <i class="bi bi-fonts" aria-hidden="true"></i><span data-quran-script-label>Script</span>
     </button>
     <ul class="dropdown-menu dropdown-menu-start">
       <li><button type="button" class="dropdown-item" data-quran-script-choice="uthmani">Uthmani</button></li>
@@ -17,9 +16,19 @@
       <li><button type="button" class="dropdown-item" data-quran-script-choice="warsh">Warsh</button></li>
     </ul>
   </span>
-  <a class="<%= modeAction %><%= locals.readerMode === 'passage' ? ' active' : '' %>" data-quran-reader-mode-link="passage" href="<%= modePassageHref %>" title="Study"<% if (locals.readerMode === 'passage') { %> aria-current="page"<% } %>><i class="bi bi-text-paragraph" aria-hidden="true"></i><span>Study</span></a>
-  <a class="<%= modeAction %><%= locals.readerMode === 'tafsir' ? ' active' : '' %>" data-quran-reader-mode-link="tafsir" href="<%= modeTafsirHref %>" title="Tafsir"<% if (locals.readerMode === 'tafsir') { %> aria-current="page"<% } %>><i class="bi bi-book-half" aria-hidden="true"></i><span>Tafsir</span></a>
-  <a class="<%= modeAction %><%= locals.readerMode === 'mushaf' ? ' active' : '' %>" data-quran-reader-mode-link="mushaf" href="<%= modeMushafHref %>" title="Mushaf view"<% if (locals.readerMode === 'mushaf') { %> aria-current="page"<% } %>><i class="bi bi-book" aria-hidden="true"></i><span>Mushaf</span></a>
-  <a class="<%= modeAction %><%= locals.readerMode === 'memorize' ? ' active' : '' %>" data-quran-reader-mode-link="memorize" href="<%= modeMemorizeHref %>" title="Practice view"<% if (locals.readerMode === 'memorize') { %> aria-current="page"<% } %>><i class="bi bi-eye-slash" aria-hidden="true"></i><span>Practice</span></a>
-  <a class="<%= locals.tocControls ? modeAction : 'btn btn-outline-success' %><%= locals.readerMode === 'review' ? ' active' : '' %>" data-quran-reader-mode-link="review" href="<%= modeReviewHref %>" title="Mudhakkir test review"<% if (locals.readerMode === 'review') { %> aria-current="page"<% } %>><i class="bi bi-arrow-repeat" aria-hidden="true"></i><span>Mudhakkir</span></a>
+  <% const modes = [
+    ['passage', 'Study', 'text-paragraph', modePassageHref],
+    ['tafsir', 'Tafsir', 'book-half', modeTafsirHref],
+    ['mushaf', 'Mushaf', 'book', modeMushafHref],
+    ['memorize', 'Practice', 'eye-slash', modeMemorizeHref],
+    ['review', 'Mudhakkir', 'arrow-repeat', modeReviewHref]
+  ]; %>
+  <% const selectedMode = readerMode === 'translations' ? 'passage' : readerMode; %>
+  <% for (const [key, label, icon, href] of modes) { %>
+    <a class="ux-view-option" href="<%= href %>" data-quran-reader-mode-link="<%= key %>"<% if (selectedMode === key) { %> aria-current="page"<% } %>><i class="bi bi-<%= icon %>" aria-hidden="true"></i><span><%= label %></span></a>
+  <% } %>
+  <select class="quran-mode-picker ux-view-option" aria-label="Quran reading mode" hidden>
+    <% if (!modes.some(([key]) => key === selectedMode)) { %><option value="" selected disabled>Mode</option><% } %>
+    <% for (const [key, label] of modes) { %><option value="<%= key %>"<% if (selectedMode === key) { %> selected<% } %>><%= label %></option><% } %>
+  </select>
 </span>

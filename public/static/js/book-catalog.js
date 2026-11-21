@@ -6,7 +6,7 @@
   // Move tabs from older cached catalogs into the same header slot as freshly rendered pages.
   var cachedTabs = page.querySelector('.book-catalog-tabs');
   var header = document.querySelector('.site-navbar');
-  if (cachedTabs && header && !header.querySelector('.book-catalog-navigation')) {
+  if (cachedTabs && header && !cachedTabs.closest('.book-catalog-navigation') && !header.querySelector('.book-catalog-navigation')) {
     var navigation = document.createElement('nav');
     navigation.className = 'row g-0 chapter-toc ux-subnav book-catalog-navigation';
     navigation.setAttribute('aria-label', 'Book collections');
