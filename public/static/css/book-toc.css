@@ -46,7 +46,6 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 .toc-details {
   --toc-details-inset: clamp(.75rem, 2vw, 1.25rem);
   margin-block-end: var(--ux-title-gap);
-  border-block-end: 1px solid var(--ux-border);
 }
 .toc-details-toolbar { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding-block: .25rem; }
 .toc-details-toolbar .ux-text-action {
