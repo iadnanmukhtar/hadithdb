@@ -36,12 +36,12 @@
 .quran-navigation-list { overflow-y: auto; overscroll-behavior: contain; min-height: 0; flex: 1; scrollbar-width: thin; }
 .quran-navigation-list .quran-navigation-item { justify-content: space-between; }
 .quran-navigation-list .quran-navigation-item[hidden] { display: none; }
-.quran-navigation-item [lang="ar"] { text-align: end; font-size: inherit; }
+.quran-navigation-item [lang="ar"] { text-align: end; }
 .has-ayahs .quran-navigation-ayahs { flex: 0 0 max(5.7rem, 27%); }
 @media (max-width: 389px) {
   .quran-navigation-content.has-ayahs { gap: .35rem; padding-inline: .5rem; }
   .has-ayahs .quran-navigation-ayahs { flex-basis: 4.5rem; }
-  .has-ayahs .quran-navigation-item { gap: .35rem; padding-inline: .35rem; }
+  .has-ayahs .quran-navigation-list .quran-navigation-item { gap: .35rem; padding-inline: .35rem; }
 }
 .quran-mushaf-navigation-label {
   background: transparent; border: 0; border-bottom: 1px dotted transparent; color: inherit;
