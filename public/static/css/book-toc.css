@@ -19,6 +19,8 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 }
 
 .toc-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-block: var(--ux-title-gap); }
+.toc-title-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem 1rem; }
+.toc-title-actions .toc-actions { margin: 0; margin-inline-start: auto; }
 .toc-actions a { gap: .4rem; text-decoration: none; }
 .toc-actions .ux-text-action { align-content: center; }
 .toc-actions .ux-text-action:hover { text-decoration: underline; }

@@ -548,9 +548,11 @@
     <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
     <main class="ux-system ux-book-toc toc<%= !isQuranToc ? ' hadith-toc-page' : '' %><%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? ' tafsir-toc-page' : '' %><%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
       <% if (isQuranToc && !quranCommentaryBook) { %>
-        <header class="ux-page-heading"><h1 class="ux-page-title">Quran contents</h1></header>
+        <header class="ux-page-heading toc-title-actions">
+          <h1 class="ux-page-title">Quran contents</h1>
+          <%- include('sub-views/toc_actions.ejs', actions); %>
+        </header>
         <div data-toc-mobile-tools></div>
-        <%- include('sub-views/toc_actions.ejs', actions); %>
       <% } %>
       
       <article>
