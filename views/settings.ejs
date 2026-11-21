@@ -227,7 +227,6 @@
     <% }); %>
   </nav>
   <div id="settings-groups">
-    <% if (settingsPath === '/quran/settings' || req.quranArea) { %><%- include('sub-views/settings_navigation.ejs', { settingsGroups: groups }); %><% } %>
   <% groups.forEach(group => { %>
     <section class="settings-beta-group" aria-labelledby="<%= group.id %>">
       <h2 class="ux-section-title" id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>

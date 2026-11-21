@@ -206,20 +206,20 @@
   <%- include('community_navigation.ejs', { page, req }); %>
   <% } %>
 
-  <% if (!showQuranModes && (locals.tocCollection || (page.menu === 'Books' && page.context.bookCatalogInitialType))) { %>
-  <%- include('book_catalog_navigation.ejs', { page }); %>
-  <% } %>
-
-  <% if (locals.settingsGroups && !showQuranModes) { %>
-  <%- include('settings_navigation.ejs'); %>
-  <% } %>
-
   <% if (showQuranModes) { %>
   <%- include('quran_bar.ejs', { quranBar: quranBar }); %>
   <% } else if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
   <% } else if (page.menu === 'Chapter' || page.menu === 'Section') { %>
   <%- include('chapter_section_menu.ejs'); %>
+  <% } %>
+
+  <% if ((!showQuranModes && locals.tocCollection) || (page.menu === 'Books' && page.context.bookCatalogInitialType)) { %>
+  <%- include('book_catalog_navigation.ejs', { page }); %>
+  <% } %>
+
+  <% if (locals.settingsGroups) { %>
+  <%- include('settings_navigation.ejs'); %>
   <% } %>
 
   </div>
