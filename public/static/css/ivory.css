@@ -1,6 +1,6 @@
 /* The palette preview and the first live light-theme consumers share these values. */
 :where(body[data-palette="ivory"], html:not([data-bs-theme="dark"]) > body:not([data-bs-theme="dark"]):has(.settings-beta, main.book-catalog-page.ux-system, main.email-preferences, .quran-mushaf-reader:not(.quran-memorize-reader))) {
-  --ivory-canvas: #fffdf8;
+  --ivory-canvas: #fafaf9;
   --ivory-surface: #ffffff;
   --ivory-inset: #f3f5fa;
   --ivory-border: #d8dde6;
