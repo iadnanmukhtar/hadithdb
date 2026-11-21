@@ -7,6 +7,9 @@
       <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
       <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="ar" data-book-catalog-group-scope="tafsir" aria-pressed="false">Arabic</button>
       <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="sharh" aria-pressed="false">English</button>
+      <% ['en-ar', 'AR', 'EN'].forEach(function (label) { %>
+        <button type="button" class="btn btn-outline-primary d-none" data-catalog-badge-filter="<%= label.toLowerCase() %>" aria-pressed="false"><%= label %></button>
+      <% }); %>
       <% Object.keys(catalogBookGroups).forEach(function (scope) { catalogBookGroups[scope].forEach(function (group) { %>
         <button type="button" class="btn btn-outline-primary<%= scope === 'hadith' ? '' : ' d-none' %>" data-book-catalog-group-filter="<%= group.id %>" data-book-catalog-group-scope="<%= scope %>" aria-pressed="false"><%= group.label %></button>
       <% }); }); %>

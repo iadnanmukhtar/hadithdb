@@ -10,7 +10,7 @@
 .catalog-options .btn[aria-pressed=true] { color: var(--ux-accent); border-color: var(--ux-accent); background: var(--ivory-selected, var(--ux-surface)); }
 .book-catalog-page :is(button, summary, a):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
-.book-catalog-page .book-catalog-summary a, .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
+.book-catalog-page .book-catalog-summary a:not(.book-catalog-pill), .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
 .book-catalog-summary { container: book-summary / inline-size; }
 .book-catalog-summary .tafsir-book-title-pair {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: .15rem .5rem;
@@ -64,8 +64,10 @@
 }
 
 .book-catalog-classifications { align-items: center; gap: .3rem; }
-.book-catalog-pill { padding: .12rem .55rem; font: 300 var(--ux-caption-size)/1.4 var(--ux-font-ui); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
+.book-catalog-pill { padding: .05rem .4rem; text-decoration: none; font: 300 .75rem/1.35 var(--ux-font-ui); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
 .book-catalog-type-pill { color: var(--ivory-accent, var(--c-accent)); background: var(--ivory-selected, var(--c-primary-soft-08)); }
 .book-catalog-summary .tafsir-book-meta { font-size: 1rem; }
 
 .book-catalog-type-pill .app-menu-icon { width: 1em; height: 1em; font-size: 1em; line-height: 1; margin: 0 .35em 0 0; vertical-align: -.1em; }
+
+.book-catalog-pill:is(:hover, :focus-visible) { border-color: currentColor; text-decoration: underline; }

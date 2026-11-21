@@ -601,10 +601,15 @@
     var cards = [];
     var groupButtons = Array.from(document.querySelectorAll('[data-book-catalog-group-filter]'));
     var languageButtons = Array.from(document.querySelectorAll('[data-book-catalog-language-filter]'));
-    var filterButtons = groupButtons.concat(languageButtons);
+    var badgeButtons = Array.from(facets.querySelectorAll('[data-catalog-badge-filter]'));
+    var filterButtons = groupButtons.concat(languageButtons, badgeButtons);
+    function badgeOf(card) {
+      return card.dataset.catalogBadge || (card.querySelector('.book-language-badge')?.textContent || '').trim().toLowerCase();
+    }
     var empty = document.querySelector('.book-catalog-filter-empty');
     var activeGroup = '';
     var activeLanguage = '';
+    var activeBadge = '';
     var activeScope = '<%= initialBookCatalogType %>';
 
     var applyFilters = function () {
@@ -615,6 +620,7 @@
         var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.bookCatalogFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
+          && (!activeBadge || badgeOf(card) === activeBadge)
           && (!activeLanguage || (card.dataset.bookCatalogLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0)
           && (!window.bookCatalogMatchesSize || window.bookCatalogMatchesSize(card));
         card.classList.toggle('d-none', !match);
@@ -628,7 +634,7 @@
         selection.textContent = chosen.length ? ' · ' + chosen.map(function (button) { return button.textContent.trim(); }).join(', ') : '';
       }
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeLanguage && !activeSize));
+        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeLanguage && !activeBadge && !activeSize));
     };
 
     var setGroupScope = function (paneId) {
@@ -641,13 +647,16 @@
       activeScope = scope;
       if (scopeChanged)
         activeGroup = '';
+      activeBadge = '';
       if (scopeChanged)
         activeLanguage = '';
       filterButtons.forEach(function (button) {
         var buttonScope = button.dataset.bookCatalogGroupScope || '';
         var isAll = button.hasAttribute('data-book-catalog-group-filter') && !button.dataset.bookCatalogGroupFilter;
         button.classList.toggle('d-none', !isAll && buttonScope !== scope && !(scope === 'sharh' && button.hasAttribute('data-book-catalog-language-filter')));
-        var active = activeLanguage
+        if (button.dataset.catalogBadgeFilter)
+          button.classList.toggle('d-none', !cards.some(card => badgeOf(card) === button.dataset.catalogBadgeFilter));
+        var active = activeBadge ? button.dataset.catalogBadgeFilter === activeBadge : activeLanguage
           ? button.dataset.bookCatalogLanguageFilter === activeLanguage
           : (activeGroup ? button.dataset.bookCatalogGroupFilter === activeGroup : isAll);
         button.classList.toggle('active', active);
@@ -656,37 +665,49 @@
       applyFilters();
     };
     filter.addEventListener('input', applyFilters);
-    groupButtons.forEach(function (button) {
+    filterButtons.forEach(function (button) {
       button.addEventListener('click', function () {
         activeGroup = button.dataset.bookCatalogGroupFilter || '';
-        activeLanguage = '';
+        activeLanguage = button.dataset.bookCatalogLanguageFilter || '';
+        activeBadge = button.dataset.catalogBadgeFilter || '';
         filterButtons.forEach(function (candidate) {
           var active = candidate === button;
           candidate.classList.toggle('active', active);
-          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
+          candidate.setAttribute('aria-pressed', String(active));
         });
         applyFilters();
       });
     });
-    languageButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        activeGroup = '';
-        activeLanguage = button.dataset.bookCatalogLanguageFilter || '';
-        filterButtons.forEach(function (candidate) {
-          var active = candidate === button;
-          candidate.classList.toggle('active', active);
-          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-        applyFilters();
-      });
+    function pillControl(kind, value) {
+      if (kind === 'type') return groupButtons[0];
+      return filterButtons.find(button => kind === 'group'
+        ? button.dataset.bookCatalogGroupFilter === value
+        : button.dataset.catalogBadgeFilter === value);
+    }
+    document.addEventListener('click', function (event) {
+      const link = event.target.closest('a[data-catalog-facet]');
+      if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const kind = link.dataset.catalogFacet;
+      const target = pillControl(kind, link.dataset.catalogValue);
+      if (!target) return;
+      event.preventDefault();
+      link.closest('dialog')?.close();
+      if (kind === 'type') filter.value = '';
+      target.click();
     });
     setGroupScope('book-catalog-' + activeScope);
     var saved = history.state && history.state.bookCatalog;
+    const params = new URLSearchParams(location.search);
+    if (!saved) {
+      for (const kind of ['group', 'badge']) {
+        if (params.has(kind)) pillControl(kind, params.get(kind))?.click();
+      }
+    }
     if (facets && saved) {
       filter.value = saved.query || '';
       var selected = filterButtons.find(function (button) {
         return !button.classList.contains('d-none') && ((saved.group && button.dataset.bookCatalogGroupFilter === saved.group) ||
-          (saved.language && button.dataset.bookCatalogLanguageFilter === saved.language));
+          (saved.language && button.dataset.bookCatalogLanguageFilter === saved.language) || (saved.badge && button.dataset.catalogBadgeFilter === saved.badge));
       });
       if (selected) selected.click();
       var sizeButton = Array.from(facets.querySelectorAll('[data-book-catalog-size-filter]')).find(function (button) {
@@ -700,7 +721,7 @@
     function rememberFilters() {
       if (!facets) return;
       history.replaceState(Object.assign({}, history.state, { bookCatalog: {
-        query: filter.value, group: activeGroup, language: activeLanguage,
+        query: filter.value, group: activeGroup, language: activeLanguage, badge: activeBadge,
         size: document.querySelector('.book-catalog-page').dataset.bookCatalogActiveSize || '', open: facets.open
       } }), '');
     }

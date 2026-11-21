@@ -119,6 +119,21 @@ test('opens the redesigned catalog at its canonical collection URL', async () =>
   dom.window.close();
 });
 
+test('card and details pills drive the catalog filters', async () => {
+  const dom = browser(await render('books.ejs'));
+  const doc = dom.window.document;
+  const card = doc.querySelector('#book-catalog-hadith .book-catalog-card');
+  card.querySelector('.book-catalog-summary [data-catalog-facet="group"]').click();
+  expect(doc.querySelector('[data-book-catalog-group-filter="sihah"]').getAttribute('aria-pressed')).toBe('true');
+  card.querySelector('.book-catalog-details-button').click();
+  doc.querySelector('dialog [data-catalog-facet="badge"]').click();
+  expect(doc.querySelector('dialog').open).toBe(false);
+  expect(doc.querySelector('[data-catalog-badge-filter="ar"]').getAttribute('aria-pressed')).toBe('true');
+  card.querySelector('.book-catalog-summary [data-catalog-facet="type"]').click();
+  expect(doc.querySelector('[data-book-catalog-group-filter=""]').getAttribute('aria-pressed')).toBe('true');
+  dom.window.close();
+});
+
 test('renders book tabs inside the fixed header and connects them to the existing panes', async () => {
   const dom = browser(await render('books.ejs'));
   const doc = dom.window.document;

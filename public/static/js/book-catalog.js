@@ -194,12 +194,23 @@
       var classifications = document.createElement('div');
       classifications.className = 'book-catalog-classifications';
       classifications.setAttribute('aria-label', 'Book classifications');
-      [type].concat(ids.map(function (id) { return groups.get(id); }).filter(Boolean)).forEach(function (label, index) {
-        var pill = document.createElement('span');
-        pill.className = 'book-catalog-pill' + (index === 0 ? ' book-catalog-type-pill' : '');
-        pill.textContent = label;
-        if (index === 0 && typeIcon) pill.prepend(typeIcon.content.firstElementChild.cloneNode(true));
-        classifications.append(pill);
+      var collection = { Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'history' }[type];
+      function makePill(label, facet, value) {
+        var link = document.createElement('a');
+        link.className = 'book-catalog-pill';
+        link.href = '/books?' + collection + (facet === 'type' ? '' : '&' + facet + '=' + encodeURIComponent(value));
+        link.dataset.catalogFacet = facet;
+        link.dataset.catalogValue = value;
+        link.setAttribute('aria-label', facet === 'type' ? 'Show all ' + label + ' books' : 'Filter books by ' + label);
+        link.textContent = label;
+        return link;
+      }
+      var typePill = makePill(type, 'type', collection);
+      typePill.classList.add('book-catalog-type-pill');
+      if (typeIcon) typePill.prepend(typeIcon.content.firstElementChild.cloneNode(true));
+      classifications.append(typePill);
+      ids.forEach(function (id) {
+        if (groups.has(id)) classifications.append(makePill(groups.get(id), 'group', id));
       });
       var languageBadge = details.querySelector('.book-language-badge');
       var language = languageBadge ? languageBadge.textContent.trim()
@@ -207,10 +218,9 @@
       // Cached catalog markup can still contain the older uppercase badge.
       if (language === 'EN-AR') language = 'en-ar';
       if (language) {
-        var languagePill = document.createElement('span');
-        languagePill.className = 'book-catalog-pill book-catalog-language-pill';
-        languagePill.textContent = language;
-        languagePill.setAttribute('aria-label', 'Language: ' + language);
+        card.dataset.catalogBadge = language.toLowerCase();
+        var languagePill = makePill(language, 'badge', card.dataset.catalogBadge);
+        languagePill.classList.add('book-catalog-language-pill');
         classifications.insertBefore(languagePill, classifications.children[1] || null);
       }
       summary.append(classifications);
