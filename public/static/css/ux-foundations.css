@@ -67,6 +67,34 @@
 .ux-page-heading p { margin: .25rem 0 0; color: var(--ux-muted); }
 .ux-system :is(summary, a, button, select, input):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 
+.ux-menu-list :is(a, button.dropdown-item) {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  min-height: 44px;
+  padding: .35rem .7rem;
+  border-radius: .35rem;
+  background: transparent;
+  color: var(--ivory-text, var(--bs-body-color));
+  font: var(--ux-body-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui);
+  text-decoration: none;
+}
+.ux-menu-list :is(a, button.dropdown-item)[aria-current] {
+  background: color-mix(in srgb, var(--ux-midnight-deep) 14%, var(--bs-body-bg));
+  color: var(--ivory-heading, var(--bs-emphasis-color));
+  font-weight: var(--ux-emphasis-weight);
+}
+.ux-menu-list :is(a, button.dropdown-item):is(:hover, :focus-visible) {
+  color: white;
+  background: var(--ux-midnight-deep);
+  text-decoration: none;
+}
+.ux-menu-list :is(a, button.dropdown-item):focus-visible { outline: 2px solid white; outline-offset: -4px; }
+.ux-menu-list :is(.app-menu-icon, a > i) {
+  flex: 0 0 20px; width: 20px; height: 20px; font-size: 18px; line-height: 20px; text-align: center;
+}
+.ux-menu-list a:is(:hover, :focus-visible) .app-menu-icon-img { filter: brightness(0) invert(1); }
+
 .ux-page-title { line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
 
 .ux-system .ux-section-title {

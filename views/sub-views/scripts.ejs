@@ -2312,7 +2312,7 @@
           <button type="button" aria-label="Profile menu" class="btn btn-link p-0 border-0 dropdown-toggle d-flex align-items-center nav-auth-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <img alt="" class="rounded-circle" width="32" height="32">
           </button>
-          <ul class="dropdown-menu dropdown-menu-end${betaMenu ? ' ux-dropdown' : ''}" data-profile-menu>
+          <ul class="dropdown-menu dropdown-menu-end${betaMenu ? ' ux-dropdown ux-menu-list' : ''}" data-profile-menu>
             ${betaMenu ? '<li class="ux-dropdown-identity"><span class="ux-dropdown-caption">Signed in as</span><span class="ux-account-name" dir="auto"></span></li>' : ''}
             <li><a class="dropdown-item" data-profile-link href="/community/mine">${menuIcon('person')}${betaMenu ? 'Profile' : 'My Profile'}</a></li>
             <li><a class="dropdown-item" data-notebook-link href="/notebook">${menuIcon('sticky')}${betaMenu ? 'Notebook' : 'My Notebook'}</a></li>

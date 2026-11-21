@@ -14,7 +14,7 @@
     const selected = entries.find(({ group }) => !group.hidden && group.contains(target));
     picker.value = selected ? '#' + selected.heading.id : '';
     picker.disabled = entries.every(({ group }) => group.hidden);
-    for (const link of navigation.querySelectorAll('.nav-link')) {
+    for (const link of [...navigation.querySelectorAll('.nav-link'), ...entries.map(entry => entry.link)]) {
       const active = link.hash === picker.value;
       link.classList.toggle('active', active);
       if (active) link.setAttribute('aria-current', 'location');
