@@ -26,7 +26,7 @@
       <section class="border-top pt-3 mt-3" id="settings-email-section">
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Email notifications</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Email notifications</h2>
             <p class="text-muted small mb-0">Choose which emails you receive and manage your author subscriptions.</p>
           </div>
           <a class="ux-secondary-action" href="/community/email-preferences<%= '?from=' + encodeURIComponent(settingsPath) %>">Email preferences</a>
@@ -37,7 +37,7 @@
 <% function renderNotebook() { %>
       <section class="border-top pt-3 mt-3" id="settings-notebook-section">
         <div class="mb-3">
-          <h2 class="fs-5 fw-bold mb-1">Community</h2>
+          <h2 class="fs-5 ux-emphasis mb-1">Community</h2>
           <p class="text-muted small mb-0" id="settings-notebook-theme-status">Choose the background used for all your notes.</p>
         </div>
         <div class="notebook-theme-options settings-notebook-theme-options" data-notebook-theme-options role="group" aria-label="Default note background"></div>
@@ -48,7 +48,7 @@
         <div class="settings-notes-drive mt-4 pt-3">
         <div class="ux-panel-header">
           <div>
-            <h3 class="fs-6 fw-bold mb-1">Google Drive</h3>
+            <h3 class="fs-6 ux-emphasis mb-1">Google Drive</h3>
             <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. <span data-drive-signin-hint>Sign in to manage your connection.</span></p>
           </div>
         </div>
@@ -76,7 +76,7 @@
       <section class="border-top pt-3" id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Payments</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Payments</h2>
             <p class="text-muted small mb-0" id="settings-payment-status">Loading payment settings...</p>
           </div>
           <div class="d-flex gap-2 flex-wrap">
@@ -121,7 +121,7 @@
       <section class="border-top pt-3 mt-3" id="settings-quran-reading-section">
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Quran Reading</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Quran Reading</h2>
             <p class="text-muted small mb-0" id="settings-quran-script-status">Choose the script used for Quran āyāt and words.</p>
           </div>
         </div>
@@ -148,14 +148,14 @@
       <section class="border-top pt-3 mt-3">
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Quran Memorization</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Quran Memorization</h2>
             <p class="text-muted small mb-0" id="settings-memorization-status">Tune review timing and the size of each review session.</p>
           </div>
           <a class="ux-secondary-action" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
         </div>
         <div class="settings-fsrs-card ux-inset-card">
           <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
-            <div><h3 class="fs-6 fw-bold mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
+            <div><h3 class="fs-6 ux-emphasis mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
             <button type="button" class="ux-secondary-action" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
           </div>
           <div class="<%= fieldGrid %>">
@@ -167,7 +167,7 @@
           <p class="small text-muted mt-2 mb-0" id="settings-fsrs-status">Personalize after at least 100 reviews, then about once a month as your history grows.</p>
         </div>
         <div class="memorization-session-settings mt-3">
-          <div class="mb-2"><h3 class="fs-6 fw-bold mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
+          <div class="mb-2"><h3 class="fs-6 ux-emphasis mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
           <div class="ux-field-grid">
             <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
             <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
@@ -191,7 +191,7 @@
       <section class="border-top pt-3 mt-3">
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Quran Audio</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Quran Audio</h2>
             <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
           </div>
           <div class="d-flex align-items-center gap-2">
@@ -210,7 +210,7 @@
       <section class="border-top pt-3 mt-3">
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Quran Translations</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Quran Translations</h2>
             <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
           </div>
           <div class="d-flex align-items-center gap-2 flex-wrap">
@@ -225,7 +225,7 @@
       <section class="border-top pt-3 mt-3">
         <div class="ux-panel-header">
           <div>
-            <h2 class="fs-5 fw-bold mb-1">Quran Tafsirs</h2>
+            <h2 class="fs-5 ux-emphasis mb-1">Quran Tafsirs</h2>
             <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
           </div>
           <button type="button" class="ux-text-action" id="settings-tafsir-enable-all">Enable all</button>
@@ -1484,7 +1484,7 @@
 
     const renderSettingsSubsection = (section, id, title) => {
       const heading = document.createElement('h3');
-      heading.className = 'fs-6 fw-bold mb-2';
+      heading.className = 'fs-6 ux-emphasis mb-2';
 
       const toggle = document.createElement('button');
       toggle.className = 'book-catalog-section-toggle settings-subsection-toggle';
