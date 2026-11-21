@@ -13735,12 +13735,17 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 	border-color: var(--c-accent);
 }
 .book-catalog-summary { display: flex; flex-direction: column; gap: .35rem; height: 100%; }
-.book-catalog-death { margin-top: auto; padding-top: .35rem; font-size: .75rem; line-height: 1.4; color: var(--bs-secondary-color); text-align: right; direction: ltr; }
-.book-catalog-dates { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: .35rem; font-size: .75rem; line-height: 1.4; direction: ltr; }
+.book-catalog-summary > .book-catalog-classifications { margin-top: auto; }
+.book-catalog-death { padding-top: .35rem; font-size: .75rem; line-height: 1.4; color: var(--bs-secondary-color); text-align: right; direction: ltr; }
+.book-catalog-dates { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; padding-top: .35rem; font-size: .75rem; line-height: 1.4; direction: ltr; }
 .book-catalog-dates .book-catalog-publication,
 .book-catalog-dates .book-catalog-death { font-size: .75rem; line-height: 1.4; }
 .book-catalog-dates .book-catalog-publication { flex-shrink: 0; }
-.book-catalog-dates .book-catalog-death { margin-top: 0; padding-top: 0; }
+.book-catalog-dates .book-catalog-death { padding-top: 0; }
+/* Align undated cards with dated neighbors in the same collection grid. */
+.book-catalog-grid:has(.book-catalog-death, .book-catalog-dates) .book-catalog-summary:has(> .book-catalog-classifications:last-child)::after {
+	content: ""; height: calc(1.05rem + .35rem);
+}
 
 .book-catalog-classifications { display: flex; flex-wrap: wrap; gap: .25rem; }
 .book-catalog-size-filters { display: inline-flex; align-items: center; gap: .25rem; }
