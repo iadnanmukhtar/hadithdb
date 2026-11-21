@@ -29,6 +29,7 @@
   --ux-heading-weight: 600;
   --ux-item-size: 1.24rem;
   --ux-local-nav-size: .9rem;
+  --ux-local-nav-font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui);
   --ux-card-radius: .6rem;
   --ux-secondary-size: .94rem;
   --ux-caption-size: .82rem;

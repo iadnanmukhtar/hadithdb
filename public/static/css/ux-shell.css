@@ -122,7 +122,7 @@ body:has(> .ux-footer) {
 :is(.ux-masthead, .books-beta) .app-menu-icon { color: inherit !important; }
 [data-bs-theme="dark"] :is(.ux-masthead, .books-beta) .app-menu-icon-img { filter: brightness(0) invert(1); }
 
-.ux-subnav .nav-link { font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui); }
+.ux-subnav .nav-link { font: var(--ux-local-nav-font); }
 .ux-subnav { background: transparent; padding-block: 0; }
 .ux-subnav .chapter-toc-toolbar { justify-content: center; min-width: 0; }
 .ux-subnav .nav-tabs {

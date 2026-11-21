@@ -1,6 +1,7 @@
 .quran-mode-nav { container: quran-toolbar / inline-size; width: 100%; min-width: 0; padding: .3rem 0; border-top: 1px solid var(--bs-border-color); }
 .quran-mode-toolbar { display: flex; justify-content: center; align-items: center; gap: .65rem; }
-.quran-mode-toolbar :is(.ux-secondary-action, .ux-view-option) { display: inline-flex; gap: .4rem; align-items: center; white-space: nowrap; text-decoration: none; }
+.quran-mode-toolbar :is(.ux-secondary-action, .ux-view-option) { display: inline-flex; gap: .4rem; align-items: center; white-space: nowrap; text-decoration: none; font: var(--ux-local-nav-font); }
+.quran-mode-toolbar :is([aria-current="page"], .quran-mode-picker) { font-weight: var(--ux-emphasis-weight); }
 .site-navbar .quran-mode-toolbar a.ux-view-option { color: var(--ux-muted); }
 .site-navbar .quran-mode-toolbar a.ux-view-option:is([aria-current], :hover, :focus-visible) { color: var(--ux-accent); }
 .quran-mode-toolbar .quran-mode-picker { display: none; }
@@ -19,7 +20,7 @@
   .quran-mode-toolbar .quran-reader-modes { min-width: 0; }
   .quran-mode-toolbar .quran-mode-picker { width: 7rem; min-width: 0; }
   .quran-mode-toolbar .dropdown-toggle > i { display: none; }
-  .quran-mode-toolbar .ux-secondary-action, .quran-mode-toolbar .ux-view-option { padding-inline: .45rem; font-size: var(--ux-local-nav-size); }
+  .quran-mode-toolbar .ux-secondary-action, .quran-mode-toolbar .ux-view-option { padding-inline: .45rem; }
 }
 @media (max-width: 375px) {
   .quran-mode-toolbar .quran-mode-picker { width: 5.5rem; }
