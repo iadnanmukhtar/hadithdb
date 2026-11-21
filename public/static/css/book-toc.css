@@ -2,7 +2,7 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 .ux-book-toc .ux-page-title { overflow-wrap: anywhere; }
 .ux-book-toc .toc-arabic-title {
   color: var(--ivory-heading, var(--ux-text));
-  font-size: var(--ux-item-size);
+  font-size: calc(var(--content-size-h1) * 1.1);
   line-height: 1.65;
   text-align: start;
   overflow-wrap: anywhere;
