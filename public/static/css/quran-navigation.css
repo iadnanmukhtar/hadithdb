@@ -26,9 +26,9 @@
 }
 .quran-navigation-rail { --bs-offcanvas-width: min(26rem, 100vw); --drawer-pad: clamp(.75rem, 3vw, 1.15rem); }
 .quran-navigation-rail .offcanvas-header { padding: .8rem var(--drawer-pad); border-bottom: 1px solid var(--ux-border); }
-.quran-navigation-rail .offcanvas-title { font: var(--ux-heading-weight) 1.15rem/1.4 var(--ux-font-ui); }
+.quran-navigation-rail .ux-rail-title { margin: 0; }
 .quran-navigation-rail .quran-navigation-tabs { display: flex; margin: .85rem var(--drawer-pad); }
-.quran-navigation-tabs .ux-view-option { flex: 1; min-width: 0; padding-inline: .25rem; }
+.quran-navigation-tabs .ux-view-option { flex: 1; min-width: 0; padding-inline: .25rem; font-size: var(--ux-local-nav-size); }
 .quran-navigation-status:not(:empty) { padding: 0 var(--drawer-pad) .65rem; }
 .quran-navigation-content { display: flex; flex: 1; min-height: 0; padding: 0 var(--drawer-pad) var(--drawer-pad); gap: .65rem; }
 .quran-navigation-column { display: flex; flex-direction: column; min-width: 0; flex: 1; gap: .5rem; }
@@ -36,7 +36,7 @@
 .quran-navigation-list { overflow-y: auto; overscroll-behavior: contain; min-height: 0; flex: 1; scrollbar-width: thin; }
 .quran-navigation-list .quran-navigation-item { justify-content: space-between; }
 .quran-navigation-list .quran-navigation-item[hidden] { display: none; }
-.quran-navigation-item [lang="ar"] { text-align: end; font-size: 1rem; }
+.quran-navigation-item [lang="ar"] { text-align: end; font-size: inherit; }
 .has-ayahs .quran-navigation-ayahs { flex: 0 0 max(5.7rem, 27%); }
 @media (max-width: 389px) {
   .quran-navigation-content.has-ayahs { gap: .35rem; padding-inline: .5rem; }

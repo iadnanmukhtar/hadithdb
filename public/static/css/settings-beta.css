@@ -40,7 +40,7 @@
 .script-choice .sample-warsh { font-family: QuranWarsh, serif; }
 
 .settings-filter-slot { grid-column: 1 / -1; }
-.settings-filter-status { font-size: .85rem; margin: .25rem 0 0; color: var(--ux-muted); }
+.settings-filter-status { margin: .25rem 0 0; }
 .settings-filter-status:empty { margin: 0; }
 .settings-beta .settings-filter-miss, .settings-beta-index a[hidden] { display: none !important; }
 

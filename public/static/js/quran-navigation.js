@@ -70,7 +70,7 @@
     clear.addEventListener('click', clearSearch);
     filter.append(icon, input, clear);
     var list = document.createElement('nav'); list.className = 'quran-navigation-list ux-menu-list'; list.setAttribute('aria-label', label.replace('Search ', ''));
-    var empty = document.createElement('p'); empty.className = 'text-muted p-2'; empty.textContent = 'No matches'; empty.hidden = items.length > 0;
+    var empty = document.createElement('p'); empty.className = 'ux-rail-status p-2'; empty.textContent = 'No matches'; empty.hidden = items.length > 0;
     items.forEach(item => list.append(item)); list.append(empty);
     input.addEventListener('input', function () {
       var term = normalize(input.value), count = 0;

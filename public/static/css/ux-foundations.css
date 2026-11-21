@@ -221,6 +221,7 @@
   .ux-panel-header { flex-direction: column; align-items: flex-start; }
 }
 
+.ux-rail-status { font-size: var(--ux-caption-size); color: var(--ux-muted); }
 .ux-rail-filter-slot { min-width: 0; padding: .25rem .7rem; }
 .ux-rail-search {
   display: flex;
@@ -229,7 +230,7 @@
   align-items: center;
   gap: .35rem;
   padding-inline: .5rem .15rem;
-  font: var(--ux-body-weight) .9rem/1.4 var(--ux-font-ui);
+  font: var(--ux-body-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui);
   background: var(--ivory-surface, var(--ux-surface));
   color: var(--ivory-muted, var(--ux-muted));
   border: 1px solid var(--ivory-border, var(--ux-border));
