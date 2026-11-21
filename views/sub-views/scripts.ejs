@@ -2329,6 +2329,8 @@
           </button>
         </div>
       `;
+      const drawerProfile = document.querySelector('[data-drawer-profile]');
+      if (drawerProfile) drawerProfile.hidden = !user;
       if (desktopSlot) desktopSlot.innerHTML = user ? profileHtml : loginHtml;
       if (mobileSlot) mobileSlot.innerHTML = user ? profileHtml : loginHtml;
       for (const slot of [desktopSlot, mobileSlot]) {

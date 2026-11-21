@@ -82,6 +82,7 @@
       || requestPath === '/quran/settings' || requestPath.indexOf('/quran/settings/') === 0;
     if (isQuranArea)
       navSearchAction = utils.quranUrl(req, '/quran');
+    var profileHref = utils.urlFor(req, '/community/mine');
     var settingsHref = isQuranArea || requestPath.indexOf('/quran/settings') === 0
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');
@@ -154,7 +155,7 @@
             <% } %>
           </button>
         </li>
-        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></li>
+        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= profileHref %>"></li>
 
       </ul>
       
@@ -167,7 +168,7 @@
         <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="<%= betaShell ? 'Search the library' : 'Search' %>">
           <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
         </button>
-        <div class="d-flex align-items-center nav-auth-btn" id="nav-auth-mobile" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></div>
+        <div class="d-flex align-items-center nav-auth-btn" id="nav-auth-mobile" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= profileHref %>"></div>
       </div>
     </menu>
 
@@ -181,7 +182,7 @@
       </div>
       <div class="offcanvas-body">
         <% if (betaShell) { %>
-          <%- include('beta_menu.ejs', { settingsHref, isSettingsArea }) %>
+          <%- include('beta_menu.ejs', { settingsHref, isSettingsArea, profileHref }) %>
         <% } else { %>
         <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
           <a class="offcanvas-quick-action<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>" title="Books" aria-label="Books"><span class="offcanvas-books-icon" aria-hidden="true"></span></a>

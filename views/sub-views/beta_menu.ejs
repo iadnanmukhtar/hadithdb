@@ -18,6 +18,7 @@
       ['Blog', utils.urlFor(req, '/blog'), 'newspaper']
     ]],
     ['Personal', [
+      ['Profile', profileHref, 'person'],
       ['My Notebook', utils.urlFor(req, '/notebook'), 'sticky'],
       ['My Bookmarks', utils.urlFor(req, '/bookmarks'), 'bookmark'],
       ['Settings', settingsHref, 'gear']
@@ -28,7 +29,7 @@
 <section class="ux-menu-group ux-menu-list"><h2><%= group %></h2>
   <ul class="<%= group === 'Personal' ? 'offcanvas-col1' : '' %>">
     <% for (const [label, href, icon] of entries) { %>
-    <li<% if (label === 'My Notebook') { %> data-notebook-auth<% } %>><a href="<%= href %>"<% if ((label === 'Settings' && isSettingsArea) || (page.context.bookCatalogInitialType && ((icon === 'translation' && page.context.bookCatalogInitialType === 'translations') || (icon === 'tafsir' && page.context.bookCatalogInitialType === 'tafsir-all')))) { %> aria-current="page"<% } %>>
+    <li<% if (label === 'Profile') { %> data-drawer-profile hidden<% } else if (label === 'My Notebook') { %> data-notebook-auth<% } %>><a href="<%= href %>"<% if ((label === 'Settings' && isSettingsArea) || (page.context.bookCatalogInitialType && ((icon === 'translation' && page.context.bookCatalogInitialType === 'translations') || (icon === 'tafsir' && page.context.bookCatalogInitialType === 'tafsir-all')))) { %> aria-current="page"<% } %>>
       <% if (['quran', 'tafsir', 'hadith', 'sirah', 'mushaf', 'translation'].includes(icon)) { %><%- include('menu_icon.ejs', { type: icon, label }) %><% } else { %><i class="app-menu-icon bi bi-<%= icon %>" aria-hidden="true"></i><% } %><%= label %>
     </a></li>
     <% } %>
