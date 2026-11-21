@@ -235,7 +235,7 @@
   const more = document.getElementById('notebook-more');
   const sentinel = document.getElementById('notebook-sentinel');
   let listSignedIn = false;
-  let listLoading = false, hasMore = false, listFailed = false;
+  let listLoading = false, hasMore = false, listFailed = false, invalidRows = 0;
   let current = null, pendingSource = null, savedText = '', busy = false, generation = 0, notes = [], listRequest = 0, returnModal = null;
   let editing = false, saving = null, saveTimer, previewRequest = 0, statusTimer, statusEpoch = 0;
   const existing = new Set(), checked = new Set(), buttons = new Map();
@@ -259,16 +259,21 @@
     context: () => ({ current, busy }), changed: scheduleSave,
     render: () => { renderNoteMetadata(); renderNoteTags(); }
   });
-  async function api(path = '', method = 'GET', body) {
+  async function api(path = '', method = 'GET', body, retryUnreadable = true) {
     const token = await window.hadithAuth?.getToken();
     if (!token) throw new Error('Please sign in to use your notebook.');
     const response = await fetch(quranApiPath('/notebook' + path), {
       method, cache: 'no-store', keepalive: path === '/floating' && method === 'PUT', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       ...(body === undefined ? {} : { body: JSON.stringify(body) })
     });
-    const result = await response.json();
+    const result = await response.json().catch(() => null);
+    if (!result || typeof result !== 'object' || Array.isArray(result)) {
+      if (retryUnreadable && method === 'GET' && /^\?(?:offset|source)=/.test(path) && (response.ok || response.status >= 500))
+        return api(path, method, body, false);
+      throw new Error(`The notebook returned an unreadable response (HTTP ${response.status}). Please retry.`);
+    }
     if (!response.ok) {
-      if (result.code?.startsWith('DRIVE_')) window.notebookDrive?.required(result.code);
+      if (typeof result.code === 'string' && result.code.startsWith('DRIVE_')) window.notebookDrive?.required(result.code);
       throw new Error(result.error || 'Could not access your notebook.');
     }
     return result;
@@ -727,6 +732,7 @@
     try {
       const result = await api(`?source=${encodeURIComponent(source.source_key)}${source.version === 0 && !source.source_key.startsWith('general') ? '&context=1' : ''}`);
       if (ownGeneration !== generation) return;
+      if (!result.note && !result.source && source.version) throw new Error('This note could not be loaded from your notebook.');
       current = result.note || result.source || source; editor.value = savedText = frontmatterControls.load(current.markdown); resetTags();
       if (current.source_key.startsWith('intro:')) { link.textContent = current.source_title; link.title = current.source_title; }
       if (current.links_explicit && !current.attachments?.some(entry => entry.source_key === current.source_key)) { link.textContent = 'Note'; link.removeAttribute('href'); }
@@ -1197,7 +1203,9 @@
     const icon = document.createElement('span'); icon.className = note.version ? 'bi bi-sticky-fill' : 'bi bi-sticky'; icon.setAttribute('aria-hidden', 'true');
     const title = document.createElement('span'); title.dir = 'auto'; title.textContent = note.title || note.source_title;
     heading.append(icon, title);
-    const rendered = document.createElement('div'); rendered.innerHTML = note.html;
+    const rendered = document.createElement('div');
+    if (typeof note.html === 'string') rendered.innerHTML = note.html;
+    else rendered.textContent = note.markdown;
     rendered.querySelectorAll('button').forEach(node => node.remove());
     rendered.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, pre, tr, br').forEach(node => node.append(' '));
     const text = rendered.textContent.replace(/\s+/g, ' ').trim() || (note.source_key === 'general' ? 'Create a new private note.' : '');
@@ -1212,7 +1220,7 @@
     button.append(heading, content); button.addEventListener('click', () => open(note));
     article.append(button);
     const tagBar = document.createElement('div'); tagBar.className = 'notebook-tile-tags';
-    for (const tag of note.hashtags || []) {
+    for (const tag of Array.isArray(note.hashtags) ? note.hashtags : []) {
       const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'notebook-tag-chip';
       chip.textContent = tag; chip.dir = 'auto';
       chip.addEventListener('click', () => { document.getElementById('notebook-tag').value = tag; renderTagRail(); loadList(); });
@@ -1237,7 +1245,7 @@
     if (!list || (append && listLoading)) return;
     const request = ++listRequest;
     listLoading = true; listFailed = false; more.hidden = true; more.disabled = true;
-    if (!append) { notes = []; list.replaceChildren(); hasMore = false; downloadAll.disabled = true; }
+    if (!append) { notes = []; invalidRows = 0; list.replaceChildren(); hasMore = false; downloadAll.disabled = true; }
     listStatus.textContent = 'Loading…';
     try {
       const token = await window.hadithAuth?.getToken();
@@ -1256,13 +1264,21 @@
         return;
       }
       if (!append) loadCreationCount();
-      const params = new URLSearchParams({ offset: append ? notes.length : 0,
+      const params = new URLSearchParams({ offset: append ? notes.length + invalidRows : 0,
         q: document.getElementById('notebook-search').value.trim(), tag: document.getElementById('notebook-tag').value.trim() });
       const result = await api(`?${params}`);
       if (request !== listRequest) return;
-      notes = append ? notes.concat(result.notes) : result.notes;
+      if (!Array.isArray(result.notes)) throw new Error('The notebook returned an unreadable list. Please retry.');
+      const readable = result.notes.filter(note => typeof note?.source_key === 'string' && typeof note.markdown === 'string');
+      invalidRows += result.notes.length - readable.length;
+      notes = append ? notes.concat(readable) : readable;
       hasMore = result.hasMore && result.notes.length > 0;
       downloadAll.disabled = false; renderList();
+      const skipped = (Number(result.skipped) || 0) + invalidRows;
+      if (skipped > 0) {
+        if (!notes.length) list.replaceChildren();
+        listStatus.textContent = skipped === 1 ? '1 note could not be loaded.' : `${skipped} notes could not be loaded.`;
+      }
     } catch (err) {
       if (request === listRequest) { listStatus.textContent = err.message; listFailed = true; more.hidden = false; }
     } finally {
@@ -1309,7 +1325,7 @@
     listStatus.textContent = 'Loading…';
     searchTimer = setTimeout(() => loadList(), 250);
   });
-  more?.addEventListener('click', () => loadList(notes.length > 0));
+  more?.addEventListener('click', () => loadList(notes.length + invalidRows > 0));
   installButtons();
   new MutationObserver(records => {
     for (const record of records) {

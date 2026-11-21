@@ -1,5 +1,6 @@
 'use strict';
 const express = require('express');
+const BookDownloads = require('../lib/BookDownloads');
 const createError = require('http-errors');
 const Sharh = require('../lib/Sharh');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
@@ -56,7 +57,7 @@ async function passage(req, res, next) {
 	}
 	res.render('sharh_passage', renderLocals);
 }
-router.get('/:alias.:format(json|epub)', require('../lib/BookDownloads').sendSharhBook);
+router.get('/:alias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.sendSharhBook);
 router.get('/:alias/heading/:id', handle(passage));
 router.get('/:alias/:reference', handle(passage));
 router.get('/:alias', handle(async (req, res, next) => {

@@ -2136,6 +2136,10 @@ button:is(.ux-overlay-close, .btn-close[data-bs-dismiss="modal"], .btn-close[dat
 	transform: rotate(-90deg);
 }
 
+html:has(meta[name="admin-only-book-downloads"]):not(.book-download-admin) :is(.book-download-links, .book-download-link) {
+  display: none;
+}
+
 .book-download-links {
 	align-items: center;
 	display: flex;

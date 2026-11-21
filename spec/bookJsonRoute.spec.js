@@ -15,7 +15,7 @@ async function dispatch(query) {
   vm.runInNewContext(`${route}\n} });`, {
     router: { get: (_path, fn) => { handler = fn; } },
     global: { books: [book] }, visibleBookFromParam: () => book,
-    BookDownloads: { sendHadithBook }
+    BookDownloads: { sendHadithBook, authorizeDownload: require('../lib/BookDownloads').authorizeDownload }
   });
   const req = { params: { bookAlias: 'adab' }, query };
   const res = { locals: {} };
