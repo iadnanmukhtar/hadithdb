@@ -15,7 +15,7 @@
       <% for (const group of groups) { %>
       <div data-toc-mode="<%= group.mode %>" data-search-label="Search <%= names[group.mode] %>"<% if (group.mode !== mode) { %> hidden<% } %>>
         <% for (const item of group.items) { %>
-        <a href="<%= item.href %>" data-toc-index-key="<%= item.key %>"<% if (item.track !== false) { %> data-toc-heading-key="<%= item.key %>"<% } %><% if (item.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %>><%= [item.number, item.title].filter(Boolean).join(' ') %></a>
+        <a href="<%= item.href %>" data-toc-index-key="<%= item.key %>"<% if (item.track !== false) { %> data-toc-heading-key="<%= item.key %>"<% } %><% if (item.titleLang === 'ar') { %> lang="ar" dir="rtl"<% } %>><%= [item.number, item.title].filter(Boolean).join(' ') %><% if (item.arabicName) { %> <span class="ms-auto" lang="ar" dir="rtl"><%= item.arabicName %></span><% } %></a>
         <% } %>
       </div>
       <% } %>

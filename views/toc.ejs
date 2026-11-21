@@ -492,6 +492,7 @@
 	    key: key,
 	    number: number,
 	    title: title,
+	    arabicName: isQuranToc && englishTitle ? arabicTitle || quranTocSurahArabicName(heading.h1) : '',
 	    titleLang: englishTitle ? 'en' : (arabicTitle ? 'ar' : 'en'),
 	    href: quranTocHref(heading)
 	  };
@@ -528,9 +529,9 @@
     const firstReading = tocHeadingRailItems.find(item => item.track !== false && item.href);
     const actions = { primaryHref: firstReading?.href, primaryLabel: 'Start reading', links: showBookLayout ? bookDownloadLinks : null };
     const railGroups = quranTocSectionViews ? [
-      { mode: 'juz', items: quranJuzRows.filter(juz => quranJuzSurahLinks(juz).length).map(juz => ({ key: 'toc-juz-' + juz.num, title: 'Juz ' + juz.num, href: quranJuzStartHref(juz) })) },
+      { mode: 'juz', items: quranJuzRows.filter(juz => quranJuzSurahLinks(juz).length).map(juz => ({ key: 'toc-juz-' + juz.num, title: 'Juz ' + juz.num, arabicName: juz.title, href: quranJuzStartHref(juz) })) },
       { mode: 'surahs', items: tocHeadingRailItems },
-      { mode: 'manzils', items: quranManzilRows.flatMap((manzil, i) => quranManzilSurahLinks(manzil, i).length ? [{ key: 'toc-manzil-' + manzil.num, title: manzil.name, href: quranManzilStartHref(manzil) }] : []) }
+      { mode: 'manzils', items: quranManzilRows.flatMap((manzil, i) => quranManzilSurahLinks(manzil, i).length ? [{ key: 'toc-manzil-' + manzil.num, title: manzil.name, arabicName: quranTocSurahArabicName(manzil.startSurah), href: quranManzilStartHref(manzil) }] : []) }
     ] : [{ mode: 'chapters', items: tocHeadingRailItems }];
 	%>
   
