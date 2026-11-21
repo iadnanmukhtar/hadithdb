@@ -30,7 +30,7 @@ main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
 .book-catalog-summary .tafsir-book-title-line:lang(ar),
 .book-catalog-summary .tafsir-book-title-line :lang(ar) { font-size: var(--ux-item-size) !important; font-weight: var(--ux-body-weight); line-height: 1.55; }
 
-.top-nav-desktop-actions a.nav-link, .book-catalog-navigation .nav-link { font: var(--ux-emphasis-weight) 1rem/1.35 var(--ux-font-ui); }
+.book-catalog-navigation .nav-link { font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui); }
 .book-catalog-navigation { background: transparent; padding-block: 0; }
 .book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
 .book-catalog-navigation .book-catalog-tabs {
@@ -43,7 +43,7 @@ main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
 }
 .book-catalog-navigation .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }
 .site-navbar .book-catalog-navigation .nav-link.active {
-  color: var(--ivory-accent, var(--bs-emphasis-color)); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
+  font-weight: var(--ux-emphasis-weight); color: var(--ivory-accent, var(--bs-emphasis-color)); background: transparent; border-image: var(--ux-midnight-fill) 1; text-decoration: none;
 }
 .book-catalog-navigation .nav-link:focus-visible { outline: 2px solid currentColor; outline-offset: -3px; }
 .catalog-collection-picker { display: none; }
@@ -55,7 +55,7 @@ main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
 @media (max-width: 700px) {
   .book-catalog-navigation:has(.catalog-collection-picker:not([hidden])) .book-catalog-tabs { display: none; }
   .catalog-collection-picker:not([hidden]) { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: .75rem; color: var(--bs-secondary-color); font: var(--ux-body-weight) .95rem/1.4 var(--ux-font-ui); }
-  .catalog-collection-picker select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: var(--ux-emphasis-weight) 1rem/1.4 var(--ux-font-ui); }
+  .catalog-collection-picker select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: var(--ux-emphasis-weight) var(--ux-local-nav-size)/1.4 var(--ux-font-ui); }
 }
 
 .book-catalog-classifications { align-items: center; gap: .3rem; }

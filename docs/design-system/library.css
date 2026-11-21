@@ -28,7 +28,6 @@ section { border-top: 1px solid var(--ux-border); padding-top: 1.4rem; margin-to
 article { background: var(--ux-surface); border: 1px solid var(--ux-border); border-radius: .6rem; padding: 1rem; min-width: 0; }
 article > :last-child { margin-bottom: 0; }
 article img { display: block; max-width: 100%; height: auto; }
-.type-sample { font-size: var(--ux-section-size); font-weight: var(--ux-heading-weight); }
 .palette { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; }
 .palette span { padding-block: .2rem; }
 .accent { color: var(--ux-accent); }

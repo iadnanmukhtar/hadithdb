@@ -271,7 +271,7 @@
     <div id="settings-groups">
     <% groups.forEach(group => { %>
       <section class="settings-beta-group" aria-labelledby="<%= group.id %>">
-        <h2 id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>
+        <h2 class="ux-section-title" id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>
         <% group.rows.forEach(([key, title, hint, render]) => { %>
           <% if (key === 'payments' && !paymentFeatureEnabled) { render(); return; } %>
           <details class="settings-beta-row">

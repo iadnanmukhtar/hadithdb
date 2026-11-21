@@ -274,7 +274,7 @@
         if (hasCategories) {
           var label = groups.get(id) || 'Other books';
           var heading = document.createElement('h2');
-          heading.className = 'book-catalog-category-title';
+          heading.className = 'book-catalog-category-title ux-section-title';
           heading.textContent = label; section.append(heading);
         }
         var grid = document.createElement('div'); grid.className = 'book-catalog-grid'; section.append(grid);
