@@ -12,7 +12,7 @@
 %>
 <% bookRailGroups.forEach(function (group) { %>
 <section class="tafsir-rail-group">
-  <h2><%= group.label %></h2>
+  <% if (locals.showCatalogFilters) { %><h3 class="catalog-rail-group-title"><%= group.label %></h3><% } else { %><h2><%= group.label %></h2><% } %>
         <% if (group.description) { %><p class="small text-muted mb-1"><%= group.description %></p><% } %>
   <ul>
     <% group.books.slice().sort(function (a, b) { return railBookName(a).localeCompare(railBookName(b), 'en', { sensitivity: 'base', numeric: true }); }).forEach(function (book) { %>

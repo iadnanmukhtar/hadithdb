@@ -560,13 +560,13 @@
 
     </main>
   </div>
-<%- include('sub-views/book_group_rail.ejs', { catalogBookGroups, showCatalogFilters: true, initialBookCatalogType: initialBookCatalogType, railTitle: 'Books', railHomeHref: utils.urlFor(req, catalogPath), railCollections: [
-      { pane: 'book-catalog-hadith', railTitle: 'Hadith Books', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-sirah', railTitle: 'History Books', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-tafsir-all', railTitle: 'Tafsir Books', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
-      { pane: 'book-catalog-translations', railTitle: 'Quran Translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
-      { pane: 'book-catalog-sharh', railTitle: 'Hadith Explanations', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-mushaf', railTitle: 'Quran Mushafs', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
+<%- include('sub-views/book_group_rail.ejs', { catalogBookGroups, showCatalogFilters: true, initialBookCatalogType: initialBookCatalogType, railCollections: [
+      { pane: 'book-catalog-hadith', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-sirah', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-tafsir-all', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
+      { pane: 'book-catalog-translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
+      { pane: 'book-catalog-sharh', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-mushaf', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
     ] }); %>
 </div>
 
@@ -579,12 +579,14 @@
     if (!filter)
       return;
     const tools = filter.closest('.catalog-tools');
+    const railTitle = document.getElementById('books-rail-title');
     const mobileSlot = document.querySelector('[data-mobile-catalog-tools]');
     const desktop = window.matchMedia('(min-width: 992px)');
     function positionTools() {
-      if (desktop.matches) document.querySelector('[data-book-rail-pane]:not([hidden]) .ux-rail-title').after(tools);
+      if (desktop.matches) railTitle.after(tools);
       else mobileSlot.append(tools);
     }
+    positionTools();
     desktop.addEventListener('change', positionTools);
     var tabStrip = document.querySelector('.book-catalog-navigation [role="tablist"]');
     var currentTab = tabStrip && tabStrip.querySelector('[aria-selected="true"]');
@@ -623,7 +625,6 @@
       document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
         section.hidden = section.dataset.bookRailPane !== paneId;
       });
-      positionTools();
       activeGroup = '';
       activeBadge = '';
       applyFilters();

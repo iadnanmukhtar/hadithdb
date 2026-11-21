@@ -13800,7 +13800,7 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 .tafsir-rail-group {
 	padding: .5rem .7rem;
 }
-.tafsir-rail-group h2 {
+.tafsir-rail-group :is(h2, .catalog-rail-group-title) {
 	font-size: .8rem;
 	font-weight: 600;
 	margin: 0 0 .25rem;

@@ -204,6 +204,7 @@
 .ux-rail-search button { width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: inherit; }
 
 .ux-rail-title {
+  color: var(--ivory-heading, var(--bs-heading-color));
   margin: 0 .7rem var(--ux-title-gap);
   --content-size-h2: 1.12rem;
   font: var(--ux-heading-weight) 1.12rem/1.35 var(--ux-font-ui);

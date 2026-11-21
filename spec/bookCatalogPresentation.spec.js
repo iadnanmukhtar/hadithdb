@@ -227,8 +227,10 @@ test.each(['mushaf', 'history', 'sharh', undefined])('catalog rail follows initi
   for (const pane of ['tafsir-all', 'translations', 'hadith', 'sharh', 'sirah', 'mushaf']) {
     doc.querySelector('#book-catalog-' + pane + '-tab').dispatchEvent(new dom.window.Event('shown.bs.tab'));
     expect(visiblePanes()).toEqual(['book-catalog-' + pane]);
-    const titles = { 'tafsir-all': 'Tafsir Books', translations: 'Quran Translations', hadith: 'Hadith Books', sharh: 'Hadith Explanations', sirah: 'History Books', mushaf: 'Quran Mushafs' };
-    expect(doc.querySelector('[data-book-rail-pane="book-catalog-' + pane + '"] .heading-toc-book-name').textContent).toBe(titles[pane]);
+    const headings = doc.querySelectorAll('[data-toc-heading-rail] h2');
+    expect(headings).toHaveLength(1);
+    expect(headings[0].textContent).toBe('Book groups');
+    expect(headings[0].closest('[data-book-rail-pane]')).toBeNull();
   }
   expect(doc.querySelector('[data-book-rail-pane="book-catalog-mushaf"] li a').getAttribute('href')).toBe('/quran/page/1');
   dom.window.close();
