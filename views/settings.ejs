@@ -20,68 +20,50 @@
 
 <body>
 
-
-
 <% function renderEmail() { %>
-      <section class="border-top pt-3 mt-3" id="settings-email-section">
+      <div id="settings-email-section">
         <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Email notifications</h2>
-            <p class="text-muted small mb-0">Choose which emails you receive and manage your author subscriptions.</p>
-          </div>
+          <p class="text-muted small mb-0">Choose which emails you receive and manage your author subscriptions.</p>
           <a class="ux-secondary-action" href="/community/email-preferences<%= '?from=' + encodeURIComponent(settingsPath) %>">Email preferences</a>
         </div>
-      </section>
+      </div>
 <% } %>
 
 <% function renderNotebook() { %>
-      <section class="border-top pt-3 mt-3" id="settings-notebook-section">
-        <div class="mb-3">
-          <h2 class="fs-5 ux-emphasis mb-1">Community</h2>
-          <p class="text-muted small mb-0" id="settings-notebook-theme-status">Choose the background used for all your notes.</p>
-        </div>
+      <div id="settings-notebook-section">
+        <p class="text-muted small mb-3" id="settings-notebook-theme-status">Choose the background used for all your notes.</p>
         <div class="notebook-theme-options settings-notebook-theme-options" data-notebook-theme-options role="group" aria-label="Default note background"></div>
-      </section>
+      </div>
 <% } %>
 
 <% function renderDrive() { %>
-        <div class="settings-notes-drive mt-4 pt-3">
-        <div class="ux-panel-header">
-          <div>
-            <h3 class="fs-6 ux-emphasis mb-1">Google Drive</h3>
-            <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. <span data-drive-signin-hint>Sign in to manage your connection.</span></p>
+      <div class="ux-panel-header">
+        <p class="text-muted small mb-0">Manage Google Drive storage for your notebook and optional copies of posts and articles. <span data-drive-signin-hint>Sign in to manage your connection.</span></p>
+      </div>
+      <div class="small" data-notebook-drive-panel data-notebook-drive-settings hidden>
+        <%- include('sub-views/notebook_drive_icon.ejs'); %>
+        <span data-notebook-drive-message role="status"></span>
+        <button type="button" class="ux-primary-action ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
+        <button type="button" class="ux-secondary-action" data-notebook-drive-import hidden>Import from Google Drive</button>
+        <a data-notebook-drive-folder target="_blank" rel="noopener" class="ux-text-action" hidden>Open folder</a>
+        <button type="button" class="ux-text-action" data-notebook-drive-disconnect hidden>Disconnect</button>
+        <div class="mt-3 w-100" data-community-drive-controls hidden>
+          <div class="form-check form-switch">
+            <input id="settings-drive-copies" type="checkbox" class="form-check-input" role="switch" data-community-drive-enabled>
+            <label for="settings-drive-copies" class="form-check-label">Keep copies of my posts and articles in Google Drive</label>
           </div>
+          <p class="text-muted small mb-1">Copies are saved as Markdown in the “Hadith Unlocked Posts and Articles” folder in Google Drive. New posts and articles sync automatically; existing content is copied only when you update it. Deleting content moves its copy to Drive trash. Changes made in Drive do not sync back.</p>
+          <p class="text-muted small mb-1">Turning this off or disconnecting pauses syncing and leaves your copies in Drive.</p>
+          <span class="small text-muted" data-community-drive-status role="status"></span>
         </div>
-        <div class="small" data-notebook-drive-panel data-notebook-drive-settings hidden>
-          <%- include('sub-views/notebook_drive_icon.ejs'); %>
-          <span data-notebook-drive-message role="status"></span>
-          <button type="button" class="ux-primary-action ms-auto" data-notebook-drive-connect hidden>Connect Google Drive</button>
-          <button type="button" class="ux-secondary-action" data-notebook-drive-import hidden>Import from Google Drive</button>
-          <a data-notebook-drive-folder target="_blank" rel="noopener" class="ux-text-action" hidden>Open folder</a>
-          <button type="button" class="ux-text-action" data-notebook-drive-disconnect hidden>Disconnect</button>
-          <div class="mt-3 w-100" data-community-drive-controls hidden>
-            <label class="form-check form-switch">
-              <input type="checkbox" class="form-check-input" data-community-drive-enabled>
-              <span class="form-check-label">Keep copies of my posts and articles in Google Drive</span>
-            </label>
-            <p class="text-muted small mb-1">Copies are saved as Markdown in the “Hadith Unlocked Posts and Articles” folder in Google Drive. New posts and articles sync automatically; existing content is copied only when you update it. Deleting content moves its copy to Drive trash. Changes made in Drive do not sync back.</p>
-            <p class="text-muted small mb-1">Turning this off or disconnecting pauses syncing and leaves your copies in Drive.</p>
-            <span class="small text-muted" data-community-drive-status role="status"></span>
-          </div>
-        </div>
-        </div>
+      </div>
 <% } %>
 
 <% function renderPayments() { %>
-      <section class="border-top pt-3" id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
+      <div id="settings-payments-section" <%= paymentFeatureEnabled ? '' : 'hidden' %>>
         <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Payments</h2>
-            <p class="text-muted small mb-0" id="settings-payment-status">Loading payment settings...</p>
-          </div>
-          <div class="d-flex gap-2 flex-wrap">
-            <button type="button" class="ux-secondary-action" id="settings-payment-manage">Manage payments</button>
-          </div>
+          <p class="text-muted small mb-0" id="settings-payment-status">Loading payment settings...</p>
+          <button type="button" class="ux-secondary-action" id="settings-payment-manage">Manage payments</button>
         </div>
         <div class="settings-payment-panel">
           <div class="settings-payment-balance ux-inset-card">
@@ -114,16 +96,13 @@
           </div>
           <div id="settings-payment-ledger" class="settings-payment-ledger small text-muted"></div>
         </div>
-      </section>
+      </div>
 <% } %>
 
 <% function renderScript() { %>
-      <section class="border-top pt-3 mt-3" id="settings-quran-reading-section">
+      <div id="settings-quran-reading-section">
         <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Quran Reading</h2>
-            <p class="text-muted small mb-0" id="settings-quran-script-status">Choose the script used for Quran āyāt and words.</p>
-          </div>
+          <p class="text-muted small mb-0" id="settings-quran-script-status">Choose the script used for Quran āyāt and words.</p>
         </div>
         <fieldset class="script-choices">
           <legend class="small text-muted">Al-Ikhlas 112:1</legend>
@@ -141,97 +120,75 @@
             <% } %>
           </div>
         </fieldset>
-      </section>
+      </div>
 <% } %>
 
 <% function renderMemorization() { %>
-      <section class="border-top pt-3 mt-3">
-        <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Quran Memorization</h2>
-            <p class="text-muted small mb-0" id="settings-memorization-status">Tune review timing and the size of each review session.</p>
-          </div>
-          <a class="ux-secondary-action" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
+      <div class="ux-panel-header">
+        <p class="text-muted small mb-0" id="settings-memorization-status">Tune review timing and the size of each review session.</p>
+        <a class="ux-secondary-action" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="bi bi-bar-chart-line me-1" aria-hidden="true"></i> Memorization Progress</a>
+      </div>
+      <div class="settings-fsrs-card ux-inset-card">
+        <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
+          <div><h3 class="fs-6 ux-emphasis mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
+          <button type="button" class="ux-secondary-action" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
         </div>
-        <div class="settings-fsrs-card ux-inset-card">
-          <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap mb-2">
-            <div><h3 class="fs-6 ux-emphasis mb-1"><i class="bi bi-arrow-repeat me-1" aria-hidden="true"></i> Spaced repetition settings</h3><p class="small text-muted mb-0">Tune how often Quran āyāt return for review. Detailed scheduling stays automatic.</p></div>
-            <button type="button" class="ux-secondary-action" id="settings-fsrs-optimize"><i class="bi bi-sliders me-1" aria-hidden="true"></i> Personalize Mudhakkir Timing</button>
-          </div>
+        <div class="<%= fieldGrid %>">
+          <label class="<%= gridLabel %>"><span class="small d-block mb-1">Target Memory Goal</span><select class="form-select form-select-sm" id="settings-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select></label>
+          <label class="<%= gridLabel %>"><span class="small d-block mb-1">Initial Memory Strength</span><select class="form-select form-select-sm" id="settings-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select></label>
+          <label class="<%= gridLabel %>"><span class="small d-block mb-1">Mudhakkir Interval Multiplier</span><select class="form-select form-select-sm" id="settings-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select></label>
+          <label class="<%= gridLabel %>"><span class="small d-block mb-1">Lapse Recovery Speed</span><select class="form-select form-select-sm" id="settings-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select></label>
+        </div>
+        <p class="small text-muted mt-2 mb-0" id="settings-fsrs-status">Personalize after at least 100 reviews, then about once a month as your history grows.</p>
+      </div>
+      <div class="memorization-session-settings mt-3">
+        <div class="mb-2"><h3 class="fs-6 ux-emphasis mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
+        <div class="ux-field-grid">
+          <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
+          <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
+        </div>
+        <details class="memorization-advanced-settings mt-3 ux-inset-card">
+          <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+          <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. The Hard limit includes both fragile āyāt and previously Good āyāt recovering after Again.</p>
           <div class="<%= fieldGrid %>">
-            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Target Memory Goal</span><select class="form-select form-select-sm" id="settings-fsrs-retention"><option value="0.8">80% relaxed</option><option value="0.85">85% balanced</option><option value="0.9">90% recommended</option><option value="0.92">92% high mastery</option><option value="0.95">95% exam prep</option></select></label>
-            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Initial Memory Strength</span><select class="form-select form-select-sm" id="settings-fsrs-learning-speed"><option value="slow">Slow</option><option value="normal">Normal</option><option value="fast">Fast</option></select></label>
-            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Mudhakkir Interval Multiplier</span><select class="form-select form-select-sm" id="settings-fsrs-growth"><option value="conservative">Conservative</option><option value="standard">Standard</option><option value="aggressive">Aggressive</option></select></label>
-            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Lapse Recovery Speed</span><select class="form-select form-select-sm" id="settings-fsrs-lapse"><option value="mild">Mild</option><option value="standard">Standard</option><option value="strict">Strict</option></select></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Learning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-learning-limit"></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Hard ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-weak-limit"></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Good ayat</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-memorized-limit"></label>
+            <label class="<%= gridLabel %>"><span class="small d-block mb-1">Order within each queue</span><select class="form-select form-select-sm" id="settings-review-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
           </div>
-          <p class="small text-muted mt-2 mb-0" id="settings-fsrs-status">Personalize after at least 100 reviews, then about once a month as your history grows.</p>
-        </div>
-        <div class="memorization-session-settings mt-3">
-          <div class="mb-2"><h3 class="fs-6 ux-emphasis mb-1">Mudhakkir session</h3><p class="small text-muted mb-0">The app determines when each āyah is due. These controls determine how much work enters one session.</p></div>
-          <div class="ux-field-grid">
-            <label class="form-label mb-0"><span class="small d-block mb-1">Maximum ayat per session</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-review-limit"></label>
-            <label class="form-label mb-0"><span class="small d-block mb-1">Optional time budget</span><span class="input-group input-group-sm"><input class="form-control" type="number" min="0" max="240" id="settings-review-time-budget"><span class="input-group-text">minutes</span></span></label>
-          </div>
-          <details class="memorization-advanced-settings mt-3 ux-inset-card">
-            <summary><span><strong>Advanced session limits</strong><small>Category caps and queue order</small></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
-            <p class="small text-muted mt-3 mb-2">Each category cap is applied within the overall ayat limit. The Hard limit includes both fragile āyāt and previously Good āyāt recovering after Again.</p>
-            <div class="<%= fieldGrid %>">
-              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Learning ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-learning-limit"></label>
-              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Hard ayat</span><input class="form-control form-control-sm" type="number" min="1" max="50" id="settings-weak-limit"></label>
-              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Maximum Good ayat</span><input class="form-control form-control-sm" type="number" min="1" max="200" id="settings-memorized-limit"></label>
-              <label class="<%= gridLabel %>"><span class="small d-block mb-1">Order within each queue</span><select class="form-select form-select-sm" id="settings-review-order"><option value="due_first">Oldest due first</option><option value="quran_order">Quran order</option><option value="random">Random</option></select></label>
-            </div>
-          </details>
-        </div>
-        <div class="d-flex justify-content-end mt-3"><button type="button" class="ux-primary-action" id="settings-memorization-save">Save Quran Memorization</button></div>
-      </section>
+        </details>
+      </div>
+      <div class="d-flex justify-content-end mt-3"><button type="button" class="ux-primary-action" id="settings-memorization-save">Save Quran Memorization</button></div>
 <% } %>
 
 <% function renderAudio() { %>
-      <section class="border-top pt-3 mt-3">
-        <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Quran Audio</h2>
-            <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
-          </div>
-          <div class="d-flex align-items-center gap-2">
-            <button type="button" class="ux-text-action" id="settings-reciter-enable-all">Enable all</button>
-            <div class="ux-view-selector" role="group" aria-label="Settings view">
-              <button type="button" class="ux-view-option" data-settings-view="tile">Tile</button>
-              <button type="button" class="ux-view-option" data-settings-view="full">Full</button>
-            </div>
+      <div class="ux-panel-header">
+        <p class="text-muted small mb-0" id="settings-reciter-status">Choose your favorite reciter.</p>
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="ux-text-action" id="settings-reciter-enable-all">Enable all</button>
+          <div class="ux-view-selector" role="group" aria-label="Settings view">
+            <button type="button" class="ux-view-option" data-settings-view="tile">Tile</button>
+            <button type="button" class="ux-view-option" data-settings-view="full">Full</button>
           </div>
         </div>
-        <div id="settings-reciter-list" class="mt-3"></div>
-      </section>
+      </div>
+      <div id="settings-reciter-list" class="mt-3"></div>
 <% } %>
 
 <% function renderTranslations() { %>
-      <section class="border-top pt-3 mt-3">
-        <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Quran Translations</h2>
-            <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
-          </div>
-          <div class="d-flex align-items-center gap-2 flex-wrap">
-            <button type="button" class="ux-text-action" id="settings-translation-enable-all">Enable all</button>
-          </div>
-        </div>
-        <div id="settings-translation-list" class="d-flex flex-column gap-2"></div>
-      </section>
+      <div class="ux-panel-header">
+        <p class="text-muted small mb-0" id="settings-translation-status">Loading translation settings...</p>
+        <button type="button" class="ux-text-action" id="settings-translation-enable-all">Enable all</button>
+      </div>
+      <div id="settings-translation-list" class="d-flex flex-column gap-2"></div>
 <% } %>
 
 <% function renderTafsirs() { %>
-      <section class="border-top pt-3 mt-3">
-        <div class="ux-panel-header">
-          <div>
-            <h2 class="fs-5 ux-emphasis mb-1">Quran Tafsirs</h2>
-            <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
-          </div>
-          <button type="button" class="ux-text-action" id="settings-tafsir-enable-all">Enable all</button>
-        </div>
-        <div id="settings-tafsir-list" class="d-flex flex-column gap-2"></div>
-      </section>
+      <div class="ux-panel-header">
+        <p class="text-muted small mb-0" id="settings-tafsir-status">Loading tafsir settings...</p>
+        <button type="button" class="ux-text-action" id="settings-tafsir-enable-all">Enable all</button>
+      </div>
+      <div id="settings-tafsir-list" class="d-flex flex-column gap-2"></div>
 <% } %>
 
 
@@ -257,32 +214,33 @@
   ]; %>
 <%- include('sub-views/header.ejs', { site, page, settingsGroups: groups }); %>
 <main class="settings-beta ux-system container-fluid hadith-heading-layout">
-  <div class="ux-page-heading">
-    <div><h1 class="ux-page-title">Settings</h1><p id="settings-account-status" role="status">Loading account settings…</p></div>
-  </div>
-  <div class="settings-beta-layout">
-    <nav class="ux-menu-list settings-beta-index hadith-heading-toc" aria-labelledby="settings-rail-title">
-      <%- include('sub-views/rail_title.ejs', { titleId: 'settings-rail-title', title: 'Settings categories' }) %>
-      <div class="ux-rail-filter-slot settings-filter-slot">
-        <%- include('sub-views/rail_search.ejs', { inputId: 'settings-filter', placeholder: 'Search settings', label: 'Search settings', clearLabel: 'Clear settings filter', resultsId: 'settings-groups' }) %>
-        <p class="settings-filter-status" role="status" data-settings-filter-status></p>
-      </div>
-      <% groups.forEach(group => { %><a href="#<%= group.id %>"><i class="bi bi-<%= group.icon %>" aria-hidden="true"></i><%= group.title %></a><% }); %>
-    </nav>
-    <div id="settings-groups">
-    <% groups.forEach(group => { %>
-      <section class="settings-beta-group" aria-labelledby="<%= group.id %>">
-        <h2 class="ux-section-title" id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>
-        <% group.rows.forEach(([key, title, hint, render]) => { %>
-          <% if (key === 'payments' && !paymentFeatureEnabled) { render(); return; } %>
-          <details class="settings-beta-row">
-            <summary><strong><%= title %></strong><span data-setting-summary="<%= key %>"><%= hint %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
-            <div class="settings-beta-fields ux-fields"><% render(); %></div>
-          </details>
-        <% }); %>
-      </section>
-    <% }); %>
+  <header class="ux-page-heading">
+    <h1 class="ux-page-title">Settings</h1>
+    <p id="settings-account-status" role="status">Loading account settings…</p>
+  </header>
+  <nav class="ux-menu-list settings-beta-index hadith-heading-toc" aria-labelledby="settings-rail-title">
+    <%- include('sub-views/rail_title.ejs', { titleId: 'settings-rail-title', title: 'Settings categories' }) %>
+    <div class="ux-rail-filter-slot settings-filter-slot">
+      <%- include('sub-views/rail_search.ejs', { inputId: 'settings-filter', placeholder: 'Search settings', label: 'Search settings', clearLabel: 'Clear settings filter', resultsId: 'settings-groups' }) %>
+      <p class="settings-filter-status" role="status" data-settings-filter-status></p>
     </div>
+    <% groups.forEach(group => { %>
+      <a href="#<%= group.id %>"><i class="bi bi-<%= group.icon %>" aria-hidden="true"></i><%= group.title %></a>
+    <% }); %>
+  </nav>
+  <div id="settings-groups">
+  <% groups.forEach(group => { %>
+    <section class="settings-beta-group" aria-labelledby="<%= group.id %>">
+      <h2 class="ux-section-title" id="<%= group.id %>" tabindex="-1"><%= group.title %></h2>
+      <% group.rows.forEach(([key, title, hint, render]) => { %>
+        <% if (key === 'payments' && !paymentFeatureEnabled) { render(); return; } %>
+        <details class="settings-beta-row">
+          <summary><strong><%= title %></strong><span data-setting-summary="<%= key %>"><%= hint %></span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+          <div class="settings-beta-fields ux-fields"><% render(); %></div>
+        </details>
+      <% }); %>
+    </section>
+  <% }); %>
   </div>
 </main>
 <script defer src="<%= utils.staticAssetUrl('/static/js/settings-filter.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
@@ -293,40 +251,8 @@
 
 <script>
   (function () {
-    document.querySelectorAll('main.search-results > section').forEach((section, index) => {
-      const header = section.firstElementChild;
-      if (!header || !header.querySelector('h2')) return;
-      const content = document.createElement('div');
-      content.className = 'settings-section-content';
-      content.id = `settings-section-content-${index + 1}`;
-      Array.from(section.children).slice(1).forEach(child => content.appendChild(child));
-      content.hidden = true;
-      const toggle = document.createElement('button');
-      toggle.type = 'button';
-      toggle.className = 'settings-section-toggle';
-      toggle.setAttribute('aria-expanded', 'false');
-      toggle.setAttribute('aria-controls', content.id);
-      const sectionName = header.querySelector('h2').textContent.trim();
-      toggle.setAttribute('aria-label', `Show ${sectionName} settings`);
-      toggle.title = `Show ${sectionName} settings`;
-      toggle.innerHTML = '<i class="bi bi-chevron-down" aria-hidden="true"></i>';
-      toggle.addEventListener('click', () => {
-        const expanded = toggle.getAttribute('aria-expanded') === 'true';
-        toggle.setAttribute('aria-expanded', expanded ? 'false' : 'true');
-        const action = expanded ? 'Show' : 'Hide';
-        toggle.setAttribute('aria-label', `${action} ${sectionName} settings`);
-        toggle.title = `${action} ${sectionName} settings`;
-        content.hidden = expanded;
-      });
-      header.classList.add('settings-section-header');
-      header.appendChild(toggle);
-      section.appendChild(content);
-    });
     if (location.hash === '#settings-email-section') {
-      const section = document.getElementById('settings-email-section');
-      const disclosure = section.closest('details');
-      if (disclosure) disclosure.open = true;
-      else section.querySelector('.settings-section-toggle')?.click();
+      document.getElementById('settings-email-section').closest('details').open = true;
     }
     const statusEl = document.getElementById('settings-account-status');
     const tafsirStatusEl = document.getElementById('settings-tafsir-status');

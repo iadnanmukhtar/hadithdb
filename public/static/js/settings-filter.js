@@ -31,10 +31,12 @@
   const catalogs = '[data-tafsir-setting-row], [data-translation-setting-row], .reciter-setting-row';
   const normalize = text => text.normalize('NFKD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
   const keywords = {
-    audio: 'audio recitation playback',
-    script: 'mushaf font typeface',
-    theme: 'notebook color colour background',
-    session: 'memorize memorise hifz spaced repetition',
+    audio: 'quran audio recitation playback',
+    script: 'quran reading mushaf font typeface',
+    theme: 'community notebook color colour background',
+    tafsirs: 'quran tafsirs',
+    translations: 'quran translations',
+    session: 'quran memorization memorize memorise hifz spaced repetition',
     drive: 'backup storage sync',
     email: 'mail alerts subscriptions'
   };

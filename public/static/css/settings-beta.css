@@ -23,8 +23,6 @@
 .settings-beta-row[open] > summary strong { color: var(--ivory-accent, var(--ux-text)); }
 .settings-beta-row[open] > summary i { transform: rotate(180deg); }
 .settings-beta-fields { padding: 1rem; background: var(--ux-inset); border-radius: .45rem; }
-.settings-beta-fields > section, .settings-beta-fields > .settings-notes-drive { border: 0 !important; padding: 0 !important; margin: 0 !important; }
-.settings-beta-fields > section > div:first-child h2, .settings-beta-fields > .settings-notes-drive h3 { display: none; }
 @media (max-width: 700px) {
 
   .settings-beta-row > summary { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 .75rem; }
@@ -93,7 +91,6 @@
 
 @media (min-width: 992px) {
   main.settings-beta { max-width: none; margin-top: 0; padding-block: 0; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
-  .settings-beta-layout { display: contents; }
   .settings-beta > .ux-page-heading, #settings-groups { grid-column: 2; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
   .settings-beta > .ux-page-heading { grid-row: 1; margin-top: var(--ux-page-start); }
   #settings-groups { grid-row: 2; }

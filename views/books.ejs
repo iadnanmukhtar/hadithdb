@@ -215,7 +215,9 @@
     <% for (const [label, icon] of Object.entries({ Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'sirah' })) { %>
     <template data-catalog-icon="<%= label %>"><%- include('sub-views/menu_icon.ejs', { type: icon }) %></template>
     <% } %>
-    <div class="ux-page-heading"><h1 class="ux-page-title"><span data-catalog-title><%= catalogTypes[catalogType].title %></span></h1></div>
+    <header class="ux-page-heading">
+      <h1 class="ux-page-title" data-catalog-title><%= catalogTypes[catalogType].title %></h1>
+    </header>
 
     <%- utils.jsonLdScript({
       '@context': 'https://schema.org',
@@ -226,16 +228,15 @@
 
     <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
 
-    <section id="book-catalog-results" class="book-catalog-tabs-section mb-4">
-      <div class="tab-content">
-        <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-mushaf-tab">
+    <div id="book-catalog-results" class="tab-content mb-4">
+        <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-mushaf-tab">
           <%- include('sub-views/mushaf_catalog_list.ejs', { mushafs: locals.mushafs || [] }); %>
         </div>
-        <div id="book-catalog-sharh" class="tab-pane fade<%= initialBookCatalogType === 'sharh' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-sharh-tab">
+        <div id="book-catalog-sharh" class="tab-pane fade<%= initialBookCatalogType === 'sharh' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-sharh-tab">
           <%- include('sub-views/sharh_catalog_list.ejs', { site, sharhBooks: locals.sharhBooks || [] }); %>
         </div>
         <% ['hadith', 'sirah'].forEach(function (bookType) { %>
-        <div id="book-catalog-<%= bookType %>" class="tab-pane fade<%= bookType === initialBookCatalogType ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-<%= bookType %>-tab">
+        <div id="book-catalog-<%= bookType %>" class="tab-pane fade<%= bookType === initialBookCatalogType ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-<%= bookType %>-tab">
           <div class="tafsir-book-list" data-book-catalog-type="<%= bookType === 'sirah' ? 'History & Sirah' : 'Hadith' %>">
             <% books.filter(function (book) { return bookType === 'sirah' ? book.type === 'sirah' : book.type !== 'sirah'; }).forEach(function (book) { %>
               <%
@@ -331,7 +332,7 @@
 
         <% tafsirGroups.forEach(function (group) { %>
           <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
-          <div id="<%= sectionId %>" class="tab-pane fade<%= initialBookCatalogType === 'tafsir-all' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="<%= sectionId %>-tab">
+          <div id="<%= sectionId %>" class="tab-pane fade<%= initialBookCatalogType === 'tafsir-all' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="<%= sectionId %>-tab">
             <% if (group.tafsirs.length < 1) { %>
               <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
             <% } else { %>
@@ -459,7 +460,7 @@
           </div>
         <% }); %>
 
-        <div id="book-catalog-translations" class="tab-pane fade<%= initialBookCatalogType === 'translations' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-translations-tab">
+        <div id="book-catalog-translations" class="tab-pane fade<%= initialBookCatalogType === 'translations' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-translations-tab">
           <% if (!translations || translations.length < 1) { %>
             <p class="text-muted">No English translations are currently available.</p>
           <% } else { %>
@@ -554,8 +555,7 @@
             </div>
           <% } %>
         </div>
-      </div>
-    </section>
+    </div>
     <p class="text-muted d-none book-catalog-filter-empty" role="status">No matching books found.</p>
 
     </main>
