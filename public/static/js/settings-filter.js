@@ -1,7 +1,6 @@
 (() => {
   const input = document.getElementById('settings-filter');
   const groups = document.getElementById('settings-groups');
-  const clear = document.querySelector('[data-settings-filter-clear]');
   const status = document.querySelector('[data-settings-filter-status]');
   const entries = [...groups.querySelectorAll('.settings-beta-group')].map(group => {
     const heading = group.querySelector('h2');
@@ -66,23 +65,10 @@
       group.hidden = link.hidden = groupCount === 0;
       count += groupCount;
     }
-    clear.hidden = !input.value;
     const message = !input.value.trim() ? '' : count ? `${count} matching setting${count === 1 ? '' : 's'}` : 'No matching settings. Try a different search.';
     if (status.textContent !== message) status.textContent = message;
   }
-  function reset() {
-    input.value = '';
-    filter();
-    input.focus();
-  }
   input.addEventListener('input', filter);
-  input.addEventListener('keydown', event => {
-    if (event.key === 'Escape' && input.value) {
-      event.preventDefault();
-      reset();
-    }
-  });
-  clear.addEventListener('click', reset);
   // Catalogs and saved summaries can arrive after the reader starts typing.
   new MutationObserver(() => { if (input.value.trim()) filter(); })
     .observe(groups, { childList: true, subtree: true, characterData: true });

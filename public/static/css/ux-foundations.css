@@ -164,17 +164,23 @@
   .ux-panel-header { flex-direction: column; align-items: flex-start; }
 }
 
+.ux-rail-filter-slot { min-width: 0; padding: .25rem .7rem; }
 .ux-rail-search {
   display: flex;
+  width: 100%;
+  min-width: 0;
   align-items: center;
   gap: .35rem;
   padding-inline: .5rem .15rem;
-  font-size: .9rem;
-  background: var(--ux-surface);
-  color: var(--ux-muted);
-  border: 1px solid var(--ux-border);
+  font: 400 .9rem/1.4 var(--ux-font-ui);
+  background: var(--ivory-surface, var(--ux-surface));
+  color: var(--ivory-muted, var(--ux-muted));
+  border: 1px solid var(--ivory-border, var(--ux-border));
   border-radius: .55rem;
 }
 .ux-rail-search:focus-within { border-color: var(--ux-accent); outline: var(--ux-focus-ring); outline-offset: 1px; }
 .ux-rail-search input { flex: 1; min-width: 0; height: 32px; border: 0; padding: 0; background: transparent; color: var(--ux-text); font: inherit; }
-.ux-rail-search input:focus-visible { outline: none; }
+.ux-system .ux-rail-search input:focus-visible { outline: none; }
+.ux-rail-search input::-webkit-search-cancel-button { appearance: none; }
+.ux-rail-search input:placeholder-shown + button { display: none; }
+.ux-rail-search button { width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: inherit; }

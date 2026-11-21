@@ -226,7 +226,7 @@
 
     <details class="catalog-mobile-tools d-lg-none"><summary>Filter books</summary><div data-mobile-catalog-tools></div></details>
 
-    <section class="book-catalog-tabs-section mb-4">
+    <section id="book-catalog-results" class="book-catalog-tabs-section mb-4">
       <div class="tab-content">
         <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-mushaf-tab">
           <%- include('sub-views/mushaf_catalog_list.ejs', { mushafs: locals.mushafs || [] }); %>
@@ -575,7 +575,7 @@
 <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
 <script>
   (function () {
-    var filter = document.querySelector('.book-catalog-filter');
+    var filter = document.getElementById('book-catalog-filter');
     if (!filter)
       return;
     const tools = filter.closest('.catalog-tools');

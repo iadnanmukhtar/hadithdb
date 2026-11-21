@@ -315,7 +315,7 @@ test('typing a book filter keeps Tafsir selected even when another collection ma
   const doc = dom.window.document;
   const show = jest.fn();
   dom.window.bootstrap = { Tab: function () { this.show = show; } };
-  const filter = doc.querySelector('.book-catalog-filter');
+  const filter = doc.getElementById('book-catalog-filter');
   const empty = doc.querySelector('.book-catalog-filter-empty');
   const tafsir = doc.querySelector('#book-catalog-tafsir-all .book-catalog-card');
   doc.querySelector('#book-catalog-sharh .book-catalog-card').dataset.bookCatalogFilter = 'dorar sharh';

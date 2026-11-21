@@ -1,7 +1,5 @@
-<div role="search" class="book-catalog-group-filters catalog-tools" aria-label="Filter books">
-  <label class="ux-rail-search"><i class="bi bi-funnel" aria-hidden="true"></i>
-    <input type="search" class="book-catalog-filter" placeholder="Search books" aria-label="Search books in this collection" autocomplete="off">
-  </label>
+<div class="ux-rail-filter-slot book-catalog-group-filters catalog-tools">
+  <%- include('rail_search.ejs', { inputId: 'book-catalog-filter', placeholder: 'Search books', label: 'Search books in this collection', clearLabel: 'Clear book filter', resultsId: 'book-catalog-results' }) %>
   <details class="catalog-facets"><summary>Filters<span class="catalog-facet-selection"></span></summary>
     <div class="catalog-options" role="group" aria-label="Collection filters">
       <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>

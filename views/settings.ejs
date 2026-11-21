@@ -261,13 +261,8 @@
   </div>
   <div class="settings-beta-layout">
     <nav class="settings-beta-index hadith-heading-toc" aria-label="Settings categories">
-      <div class="settings-filter-slot">
-        <div role="search" aria-label="Settings" class="ux-rail-search">
-          <label class="visually-hidden" for="settings-filter">Search settings</label>
-          <i class="bi bi-funnel" aria-hidden="true"></i>
-          <input id="settings-filter" type="search" placeholder="Search settings" autocomplete="off" aria-controls="settings-groups">
-          <button type="button" data-settings-filter-clear aria-label="Clear settings filter" hidden><i class="bi bi-x-lg" aria-hidden="true"></i></button>
-        </div>
+      <div class="ux-rail-filter-slot settings-filter-slot">
+        <%- include('sub-views/rail_search.ejs', { inputId: 'settings-filter', placeholder: 'Search settings', label: 'Search settings', clearLabel: 'Clear settings filter', resultsId: 'settings-groups' }) %>
         <p class="settings-filter-status" role="status" data-settings-filter-status></p>
       </div>
       <% groups.forEach(group => { %><a href="#<%= group.id %>"><i class="bi bi-<%= group.icon %>" aria-hidden="true"></i><%= group.title %></a><% }); %>

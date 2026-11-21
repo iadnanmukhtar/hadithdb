@@ -6,7 +6,7 @@ const script = fs.readFileSync(require.resolve('../public/static/js/settings-fil
 test('searching for the saved reciter reveals its card even when the catalog arrives later', async () => {
   const dom = new JSDOM(`
     <nav class="settings-beta-index">
-      <input id="settings-filter"><button data-settings-filter-clear></button>
+      <div class="ux-rail-search"><input id="settings-filter"><button></button></div>
       <span data-settings-filter-status></span><a href="#reading">Reading</a>
     </nav>
     <main id="settings-groups"><section class="settings-beta-group"><h2 id="reading">Reading</h2>
@@ -17,6 +17,7 @@ test('searching for the saved reciter reveals its card even when the catalog arr
   try {
     const { window } = dom;
     const document = window.document;
+    window.eval(fs.readFileSync(require.resolve('../public/static/js/rail-search.js'), 'utf8'));
     window.eval(script);
     const input = document.querySelector('input');
     input.value = 'husary';
