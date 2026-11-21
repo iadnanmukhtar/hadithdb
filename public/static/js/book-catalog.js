@@ -60,7 +60,7 @@
   });
   document.addEventListener('shown.bs.tab', enforceSizeFilter);
   var search = controls.querySelector('input[type="search"]');
-  if (search) {
+  if (search && !controls.matches('.catalog-tools')) {
     var sizeFilters = document.createElement('div');
     sizeFilters.className = 'book-catalog-size-filters';
     sizeFilters.setAttribute('role', 'group');
@@ -105,8 +105,8 @@
   }
 
   var groups = new Map();
-  controls.querySelectorAll('[data-book-catalog-group-filter], [data-tafsir-group-filter]').forEach(function (button) {
-    var id = button.dataset.bookCatalogGroupFilter || button.dataset.tafsirGroupFilter;
+  controls.querySelectorAll('[data-catalog-group-label], [data-book-catalog-group-filter], [data-tafsir-group-filter]').forEach(function (button) {
+    var id = button.dataset.catalogGroupLabel || button.dataset.bookCatalogGroupFilter || button.dataset.tafsirGroupFilter;
     if (id) groups.set(id, button.textContent.trim());
   });
 

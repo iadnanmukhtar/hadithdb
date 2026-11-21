@@ -112,7 +112,7 @@ test('opens the redesigned catalog at its canonical collection URL', async () =>
   const dom = browser(await render('books.ejs', false, [book], { tafsir: '' }));
   const doc = dom.window.document;
   expect(doc.querySelector('main .ux-page-title').textContent.trim()).toBe('Tafsir Books');
-  expect(doc.querySelector('.catalog-facets')).not.toBeNull();
+  expect(doc.querySelector('.catalog-tools details, .catalog-mobile-tools summary, .book-catalog-size-filters')).toBeNull();
   expect(doc.querySelector('link[href*="/css/books.css"]')).not.toBeNull();
   expect(doc.querySelector('[data-catalog-switch]')).toBeNull();
   expect(doc.querySelector('#book-catalog-tafsir-all-tab').getAttribute('href')).toBe('/books?tafsir');
@@ -124,13 +124,13 @@ test('card and details pills drive the catalog filters', async () => {
   const doc = dom.window.document;
   const card = doc.querySelector('#book-catalog-hadith .book-catalog-card');
   card.querySelector('.book-catalog-summary [data-catalog-facet="group"]').click();
-  expect(doc.querySelector('[data-book-catalog-group-filter="sihah"]').getAttribute('aria-pressed')).toBe('true');
+  expect(dom.window.history.state.bookCatalog.group).toBe('sihah');
   card.querySelector('.book-catalog-details-button').click();
   doc.querySelector('dialog [data-catalog-facet="badge"]').click();
   expect(doc.querySelector('dialog').open).toBe(false);
-  expect(doc.querySelector('[data-catalog-badge-filter="ar"]').getAttribute('aria-pressed')).toBe('true');
+  expect(dom.window.history.state.bookCatalog.badge).toBe('ar');
   card.querySelector('.book-catalog-summary [data-catalog-facet="type"]').click();
-  expect(doc.querySelector('[data-book-catalog-group-filter=""]').getAttribute('aria-pressed')).toBe('true');
+  expect(dom.window.history.state.bookCatalog.group).toBe('');
   dom.window.close();
 });
 
@@ -146,7 +146,7 @@ test('renders book tabs inside the fixed header and connects them to the existin
 });
 
 
-test.each(['books.ejs', 'tafsir_books.ejs', 'translation_books.ejs', 'sharh_catalog.ejs'])('%s combines size filters with search and preserves colored size circles', async template => {
+test.each(['tafsir_books.ejs', 'translation_books.ejs', 'sharh_catalog.ejs'])('%s combines size filters with search and preserves colored size circles', async template => {
   const records = ['sm', 'md', 'lg', ''].map((size, index) => ({ ...book, id: index + 10, alias: `sized-${index}`, size, shortName_en: `Sample ${index}` }));
   const dom = browser(await render(template, false, records));
   const doc = dom.window.document;
@@ -291,7 +291,7 @@ test.each(['books.ejs', 'sharh_catalog.ejs'])('%s tags and filters sharh books b
   const scope = template === 'books.ejs' ? doc.querySelector('#book-catalog-sharh') : doc.querySelector('main');
   expect(Array.from(scope.querySelectorAll('.book-catalog-category-title')).map(node => node.textContent)).toEqual(['Sahih al-Bukhari', 'Sahih Muslim']);
   expect(scope.querySelector('.book-catalog-summary .book-catalog-classifications').textContent).toContain('Sahih al-Bukhari');
-  doc.querySelector('[data-' + (template === 'books.ejs' ? 'book-catalog' : 'tafsir') + '-group-filter="sharh-bukhari"]').click();
+  doc.querySelector(template === 'books.ejs' ? '[data-catalog-value="sharh-bukhari"]' : '[data-tafsir-group-filter="sharh-bukhari"]').click();
   expect(scope.querySelectorAll('.tafsir-book-row:not(.d-none)')).toHaveLength(1);
   expect(scope.querySelector('.tafsir-book-row:not(.d-none)').dataset.bookCatalogGroups).toBe('sharh-bukhari');
   dom.window.close();

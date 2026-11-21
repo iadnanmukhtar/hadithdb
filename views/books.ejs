@@ -224,7 +224,7 @@
       about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
     }) %>
 
-    <details class="catalog-mobile-tools d-lg-none"><summary>Filter books</summary><div data-mobile-catalog-tools></div></details>
+    <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
 
     <section id="book-catalog-results" class="book-catalog-tabs-section mb-4">
       <div class="tab-content">
@@ -593,48 +593,30 @@
       tabStrip.scrollLeft += currentTab.getBoundingClientRect().left - tabStrip.getBoundingClientRect().left
         - (tabStrip.clientWidth - currentTab.offsetWidth) / 2;
     }
-    var facets = document.querySelector('.catalog-facets');
-    var selection = facets && facets.querySelector('.catalog-facet-selection');
-    var normalize = function (value) {
-      return window.normalizeContentFilterText(value);
-    };
+    var normalize = value => window.normalizeContentFilterText(value);
     var cards = [];
-    var groupButtons = Array.from(document.querySelectorAll('[data-book-catalog-group-filter]'));
-    var languageButtons = Array.from(document.querySelectorAll('[data-book-catalog-language-filter]'));
-    var badgeButtons = Array.from(facets.querySelectorAll('[data-catalog-badge-filter]'));
-    var filterButtons = groupButtons.concat(languageButtons, badgeButtons);
     function badgeOf(card) {
       return card.dataset.catalogBadge || (card.querySelector('.book-language-badge')?.textContent || '').trim().toLowerCase();
     }
     var empty = document.querySelector('.book-catalog-filter-empty');
     var activeGroup = '';
-    var activeLanguage = '';
     var activeBadge = '';
     var activeScope = '<%= initialBookCatalogType %>';
 
     var applyFilters = function () {
       var query = normalize(filter.value);
-      var activeSize = document.querySelector('.book-catalog-page').dataset.bookCatalogActiveSize || '';
       var visibleCount = 0;
       cards.forEach(function (card) {
         var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.bookCatalogFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
-          && (!activeBadge || badgeOf(card) === activeBadge)
-          && (!activeLanguage || (card.dataset.bookCatalogLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0)
-          && (!window.bookCatalogMatchesSize || window.bookCatalogMatchesSize(card));
+          && (!activeBadge || badgeOf(card) === activeBadge);
         card.classList.toggle('d-none', !match);
         if (match)
           visibleCount += 1;
       });
-      if (selection) {
-        var chosen = Array.from(facets.querySelectorAll('[aria-pressed="true"]:not(.d-none)')).filter(function (button) {
-          return button.dataset.bookCatalogGroupFilter !== '';
-        });
-        selection.textContent = chosen.length ? ' · ' + chosen.map(function (button) { return button.textContent.trim(); }).join(', ') : '';
-      }
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeLanguage && !activeBadge && !activeSize));
+        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeBadge));
     };
 
     var setGroupScope = function (paneId) {
@@ -642,94 +624,37 @@
       document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
         section.hidden = section.dataset.bookRailPane !== paneId;
       });
-      var scope = paneId === 'book-catalog-hadith' ? 'hadith' : (paneId.indexOf('book-catalog-tafsir-') === 0 ? 'tafsir' : (paneId === 'book-catalog-sharh' ? 'sharh' : (paneId === 'book-catalog-translations' ? 'trans' : '')));
-      var scopeChanged = scope !== activeScope;
-      activeScope = scope;
-      if (scopeChanged)
-        activeGroup = '';
+      activeGroup = '';
       activeBadge = '';
-      if (scopeChanged)
-        activeLanguage = '';
-      filterButtons.forEach(function (button) {
-        var buttonScope = button.dataset.bookCatalogGroupScope || '';
-        var isAll = button.hasAttribute('data-book-catalog-group-filter') && !button.dataset.bookCatalogGroupFilter;
-        button.classList.toggle('d-none', !isAll && buttonScope !== scope && !(scope === 'sharh' && button.hasAttribute('data-book-catalog-language-filter')));
-        if (button.dataset.catalogBadgeFilter)
-          button.classList.toggle('d-none', !cards.some(card => badgeOf(card) === button.dataset.catalogBadgeFilter));
-        var active = activeBadge ? button.dataset.catalogBadgeFilter === activeBadge : activeLanguage
-          ? button.dataset.bookCatalogLanguageFilter === activeLanguage
-          : (activeGroup ? button.dataset.bookCatalogGroupFilter === activeGroup : isAll);
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
       applyFilters();
     };
-    filter.addEventListener('input', applyFilters);
-    filterButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        activeGroup = button.dataset.bookCatalogGroupFilter || '';
-        activeLanguage = button.dataset.bookCatalogLanguageFilter || '';
-        activeBadge = button.dataset.catalogBadgeFilter || '';
-        filterButtons.forEach(function (candidate) {
-          var active = candidate === button;
-          candidate.classList.toggle('active', active);
-          candidate.setAttribute('aria-pressed', String(active));
-        });
-        applyFilters();
-      });
-    });
-    function pillControl(kind, value) {
-      if (kind === 'type') return groupButtons[0];
-      return filterButtons.find(button => kind === 'group'
-        ? button.dataset.bookCatalogGroupFilter === value
-        : button.dataset.catalogBadgeFilter === value);
-    }
     document.addEventListener('click', function (event) {
       const link = event.target.closest('a[data-catalog-facet]');
       if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
       const kind = link.dataset.catalogFacet;
-      const target = pillControl(kind, link.dataset.catalogValue);
-      if (!target) return;
       event.preventDefault();
       link.closest('dialog')?.close();
       if (kind === 'type') filter.value = '';
-      target.click();
+      activeGroup = kind === 'group' ? link.dataset.catalogValue : '';
+      activeBadge = kind === 'badge' ? link.dataset.catalogValue : '';
+      applyFilters();
+      rememberFilters();
     });
     setGroupScope('book-catalog-' + activeScope);
-    var saved = history.state && history.state.bookCatalog;
+    const saved = history.state?.bookCatalog;
     const params = new URLSearchParams(location.search);
-    if (!saved) {
-      for (const kind of ['group', 'badge']) {
-        if (params.has(kind)) pillControl(kind, params.get(kind))?.click();
-      }
-    }
-    if (facets && saved) {
-      filter.value = saved.query || '';
-      var selected = filterButtons.find(function (button) {
-        return !button.classList.contains('d-none') && ((saved.group && button.dataset.bookCatalogGroupFilter === saved.group) ||
-          (saved.language && button.dataset.bookCatalogLanguageFilter === saved.language) || (saved.badge && button.dataset.catalogBadgeFilter === saved.badge));
-      });
-      if (selected) selected.click();
-      var sizeButton = Array.from(facets.querySelectorAll('[data-book-catalog-size-filter]')).find(function (button) {
-        return button.dataset.bookCatalogSizeFilter === saved.size;
-      });
-      if (sizeButton) sizeButton.click();
-      else if (saved.size) document.querySelector('.book-catalog-page').dataset.bookCatalogRestoreSize = saved.size;
-      facets.open = !!saved.open;
-      applyFilters();
-    }
+    const group = saved ? saved.group : params.get('group');
+    const badge = saved ? saved.badge : params.get('badge');
+    activeGroup = cards.some(card => (card.dataset.bookCatalogGroups || '').split(/\s+/).includes(group)) ? group : '';
+    activeBadge = ['ar', 'en', 'en-ar'].includes(badge) ? badge : '';
+    filter.value = saved?.query || '';
+    applyFilters();
     function rememberFilters() {
-      if (!facets) return;
       history.replaceState(Object.assign({}, history.state, { bookCatalog: {
-        query: filter.value, group: activeGroup, language: activeLanguage, badge: activeBadge,
-        size: document.querySelector('.book-catalog-page').dataset.bookCatalogActiveSize || '', open: facets.open
+        query: filter.value, group: activeGroup, badge: activeBadge
       } }), '');
     }
-    filter.addEventListener('input', rememberFilters);
-    if (facets) {
-      facets.addEventListener('click', rememberFilters);
-      facets.addEventListener('toggle', rememberFilters);
-    }
+    filter.addEventListener('input', () => { applyFilters(); rememberFilters(); });
     document.querySelectorAll('.book-catalog-tabs [data-book-catalog-tab]').forEach(function (tab) {
       tab.addEventListener('shown.bs.tab', function () {
         setGroupScope((tab.dataset.bsTarget || '').replace(/^#/, ''));

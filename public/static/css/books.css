@@ -1,13 +1,6 @@
 .catalog-tools { display: grid; gap: .3rem; }
 .tafsir-group-rail:has(.catalog-tools) > .hadith-heading-toc-sticky { padding-inline: 0; }
 .catalog-mobile-tools { margin-block-end: .75rem; }
-.catalog-mobile-tools > summary { width: fit-content; min-height: 44px; align-content: center; color: var(--ux-accent); }
-.catalog-facets { min-width: 0; }
-.catalog-facets summary { min-height: 2.4rem; padding-block: .45rem; color: var(--ux-accent); font-weight: 600; cursor: pointer; }
-.catalog-facet-selection { overflow-wrap: anywhere; }
-.catalog-options { display: flex; flex-wrap: wrap; align-items: center; gap: .35rem; padding: .65rem; border-radius: .55rem; background: var(--ux-inset); }
-.catalog-options .btn { color: var(--ux-text); background: var(--ux-surface); border: 1px solid var(--ux-border); border-radius: .45rem; min-height: 2rem; font: 600 .875rem/1.2 var(--ux-font-ui); }
-.catalog-options .btn[aria-pressed=true] { color: var(--ux-accent); border-color: var(--ux-accent); background: var(--ivory-selected, var(--ux-surface)); }
 .book-catalog-page :is(button, summary, a):focus-visible { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .book-catalog-page .book-catalog-compact .tafsir-book-row, .book-catalog-page.book-catalog-compact .tafsir-book-row { background: var(--ux-surface); }
 .book-catalog-page .book-catalog-summary a:not(.book-catalog-pill), .book-catalog-page .book-catalog-details-button { color: var(--ux-accent); }
