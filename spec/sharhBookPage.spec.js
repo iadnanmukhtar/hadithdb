@@ -52,7 +52,7 @@ test.each([false, true])('catalog rows share tafsir styling and inline editors (
  const $ = cheerio.load(html);
  expect($('.tafsir-book-row')).toHaveLength(1);
  expect($('.tafsir-book-title-pair a').first().attr('href')).toBe('/sharh/malik-istidhkar');
- expect($('.book-language-badge').text()).toBe('EN-AR');
+ expect($('.book-language-badge').text()).toBe('en-ar');
  expect($('.book-catalog-card').attr('data-book-catalog-filter')).toContain('Ibn Abd al-Barr');
  expect($('[data-prop="book.name_en"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-prop="book.description"]')).toHaveLength(editMode ? 1 : 0);

@@ -56,7 +56,7 @@ function applyContentLanguageBadges(books, englishBooks, key) {
   const hasEnglish = new Set(englishBooks.map(normalize));
   return books.map(book => ({
     ...book,
-    catalog_language_badge: hasEnglish.has(normalize(book[key])) ? 'EN-AR' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'EN' : 'AR')
+    catalog_language_badge: hasEnglish.has(normalize(book[key])) ? 'en-ar' : ((book.lang || 'ar').toLowerCase() === 'en' ? 'EN' : 'AR')
   }));
 }
 

@@ -24,7 +24,7 @@ describe('tafsir book catalog filters', () => {
 	test('shows one bilingual card with a language badge and inclusive language filters', () => {
 		expect(template).toContain('Tafsir.uniqueCarouselTafsirs(tafsirs || [])');
 		expect(template).toContain('book-language-badge');
-		expect(template).toContain("return 'EN-AR'");
+		expect(template).toContain("return 'en-ar'");
 		expect(template).toContain("split(/\\s+/).indexOf(activeLanguage) >= 0");
 	});
 });

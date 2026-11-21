@@ -63,10 +63,9 @@
   .catalog-collection-picker select { min-height: 44px; max-width: 70%; border: 0; color: var(--bs-emphasis-color); background: var(--bs-body-bg); font: 600 1rem/1.4 var(--ux-font-ui); }
 }
 
-.book-catalog-classifications { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1rem .4rem; color: var(--bs-secondary-color); font-size: var(--ux-caption-size, .82rem); line-height: 1.5; }
-.book-catalog-pill { max-width: 100%; overflow-wrap: anywhere; }
-.book-catalog-type-pill { font-weight: 600; }
-.book-catalog-pill:not(:last-child)::after { content: "·" / ""; margin-inline-start: .4rem; }
+.book-catalog-classifications { align-items: center; gap: .3rem; }
+.book-catalog-pill { padding: .12rem .55rem; font-size: var(--ux-caption-size); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
+.book-catalog-type-pill { font-weight: 600; color: var(--ivory-accent, var(--c-accent)); background: var(--ivory-selected, var(--c-primary-soft-08)); }
 .book-catalog-summary .tafsir-book-meta { font-size: 1rem; }
 
 .book-catalog-type-pill .app-menu-icon { width: 1em; height: 1em; font-size: 1em; line-height: 1; margin: 0 .35em 0 0; vertical-align: -.1em; }

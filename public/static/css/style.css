@@ -13747,12 +13747,12 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 .book-catalog-page [data-book-catalog-group-filter=""],
 .book-catalog-page [data-tafsir-group-filter=""] { flex: 0 0 auto; }
 .book-catalog-size-filters .btn { font-size: .75rem; border-radius: .25rem; }
-:where(body:not(.books-beta)) .book-catalog-pill {
+.book-catalog-pill {
 	display: inline-block; max-width: 100%; padding: .1rem .4rem;
 	border: 1px solid var(--bs-border-color); border-radius: 1rem;
 	font-size: .65rem; line-height: 1.4; color: var(--bs-secondary-color); overflow-wrap: anywhere;
 }
-:where(body:not(.books-beta)) .book-catalog-type-pill { color: var(--c-accent); background: var(--c-primary-soft-08); }
+.book-catalog-type-pill { color: var(--c-accent); background: var(--c-primary-soft-08); }
 .book-catalog-summary .tafsir-book-title-pair,
 .book-catalog-summary .tafsir-book-meta { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
 .book-catalog-summary .tafsir-book-title-pair { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; }

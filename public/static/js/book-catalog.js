@@ -204,6 +204,8 @@
       var languageBadge = details.querySelector('.book-language-badge');
       var language = languageBadge ? languageBadge.textContent.trim()
         : (card.dataset.bookCatalogLanguage || card.dataset.tafsirLanguage || '').trim().toUpperCase().replace(/\s+/g, '-');
+      // Cached catalog markup can still contain the older uppercase badge.
+      if (language === 'EN-AR') language = 'en-ar';
       if (language) {
         var languagePill = document.createElement('span');
         languagePill.className = 'book-catalog-pill book-catalog-language-pill';

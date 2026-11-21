@@ -85,7 +85,7 @@ describe('books catalog performance path', () => {
     jest.spyOn(Utils, 'indexCachedItem').mockResolvedValue(undefined);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
     jest.spyOn(ejs, 'renderFile').mockImplementation(async (_path, locals) => {
-      expect(locals.books[0].catalog_language_badge).toBe('EN-AR');
+      expect(locals.books[0].catalog_language_badge).toBe('en-ar');
       return '<html>books</html>';
     });
     jest.spyOn(Index, 'distinctTermsFromQuery').mockResolvedValue(['bukhari']);
@@ -121,7 +121,7 @@ describe('books catalog performance path', () => {
     await routeHandler()(req, res, jest.fn());
 
     expect(global.query).toHaveBeenCalledTimes(1);
-    expect(res.render.mock.calls[0][1].books[0].catalog_language_badge).toBe('EN-AR');
+    expect(res.render.mock.calls[0][1].books[0].catalog_language_badge).toBe('en-ar');
     expect(Utils.cachedTextPathForRead).not.toHaveBeenCalled();
   });
   test.each(['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'])('type URL ?%s never reuses the default catalog cache', async type => {

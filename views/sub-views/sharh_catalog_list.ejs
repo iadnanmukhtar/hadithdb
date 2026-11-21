@@ -39,7 +39,7 @@
     };
     var tafsirBookUrl = book => `/sharh/${encodeURIComponent(book.alias)}`;
     var tafsirLanguages = book => String(book.lang || 'ar').split(/[-_,\s]+/).filter(language => ['en', 'ar'].includes(language));
-    var tafsirLanguageBadge = book => tafsirLanguages(book).includes('en') ? (tafsirLanguages(book).includes('ar') ? 'EN-AR' : 'EN') : 'AR';
+    var tafsirLanguageBadge = book => tafsirLanguages(book).includes('en') ? (tafsirLanguages(book).includes('ar') ? 'en-ar' : 'EN') : 'AR';
     var sharhCatalogGroups = BookGroups.list('sharh');
     var catalogTafsirs = (sharhBooks || []).slice().sort(function(a, b) {
       var year = book => Number((String(book.death || '').match(/\d+/) || [])[0]) || Infinity;
