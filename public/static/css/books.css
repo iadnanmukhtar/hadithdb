@@ -32,7 +32,13 @@ main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
 .book-catalog-classifications { align-items: center; gap: .3rem; }
 .book-catalog-pill { padding: .05rem .4rem; text-decoration: none; font: var(--ux-light-weight) .75rem/1.35 var(--ux-font-ui); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
 .book-catalog-type-pill { color: var(--ivory-accent, var(--c-accent)); background: var(--ivory-selected, var(--c-primary-soft-08)); }
-.book-catalog-summary .tafsir-book-meta { font-size: 1rem; }
+.book-catalog-summary .tafsir-book-meta { font-size: var(--ux-secondary-size); }
+.catalog-volume .book-catalog-summary { padding-inline-start: 1.6rem; }
+.catalog-volume .tafsir-book-title-line:not(:lang(ar)) { margin-inline-start: -1.6rem; }
+.catalog-volume .volume-face { align-self: baseline; flex: none; margin: 0 .2rem 0 0; width: 1.1rem; font-size: 1rem; }
+.catalog-volume .tafsir-book-title-line a { overflow-wrap: anywhere; }
+.book-catalog-page [data-highlight-pane][hidden],
+.book-catalog-page .library-deck-controls[hidden] { display: none; }
 
 .book-catalog-type-pill .app-menu-icon { width: 1em; height: 1em; font-size: 1em; line-height: 1; margin: 0 .35em 0 0; vertical-align: -.1em; }
 

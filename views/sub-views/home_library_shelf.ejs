@@ -25,25 +25,7 @@
       <%- include('rail_search.ejs', { inputId: 'home-book-search', label: 'Search all books by title or author', placeholder: 'Search books', clearLabel: 'Clear book search', resultsId: 'home-books' }) %>
     </div>
   </div>
-  <nav id="home-books" class="library-volumes" aria-label="Hadith books">
-    <% for (const book of shelfBooks) {
-      const arabicTitle = book.shortName || book.title;
-    %>
-      <a class="library-volume" href="<%= utils.urlFor(req, '/' + book.alias) %>" data-alias="<%= book.alias %>" data-search="<%= [book.alias, book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
-        <span class="volume-content">
-          <span class="volume-face" aria-hidden="true"><i class="bi <%= history.includes(book.alias) ? 'bi-clock-history' : 'bi-book' %>"></i></span>
-          <span class="volume-name"><%= book.name_en || book.shortName_en || book.alias %><%- hadithSizeIndicator(book) %></span>
-          <% if (arabicTitle) { %><span class="volume-arabic" lang="ar" dir="rtl"><%= arabicTitle %></span><% } %>
-          <span class="volume-author"><%= book.authorShortName_en || book.author_en || '' %></span>
-        </span>
-      </a>
-    <% } %>
-  </nav>
-  <div class="library-deck-controls" hidden>
-    <button type="button" aria-label="Previous book" aria-controls="home-books"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
-    <span role="status" aria-atomic="true"></span>
-    <button type="button" aria-label="Next book" aria-controls="home-books"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
-  </div>
+  <%- include('library_volumes', { shelfId: 'home-books', shelfLabel: 'Hadith books', shelfBooks, bookHref: book => utils.urlFor(req, '/' + book.alias), bookIcon: book => history.includes(book.alias) ? 'bi-clock-history' : 'bi-book' }) %>
   <p class="library-empty" hidden>No books match your search.</p>
   <span class="visually-hidden" aria-live="polite" data-shelf-status></span>
 </section>

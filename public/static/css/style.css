@@ -13389,19 +13389,17 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 }
 .book-catalog-compact .tafsir-book-list { gap: 1.5rem; }
 .book-catalog-category[hidden], .book-catalog-compact [hidden], .book-catalog-dialog [hidden] { display: none !important; }
-.book-catalog-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem; }
+.book-catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 0 1.3rem; }
 .book-catalog-category-title {
 	display: flex; justify-content: space-between; gap: 1rem;
 	font-size: var(--ux-section-size, 1rem) !important; font-weight: var(--ux-heading-weight, 600); margin: 0; padding-bottom: .5rem;
 	border-bottom: 1px solid var(--bs-border-color);
 }
-.book-catalog-compact .tafsir-book-row {
-	min-width: 0; padding: .9rem;
-	border: 1px solid var(--bs-border-color); border-radius: var(--ux-card-radius, .6rem);
-	background: var(--bs-tertiary-bg, var(--bs-body-bg));
-	box-shadow: 0 2px 5px rgb(0 0 0 / .035);
+.book-catalog-compact .catalog-volume {
+	display: block; min-width: 0; padding: .85rem .25rem;
+	border: 0; border-bottom: 1px solid var(--ux-border);
 }
-.book-catalog-compact .tafsir-book-list .tafsir-book-row:first-child { border-top: 1px solid var(--bs-border-color); }
+.book-catalog-compact .tafsir-book-list .catalog-volume:first-child { border-top: 0; }
 .book-catalog-category-title + .book-catalog-grid { margin-top: .75rem; }
 .book-catalog-compact .tafsir-book-row:focus-within {
 	border-color: var(--c-accent);
@@ -13481,8 +13479,6 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 }
 .book-catalog-dialog-actions a { text-decoration: none; }
 .book-catalog-dialog-open { overflow: hidden; }
-@media (min-width: 768px) { .book-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1400px) { .book-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 575.98px) {
 	.book-catalog-dialog-header { grid-template-columns: minmax(0, 1fr) auto; }
 	.book-catalog-dialog-header .btn-close { grid-column: 2; }

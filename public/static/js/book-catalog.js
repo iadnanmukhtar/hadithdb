@@ -161,7 +161,7 @@
       var details = card.querySelector('.tafsir-book-row-main');
       if (!details) return;
       var size = sizeOf(card);
-      card.classList.add('ux-card');
+      card.classList.add('library-volume', 'catalog-volume');
       card.dataset.bookCatalogSize = size;
       if (size && !details.querySelector('.tafsir-size-indicator, .hadith-size-indicator')) {
         var title = details.querySelector('.tafsir-book-title-line:not([lang="ar"])');
@@ -263,6 +263,11 @@
         dialog.showModal(); body.scrollTop = 0;
       });
       var titles = summary.querySelector('.tafsir-book-title-pair');
+      if (titles && typeIcon) {
+        var icon = typeIcon.content.firstElementChild.cloneNode(true);
+        icon.classList.add('volume-face');
+        titles.querySelector('.tafsir-book-title-line')?.prepend(icon);
+      }
       if (titles) titles.insertBefore(button, titles.children[1] || null);
       else summary.prepend(button);
       var death = Number(card.dataset.bookDeath);

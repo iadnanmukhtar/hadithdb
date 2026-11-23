@@ -137,17 +137,24 @@ async function verifyRoute(page, route, status, titles) {
     await page.locator('#community-user-search-dialog[open]').waitFor({ state: 'hidden' });
   }
   if (route === '/books') {
+    const shelf = page.locator('[data-highlight-pane]:visible');
+    const selected = shelf.locator('[data-position="center"]');
+    assert.equal(await selected.getAttribute('data-alias'), 'nawawi40');
+    await shelf.getByRole('button', { name: 'Next book' }).click();
+    assert.equal(await selected.getAttribute('data-alias'), 'ibnrajab50');
     const filter = page.getByPlaceholder('Search books');
     const controls = page.locator('.book-catalog-details-button:visible');
     const allBooks = await controls.count();
     assert.ok(allBooks > 1);
     await filter.fill('bukhari');
+    assert.equal(await shelf.count(), 0);
     await page.waitForFunction(count => {
       const matches = [...document.querySelectorAll('.book-catalog-details-button')].filter(button => button.getClientRects().length);
       return matches.length > 0 && matches.length < count;
     }, allBooks);
     await page.getByRole('button', { name: 'Clear book filter' }).click();
     assert.equal(await controls.count(), allBooks);
+    assert.equal(await selected.getAttribute('data-alias'), 'ibnrajab50');
     const trigger = controls.first();
     await trigger.click();
     await page.locator('.book-catalog-dialog[open] .ux-primary-action[href]').waitFor();

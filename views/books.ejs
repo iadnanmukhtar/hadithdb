@@ -194,10 +194,24 @@
         return '';
       return `<span class="hadith-size-indicator tafsir-size-tooltip hadith-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
     };
+    const railCollections = [
+      { pane: 'book-catalog-hadith', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-sirah', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-tafsir-all', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
+      { pane: 'book-catalog-translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
+      { pane: 'book-catalog-sharh', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-mushaf', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
+    ];
+    const highlightedAliases = {
+      hadith: BookGroups.list('hadith', books, { membershipOrder: true }).find(group => group.id === 'beginner-books')?.aliases || [],
+      sirah: [], mushaf: [], 'tafsir-all': [], translations: [], sharh: []
+    };
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
+<link rel="stylesheet" href="/static/css/home-library.css?v=<%= utils.styleAssetVersion() %>">
+<script defer src="/static/js/home-library.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <link rel="stylesheet" href="/static/css/books.css?v=<%= utils.styleAssetVersion() %>">
 </head>
 <body class="books-beta">
@@ -223,6 +237,20 @@
     }) %>
 
     <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
+
+    <% if (!site.editMode) { for (const collection of railCollections) {
+      const pane = collection.pane.slice('book-catalog-'.length);
+      const byAlias = new Map(collection.railBooks.map(book => [book.alias, book]));
+      const highlights = highlightedAliases[pane].map(alias => byAlias.get(alias)).filter(Boolean);
+      if (!highlights.length) continue;
+      const label = 'Highlighted books';
+      const icon = { hadith: 'book', sirah: 'clock-history', mushaf: 'book', 'tafsir-all': 'book-half', translations: 'translate', sharh: 'journal-text' }[pane];
+    %>
+    <section class="library-shelf" data-library-shelf data-layout="covers" data-highlight-pane="<%= collection.pane %>" aria-labelledby="highlight-<%= pane %>" <%= pane === initialBookCatalogType ? '' : 'hidden' %>>
+      <h2 id="highlight-<%= pane %>" class="ux-section-title"><%= label %></h2>
+      <%- include('sub-views/library_volumes', { shelfId: 'highlight-books-' + pane, shelfLabel: label, shelfBooks: highlights, hadithSizeIndicator, bookHref: collection.railHref, bookIcon: () => 'bi-' + icon }) %>
+    </section>
+    <% } } %>
 
     <div id="book-catalog-results" class="tab-content mb-4">
         <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-mushaf-tab">
@@ -535,14 +563,7 @@
 
     </main>
   </div>
-<%- include('sub-views/book_group_rail.ejs', { catalogBookGroups, showCatalogFilters: true, initialBookCatalogType: initialBookCatalogType, railCollections: [
-      { pane: 'book-catalog-hadith', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-sirah', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-tafsir-all', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
-      { pane: 'book-catalog-translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
-      { pane: 'book-catalog-sharh', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-mushaf', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
-    ] }); %>
+<%- include('sub-views/book_group_rail.ejs', { catalogBookGroups, showCatalogFilters: true, initialBookCatalogType: initialBookCatalogType, railCollections }); %>
 </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
@@ -580,6 +601,9 @@
 
     var applyFilters = function () {
       var query = normalize(filter.value);
+      document.querySelectorAll('[data-highlight-pane]').forEach(function (shelf) {
+        shelf.hidden = shelf.dataset.highlightPane !== 'book-catalog-' + activeScope || Boolean(query || activeGroup || activeBadge);
+      });
       var visibleCount = 0;
       cards.forEach(function (card) {
         var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
@@ -595,6 +619,7 @@
     };
 
     var setGroupScope = function (paneId) {
+      activeScope = paneId.slice('book-catalog-'.length);
       cards = Array.from(document.getElementById(paneId).querySelectorAll('.book-catalog-card'));
       document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
         section.hidden = section.dataset.bookRailPane !== paneId;
