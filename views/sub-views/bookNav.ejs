@@ -1,7 +1,7 @@
 <%
 	var inlineHadithBookList = typeof inlineHadithBooks !== 'undefined' && inlineHadithBooks;
 %>
-<div class="h-menu-wrap mb-3<%= inlineHadithBookList ? ' home-hadith-book-nav' : '' %>"<% if (inlineHadithBookList) { %> role="navigation" aria-label="Hadith books"<% } %>>
+
 	<%
 		var currentBookAlias = typeof page !== 'undefined' && page.context && page.context.book ? page.context.book.alias : '';
 		var bookNavRequestPath = typeof req !== 'undefined' && req.originalUrl ? req.originalUrl.split('?')[0] : '';
@@ -30,10 +30,12 @@
 			return `<span class="hadith-size-indicator hadith-size-indicator-${size}" aria-label="${label}" role="img"></span>`;
 		};
 	%>
-	<% if (!inlineHadithBookList) { %><div class="h-menu-hint d-md-none">
-		<i class="bi bi-arrow-left-right"></i> Swipe to browse <%= isQuranBookNav ? 'tafsīr books' : 'books' %>
-	</div><% } %>
-	<div class="h-menu-scroller">
+	<% if (inlineHadithBookList) { %>
+      <%- include('home_library_shelf.ejs', { libraryBooks: hadithNavBooks, hadithSizeIndicator }) %>
+    <% } else { %>
+    <div class="h-menu-wrap mb-3">
+      <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right"></i> Swipe to browse <%= isQuranBookNav ? 'tafsīr books' : 'books' %></div>
+    <div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
 			<% if (isQuranBookNav) { %><%- include('tafsirCarouselLanguageSwitch') %><% } %>
 			<%- include('bookCarouselFilter') %>
@@ -55,3 +57,4 @@
 		</div>
 	</div>
 </div>
+<% } %>

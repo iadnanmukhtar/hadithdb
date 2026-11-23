@@ -1,0 +1,34 @@
+<%
+  const sixBooks = new Set(BookGroups.list('hadith', libraryBooks).find(group => group.id === 'sixbooks')?.aliases || []);
+  const shelfBooks = libraryBooks.slice().sort((a, b) => (a.shortName_en || a.alias).localeCompare(b.shortName_en || b.alias, 'en'));
+  const hasHistory = shelfBooks.some(book => ['history', 'sirah'].includes(book.type));
+%>
+<section class="library-shelf ux-system" aria-labelledby="library-shelf-title" data-library-shelf>
+  <div class="library-shelf-heading">
+    <h2 id="library-shelf-title">Book collections</h2>
+    <div class="library-shelf-tools" hidden>
+      <%- include('rail_search.ejs', { inputId: 'home-book-search', label: 'Search all books by title or author', placeholder: 'Search books', clearLabel: 'Clear book search', resultsId: 'home-books' }) %>
+    </div>
+  </div>
+  <div class="library-shelf-tabs" role="group" aria-label="Book collections" hidden>
+    <% if (sixBooks.size) { %><button type="button" data-shelf-view="six">Six Books</button><% } %>
+    <button type="button" data-shelf-view="all">All books</button>
+    <% if (hasHistory) { %><button type="button" data-shelf-view="history">History &amp; Sirah</button><% } %>
+  </div>
+  <nav id="home-books" class="library-volumes" aria-label="Hadith books">
+    <% for (const book of shelfBooks) {
+      const arabicTitle = book.shortName || book.title;
+      const isSix = sixBooks.has(book.alias);
+      const group = isSix ? 'six' : ['history', 'sirah'].includes(book.type) ? 'history' : 'other';
+    %>
+      <a class="library-volume" href="<%= utils.urlFor(req, '/' + book.alias) %>" data-book-group="<%= group %>" data-alias="<%= book.alias %>"<% if (isSix) { %> data-shelf-order="<%= libraryBooks.indexOf(book) %>"<% } %> data-search="<%= [book.alias, book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
+        <span class="volume-face" aria-hidden="true"><i class="bi <%= group === 'history' ? 'bi-clock-history' : 'bi-book' %>"></i></span>
+        <span class="volume-name"><%= book.name_en || book.shortName_en || book.alias %><%- hadithSizeIndicator(book) %></span>
+        <% if (arabicTitle) { %><span class="volume-arabic" lang="ar" dir="rtl"><%= arabicTitle %></span><% } %>
+        <span class="volume-author"><%= book.authorShortName_en || book.author_en || '' %></span>
+      </a>
+    <% } %>
+  </nav>
+  <p class="library-empty" hidden>No books match your search.</p>
+  <span class="visually-hidden" aria-live="polite" data-shelf-status></span>
+</section>

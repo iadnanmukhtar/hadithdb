@@ -50,6 +50,28 @@ async function verifyRoute(page, route, status, titles) {
       return [style.fontFamily, style.fontSize, style.fontWeight, style.lineHeight];
     }));
   }
+  if (route === '/') {
+    const shelf = page.locator('[data-library-shelf]');
+    const cards = shelf.locator('.library-volume:visible');
+    await shelf.locator('[data-shelf-view="six"][aria-pressed="true"]').waitFor();
+    assert.equal(await cards.count(), 6);
+    assert.equal(await cards.first().getAttribute('href'), '/bukhari');
+    await shelf.getByRole('button', { name: 'History & Sirah' }).click();
+    assert.ok(await cards.count() >= 3);
+    const field = shelf.getByRole('searchbox');
+    for (const query of ['bukhari', 'البخاري']) {
+      await field.fill(query);
+      await shelf.locator('[data-alias="bukhari"]:visible').waitFor();
+    }
+    await field.fill('no-such-book-712');
+    await shelf.getByText('No books match your search.').waitFor();
+    await field.press('Escape');
+    assert.equal(await field.inputValue(), '');
+    assert.equal(await shelf.getByRole('button', { name: 'History & Sirah' }).getAttribute('aria-pressed'), 'true');
+    await shelf.getByRole('button', { name: 'All books' }).click();
+    assert.ok(await cards.count() > 6);
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+  }
   if (route === '/about') {
     await page.waitForLoadState('load');
     await page.locator('.top-nav-menu-toggle').click();
