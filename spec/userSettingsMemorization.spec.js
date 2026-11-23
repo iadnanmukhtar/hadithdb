@@ -22,10 +22,10 @@ describe('Quran ayah review settings normalization', () => {
     expect(UserSettings.normalizeSettings({ quran: { script } }).quran.script).toBe(expected);
   });
 
-  test('keeps only supported permanently dismissed Quran tours', () => {
+  test('ignores retired tour preferences in older saved settings', () => {
     expect(UserSettings.normalizeSettings({
       quran: { dismissedHelpTours: ['memorize', 'progress', 'study', 'memorize', 'unknown', null] }
-    }).quran.dismissedHelpTours).toEqual(['memorize', 'progress', 'study']);
+    }).quran.dismissedHelpTours).toBeUndefined();
   });
 
   test('uses bounded-session defaults', () => {

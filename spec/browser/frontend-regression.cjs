@@ -72,6 +72,11 @@ async function verifyRoute(page, route, status, titles) {
     assert.ok(await cards.count() > 6);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
   }
+  assert.equal(await page.locator('[data-page-help-tour], [data-page-help-tour-trigger], [data-quran-help-tips]').count(), 0);
+  if (route === '/' || route === '/quran') {
+    assert.equal(await page.locator('[data-home-intro], .home-quran-announcement').count(), 0);
+    assert.equal(await page.locator('.ux-footer').getByRole('link', { name: 'About', exact: true }).getAttribute('href'), '/about');
+  }
   if (route === '/about') {
     await page.waitForLoadState('load');
     await page.locator('.top-nav-menu-toggle').click();

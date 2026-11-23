@@ -7,9 +7,6 @@ main.home-library {
 }
 .home-library-heading { padding-block: .8rem 1.4rem; border-bottom: 1px solid var(--ux-border); }
 .home-library-heading .ux-primary-action { flex-shrink: 0; gap: .55rem; text-decoration: none; }
-.home-library-intro { display: flex; gap: .35rem; align-items: center; color: var(--ux-muted); }
-.home-library-intro p { margin: .45rem 0; font-size: var(--ux-secondary-size); }
-.home-library-intro .btn-close { flex: none; }
 .home-library [hidden] { display: none !important; }
 .library-shelf { padding-block: 1.4rem 1.6rem; }
 .home-library :is(.library-shelf-heading, .home-reading-heading, .home-articles-heading) h2 {

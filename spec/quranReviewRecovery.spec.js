@@ -13,7 +13,7 @@ async function openReview(fetch) {
   w.navigateWithPageNotice = jest.fn();
   w.requestAnimationFrame = jest.fn();
   w.fetch = fetch;
-  w.eval(source.slice(source.indexOf('function initQuranAyahReview('), source.indexOf('function initPageHelpTips(')));
+  w.eval(source.slice(source.indexOf('function initQuranAyahReview('), source.indexOf('function initQuranMushafAyahMarkerActions(')));
   w.initQuranAyahReview();
   await new Promise(resolve => setTimeout(resolve, 0));
   return dom;

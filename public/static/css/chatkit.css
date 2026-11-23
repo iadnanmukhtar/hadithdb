@@ -1,5 +1,5 @@
 body { --library-coffee-space: 0px; }
-html:not(.bmc-session-dismissed) body:not(:has(.quran-help-tips)):has(#bmc-wbtn:not(.hadith-bmc-dismissed)) {
+html:not(.bmc-session-dismissed) body:has(#bmc-wbtn:not(.hadith-bmc-dismissed)) {
   --library-coffee-space: 76px;
 }
 html.bmc-session-dismissed #bmc-wbtn,

@@ -705,7 +705,6 @@
       window.hadithAuth?.requireToken?.('Please sign in to take notes.');
       return;
     }
-    document.querySelector('[data-quran-help-tips-close]')?.click();
     pendingSource = source;
     pendingFloating = false;
     restoreButton.hidden = true;

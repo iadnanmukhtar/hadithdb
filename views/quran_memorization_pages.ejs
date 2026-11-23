@@ -164,7 +164,7 @@
   <%- include('sub-views/quran_get_started_modal.ejs', { site: site, page: page }); %>
   <%- include('sub-views/quran_memorization_help_modal.ejs', { site: site, page: page }); %>
   <%- include('sub-views/quran_fsrs_settings_modal.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page, helpTour: helpView ? '' : 'progress' }); %>
+  <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
   <%- include('sub-views/page_end.ejs', { site, page }); %>
   <script>
     (async function () {
@@ -498,8 +498,6 @@
         await Promise.all([loadProgress(),supportingDataPromise]);
         if(progress) {
           progress.hidden=false;
-          progress.setAttribute('data-page-help-tour','progress');
-          if(window.initPageHelpTips) window.initPageHelpTips(progress);
           scrollHeatmapToToday();
         }
         if(loading) loading.hidden=true;
