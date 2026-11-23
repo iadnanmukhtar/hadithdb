@@ -605,7 +605,8 @@
           if (!isQuranToc)
             return `S${section.h1}.${section.h2}${Number(section.level) === 3 ? '.' + formatHeadingNumber(section.h3) : ''}`;
           var rangeLabel = quranHeadingAyahRangeLabel(section);
-          return `P${section.h2}${rangeLabel ? ` ${rangeLabel}` : ''}`;
+          var passage = Number(section.level) === 3 ? `${section.h2}.${formatHeadingNumber(section.h3)}` : section.h2;
+          return `P${passage}${rangeLabel ? ` ${rangeLabel}` : ''}`;
         }
         %>
 
@@ -644,7 +645,7 @@
                     <% if (showJuzBookmark) { %>
                     <% } %>
                     <% var juzSurahRevelation = quranTocSurahRevelation(surahLink.surah); %>
-                    <span class="quran-juz-surah-link"><span class="quran-revelation-icon quran-revelation-icon-<%= juzSurahRevelation %>" role="img" aria-label="<%= juzSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= juzSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><%= linkIndex < juzSurahLinks.length - 1 ? ', ' : '' %>
+                    <span class="quran-juz-surah-link"><span class="quran-revelation-icon quran-revelation-icon-<%= juzSurahRevelation %>" role="img" aria-label="<%= juzSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= juzSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span><a href="<%= surahLink.href %>"><%- surahLink.name_en %></a></span><% if (linkIndex + 1 < juzSurahLinks.length) { %><span class="text-body-secondary fw-normal" aria-hidden="true">&nbsp;·</span><% } %>
                     <% } %>
                   </td>
                   <td lang="ar" dir="rtl"><a href="<%= quranJuzStartHref(juz) %>"><%- juz.title || '' %></a></td>
@@ -719,18 +720,18 @@
                     var sectionTitleEn = truncateTitle(section.title_en, 75);
                     var sectionTitle = truncateTitle(section.title, 150);
                   %>
-                  <tr class="title toc-section-row d-none" id="<%= chapterRowId %>-<%= sectionIndex %>" data-toc-parent="<%= chapterRowId %>" data-toc-view="surahs">
+                  <tr class="title toc-section-row<%= Number(section.level) === 3 ? ' toc-subsection-row' : '' %> d-none" id="<%= chapterRowId %>-<%= sectionIndex %>" data-toc-parent="<%= chapterRowId %>" data-toc-view="surahs">
                     <% if (showTocStartNumbers) { %>
                     <td><%- section.start %></td>
                     <% } %>
-                    <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
+                    <td class="toc-outline-cell"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
                     <% if (section.path) { %>
-                    <td>
-					  <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a><span data-note-key="<%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? `tafsir-heading:${quranCommentaryBookSlug}:${section.h1}.${section.h2}` : `heading:${section.id}` %>" data-note-title="<%= (quranCommentaryBookLabel || book.shortName_en) + ' — ' + (section.title_en || section.title || 'Passage') %>" data-note-url="<%= quranTocHref(section) %>"></span>
+                    <td class="toc-outline-cell">
+					  <a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a><span data-note-key="<%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? `tafsir-heading:${quranCommentaryBookSlug}:${section.h1}.${section.h2}${Number(section.level) === 3 ? '.' + section.h3 : ''}` : `heading:${section.id}` %>" data-note-title="<%= (quranCommentaryBookLabel || book.shortName_en) + ' — ' + (section.title_en || section.title || 'Passage') %>" data-note-url="<%= quranTocHref(section) %>"></span>
                     </td>
                     <td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td>
                     <% } else { %>
-					<td><span class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></span></td>
+					<td class="toc-outline-cell"><span class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></span></td>
                     <td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td>
                     <% } %>
                   </tr>
@@ -761,7 +762,7 @@
                     <% if (showManzilBookmark) { %>
                     <% } %>
                     <% var manzilSurahRevelation = quranTocSurahRevelation(manzilSurahLink.surah); %>
-                    <span class="quran-juz-surah-link"><span class="quran-revelation-icon quran-revelation-icon-<%= manzilSurahRevelation %>" role="img" aria-label="<%= manzilSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= manzilSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><%= manzilLinkIndex < manzilSurahLinks.length - 1 ? ', ' : '' %>
+                    <span class="quran-juz-surah-link"><span class="quran-revelation-icon quran-revelation-icon-<%= manzilSurahRevelation %>" role="img" aria-label="<%= manzilSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>" title="<%= manzilSurahRevelation === 'madani' ? 'Madani' : 'Makki' %>"></span><a href="<%= manzilSurahLink.href %>"><%- manzilSurahLink.name_en %></a></span><% if (manzilLinkIndex + 1 < manzilSurahLinks.length) { %><span class="text-body-secondary fw-normal" aria-hidden="true">&nbsp;·</span><% } %>
                     <% } %>
                   </td>
                   <td lang="ar" dir="rtl"><a href="<%= quranManzilStartHref(manzil) %>"><%- quranTocSurahArabicName(manzil.startSurah) %></a></td>
@@ -849,14 +850,14 @@
               <% if (showTocStartNumbers) { %>
               <td><%- section.start %></td>
               <% } %>
-              <td class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
+              <td class="toc-outline-cell"><span class="toc-section-number"><%- tocSectionNumberLabel(section) %></span></td>
               <% if (section.path) { %>
-              <td colspan="<%= sectionHasArabicTitle ? 1 : 2 %>" class="<%= Number(section.level) === 3 ? 'ps-5' : '' %>">
+              <td colspan="<%= sectionHasArabicTitle ? 1 : 2 %>" class="toc-outline-cell">
 				<a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></a><span data-note-key="<%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? `tafsir-heading:${quranCommentaryBookSlug}:${section.h1}.${section.h2}` : `heading:${section.id}` %>" data-note-title="<%= (quranCommentaryBookLabel || book.shortName_en) + ' — ' + (section.title_en || section.title || 'Passage') %>" data-note-url="<%= quranTocHref(section) %>"></span>
               </td>
               <% if (sectionHasArabicTitle) { %><td lang="ar"><a href="<%= quranTocHref(section) %>" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></a></td><% } %>
               <% } else { %>
-			  <td colspan="<%= sectionHasArabicTitle ? 1 : 2 %>"><span class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></span></td>
+			  <td colspan="<%= sectionHasArabicTitle ? 1 : 2 %>" class="toc-outline-cell"><span class="_e" data-id="<%=section.id%>" data-prop="toc.title_en" data-arabizi="true"><%- sectionTitleEn || 'Passage' %></span></td>
               <% if (sectionHasArabicTitle) { %><td lang="ar" class="_e" data-id="<%=section.id%>" data-prop="toc.title"><%- sectionTitle %></td><% } %>
               <% } %>
             </tr>

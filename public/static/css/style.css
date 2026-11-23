@@ -2076,7 +2076,7 @@ button:is(.ux-overlay-close, .btn-close[data-bs-dismiss="modal"], .btn-close[dat
 }
 
 #toc-manzils td:first-child {
-	width: 4em;
+	width: 5em;
 }
 
 #toc-juz td:nth-child(3),

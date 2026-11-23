@@ -25,13 +25,16 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 
 .toc-heading-layout:has(.ux-book-toc) .hadith-heading-toc-sticky { padding: 0 0 .75rem; }
 .ux-book-toc tr.chapter { font-weight: var(--ux-emphasis-weight); }
+.ux-book-toc .ux-toc-table { --toc-section-indent: 1.5rem; --toc-subsection-indent: 3rem; }
+.ux-book-toc :is(#toc, #toc-surahs) .toc-section-row td.toc-outline-cell { padding-inline-start: var(--toc-section-indent); }
+.ux-book-toc :is(#toc, #toc-surahs) .toc-subsection-row td.toc-outline-cell { padding-inline-start: var(--toc-subsection-indent); }
 @media (max-width: 575.98px) {
   .ux-book-toc #toc { table-layout: fixed; }
   .ux-book-toc .toc-start-column { width: 2.9rem; }
   .ux-book-toc .toc-number-column { width: 4rem; }
   .ux-book-toc #toc td { overflow-wrap: anywhere; padding-inline: .25rem; }
   .ux-book-toc #toc .toc-section-number { white-space: normal; }
-  .ux-book-toc #toc td.ps-5 { padding-inline-start: .5rem !important; }
+  .ux-book-toc .ux-toc-table { --toc-section-indent: .25rem; --toc-subsection-indent: .5rem; }
 }
 
 .toc-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .5rem; margin-block: var(--ux-title-gap); }
@@ -68,3 +71,5 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
 }
 .ux-book-toc .toc-expand-btn:is(:hover, :focus-visible) { background: var(--ux-midnight-deep); color: white; }
 .ux-book-toc .toc-expand-spacer { width: 24px; }
+
+.ux-book-toc #toc-surahs .toc-section-number { white-space: normal; }
