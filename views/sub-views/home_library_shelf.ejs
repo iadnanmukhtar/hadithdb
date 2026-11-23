@@ -7,25 +7,23 @@
   const shelfBooks = libraryBooks.slice().sort((a, b) => (a.shortName_en || a.alias).localeCompare(b.shortName_en || b.alias, 'en'));
   const aliases = shelfBooks.map(book => book.alias);
   const history = shelfBooks.filter(book => ['history', 'sirah'].includes(book.type)).map(book => book.alias);
-  const assigned = new Set([...beginner, ...twelve, ...history]);
+  const assigned = new Set([...beginner, ...twelve]);
   const collections = [
     ['beginner', 'Beginner Books', beginner],
     ['twelve', 'Twelve Books', twelve.filter(alias => aliases.includes(alias))],
-    ['other', 'Other Hadith Books', aliases.filter(alias => !assigned.has(alias))],
-    ['history', 'History & Sirah', history]
+    ['other', 'Other', aliases.filter(alias => !assigned.has(alias))]
   ];
 %>
 <section class="library-shelf ux-system" aria-labelledby="library-shelf-title" data-library-shelf>
-  <div class="library-shelf-heading">
-    <h2 id="library-shelf-title">Book collections</h2>
+  <div class="library-shelf-toolbar">
+    <div class="library-shelf-tabs" role="group" aria-label="Book collections" hidden>
+      <% for (const [id, label, titles] of collections) { if (titles.length) { %>
+        <button type="button" data-shelf-view="<%= id %>" data-titles="<%= titles.join(' ') %>"><%= label %></button>
+      <% } } %>
+    </div>
     <div class="library-shelf-tools" hidden>
       <%- include('rail_search.ejs', { inputId: 'home-book-search', label: 'Search all books by title or author', placeholder: 'Search books', clearLabel: 'Clear book search', resultsId: 'home-books' }) %>
     </div>
-  </div>
-  <div class="library-shelf-tabs" role="group" aria-label="Book collections" hidden>
-    <% for (const [id, label, titles] of collections) { if (titles.length) { %>
-      <button type="button" data-shelf-view="<%= id %>" data-titles="<%= titles.join(' ') %>"><%= label %></button>
-    <% } } %>
   </div>
   <nav id="home-books" class="library-volumes" aria-label="Hadith books">
     <% for (const book of shelfBooks) {

@@ -2,19 +2,20 @@ main.home-library {
   width: min(68rem, calc(100% - 3rem));
   margin: var(--ux-page-start) auto 3rem;
 }
-.home-library-heading, .library-shelf-heading, .home-reading-heading {
+.home-library-heading, .home-reading-heading {
   display: flex; align-items: center; justify-content: space-between; gap: .75rem 1.5rem;
 }
-.home-library-heading { padding-block: .8rem 1.4rem; border-bottom: 1px solid var(--ux-border); }
+.home-library-heading { padding-block: .8rem .35rem; }
 .home-library-heading .ux-primary-action { flex-shrink: 0; gap: .55rem; text-decoration: none; }
 .home-library [hidden] { display: none !important; }
-.library-shelf { padding-block: 1.4rem 1.6rem; }
-.home-library :is(.library-shelf-heading, .home-reading-heading, .home-articles-heading) h2 {
+.library-shelf { padding-bottom: 1.6rem; }
+.home-library :is(.home-reading-heading, .home-articles-heading) h2 {
   font: var(--ux-heading-weight) var(--ux-section-size)/1.3 var(--ux-font-ui);
   font-size: var(--ux-section-size) !important; margin: 0; color: var(--ivory-heading, var(--ux-text));
 }
-.library-shelf-tools { width: min(14rem, 50%); }
-.library-shelf-tabs { display: flex; flex-wrap: wrap; gap: .2rem; margin-block: .65rem 1rem; border-bottom: 1px solid var(--ux-border); }
+.library-shelf-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .35rem 1rem; margin-block: .5rem 1rem; padding-bottom: .3rem; border-bottom: 1px solid var(--ux-border); }
+.library-shelf-tools { width: min(14rem, 100%); }
+.library-shelf-tabs { display: flex; flex-wrap: wrap; gap: .2rem; }
 .library-shelf-tabs button {
   background: transparent; color: var(--ux-muted); border: 0; border-bottom: 2px solid transparent;
   padding: .6rem .75rem; min-height: 42px; font: var(--ux-local-nav-font);
@@ -88,7 +89,6 @@ main.home-library {
   .home-library-heading { align-items: start; flex-direction: column; gap: .3rem; }
   .library-shelf[data-layout="covers"] .library-volumes { grid-template-columns: repeat(3,minmax(0,1fr)); row-gap: 1rem; }
   .library-volumes { grid-template-columns: minmax(0,1fr); }
-  .library-shelf-heading { flex-wrap: wrap; gap: .5rem; }
   .library-shelf-tabs { gap: 0; }
   .library-shelf-tabs button { padding-inline: .55rem; }
   .library-shelf[data-layout="covers"] .volume-name { font-size: .94rem; }

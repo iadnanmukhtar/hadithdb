@@ -79,8 +79,13 @@ async function verifyRoute(page, route, status, titles) {
     assert.equal(await shelf.getByRole('button', { name: 'Next book', exact: true }).isDisabled(), true);
     await centered.press('Home');
     assert.equal(await centered.getAttribute('data-alias'), 'bukhari');
-    await shelf.getByRole('button', { name: 'History & Sirah' }).click();
-    assert.ok(await cards.count() >= 3);
+    assert.deepEqual(await shelf.locator('[data-shelf-view]').allTextContents(), ['Beginner Books', 'Twelve Books', 'Other']);
+    assert.equal(await page.getByRole('heading', { name: 'Hadith library', exact: true }).count(), 1);
+    assert.equal(await page.getByRole('heading', { name: 'Book collections', exact: true }).count(), 0);
+    await shelf.getByRole('button', { name: 'Other', exact: true }).click();
+    for (const alias of ['history', 'ibnhisham', 'yqsirah']) {
+      assert.equal(await shelf.locator('[data-alias="' + alias + '"]:visible').getAttribute('href'), '/' + alias);
+    }
     const field = shelf.getByRole('searchbox');
     await field.fill('mishkat');
     assert.deepEqual(await aliases(), ['mishkat']);
@@ -92,10 +97,8 @@ async function verifyRoute(page, route, status, titles) {
     await shelf.getByText('No books match your search.').waitFor();
     await field.press('Escape');
     assert.equal(await field.inputValue(), '');
-    assert.equal(await shelf.getByRole('button', { name: 'History & Sirah' }).getAttribute('aria-pressed'), 'true');
-    const history = await aliases();
-    await shelf.getByRole('button', { name: 'Other Hadith Books' }).click();
-    const assigned = new Set([...twelveShelf, ...history, ...beginnerShelf]);
+    assert.equal(await shelf.getByRole('button', { name: 'Other', exact: true }).getAttribute('aria-pressed'), 'true');
+    const assigned = new Set([...twelveShelf, ...beginnerShelf]);
     assert.ok((await aliases()).every(alias => !assigned.has(alias)));
     assert.equal((await aliases()).length + assigned.size, await shelf.locator('.library-volume').count());
     assert.ok(await cards.count() > 6);
