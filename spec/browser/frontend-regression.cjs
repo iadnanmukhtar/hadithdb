@@ -55,12 +55,15 @@ async function verifyRoute(page, route, status, titles) {
     const cards = shelf.locator('.library-volume:visible');
     const aliases = () => cards.evaluateAll(nodes => nodes.map(node => node.dataset.alias));
     await shelf.locator('[data-shelf-view="beginner"][aria-pressed="true"]').waitFor();
+    const centered = shelf.locator('[data-position="center"]');
+    assert.equal(await centered.getAttribute('data-alias'), 'nawawi40');
+    await shelf.getByRole('button', { name: 'Next book', exact: true }).click();
+    assert.equal(await centered.getAttribute('data-alias'), 'ibnrajab50');
     const beginnerShelf = await aliases();
     assert.deepEqual(beginnerShelf, ['nawawi40', 'ibnrajab50', 'riyad', 'adab', 'shamail', 'mishkat']);
     await shelf.getByRole('button', { name: 'Twelve Books', exact: true }).click();
     const twelveShelf = await aliases();
     assert.deepEqual(twelveShelf, ['bukhari', 'muslim', 'lulu-marjan', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', 'ibnhibban', 'hakim', 'daraqutni', 'mishkat']);
-    const centered = shelf.locator('[data-position="center"]');
     assert.equal(await centered.getAttribute('data-alias'), 'bukhari');
     await shelf.getByRole('button', { name: 'Next book', exact: true }).click();
     assert.equal(await centered.getAttribute('data-alias'), 'muslim');

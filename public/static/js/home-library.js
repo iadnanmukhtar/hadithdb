@@ -17,7 +17,6 @@
   const controls = shelf.querySelector('.library-deck-controls');
   const [previous, next] = controls.querySelectorAll('button');
   const status = controls.querySelector('[role="status"]');
-  const narrow = window.matchMedia('(max-width: 700px)');
   let deck = [];
   let current = -1;
 
@@ -43,7 +42,7 @@
 
   function configureDeck() {
     const volumes = collections.get(shelf.dataset.view);
-    const enabled = shelf.dataset.layout === 'covers' && (narrow.matches || volumes.size > 6);
+    const enabled = shelf.dataset.layout === 'covers';
     shelf.toggleAttribute('data-deck', enabled);
     controls.hidden = !enabled;
     deck = enabled ? [...volumes] : [];
@@ -79,7 +78,6 @@
     centerBook(destinations[event.key]);
     deck[current].focus({ preventScroll: true });
   });
-  narrow.addEventListener('change', configureDeck);
 
   function render() {
     const term = normalize(field.value);
