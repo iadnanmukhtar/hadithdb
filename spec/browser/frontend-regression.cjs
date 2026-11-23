@@ -60,6 +60,15 @@ async function verifyRoute(page, route, status, titles) {
     await shelf.getByRole('button', { name: 'Twelve Books', exact: true }).click();
     const twelveShelf = await aliases();
     assert.deepEqual(twelveShelf, ['bukhari', 'muslim', 'lulu-marjan', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', 'ibnhibban', 'hakim', 'daraqutni', 'mishkat']);
+    const centered = shelf.locator('[data-position="center"]');
+    assert.equal(await centered.getAttribute('data-alias'), 'bukhari');
+    await shelf.getByRole('button', { name: 'Next book', exact: true }).click();
+    assert.equal(await centered.getAttribute('data-alias'), 'muslim');
+    await centered.press('End');
+    assert.equal(await centered.getAttribute('data-alias'), 'mishkat');
+    assert.equal(await shelf.getByRole('button', { name: 'Next book', exact: true }).isDisabled(), true);
+    await centered.press('Home');
+    assert.equal(await centered.getAttribute('data-alias'), 'bukhari');
     await shelf.getByRole('button', { name: 'History & Sirah' }).click();
     assert.ok(await cards.count() >= 3);
     const field = shelf.getByRole('searchbox');
