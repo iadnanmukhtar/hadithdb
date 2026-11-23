@@ -9,11 +9,11 @@
     :root {
       color-scheme: light;
       --accent: #2c9be5;
-      --accent-dark: #2379b1;
+      --accent-dark: #185d96;
       --ink: #111111;
       --muted: #606060;
       --paper: #ffffff;
-      --wash: #f7f9fb;
+      --wash: #fafaf9;
       --line: rgba(17, 17, 17, 0.12);
     }
 
@@ -26,10 +26,8 @@
       place-items: center;
       padding: 24px;
       color: var(--ink);
-      background:
-        radial-gradient(circle at top, rgba(44, 155, 229, 0.10), transparent 44%),
-        var(--wash);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--wash);
+      font-family: Inter, system-ui, sans-serif;
     }
 
     main {
@@ -61,7 +59,7 @@
 
     h1 {
       margin: 0;
-      font-family: Georgia, "Times New Roman", serif;
+      font-family: inherit;
       font-size: clamp(2rem, 7vw, 3.15rem);
       font-weight: 500;
       line-height: 1.08;
@@ -85,15 +83,15 @@
       margin-top: 18px;
       padding: 11px 22px;
       color: #fff;
-      background: var(--accent-dark);
+      background: linear-gradient(110deg, #535c9b, #323c6b 68%, #273053);
       border: 1px solid var(--accent-dark);
-      border-radius: 999px;
+      border-radius: .4rem;
       font: inherit;
       font-weight: 650;
       cursor: pointer;
     }
 
-    button:hover { background: var(--accent); border-color: var(--accent); }
+    button:hover { filter: brightness(1.06); border-color: var(--accent); }
     button:focus-visible { outline: 3px solid rgba(44, 155, 229, 0.34); outline-offset: 3px; }
 
     noscript p { font-size: 0.9rem; }

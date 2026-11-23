@@ -1,15 +1,15 @@
-.toc-inline-actions { display: inline-flex; flex-wrap: wrap; gap: 3px; margin-inline-start: .35rem; vertical-align: middle; }
+.toc-inline-actions { display: inline-flex; flex-wrap: wrap; gap: .25rem; margin-inline-start: .35rem; vertical-align: middle; }
 #toc .toc-inline-actions .btn,
 #toc .toc-inline-add .btn,
 #toc .toc-inline-item > .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 22px; height: 22px; min-width: 22px; min-height: 22px;
+  width: 1.75rem; height: 1.75rem; min-width: 24px; min-height: 24px;
   padding: 0; font-size: 12px; line-height: 1; border-radius: 4px;
 }
 #toc [data-toc-action] .bi { font-size: 12px; line-height: 1; }
 .toc-inline-add { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; margin: .3rem 0; }
 .toc-inline-add input { flex: 1 1 12rem; width: 0; min-width: 8rem; }
-.toc-inline-status { font-size: .85rem; white-space: normal; }
+.toc-inline-status { font-size: var(--ux-caption-size); white-space: normal; }
 .toc-inline-status:empty { display: none; }
 .toc-inline-items { display: flex; flex-direction: column; gap: .5rem; margin-block: .5rem; }
 .toc-inline-item { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }

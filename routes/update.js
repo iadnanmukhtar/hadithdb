@@ -137,6 +137,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.value = translationResult.value;
 
     } else if (type == 'hadith') {
+      if (col?.toLowerCase() === 'requested')
+        return res.status(410).json({ code: 410, message: 'Translation requests have been retired.' });
       const contributionAction = ['title','title_en'].includes(col) ? 'title' : col === 'revise' ? 'revise' : null;
       const contributionBefore = contributionAction ? await HadithTranslationIndexView.byId(require('../lib/Community').id(ids[0])) : null;
       var result = "";

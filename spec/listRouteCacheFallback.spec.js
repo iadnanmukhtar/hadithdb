@@ -3,7 +3,7 @@
 const ejs = require('ejs');
 const Utils = require('../lib/Utils');
 
-describe.each(['liked', 'highlights', 'titled', 'requests'])('%s list cache fallback', name => {
+describe.each(['liked', 'highlights', 'titled'])('%s list cache fallback', name => {
   let originalSettings;
   let originalQuery;
   let handler;

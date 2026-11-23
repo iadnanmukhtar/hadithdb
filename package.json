@@ -9,7 +9,11 @@
     "dev": "nodemon --exec \"node -r dotenv/config -r newrelic\" ./bin/www",
     "quran-asr": "./services/quran-asr/run",
     "chatkit": "./services/chatkit/run",
-    "test": "jest"
+    "test": "jest",
+    "test:frontend:all": "npm run test:frontend && npm run test:frontend:admin && npm run test:frontend:personal",
+    "test:frontend": "node spec/browser/frontend-regression.cjs",
+    "test:frontend:admin": "node spec/browser/admin-edit-regression.cjs",
+    "test:frontend:personal": "node spec/browser/personal-regression.cjs"
   },
   "keywords": [
     "hadith",

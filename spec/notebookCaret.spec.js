@@ -107,7 +107,13 @@ test.each([420, 290])('scrolling between distant passages keeps the clicked care
   for (const index of [40, 5, 65, 20, 0, 69]) {
     await page.evaluate(() => { editor.hidden = true; preview.hidden = false; });
     await page.locator('#preview').hover();
-    await page.mouse.wheel(0, index > 30 ? 30000 : -30000);
+    const scrollDown = index > 30;
+    await page.mouse.wheel(0, scrollDown ? 100000 : -100000);
+    // Playwright dispatches the wheel before Chromium finishes scrolling.
+    // Measure the target only after the preview reaches the requested end.
+    await page.waitForFunction(down => down
+      ? preview.scrollTop + preview.clientHeight >= preview.scrollHeight - 1
+      : preview.scrollTop === 0, scrollDown);
     const point = await page.evaluate(index => {
       const paragraph = preview.querySelectorAll('p')[index];
       paragraph.scrollIntoView({block:'center'});

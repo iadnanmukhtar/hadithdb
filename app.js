@@ -553,7 +553,6 @@ const startupPromise = (async () => {
     return res.redirect(301, Utils.quranUrl(req, req.originalUrl));
   });
 
-  const requestsRouter = require('./routes/requests');
   const booksRouter = require('./routes/books');
   const tagRouter = require('./routes/tag');
   const searchRouter = require('./routes/search');
@@ -581,7 +580,11 @@ const startupPromise = (async () => {
   app.use('/highlights', (req, res) => res.redirect(301, '/community'));
   app.use('/commented', (req, res) => res.redirect(301, '/community'));
   app.use('/titled', (req, res) => res.redirect(301, '/community'));
-  app.use('/requests', requestsRouter);
+  // Retired URLs must not fall through to the book alias resolver or cached list.
+  app.all(['/requests', '/requests/feed', '/requests/rss'], (req, res) => {
+    res.status(410);
+    res.render('error', buildErrorViewLocals(410, 'The translation request list has been removed.', null, req, res));
+  });
   app.use('/books', booksRouter);
   app.use('/sharh', require('./routes/sharh'));
   app.use('/tag', tagRouter);

@@ -40,7 +40,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
   <main class="container py-4 community" id="community" data-view="blog">
-    <div class="community-heading"><h1>Pearls of the Deep</h1><p class="community-intro"><%= page.description_en %></p></div>
+    <div class="community-heading"><h1 class="ux-page-title">Pearls of the Deep</h1><p class="community-intro"><%= page.description_en %></p></div>
     <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
     <div class="community-columns"><section class="community-wall" aria-label="Blog articles">
       <div class="posts community-feed" data-blog-infinite="1" data-blog-current-url="<%= req.originalUrl || req.url || '/blog' %>" data-blog-page-number="<%= pagination.number %>"<% if (page.prev) { %> data-blog-prev-url="<%= page.prev %>"<% } %><% if (page.next) { %> data-blog-next-url="<%= page.next %>"<% } %>>

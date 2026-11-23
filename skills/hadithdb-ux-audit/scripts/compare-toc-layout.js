@@ -9,13 +9,13 @@ async function measure(page, route) {
     await document.fonts.ready;
     const headerBottom = document.querySelector('.site-navbar').getBoundingClientRect().bottom;
     const box = selector => {
-      const element = [...document.querySelectorAll(selector)].find(node => node.offsetWidth);
+      const element = [...document.querySelectorAll(selector)].find(node => node.offsetWidth && getComputedStyle(node).visibility === 'visible');
       if (!element) return null;
       const { x, y, width, height } = element.getBoundingClientRect();
       return { x, y: y - headerBottom, width, height };
     };
     return {
-      quran: !!box('.quran-mode-nav'), subnav: box('.site-navbar :is(.ux-subnav, .quran-mode-nav)'), title: box('main .ux-page-title'),
+      quran: !!box('.quran-mode-nav'), toolbarWidth: box('.quran-mode-nav')?.width, subnav: box('.site-navbar :is(.ux-subnav, .quran-mode-nav)'), title: box('main .ux-page-title'), titleRow: box('main .ux-page-heading'),
       rail: box('.ux-rail-title'), search: box('.ux-rail-search'),
       picker: !!box('.site-navbar :is(.ux-subnav-picker, .quran-mode-picker)')
     };
@@ -32,7 +32,7 @@ async function compare(routes) {
       for (const route of routes) {
         const actual = await measure(page, route);
         assert.equal(actual.quran, route.startsWith('/quran'), route + ' navigation family');
-        assert.equal(actual.picker, actual.quran ? width < 992 : width <= 700, route + ' compact navigation at ' + width);
+        assert.equal(actual.picker, actual.quran ? actual.toolbarWidth <= 774 : width <= 700, route + ' compact navigation at ' + width);
         assert.equal(!!actual.rail, width >= 992, route + ' rail at ' + width);
         for (const role of ['subnav', 'title', 'rail', 'search']) {
           if (role === 'rail' && width < 992) continue;
@@ -40,6 +40,11 @@ async function compare(routes) {
             if (role === 'subnav' && actual.quran && ['height', 'y'].includes(dimension)) continue; // Mode controls have a distinct height.
             if (role === 'title' && dimension === 'height') continue; // Long titles wrap.
             if (role === 'search' && width < 992 && dimension === 'y') continue; // Bilingual subtitle.
+            if (role === 'title' && dimension === 'width') {
+              // On bilingual and action rows the h1 shares the available width with its sibling.
+              assert.ok(Math.abs(reference.titleRow.width - actual.titleRow.width) <= 1, route + ' title row width');
+              continue;
+            }
             const delta = Math.abs(reference[role][dimension] - actual[role][dimension]);
             assert.ok(delta <= 1, route + ' at ' + width + ': ' + role + ' ' + dimension + ' differs by ' + delta + 'px');
           }

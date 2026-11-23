@@ -6,7 +6,7 @@
 <body>
   <%- include('sub-views/header.ejs', { site, page }) %>
   <main class="container col-lg-8 mx-auto py-4">
-    <h1><%= page.title_en %></h1>
+    <h1 class="ux-page-title"><%= page.title_en %></h1>
     <% if (privacy) { %>
       <%- include('sub-views/legal_privacy.ejs') %>
     <% } else { %>

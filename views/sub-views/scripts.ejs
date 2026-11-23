@@ -393,6 +393,8 @@
 	      const propStr = (($el.attr('data-prop')) || '').toString();
 	      const isMarkdownField = isMarkdownElement($el);
 	      if ($(this).attr('submitting') == 'true') {
+	        if ($el.hasClass('ux-inline-editor'))
+	          $el.data('inlineSaveQueued', true);
 	        e.stopPropagation();
 	        return;
 	      }
@@ -441,7 +443,8 @@
 	          $(this).removeAttr('editing');
 	          return;
 	        }
-	        $(this).attr('submitting', 'true');
+	        const submittedRevision = $el.data('inlineRevision') || 0;
+	        $(this).attr({ submitting: 'true', 'aria-busy': 'true' });
 	        const isClickableButton = $(this).attr('clickable') == 'true' && $(this).is('button');
 	        const $loadingButton = isClickableButton ? $(this) : $($(this).data('loadingButton'));
 	        const hasLoadingButton = $loadingButton.length && $loadingButton.is('button');
@@ -500,6 +503,8 @@
 	            reqBody.hdithUrl = hdithUrl.trim();
 	            resBody = await update(reqBody);
 	          }
+	          if (($el.data('inlineRevision') || 0) !== submittedRevision) return;
+	          if ($el.hasClass('ux-inline-editor')) $el.attr('aria-invalid', resBody.code == 200 ? 'false' : 'true');
 	          // update element on success
 	          if (resBody.code == 200) {
                 if (propStr === 'hadith.delete') {
@@ -610,6 +615,9 @@
 	              return;
 	            }
 	          }
+	        } catch (err) {
+	          if ($el.hasClass('ux-inline-editor')) $el.attr('aria-invalid', 'true');
+	          toastr.error(err.message || 'Try saving again.', 'Update needs attention');
 	        } finally {
 	          if (hasLoadingButton) {
 	            $loadingButton.prop('disabled', false);
@@ -618,8 +626,12 @@
 	          if (removeSimilarHadith)
 	            removeSimilarHadithElement($loadingButton);
 	          $(this).removeData('loadingButton');
-	          $(this).removeAttr('submitting');
-	          $(this).removeAttr('editing');
+	          $(this).removeAttr('submitting aria-busy');
+	          const newerInput = ($el.data('inlineRevision') || 0) !== submittedRevision;
+	          if (!newerInput && $el.attr('aria-invalid') !== 'true') $el.removeAttr('editing');
+	          const queued = $el.data('inlineSaveQueued');
+	          $el.removeData('inlineSaveQueued');
+	          if (newerInput && queued) await changeListener.call(this, e);
 	        }
 	      };
 	      e.stopPropagation();
@@ -676,7 +688,7 @@
             ? ` Please try again in ${retryAfter} seconds.`
             : ' Please try again shortly.';
           resBody = {
-            code: res.status,
+            code: res.ok ? 502 : res.status,
             message: res.status === 503
               ? `The update service is temporarily unavailable.${retryMessage}`
               : `The server returned an invalid response (${res.status || 'unknown status'}). Please try again.`
@@ -1051,6 +1063,11 @@
 	        if ($el.data('inlineEditorBound'))
 	          return;
 	        $el.data('inlineEditorBound', true);
+	        $el.addClass('ux-inline-editor');
+	        const hint = $el.is('select') ? 'Selection saves immediately.'
+	          : isTafsirEditor($el) ? 'Use Save to apply changes.' : 'Changes save when you leave this field.';
+	        if (!$el.attr('title')) $el.attr('title', hint);
+	        if (!$el.attr('aria-description')) $el.attr('aria-description', hint);
 	        applyInlineEditorLanguageContext($el);
 	        bindPrimaryNarratorAutocomplete($el);
 	        bindSharhTitleAutocomplete($el);
@@ -1071,6 +1088,7 @@
 	            enterMarkdownEditMode(this);
 	        });
 	        $el.on('input', function () {
+	          $el.data('inlineRevision', ($el.data('inlineRevision') || 0) + 1);
 	          $(this).attr('editing', 'true');
 	          $(this).removeClass('partial');
 	        });
@@ -1086,6 +1104,7 @@
 	        });
 	        if ($el.is('select'))
 	          $el.on('change', function (event) {
+	            $el.data('inlineRevision', ($el.data('inlineRevision') || 0) + 1);
 	            if ($(this).is('select[data-prop="hadith.gradeId"]')) {
 	              const color = $(this).find('option:selected').attr('data-grade-color') || '';
 	              $(this).closest('.hadith-legacy-grade-editor').find('.hadith-legacy-grade-color').css('--hadith-grade-color', color);
@@ -1367,8 +1386,8 @@
 	            $pick.on('change', function () { if (this.checked) selected.set(pair.key, pair); else selected.delete(pair.key); renderSelection(); });
 	            const $ar = $('<input>').attr({ type: 'text', lang: 'ar', dir: 'rtl', 'aria-label': 'Arabic value', placeholder: 'Arabic value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_ar || '');
 	            const $en = $('<input>').attr({ type: 'text', lang: 'en', dir: 'ltr', 'aria-label': 'English value', placeholder: 'English value' }).addClass('form-control form-control-sm hadith-admin-combobox').val(pair.value_en || '');
-	            const $save = $('<button>').attr({ type: 'button', title: 'Save pair', 'aria-label': 'Save pair' }).addClass('btn btn-sm btn-outline-secondary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-check-lg" aria-hidden="true"></span>');
-	            const $delete = $('<button>').attr({ type: 'button', title: 'Remove pair', 'aria-label': 'Remove pair' }).addClass('btn btn-sm btn-outline-secondary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-trash" aria-hidden="true"></span>');
+	            const $save = $('<button>').attr({ type: 'button', title: 'Save pair', 'aria-label': 'Save pair' }).addClass('btn btn-sm btn-primary hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-check-lg" aria-hidden="true"></span>');
+	            const $delete = $('<button>').attr({ type: 'button', title: 'Remove pair', 'aria-label': 'Remove pair' }).addClass('btn btn-sm btn-outline-danger hadith-admin-action hadith-admin-action-icon').html('<span class="bi bi-trash" aria-hidden="true"></span>');
 	            $save.on('click', async () => {
 	              try {
 	                setStatus('Saving…');
@@ -1473,7 +1492,7 @@
 	    const ensureTafsirSaveButton = ($el) => {
 	      if ($el.next('.quran-tafsir-save').length)
 	        return;
-	      const $button = $('<button type="button" class="btn btn-sm btn-outline-primary quran-tafsir-save mt-2 mb-3" lang="en" dir="ltr" data-loading-label="Saving"><i class="bi bi-save" aria-hidden="true"></i><span lang="en" dir="ltr">Save</span></button>');
+	      const $button = $('<button type="button" class="btn btn-sm btn-primary quran-tafsir-save mt-2 mb-3" lang="en" dir="ltr" data-loading-label="Saving"><i class="bi bi-save" aria-hidden="true"></i><span lang="en" dir="ltr">Save</span></button>');
 	      $button.on('mousedown', function (e) {
 	        e.preventDefault();
 	      });

@@ -1,16 +1,21 @@
 /* Segmented navigation follows the Quran reader mode controls. */
 .community-section-menu .chapter-toc-toolbar { justify-content: center; flex-wrap: wrap; }
 .community-tabs { max-width: 100%; }
+.community-tabs .nav-link { display: inline-flex; align-items: center; gap: .35rem; }
+@media (max-width: 575px) {
+  .community-tabs .nav-link > i { display: none; }
+  .community-section-menu .community-tabs { justify-content: start; overflow-x: auto; }
+}
 .community-notebook-filter { display: none; }
 .community-section-menu [hidden] { display: none !important; }
 
 /* Community inherits the site's font, background, colors and control styling. */
 .community {
   --community-ink: var(--bs-body-color);
-  --community-muted: var(--c-muted);
+  --community-muted: var(--bs-secondary-color);
   --community-line: var(--bs-border-color);
   --community-paper: var(--bs-body-bg);
-  --community-accent: var(--c-accent);
+  --community-accent: var(--ux-accent, var(--c-accent));
   /* Shared notebook markup should use the Community theme on public pages. */
   --note-ink: var(--community-ink);
   --note-link: var(--community-accent);
@@ -82,7 +87,7 @@ main.community .community-sidebar-intro h2 { font-size: var(--content-size-h5) !
 .community-notebook-link strong { display: block; font-size: var(--content-size-meta); font-weight: 600; }
 .community-notebook-link small { display: block; margin-top: .15rem; color: var(--community-muted); font-size: var(--content-size-xs); }
 main.community .community-sidebar-footnote { font-size: var(--content-size-xs); color: var(--community-muted); margin: .8rem 0 1rem; }
-.community-card { border: 1px solid var(--community-line); border-radius: .5rem; padding: 1rem; margin-bottom: 1rem; overflow-wrap: anywhere; }
+.community-card { background: var(--community-paper); border: 1px solid var(--community-line); border-radius: var(--ux-card-radius); padding: 1rem; margin-bottom: 1rem; overflow-wrap: anywhere; }
 details.community-card > summary { font-size: var(--content-size-meta); }
 details.community-card > summary::after { content: '+'; float: right; color: var(--community-muted); }
 details.community-card[open] > summary::after { content: '−'; }
@@ -349,10 +354,10 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 
 .community-share-dialog {
   --community-ink: var(--bs-body-color);
-  --community-muted: var(--c-muted);
+  --community-muted: var(--bs-secondary-color);
   --community-line: var(--bs-border-color);
   --community-paper: var(--bs-body-bg);
-  --community-accent: var(--c-accent);
+  --community-accent: var(--ux-accent, var(--c-accent));
 }
 .community-share-dialog textarea { display:block; width:100%; min-height:140px; max-height:280px; border:0; padding:.8rem 0; resize:vertical; font:inherit; color:var(--community-ink); background:transparent; }
 .community-share-dialog textarea:focus-visible { outline:none; }
@@ -436,7 +441,7 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 .community :is(input,textarea,button,a,select):focus-visible,
 .community-share-dialog :is(input,textarea,button,a):focus-visible { outline: 2px solid var(--community-accent); outline-offset: 3px; }
 .community :is(.community-card,.community-editor,.community-composer), .community-quick-dialog { border-radius: .75rem; }
-.community-heading h1 { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; letter-spacing: -.015em; }
+.community-heading h1:not(.ux-page-title) { font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.25; letter-spacing: -.015em; }
 .community[data-view="post"] > :is(.community-heading,.community-profile) { max-width: 780px; margin-inline: auto; }
 .community[data-view="post"] .community-reading { margin-top: 1.25rem; }
 .community-entry-meta { align-items: flex-start; row-gap: .5rem; flex-wrap: wrap; }
@@ -492,10 +497,10 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 /* Quiet short-form writing, with the site's existing color tokens. */
 .community-short-editor, .community-share-card, .comment-feed {
   --community-ink: var(--bs-body-color);
-  --community-muted: var(--c-muted);
+  --community-muted: var(--bs-secondary-color);
   --community-line: var(--bs-border-color);
   --community-paper: var(--bs-body-bg);
-  --community-accent: var(--c-accent);
+  --community-accent: var(--ux-accent, var(--c-accent));
 }
 textarea[data-short-editor][hidden], .community-short-editor [hidden] { display: none !important; }
 .community-short-editor { position: relative; min-width: 0; color: var(--community-ink); }
@@ -912,8 +917,8 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 
 /* Reader actions use the same compact, muted controls as the Community feed. */
 .reader-social-actions {
-  --community-muted: var(--c-muted);
-  --community-accent: var(--c-accent);
+  --community-muted: var(--bs-secondary-color);
+  --community-accent: var(--ux-accent, var(--c-accent));
 }
 .reader-social-actions,
 .community-entry-actions {

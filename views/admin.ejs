@@ -9,24 +9,24 @@
 </head>
 <body>
 <%- include('sub-views/header.ejs', { site, page }); %>
-<main class="container py-4 admin-pairs-page">
-<h1>Administration</h1>
+<main class="container py-4 admin-pairs-page ux-system ux-fields">
+<header class="ux-page-heading"><h1 class="ux-page-title">Administration</h1></header>
 <p><a href="/books?sharh">Manage Sharḥ books</a></p>
 <p>Manage shared Arabic and English names and labels. Select multiple pairs and choose the target to replace their existing metadata references.</p>
 
 		
 		<div class="hadith-pair-library-actions d-flex flex-wrap gap-2 mt-4">
-            <button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-book-aliases"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage book aliases</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-legacy-graders">Manage legacy graders</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="narrator"><span class="bi bi-people" aria-hidden="true"></span> Manage narrator pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="attribution"><span class="bi bi-diagram-2" aria-hidden="true"></span> Manage attribution pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="chain_classification"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage chain classification pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grader"><span class="bi bi-person" aria-hidden="true"></span> Manage grader pairs</button>
-			<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grade"><span class="bi bi-check2-circle" aria-hidden="true"></span> Manage legacy grade pairs</button>
+            <button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-book-aliases"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage book aliases</button>
+            <button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-legacy-graders">Manage legacy graders</button>
+			<button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="narrator"><span class="bi bi-people" aria-hidden="true"></span> Manage narrator pairs</button>
+			<button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="attribution"><span class="bi bi-diagram-2" aria-hidden="true"></span> Manage attribution pairs</button>
+			<button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="chain_classification"><span class="bi bi-link-45deg" aria-hidden="true"></span> Manage chain classification pairs</button>
+			<button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grader"><span class="bi bi-person" aria-hidden="true"></span> Manage grader pairs</button>
+			<button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#admin-pair-manager" data-hadith-pair-manager-open="grade"><span class="bi bi-check2-circle" aria-hidden="true"></span> Manage legacy grade pairs</button>
 		</div>
-		<aside class="modal fade hadith-pair-manager-modal" id="admin-pair-manager" tabindex="-1" aria-hidden="true" data-hadith-pair-manager>
+		<aside class="modal fade hadith-pair-manager-modal" id="admin-pair-manager" aria-labelledby="admin-pair-manager-title" tabindex="-1" aria-hidden="true" data-hadith-pair-manager>
 			<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
-				<div class="modal-header"><h3 class="modal-title fs-5" data-hadith-pair-manager-title>Bilingual pairs</h3><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+				<div class="modal-header"><h2 class="modal-title fs-5" id="admin-pair-manager-title" data-hadith-pair-manager-title>Bilingual pairs</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
 				<div class="modal-body">
 					<label class="visually-hidden" for="admin-pair-filter">Filter pairs</label>
 					<div class="hadith-pair-manager-filter mb-3"><span class="bi bi-funnel" aria-hidden="true"></span><input id="admin-pair-filter" type="search" class="form-control form-control-sm hadith-admin-combobox" dir="auto" data-hadith-pair-manager-filter placeholder="Search Arabic or English (ignores diacritics)" aria-label="Search pairs by Arabic or English" autocomplete="off"></div>
@@ -40,7 +40,7 @@
 <div class="col-sm-6"><label for="pair-merge-ar">Target Arabic name</label><input id="pair-merge-ar" class="form-control" lang="ar" dir="rtl" data-pair-merge-ar maxlength="255"></div>
 <div class="col-sm-6"><label for="pair-merge-en">Target English name</label><input id="pair-merge-en" class="form-control" lang="en" data-pair-merge-en maxlength="255"></div>
 </div>
-<button type="button" class="btn btn-primary btn-sm" data-pair-merge disabled>Merge selected pairs</button>
+<button type="button" class="ux-primary-action btn btn-primary btn-sm" data-pair-merge disabled>Merge selected pairs</button>
 <button type="button" class="btn btn-outline-secondary btn-sm" data-pair-merge-clear>Clear selection</button>
 </section>
 <div class="hadith-pair-manager-list" data-hadith-pair-manager-list></div>
@@ -50,7 +50,7 @@
 					<div class="hadith-pair-manager-new" data-hadith-pair-manager-new>
 						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="ar" dir="rtl" data-hadith-pair-value-ar placeholder="Arabic value" aria-label="Arabic value">
 						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="en" dir="ltr" data-hadith-pair-value-en placeholder="English value" aria-label="English value">
-						<button type="button" class="btn btn-sm btn-outline-secondary hadith-admin-action" data-hadith-pair-add><span class="bi bi-plus-lg" aria-hidden="true"></span> Add pair</button>
+						<button type="button" class="ux-secondary-action btn btn-sm btn-outline-secondary" data-hadith-pair-add><span class="bi bi-plus-lg" aria-hidden="true"></span> Add pair</button>
 					</div>
 					<div class="small mt-2" data-hadith-pair-manager-status aria-live="polite"></div>
 				</div>
@@ -75,7 +75,7 @@
           <% } %>
         </div>
         <p class="small text-muted mt-3" data-legacy-grader-usage></p>
-        <button class="btn btn-primary" type="submit" data-legacy-grader-save>Add grader</button>
+        <button class="ux-primary-action btn btn-primary" type="submit" data-legacy-grader-save>Add grader</button>
       </form>
       <div class="small mt-3" role="status" aria-live="polite" data-legacy-grader-status></div>
     </div>
@@ -94,7 +94,7 @@
         <label for="book-alias-value" class="form-label">URL alias</label>
         <input id="book-alias-value" class="form-control" name="alias" dir="ltr" autocapitalize="none" autocomplete="off" spellcheck="false" required maxlength="80" pattern="[a-z][a-z0-9_-]{0,79}" aria-describedby="book-alias-help">
         <p class="small text-muted mt-2" id="book-alias-help">Use lowercase letters, numbers, hyphens, or underscores.</p>
-        <button class="btn btn-primary" type="submit" data-book-alias-save>Save alias</button>
+        <button class="ux-primary-action btn btn-primary" type="submit" data-book-alias-save>Save alias</button>
       </form>
       <div class="small mt-3" role="status" aria-live="polite" data-book-alias-status></div>
     </div>

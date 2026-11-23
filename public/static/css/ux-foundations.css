@@ -34,10 +34,12 @@
   --ux-secondary-size: .94rem;
   --ux-caption-size: .82rem;
   --ux-midnight-deep: #273053;
+  --ux-secondary-fill: #eaeaf5;
+  --ux-secondary-ink: #444d85;
   --ux-midnight-fill: linear-gradient(110deg, #535c9b, #323c6b 68%, var(--ux-midnight-deep));
 }
 
-.ux-system {
+.ux-system, body:has(.ux-masthead) {
   --ux-accent: var(--ivory-accent, var(--c-link-dark, #2379b1));
   --ux-text: var(--bs-body-color, #212529);
   --ux-muted: var(--bs-secondary-color, #595c5f);
@@ -47,11 +49,20 @@
   --ux-title-size: clamp(2rem, 3vw, 2.75rem);
   --ux-section-size: 1.3rem;
   --ux-focus-ring: 2px solid var(--ux-accent);
+}
+
+.ux-system {
   font: var(--ux-body-weight) 1rem/1.5 var(--ux-font-ui);
   color: var(--ux-text);
 }
 
-[data-bs-theme="dark"] .ux-system { --ux-accent: var(--bs-link-color); }
+[data-bs-theme="dark"] .ux-system,
+html[data-bs-theme="dark"] body:has(.ux-masthead),
+body[data-bs-theme="dark"]:has(.ux-masthead) {
+  --ux-accent: var(--bs-link-color);
+  --ux-secondary-fill: #333953;
+  --ux-secondary-ink: #e3e6ff;
+}
 
 /* Native hints, the search launcher, and inline editor hints share one treatment. */
 :is(.ux-system, .command-search-dialog) :is(input, textarea)::placeholder,
@@ -98,8 +109,12 @@
 }
 .ux-menu-list a:is(:hover, :focus-visible) .app-menu-icon-img { filter: brightness(0) invert(1); }
 
-.ux-page-title { line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
+/* Interface titles use the root scale even inside compact reader or marketing containers. */
+.ux-page-title { --content-size-h1: 1.72rem; line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
 
+@media (max-width: 575.98px) {
+  .ux-page-title { --content-size-h1: 1.5rem; }
+}
 .ux-system .ux-section-title {
   --content-size-h2: var(--ux-section-size);
   font: var(--ux-emphasis-weight) var(--ux-section-size)/1.3 var(--ux-font-ui);
@@ -146,14 +161,36 @@
   font: var(--ux-emphasis-weight) 1rem/1.3 var(--ux-font-ui);
   cursor: pointer;
 }
-.ux-system .ux-primary-action {
+.ux-system .ux-primary-action,
+body:has(.ux-masthead) .btn-primary {
   color: white;
   border-color: #343a67;
   background: var(--ux-midnight-fill);
   box-shadow: inset 0 1px #ffffff30;
 }
-.ux-system .ux-secondary-action { background: #eaeaf5; color: #444d85; text-decoration: none; }
-.ux-system .ux-secondary-action:hover { text-decoration: underline; }
+body:has(.ux-masthead) :is(.btn-secondary, .btn-outline-secondary, .btn-outline-primary) {
+  --bs-btn-bg: var(--ux-secondary-fill);
+  --bs-btn-color: var(--ux-secondary-ink);
+  --bs-btn-border-color: var(--ux-border);
+  --bs-btn-hover-bg: var(--ux-midnight-deep);
+  --bs-btn-hover-color: white;
+  --bs-btn-hover-border-color: var(--ux-midnight-deep);
+  --bs-btn-active-bg: var(--ux-midnight-deep);
+  --bs-btn-active-color: white;
+  --bs-btn-active-border-color: var(--ux-midnight-deep);
+  --bs-btn-disabled-color: var(--ux-muted);
+  --bs-btn-disabled-bg: var(--ux-inset);
+  --bs-btn-disabled-border-color: var(--ux-border);
+}
+.ux-system .ux-secondary-action {
+  background: var(--ux-secondary-fill);
+  color: var(--ux-secondary-ink);
+  text-decoration: none;
+}
+.ux-system .ux-secondary-action:is(:enabled, a[href]):hover {
+  background: var(--ux-midnight-deep);
+  color: white;
+}
 .ux-system .ux-primary-action:is(:enabled, a[href]):hover { filter: brightness(1.06); }
 .ux-system .ux-primary-action:is(:enabled, a[href]):active { transform: translateY(1px); box-shadow: none; }
 .ux-system :is(.ux-primary-action, .ux-secondary-action)[hidden] { display: none; }
@@ -272,3 +309,53 @@
 .ux-disclosure > summary i { font-size: .8em; color: var(--ux-accent); }
 .ux-disclosure[open] > summary strong { color: var(--ivory-accent, var(--ux-text)); }
 .ux-disclosure[open] > summary i { transform: rotate(180deg); }
+
+/* App chrome uses the UI face. Reader text retains its language and script styles. */
+body:has(.ux-masthead) {
+  font-family: var(--ux-font-ui);
+  --bs-primary: var(--ux-accent);
+}
+body:has(.ux-masthead) :where(.btn, .dropdown-menu, .modal-title, .offcanvas-title, .form-label) {
+  font-family: var(--ux-font-ui);
+}
+body:has(.ux-masthead) .dropdown-menu {
+  --bs-dropdown-link-hover-bg: var(--ux-midnight-deep);
+  --bs-dropdown-link-hover-color: #fff;
+  --bs-dropdown-link-active-bg: var(--ux-midnight-deep);
+  --bs-dropdown-link-active-color: #fff;
+  --bs-dropdown-border-radius: var(--ux-card-radius);
+}
+body:has(.ux-masthead) .modal {
+  --bs-modal-border-radius: var(--ux-card-radius);
+  --bs-modal-border-color: var(--ux-border);
+}
+body:has(.ux-masthead) :where(input, textarea)::placeholder {
+  color: var(--ux-muted);
+  font-weight: var(--ux-light-weight);
+  opacity: 1;
+}
+body:has(.ux-masthead) :is(.form-control, .form-select):focus {
+  border-color: var(--ux-accent);
+  box-shadow: 0 0 0 .12rem color-mix(in srgb, var(--ux-accent) 20%, transparent);
+}
+body:has(.ux-masthead) .form-switch .form-check-input:checked {
+  background-color: var(--ux-accent);
+  border-color: var(--ux-accent);
+}
+body:has(.ux-masthead) :where(a, button, input, textarea, select, summary):focus-visible {
+  outline: var(--ux-focus-ring);
+  outline-offset: 2px;
+}
+.ux-inline-editor {
+  outline: 1px dashed var(--ux-border);
+  outline-offset: 2px;
+}
+.ux-inline-editor:hover { outline-color: var(--ux-accent); }
+.ux-inline-editor:is(:focus, :focus-within) { outline: var(--ux-focus-ring); }
+.ux-inline-editor[submitting="true"] { cursor: progress; }
+.ux-inline-editor[aria-invalid="true"] { outline-color: var(--bs-danger); }
+.ux-inline-editor[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: var(--ux-muted);
+  font-weight: var(--ux-light-weight);
+}

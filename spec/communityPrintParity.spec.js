@@ -22,7 +22,7 @@ beforeAll(async()=>{
 afterAll(async()=>{await browser?.close();await new Promise(r=>server.close(r));});
 function render(file,data){
  const filename=path.resolve('views',file);
- return ejs.render(fs.readFileSync(filename,'utf8'),{global:{settings:{site:{},blog:{}}},utils:{scriptAssetVersion:()=> 'test',staticAssetUrl:x=>x},page:{},...data,
+ return ejs.render(fs.readFileSync(filename,'utf8'),{global:{settings:{site:{},blog:{}}},utils:{pageFreshness:require('../lib/Utils').pageFreshness,scriptAssetVersion:()=> 'test',staticAssetUrl:x=>x},page:{},...data,
  include:(name,locals)=>name.endsWith('blog_cover.ejs')||name.endsWith('community_post_actions.ejs')?ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),locals,{filename:path.resolve('views',name)}):''},{filename});
 }
 function content(kind){
@@ -86,7 +86,7 @@ test.each(['post','article','blog'])('%s menu Print opens the notes print flow w
  await context.close();
 });
 test('footnotes retain ordinary Markdown formatting at a smaller relative size on screen and in print',async()=>{
- const body='## Heading\n\n**Bold** *italic* ~~strike~~ ==highlight== __underline__ H~2~O X^2^ [link](https://example.com) العربية\n\n> العربية\n> English translation\n\n- Item\n  - Nested\n\n| Term | Meaning |\n| --- | --- |\n| A | B |\n\n```js\nconst value = 1;\n```';
+ const body='## Heading\n\n**Bold** _italic_ ~~strike~~ ==highlight== __underline__ H~2~O X^2^ [link](https://example.com) العربية\n\n> العربية\n> English translation\n\n- Item\n  - Nested\n\n| Term | Meaning |\n| --- | --- |\n| A | B |\n\n```js\nconst value = 1;\n```';
  const markdown='Main text[^n]\n\n[^n]: '+body.replace(/\n/g,'\n    ');
  const html=Notebook.render(markdown),$=load(html);
  for(const selector of ['h2','strong','em','s','mark','u','sub','sup','a[href="https://example.com"]','blockquote[dir="rtl"]','blockquote[dir="ltr"]','ul ul','table','pre code'])expect($('.footnotes '+selector).length).toBeGreaterThan(0);

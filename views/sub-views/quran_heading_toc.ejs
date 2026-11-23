@@ -66,7 +66,7 @@
     <% }); %>
     <a class="nav-link quran-heading-toc-link heading-toc-adjacent-h1 heading-toc-previous-h1" data-quran-heading-h1-prev<% if (quranHeadingOutline.previousH1) { %> href="<%= quranHeadingH1Href(quranHeadingOutline.previousH1) %>" rel="prev" title="Previous surah: <%= quranHeadingH1Label(quranHeadingOutline.previousH1) %>"><%= quranHeadingH1Label(quranHeadingOutline.previousH1) %><% } else { %> hidden><% } %></a>
     <strong id="quran-heading-toc-title" class="quran-heading-toc-title" data-quran-heading-toc-surah><%= quranHeadingOutline.surah %><% if (quranHeadingOutline.nameEn) { %> <%= quranHeadingOutline.nameEn %><% } %></strong>
-    <nav class="nav flex-column quran-heading-toc-nav" data-quran-heading-toc-nav aria-label="Headings in Surah <%= quranHeadingOutline.surah %>">
+    <nav class="ux-menu-list nav flex-column quran-heading-toc-nav" data-quran-heading-toc-nav aria-label="Headings in Surah <%= quranHeadingOutline.surah %>">
       <% (quranHeadingOutline.sections || []).forEach(function (heading) { %>
       <a class="nav-link quran-heading-toc-link<%= quranHeadingInitialKey === heading.key ? ' active' : '' %>" href="<%= quranHeadingHref(heading) %>" data-quran-heading-key="<%= heading.key %>"<% if (quranHeadingInitialKey === heading.key) { %> aria-current="location"<% } %>><%= quranHeadingLabel(heading) %></a>
       <% if ((heading.subsections || []).length > 0) { %>

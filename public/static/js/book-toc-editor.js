@@ -14,7 +14,7 @@
     return el;
   }
   function button(icon, label, action) {
-    const el = element('button', 'btn btn-sm btn-outline-secondary'); el.type = 'button';
+    const el = element('button', action === 'add' ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-outline-secondary'); el.type = 'button';
     el.title = label; el.setAttribute('aria-label', label); el.dataset.tocAction = action;
     const symbol = element('span', `bi bi-${icon}`); symbol.setAttribute('aria-hidden', 'true'); el.append(symbol);
     return el;

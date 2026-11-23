@@ -20,7 +20,7 @@ test('signed-in menus preserve destinations on desktop/mobile and sign-out remov
  w.renderMenu({displayName:'User',photoURL:'https://example.test/photo.png'});
  expect(w.document.querySelectorAll('[data-profile-menu]')).toHaveLength(2);
  for(const menu of w.document.querySelectorAll('[data-profile-menu]')){
-  expect(menu.querySelector('[data-profile-link]').textContent).toBe('My Profile');
+  expect(menu.querySelector('[data-profile-link]').textContent).toBe('Profile');
   expect(menu.querySelector('[data-profile-link]').href).toBe('https://hadith.test/community/mine');
   expect(menu.querySelector('[data-settings-link]').pathname).toBe('/quran/settings');
   expect(menu.querySelector('[data-notebook-link]').pathname).toBe('/notebook');

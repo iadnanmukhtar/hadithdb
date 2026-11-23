@@ -706,7 +706,7 @@ async function sitemapUrls(req) {
   // Publication/unpublication must not depend on the corpus disk cache lifetime.
   const base = global.settings.site.url.replace(/\/+$/, '');
   const articles = await require('../lib/CommunityBlogImport').publicUrls();
-  const corpus = urls.filter(url => !/^\/(?:blog\/|community\/(?:p\/|@))/.test(new URL(url).pathname));
+  const corpus = urls.filter(url => !/^\/(?:requests(?:\/|$)|blog\/|community\/(?:p\/|@))/.test(new URL(url).pathname));
   return [...new Set(corpus.concat(articles.map(path => base + path)))];
 }
 
@@ -883,7 +883,6 @@ function hadithPublicSitemapUrlList(domain) {
     `${domain}/books`,
     ...['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].map(type => `${domain}/books?${type}`),
     `${domain}/community`,
-    `${domain}/requests`,
     `${domain}/blog`,
     `${domain}/mcp-server`
   ];

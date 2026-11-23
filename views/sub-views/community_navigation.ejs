@@ -10,11 +10,11 @@
     { key: 'blog', href: '/blog', label: 'Blog', icon: 'newspaper' }
   ];
 %>
-<nav class="row g-0 chapter-toc community-section-menu" aria-label="Community sections">
+<nav class="row g-0 chapter-toc ux-subnav community-section-menu" aria-label="Community sections">
   <div class="col-12 chapter-toc-toolbar">
-    <div class="community-tabs btn-group btn-group-sm" role="group" aria-label="Community sections">
+    <div class="community-tabs nav nav-tabs" role="group" aria-label="Community sections">
       <% for (const entry of communitySections) { %>
-      <a class="btn btn-outline-secondary<%= entry.key === communitySection ? ' active' : '' %>" href="<%= utils.urlFor(req, entry.href) %>"<% if (entry.key === communitySection) { %> aria-current="page"<% } %><% if (entry.key === 'notebook') { %> title="Your private notebook"<% } %>><i class="bi bi-<%= entry.icon %>" aria-hidden="true"></i><span><%= entry.label %></span><% if (entry.key === 'following') { %><span class="badge rounded-pill community-alert-badge" data-community-alert-badge hidden aria-live="polite"></span><% } %></a>
+      <a class="nav-link<%= entry.key === communitySection ? ' active' : '' %>" href="<%= utils.urlFor(req, entry.href) %>"<% if (entry.key === communitySection) { %> aria-current="page"<% } %><% if (entry.key === 'notebook') { %> title="Your private notebook"<% } %>><i class="bi bi-<%= entry.icon %>" aria-hidden="true"></i><span><%= entry.label %></span><% if (entry.key === 'following') { %><span class="badge rounded-pill community-alert-badge" data-community-alert-badge hidden aria-live="polite"></span><% } %></a>
       <% } %>
     </div>
     <% if (communityNotebook) { %>

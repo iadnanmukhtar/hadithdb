@@ -15,7 +15,7 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
     justify-content: space-between;
     gap: .75rem;
   }
-  .ux-book-toc .toc-arabic-title { margin: 0; }
+  .ux-book-toc .toc-arabic-title { margin: 0; line-height: 1.35; }
 }
 .ux-book-toc .tafsir-book-meta { font-size: var(--ux-secondary-size); }
 .ux-book-toc .ux-section-title { margin-block: var(--ux-title-gap) .5rem; }

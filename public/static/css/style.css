@@ -1,5 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gentium+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
-@import url('./ivory.css?v=6');
+@import url('./ivory.css?v=7');
 
 @font-face {
 	font-family: Kitab;
@@ -7902,13 +7902,8 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	display: block;
 	min-height: 3rem;
 	padding: .5rem .65rem;
-	border: 1px dashed var(--bs-border-color);
 	border-radius: .375rem;
 	cursor: text;
-}
-.h .hadith-content-editor._e:focus {
-	border-style: solid;
-	border-color: var(--bs-primary);
 }
 .hadith-language-item ._e[data-placeholder]:empty::before { color: var(--bs-secondary-color); content: attr(data-placeholder); }
 .hadith-language-item ._e[data-markdown-source=""]:not(.markdown-editing) { color: var(--bs-secondary-color); }
@@ -7919,18 +7914,8 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 /* Keep public item actions out of the metadata admin button treatment. */
 .hadith-admin-action,
 .hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn) {
-	--bs-btn-active-bg: var(--c-ghostwhite);
-	--bs-btn-active-border-color: var(--bs-secondary-color);
-	--bs-btn-active-color: var(--bs-body-color);
-	--bs-btn-hover-bg: var(--c-ghostwhite);
-	--bs-btn-hover-border-color: var(--bs-secondary-color);
-	--bs-btn-hover-color: var(--bs-body-color);
 	align-items: center;
-	background: transparent !important;
-	border-color: var(--bs-border-color) !important;
 	border-radius: .35rem;
-	box-shadow: none !important;
-	color: var(--bs-secondary-color) !important;
 	display: inline-flex;
 	font-size: .72rem !important;
 	font-weight: 500;
@@ -7939,16 +7924,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	line-height: 1.15;
 	min-height: 1.7rem;
 	padding: .2rem .45rem;
-}
-.hadith-admin-action:hover,
-.hadith-admin-action:focus-visible,
-.hadith-admin-action:active,
-.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):hover,
-.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):focus-visible,
-.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):active {
-	background: var(--c-ghostwhite) !important;
-	border-color: var(--bs-secondary-color) !important;
-	color: var(--bs-body-color) !important;
 }
 .hadith-admin-action .bi,
 .hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn) .bi,
@@ -7962,12 +7937,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	padding: 0;
 	width: 1.5rem;
 }
-.hadith-grade-delete:hover,
-.hadith-grade-delete:focus-visible,
-.hadith-narrator-delete:hover,
-.hadith-narrator-delete:focus-visible,
-.hadith-sharh-delete:hover,
-.hadith-sharh-delete:focus-visible { color: var(--bs-body-color) !important; }
 .hadith-pair-manager-modal .modal-dialog { max-width: min(56rem, calc(100vw - 2rem)); }
 .hadith-pair-manager-filter { align-items: center; display: flex; position: relative; }
 .hadith-pair-manager-filter > .bi { color: var(--bs-secondary-color); font-size: .72rem; inset-inline-start: .65rem; pointer-events: none; position: absolute; z-index: 2; }
@@ -8490,22 +8459,6 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 
 .toc-book-description-summary a {
 	color: var(--c-accent);
-}
-
-.toc ._e[data-placeholder]:empty::before,
-.book-catalog-page ._e[data-placeholder]:empty::before {
-	color: var(--bs-secondary-color);
-	content: attr(data-placeholder);
-	font-style: italic;
-	opacity: .75;
-}
-
-.toc ._e[data-placeholder]:hover,
-.toc ._e[data-placeholder]:focus,
-.book-catalog-page ._e[data-placeholder]:hover,
-.book-catalog-page ._e[data-placeholder]:focus {
-	outline: 1px dashed var(--bs-border-color);
-	outline-offset: .15rem;
 }
 
 .toc-book-inline-size-editor {
@@ -12803,8 +12756,8 @@ a.cmd-btn:hover {
 
 /* Hadith Unlocked MCP marketing page */
 .mcp-marketing-page {
-	--mcp-ink: color-mix(in srgb, var(--bs-body-color) 91%, #091c2b 9%);
-	--mcp-muted: color-mix(in srgb, var(--bs-body-color) 67%, var(--bs-body-bg) 33%);
+	--mcp-ink: var(--ivory-heading, var(--bs-body-color));
+	--mcp-muted: var(--bs-secondary-color);
 	--mcp-line: color-mix(in srgb, var(--bs-body-color) 13%, transparent);
 	--mcp-surface: color-mix(in srgb, var(--bs-body-bg) 95%, var(--c-accent) 5%);
 	--mcp-surface-strong: color-mix(in srgb, var(--bs-body-bg) 88%, var(--c-accent) 12%);
@@ -12812,7 +12765,7 @@ a.cmd-btn:hover {
 
 .mcp-marketing-main {
 	color: var(--mcp-ink);
-	font-family: var(--bs-body-font-family);
+	font-family: var(--ux-font-ui);
 	line-height: 1.55;
 	margin-top: max(4.25rem, var(--site-fixed-header-height, 0px));
 }
@@ -12821,12 +12774,12 @@ a.cmd-btn:hover {
 .mcp-marketing-main h2,
 .mcp-marketing-main h3,
 .mcp-marketing-main p {
-	font-family: var(--bs-body-font-family);
+	font-family: var(--ux-font-ui);
 }
 
 .mcp-marketing-main h1 {
 	font-size: clamp(2.45rem, 5.6vw, 4.65rem) !important;
-	font-weight: 750;
+	font-weight: var(--ux-heading-weight);
 	letter-spacing: -.055em;
 	line-height: .99;
 	max-width: 12ch;
@@ -12834,34 +12787,21 @@ a.cmd-btn:hover {
 
 .mcp-marketing-main h2 {
 	font-size: clamp(1.9rem, 3.7vw, 3rem) !important;
-	font-weight: 720;
+	font-weight: var(--ux-heading-weight);
 	letter-spacing: -.04em;
 	line-height: 1.08;
 }
 
 .mcp-marketing-main h3 {
 	font-size: 1.08rem !important;
-	font-weight: 700;
+	font-weight: var(--ux-emphasis-weight);
 }
 
 .mcp-hero {
-	background:
-		radial-gradient(circle at 88% 9%, var(--c-accent-22), transparent 32rem),
-		linear-gradient(135deg, color-mix(in srgb, var(--bs-body-bg) 92%, #effaff 8%), var(--bs-body-bg));
+	background: var(--ivory-canvas, var(--bs-body-bg));
 	border-bottom: 1px solid var(--mcp-line);
 	padding: clamp(4.5rem, 8vw, 8rem) 0 clamp(4rem, 7vw, 7rem);
 	position: relative;
-}
-
-.mcp-hero::before {
-	background-image: linear-gradient(var(--mcp-line) 1px, transparent 1px), linear-gradient(90deg, var(--mcp-line) 1px, transparent 1px);
-	background-size: 42px 42px;
-	content: '';
-	inset: 0;
-	mask-image: linear-gradient(to bottom, rgba(0,0,0,.32), transparent 78%);
-	opacity: .3;
-	pointer-events: none;
-	position: absolute;
 }
 
 .mcp-hero .container {

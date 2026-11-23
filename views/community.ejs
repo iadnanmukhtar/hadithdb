@@ -14,7 +14,7 @@
   <% if (!readingArticle && (view !== 'post' || post.title?.trim())) { %>
   <div class="<%= view === 'email-preferences' ? 'ux-page-heading' : 'community-heading' %>">
     <% if (view === 'email-preferences') { %><a href="<%= locals.settingsReturn || '/settings' %>#settings-email-section" class="email-back"><i class="bi bi-arrow-left" aria-hidden="true"></i>Back to My Settings</a><% } %>
-    <div><h1 class="<%= view === 'email-preferences' ? 'ux-page-title' : '' %>" id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
+    <div><h1 class="ux-page-title" id="community-page-title" dir="auto"><%= view === 'post' ? post.title : view === 'author' ? author.name : page.title_en %></h1>
     <% if (view === 'email-preferences') { %><p>Choose which emails you receive and manage your author subscriptions.</p><% } %>
     <% if (['everyone','following','mine'].includes(view)) { %><p class="community-intro"><%= view === 'mine' ? 'Your posts, articles, reflections, comments, and publication drafts.' : view === 'following' ? 'The latest writing and conversations from authors you follow.' : 'Posts, articles, and discussions from the community.' %></p><% } %>
     </div>
