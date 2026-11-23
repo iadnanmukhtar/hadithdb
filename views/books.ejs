@@ -204,7 +204,11 @@
     ];
     const highlightedAliases = {
       hadith: BookGroups.list('hadith', books, { membershipOrder: true }).find(group => group.id === 'beginner-books')?.aliases || [],
-      sirah: [], mushaf: [], 'tafsir-all': [], translations: [], sharh: []
+      sirah: books.filter(book => book.type === 'sirah').map(book => book.alias),
+      mushaf: (locals.mushafs || []).map(book => book.alias),
+      'tafsir-all': tafsirGroups[0].tafsirs.filter(book => Tafsir.carouselLanguage(book) === 'en').map(book => book.alias),
+      translations: translationGroups.find(group => group.id === 'trans-21st-century')?.aliases || [],
+      sharh: ['bukhari-ibnhajar', 'muslim-nawawi', 'abudawud-shamsalhaqq', 'tirmidhi-mubarakfuri', 'nasai-suyuti', 'ibnmajah-sindi', 'riyad-ibnallan']
     };
 %>
 
