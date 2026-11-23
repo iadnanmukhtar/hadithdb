@@ -1,5 +1,12 @@
 [
   {
+    "id": "beginner-books",
+    "label": "Beginner Books",
+    "scope": "hadith",
+    "ordinal": -1,
+    "aliases": ["ibnrajab50", "riyad", "adab", "shamail"]
+  },
+  {
     "id": "sahihayn",
     "label": "sahihayn",
     "scope": "hadith",

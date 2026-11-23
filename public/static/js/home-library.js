@@ -6,18 +6,20 @@
   const books = [...shelf.querySelectorAll('[data-book-group]')];
   const field = shelf.querySelector('input[type="search"]');
   const normalize = window.normalizeContentFilterText;
-  const featured = books.filter(book => book.dataset.bookGroup === 'six')
+  const featured = books.filter(book => book.hasAttribute('data-shelf-order'))
     .sort((a, b) => Number(a.dataset.shelfOrder) - Number(b.dataset.shelfOrder));
   const searchable = books.map(book => normalize(book.dataset.search));
-  let selected = buttons[0].dataset.shelfView;
+  let selected = buttons[0]?.dataset.shelfView || 'all';
 
   function render() {
     const term = normalize(field.value);
     const view = term ? 'all' : selected;
     if (shelf.dataset.view !== view) {
       const directory = shelf.querySelector('.library-volumes');
-      if (view === 'six') directory.prepend(...featured);
+      const volumes = featured.filter(book => book.dataset.bookGroup === view);
+      if (volumes.length) directory.prepend(...volumes);
       else directory.append(...books);
+      shelf.dataset.layout = volumes.length ? 'covers' : 'directory';
       shelf.dataset.view = view;
     }
     let count = 0;
