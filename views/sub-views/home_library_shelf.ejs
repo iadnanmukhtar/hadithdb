@@ -4,15 +4,16 @@
   const beginner = members('beginner-books');
   const twelve = members('ninebooks').flatMap(alias => alias === 'muslim' ? [alias, 'lulu-marjan'] : [alias]);
   twelve.push('ibnhibban', 'hakim', 'daraqutni', 'mishkat');
-  const shelfOrder = { beginner, twelve };
-  const collectionOf = book => {
-    if (['history', 'sirah'].includes(book.type)) return 'history';
-    if (beginner.includes(book.alias)) return 'beginner';
-    if (twelve.includes(book.alias)) return 'twelve';
-    return 'other';
-  };
   const shelfBooks = libraryBooks.slice().sort((a, b) => (a.shortName_en || a.alias).localeCompare(b.shortName_en || b.alias, 'en'));
-  const collections = [['beginner', 'Beginner Books'], ['twelve', 'Twelve Books'], ['other', 'Other Hadith Books'], ['history', 'History & Sirah']];
+  const aliases = shelfBooks.map(book => book.alias);
+  const history = shelfBooks.filter(book => ['history', 'sirah'].includes(book.type)).map(book => book.alias);
+  const assigned = new Set([...beginner, ...twelve, ...history]);
+  const collections = [
+    ['beginner', 'Beginner Books', beginner],
+    ['twelve', 'Twelve Books', twelve.filter(alias => aliases.includes(alias))],
+    ['other', 'Other Hadith Books', aliases.filter(alias => !assigned.has(alias))],
+    ['history', 'History & Sirah', history]
+  ];
 %>
 <section class="library-shelf ux-system" aria-labelledby="library-shelf-title" data-library-shelf>
   <div class="library-shelf-heading">
@@ -22,18 +23,16 @@
     </div>
   </div>
   <div class="library-shelf-tabs" role="group" aria-label="Book collections" hidden>
-    <% for (const [id, label] of collections) { if (shelfBooks.some(book => collectionOf(book) === id)) { %>
-      <button type="button" data-shelf-view="<%= id %>"><%= label %></button>
+    <% for (const [id, label, titles] of collections) { if (titles.length) { %>
+      <button type="button" data-shelf-view="<%= id %>" data-titles="<%= titles.join(' ') %>"><%= label %></button>
     <% } } %>
   </div>
   <nav id="home-books" class="library-volumes" aria-label="Hadith books">
     <% for (const book of shelfBooks) {
       const arabicTitle = book.shortName || book.title;
-      const group = collectionOf(book);
-      const order = shelfOrder[group]?.indexOf(book.alias) ?? -1;
     %>
-      <a class="library-volume" href="<%= utils.urlFor(req, '/' + book.alias) %>" data-book-group="<%= group %>" data-alias="<%= book.alias %>"<% if (order >= 0) { %> data-shelf-order="<%= order %>"<% } %> data-search="<%= [book.alias, book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
-        <span class="volume-face" aria-hidden="true"><i class="bi <%= group === 'history' ? 'bi-clock-history' : 'bi-book' %>"></i></span>
+      <a class="library-volume" href="<%= utils.urlFor(req, '/' + book.alias) %>" data-alias="<%= book.alias %>" data-search="<%= [book.alias, book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
+        <span class="volume-face" aria-hidden="true"><i class="bi <%= history.includes(book.alias) ? 'bi-clock-history' : 'bi-book' %>"></i></span>
         <span class="volume-name"><%= book.name_en || book.shortName_en || book.alias %><%- hadithSizeIndicator(book) %></span>
         <% if (arabicTitle) { %><span class="volume-arabic" lang="ar" dir="rtl"><%= arabicTitle %></span><% } %>
         <span class="volume-author"><%= book.authorShortName_en || book.author_en || '' %></span>

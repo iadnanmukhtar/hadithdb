@@ -3,28 +3,30 @@
   if (!shelf) return;
   const tabs = shelf.querySelector('.library-shelf-tabs');
   const buttons = [...tabs.querySelectorAll('button')];
-  const books = [...shelf.querySelectorAll('[data-book-group]')];
+  const books = [...shelf.querySelectorAll('.library-volume')];
   const field = shelf.querySelector('input[type="search"]');
   const normalize = window.normalizeContentFilterText;
-  const featured = books.filter(book => book.hasAttribute('data-shelf-order'))
-    .sort((a, b) => Number(a.dataset.shelfOrder) - Number(b.dataset.shelfOrder));
+  const byAlias = new Map(books.map(book => [book.dataset.alias, book]));
+  const collections = new Map(buttons.map(button => [
+    button.dataset.shelfView, new Set(button.dataset.titles.split(' ').map(alias => byAlias.get(alias)))
+  ]));
   const searchable = books.map(book => normalize(book.dataset.search));
   let selected = buttons[0]?.dataset.shelfView || 'all';
 
   function render() {
     const term = normalize(field.value);
     const view = term ? 'all' : selected;
+    const volumes = collections.get(view);
     if (shelf.dataset.view !== view) {
       const directory = shelf.querySelector('.library-volumes');
-      const volumes = featured.filter(book => book.dataset.bookGroup === view);
-      if (volumes.length) directory.prepend(...volumes);
+      if (volumes) directory.prepend(...volumes);
       else directory.append(...books);
-      shelf.dataset.layout = volumes.length ? 'covers' : 'directory';
+      shelf.dataset.layout = ['beginner', 'twelve'].includes(view) ? 'covers' : 'directory';
       shelf.dataset.view = view;
     }
     let count = 0;
     books.forEach((book, i) => {
-      book.hidden = (view !== 'all' && book.dataset.bookGroup !== view) || !searchable[i].includes(term);
+      book.hidden = (volumes && !volumes.has(book)) || !searchable[i].includes(term);
       if (!book.hidden) count++;
     });
     buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.shelfView === view)));

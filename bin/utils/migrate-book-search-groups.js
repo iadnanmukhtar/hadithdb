@@ -44,7 +44,10 @@ async function main() {
 				return { ...group, label: seededGroup.label, ordinal: seededGroup.ordinal };
 			});
 			for (const { aliases, memberEvidence, ...group } of selected.filter(group => group.aliases.includes(row.alias))) {
-				if (!groups.some(current => current.id === group.id)) groups.push({ ...group, memberOrdinal: aliases.indexOf(row.alias), ...memberEvidence?.[row.alias] });
+				const index = groups.findIndex(current => current.id === group.id);
+				const memberOrdinal = aliases.indexOf(row.alias);
+				if (index === -1) groups.push({ ...group, memberOrdinal, ...memberEvidence?.[row.alias] });
+				else if (requested) groups[index] = { ...groups[index], memberOrdinal };
 			}
 			if ((groups?.length || existing != null || column != null) && !isDeepStrictEqual(existing, groups)) updates.push({ id: row.id, properties: { ...properties, searchGroups: groups } });
 		}
