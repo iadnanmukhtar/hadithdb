@@ -59,9 +59,16 @@ async function verifyRoute(page, route, status, titles) {
     assert.equal(await centered.getAttribute('data-alias'), 'nawawi40');
     await shelf.getByRole('button', { name: 'Next book', exact: true }).click();
     assert.equal(await centered.getAttribute('data-alias'), 'ibnrajab50');
+    async function checkBindings() {
+      const colors = await cards.locator('.volume-face').evaluateAll(faces =>
+        faces.map(face => getComputedStyle(face).backgroundColor));
+      assert.ok(colors.every((color, index) => !index || color !== colors[index - 1]), 'adjacent book bindings');
+    }
+    await checkBindings();
     const beginnerShelf = await aliases();
     assert.deepEqual(beginnerShelf, ['nawawi40', 'ibnrajab50', 'riyad', 'adab', 'shamail', 'mishkat']);
     await shelf.getByRole('button', { name: 'Twelve Books', exact: true }).click();
+    await checkBindings();
     const twelveShelf = await aliases();
     assert.deepEqual(twelveShelf, ['bukhari', 'muslim', 'lulu-marjan', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', 'ibnhibban', 'hakim', 'daraqutni', 'mishkat']);
     assert.equal(await centered.getAttribute('data-alias'), 'bukhari');

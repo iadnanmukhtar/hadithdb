@@ -36,28 +36,37 @@ main.home-library {
 .library-volume:hover .volume-name { text-decoration: underline; text-underline-offset: .2em; color: var(--ux-accent); }
 .library-shelf[data-layout="covers"] .library-volumes { grid-template-columns: repeat(6,minmax(0,1fr)); gap: clamp(.6rem,1.6vw,1.4rem); }
 .library-shelf[data-layout="covers"] .library-volume {
-  --cover: #253553;
+  --cover-gold: #efd291;
   display: flex; flex-direction: column; align-items: stretch; gap: .2rem; border: 0; padding: 0;
 }
-.library-volume[data-alias="riyad"], .library-volume[data-alias="muslim"] { --binding: #245452; }
-.library-volume[data-alias="adab"], .library-volume[data-alias="abudawud"] { --binding: #613e40; }
-.library-volume[data-alias="shamail"], .library-volume[data-alias="tirmidhi"] { --binding: #484064; }
-.library-volume[data-alias="ibnmajah"] { --binding: #3f503d; }
-.library-volume[data-alias="nasai"] { --binding: #785039; }
+/* Cover links are placed in shelf order before the directory entries. */
+.library-volume:nth-child(8n + 2) { --binding: #703c33; }
+.library-volume:nth-child(8n + 3) { --binding: #495037; }
+.library-volume:nth-child(8n + 4) { --binding: #654229; }
+.library-volume:nth-child(8n + 5) { --binding: #403044; }
+.library-volume:nth-child(8n + 6) { --binding: #72522c; }
+.library-volume:nth-child(8n + 7) { --binding: #254748; }
+.library-volume:nth-child(8n) { --binding: #59352c; }
 .library-shelf[data-layout="covers"] .volume-face {
   position: relative; align-self: stretch; display: grid; place-items: start center;
-  padding-top: 12%; aspect-ratio: 1 / 1.08; color: #eed9a9;
-  background: var(--binding,var(--cover)); border-radius: 3px 7px 6px 3px;
+  padding-top: 12%; aspect-ratio: 1 / 1.08; color: var(--cover-gold);
+  background-color: var(--binding, #283b2b);
+  background-image: url('../img/bookbinding-grain.webp'),
+    linear-gradient(90deg, #0004, transparent 3%, #fff2 4%, #0003 5%, transparent 8%),
+    linear-gradient(135deg, #fff1, transparent 48%, #0003);
+  background-size: 12rem 12rem, 100% 100%, 100% 100%;
+  background-blend-mode: soft-light, normal, normal;
+  border-radius: 3px 7px 6px 3px;
   border-inline-start: .35rem solid #0003; box-shadow: inset 2px 0 #fff3, inset 0 -3px #0002, 0 2px 4px #17203926;
 }
 .library-shelf[data-layout="covers"] .volume-face::before {
-  content: ''; position: absolute; inset: 7% 7% 8% 9%; border: 1px solid #e6cb915e; border-block-style: double; border-block-width: 3px;
+  content: ''; position: absolute; inset: 7% 7% 8% 9%; border: 1px solid #ddbc797a; border-block-style: double; border-block-width: 3px;
 }
 .library-shelf[data-layout="covers"] .volume-face i { font-size: .85rem; }
 .library-shelf[data-layout="covers"] .volume-arabic {
   position: absolute; inset-inline: 10%; top: 0; aspect-ratio: .8 / 1.08;
   display: grid; place-content: center; padding-top: 12%; text-align: center;
-  color: #fff4d9; font-family: 'Amiri', serif; font-size: clamp(1.4rem,2.5vw,2.3rem); line-height: 1.3;
+  color: var(--cover-gold); text-shadow: 0 1px 1px #23190e; font-family: 'Amiri', serif; font-size: clamp(1.4rem,2.5vw,2.3rem); line-height: 1.3;
 }
 .library-shelf[data-layout="covers"] .volume-name { margin-top: .5rem; }
 .library-empty { padding: 1rem 0; color: var(--ux-muted); }
