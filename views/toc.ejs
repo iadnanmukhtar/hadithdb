@@ -12,6 +12,8 @@
         
     var isQuranToc = book.alias === 'quran';
     var quranCommentaryBook = locals.quranCommentaryBook;
+    const tafsirHighlights = isQuranToc && !quranCommentaryBook && locals.tafsirs?.length
+      ? Tafsir.englishHighlights(Tafsir.catalogOrder(locals.tafsirs)) : [];
     var quranCommentaryBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
     var quranCommentaryBookSlug = quranCommentaryBook && (quranCommentaryBook.quranBookSlug || quranCommentaryBook.slug || quranCommentaryBook.alias);
     function displayName(value) {
@@ -534,6 +536,10 @@
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
   
   <%- include('sub-views/toc_styles.ejs'); %>
+  <% if (tafsirHighlights.length) { %>
+    <link rel="stylesheet" href="/static/css/home-library.css?v=<%= utils.styleAssetVersion() %>">
+    <script defer src="/static/js/home-library.js?v=<%= utils.scriptAssetVersion() %>"></script>
+  <% } %>
 </head>
 
 <body>
@@ -549,6 +555,12 @@
           <%- include('sub-views/toc_actions.ejs', actions); %>
         </header>
         <div data-toc-mobile-tools></div>
+        <% if (tafsirHighlights.length) { %>
+          <section class="library-shelf" data-library-shelf data-layout="covers" aria-labelledby="highlighted-tafsir">
+            <h2 class="ux-section-title" id="highlighted-tafsir">Highlighted Tafsir</h2>
+            <%- include('sub-views/library_volumes', { shelfId: 'quran-highlight-books', shelfLabel: 'Highlighted Tafsir', shelfBooks: tafsirHighlights, bookHref: quranCommentaryPaginationHref, bookIcon: () => 'bi-book-half', hadithSizeIndicator: Tafsir.sizeIndicator }) %>
+          </section>
+        <% } %>
       <% } %>
       
       <article>

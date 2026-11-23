@@ -62,17 +62,6 @@
       death = death.replace(/\b(?:AH|H)\b/ig, '').replace(/هـ/u, '').trim();
       return `ت. ${death} هـ`;
     };
-    var tafsirDeathYear = function (tafsir) {
-      var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
-      return match ? Number(match[0]) : NaN;
-    };
-    var tafsirPublishedYear = function (tafsir) {
-      var match = utils.emptyIfNull(tafsir.published_year || '').toString().match(/\d+/);
-      return match ? Number(match[0]) : NaN;
-    };
-    var tafsirSortName = function (tafsir) {
-      return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.title || tafsir.alias || '';
-    };
     var commentaryPublicationLabel = function (book) {
       return [
         book && book.published_year ? `Pub. ${book.published_year}` : '',
@@ -88,34 +77,7 @@
         death = `${death} CE`;
       return /^d\./i.test(death) ? death : `d. ${death}`;
     };
-    var tafsirGroups = [
-      { key: 'all', heading: 'Tafsir', tafsirs: Tafsir.uniqueCarouselTafsirs((tafsirs || []).slice()) }
-    ].map(function (group) {
-      group.tafsirs.sort(function (a, b) {
-        if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
-          return Tafsir.isDefaultTafsir(a) ? -1 : 1;
-        var aDeath = tafsirDeathYear(a);
-        var bDeath = tafsirDeathYear(b);
-        var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
-        var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
-        if (aHasDeath && bHasDeath && aDeath !== bDeath)
-          return aDeath - bDeath;
-        if (aHasDeath !== bHasDeath)
-          return aHasDeath ? -1 : 1;
-        if (!aHasDeath && !bHasDeath) {
-          var aPublished = tafsirPublishedYear(a);
-          var bPublished = tafsirPublishedYear(b);
-          var aHasPublished = Number.isFinite(aPublished) && aPublished > 0;
-          var bHasPublished = Number.isFinite(bPublished) && bPublished > 0;
-          if (aHasPublished && bHasPublished && aPublished !== bPublished)
-            return bPublished - aPublished;
-          if (aHasPublished !== bHasPublished)
-            return aHasPublished ? -1 : 1;
-        }
-        return tafsirSortName(a).localeCompare(tafsirSortName(b));
-      });
-      return group;
-    });
+    var tafsirGroups = [{ key: 'all', heading: 'Tafsir', tafsirs: Tafsir.catalogOrder(tafsirs) }];
     var catalogBookGroups = {
       hadith: BookGroups.list('hadith'),
       tafsir: BookGroups.list('tafsir'),
@@ -160,23 +122,6 @@
     var bookDescriptionId = function (book) {
       return `book-catalog-book-description-${utils.emptyIfNull(book.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
     };
-    var tafsirSizeLabel = function (tafsir) {
-      var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
-      if (size === 'lg')
-        return 'Large tafsir';
-      if (size === 'md')
-        return 'Medium tafsir';
-      if (size === 'sm')
-        return 'Small tafsir';
-      return '';
-    };
-    var tafsirSizeIndicator = function (tafsir) {
-      var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
-      var label = tafsirSizeLabel(tafsir);
-      if (!label)
-        return '';
-      return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
-    };
     var hadithSizeLabel = function (book) {
       var size = utils.emptyIfNull(book && book.size || '').toString();
       if (size === 'lg')
@@ -206,7 +151,7 @@
       hadith: BookGroups.list('hadith', books, { membershipOrder: true }).find(group => group.id === 'beginner-books')?.aliases || [],
       sirah: books.filter(book => book.type === 'sirah').map(book => book.alias),
       mushaf: (locals.mushafs || []).map(book => book.alias),
-      'tafsir-all': tafsirGroups[0].tafsirs.filter(book => Tafsir.carouselLanguage(book) === 'en').map(book => book.alias),
+      'tafsir-all': Tafsir.englishHighlights(tafsirGroups[0].tafsirs).map(book => book.alias),
       translations: translationGroups.find(group => group.id === 'trans-21st-century')?.aliases || [],
       sharh: ['bukhari-ibnhajar', 'muslim-nawawi', 'abudawud-shamsalhaqq', 'tirmidhi-mubarakfuri', 'nasai-suyuti', 'ibnmajah-sindi', 'riyad-ibnallan']
     };
@@ -252,7 +197,7 @@
     %>
     <section class="library-shelf" data-library-shelf data-layout="covers" data-highlight-pane="<%= collection.pane %>" aria-labelledby="highlight-<%= pane %>" <%= pane === initialBookCatalogType ? '' : 'hidden' %>>
       <h2 id="highlight-<%= pane %>" class="ux-section-title"><%= label %></h2>
-      <%- include('sub-views/library_volumes', { shelfId: 'highlight-books-' + pane, shelfLabel: label, shelfBooks: highlights, hadithSizeIndicator, bookHref: collection.railHref, bookIcon: () => 'bi-' + icon }) %>
+      <%- include('sub-views/library_volumes', { shelfId: 'highlight-books-' + pane, shelfLabel: label, shelfBooks: highlights, hadithSizeIndicator: pane === 'tafsir-all' ? Tafsir.sizeIndicator : hadithSizeIndicator, bookHref: collection.railHref, bookIcon: () => 'bi-' + icon }) %>
     </section>
     <% } } %>
 
@@ -393,7 +338,7 @@
                             <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- tafsir.name_en || '' %></span></a>
                           <% } else { %>
                             <a href="<%= browseUrl %>"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></a>
-                          <% } %><%- tafsirSizeIndicator(tafsir) %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= bookLanguageBadge(tafsir) %></span>
+                          <% } %><%- Tafsir.sizeIndicator(tafsir) %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= bookLanguageBadge(tafsir) %></span>
                         </h3>
                         <% if (site.editMode || tafsir.name || tafsir.shortName) { %>
                           <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">

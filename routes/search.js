@@ -2949,7 +2949,9 @@ router.get('/:bookAlias', async function (req, res, next) {
     const quranTocDefaultView = req.params.bookAlias === 'quran'
       ? (req.query.toc || req.query.view || req.query.tab || 'juz')
       : 'surahs';
-    var cachedFile = Utils.htmlCacheFile(req);
+    var cachedFile = book.alias === 'quran'
+      ? Utils.cacheFileFromFilename('_quran.highlights-' + (['surahs', 'manzils'].includes(quranTocDefaultView) ? quranTocDefaultView : 'juz') + Utils.cacheReqToFilename(req), 'html', 'quran', 'quran')
+      : Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache && req.params.bookAlias === 'quran')
       invalidateQuranMemoryCaches({ allMushaf: true });

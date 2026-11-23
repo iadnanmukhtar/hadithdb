@@ -183,6 +183,12 @@ async function verifyRoute(page, route, status, titles) {
     await rail.waitFor({ state: 'hidden' });
   }
   if (route === '/quran') {
+    const highlights = page.getByRole('region', { name: 'Highlighted Tafsir' });
+    const selected = highlights.locator('[data-position="center"]');
+    assert.equal(await selected.getAttribute('data-alias'), 'mokhtasar');
+    await highlights.getByRole('button', { name: 'Next book' }).click();
+    assert.match(await selected.getAttribute('href'), /\/quran\/tafsir\//);
+    assert.notEqual(await selected.getAttribute('data-alias'), 'mokhtasar');
     await page.locator('#toc-tab-surahs').click();
     const toggle = page.locator('#toc-surahs [data-toc-toggle]').first();
     await toggle.click();
