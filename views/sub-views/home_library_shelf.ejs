@@ -2,17 +2,17 @@
   const groups = BookGroups.list('hadith', libraryBooks, { membershipOrder: true });
   const members = id => groups.find(group => group.id === id)?.aliases || [];
   const beginner = members('beginner-books');
-  const nine = members('ninebooks').flatMap(alias => alias === 'muslim' ? [alias, 'lulu-marjan'] : [alias]);
-  nine.push('mishkat');
-  const shelfOrder = { beginner, nine };
+  const twelve = members('ninebooks').flatMap(alias => alias === 'muslim' ? [alias, 'lulu-marjan'] : [alias]);
+  twelve.push('ibnhibban', 'hakim', 'daraqutni', 'mishkat');
+  const shelfOrder = { beginner, twelve };
   const collectionOf = book => {
     if (['history', 'sirah'].includes(book.type)) return 'history';
     if (beginner.includes(book.alias)) return 'beginner';
-    if (nine.includes(book.alias)) return 'nine';
+    if (twelve.includes(book.alias)) return 'twelve';
     return 'other';
   };
   const shelfBooks = libraryBooks.slice().sort((a, b) => (a.shortName_en || a.alias).localeCompare(b.shortName_en || b.alias, 'en'));
-  const collections = [['beginner', 'Beginner Books'], ['nine', 'Nine Books'], ['other', 'Other Hadith Books'], ['history', 'History & Sirah']];
+  const collections = [['beginner', 'Beginner Books'], ['twelve', 'Twelve Books'], ['other', 'Other Hadith Books'], ['history', 'History & Sirah']];
 %>
 <section class="library-shelf ux-system" aria-labelledby="library-shelf-title" data-library-shelf>
   <div class="library-shelf-heading">

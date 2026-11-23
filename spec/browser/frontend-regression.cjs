@@ -56,9 +56,9 @@ async function verifyRoute(page, route, status, titles) {
     const aliases = () => cards.evaluateAll(nodes => nodes.map(node => node.dataset.alias));
     await shelf.locator('[data-shelf-view="beginner"][aria-pressed="true"]').waitFor();
     assert.deepEqual(await aliases(), ['ibnrajab50', 'riyad', 'adab', 'shamail']);
-    await shelf.getByRole('button', { name: 'Nine Books', exact: true }).click();
-    const nineShelf = await aliases();
-    assert.deepEqual(nineShelf, ['bukhari', 'muslim', 'lulu-marjan', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', 'mishkat']);
+    await shelf.getByRole('button', { name: 'Twelve Books', exact: true }).click();
+    const twelveShelf = await aliases();
+    assert.deepEqual(twelveShelf, ['bukhari', 'muslim', 'lulu-marjan', 'abudawud', 'tirmidhi', 'nasai', 'ibnmajah', 'malik', 'ahmad', 'darimi', 'ibnhibban', 'hakim', 'daraqutni', 'mishkat']);
     await shelf.getByRole('button', { name: 'History & Sirah' }).click();
     assert.ok(await cards.count() >= 3);
     const field = shelf.getByRole('searchbox');
@@ -73,7 +73,7 @@ async function verifyRoute(page, route, status, titles) {
     assert.equal(await shelf.getByRole('button', { name: 'History & Sirah' }).getAttribute('aria-pressed'), 'true');
     const history = await aliases();
     await shelf.getByRole('button', { name: 'Other Hadith Books' }).click();
-    const assigned = new Set([...nineShelf, ...history, 'ibnrajab50', 'riyad', 'adab', 'shamail']);
+    const assigned = new Set([...twelveShelf, ...history, 'ibnrajab50', 'riyad', 'adab', 'shamail']);
     assert.ok((await aliases()).every(alias => !assigned.has(alias)));
     assert.equal((await aliases()).length + assigned.size, await shelf.locator('.library-volume').count());
     assert.ok(await cards.count() > 6);
