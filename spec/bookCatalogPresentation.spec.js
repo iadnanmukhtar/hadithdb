@@ -59,9 +59,7 @@ test.each(['hadith', 'tafsir', 'translation', 'sharh'])('%s preserves reader lin
   expect(arabicTitle.textContent).toBe('جامع البيان');
   expect(arabicTitle.hidden).toBe(false);
   expect(dialog.querySelector('.book-catalog-type-pill').textContent).toBe(type);
-  expect(Array.from(dialog.querySelectorAll('.book-catalog-pill')).map(pill => pill.textContent)).toEqual(
-    Array.from(card.querySelectorAll('.book-catalog-summary .book-catalog-pill')).map(pill => pill.textContent)
-  );
+  expect(card.querySelector('.book-catalog-summary .book-catalog-pill')).toBeNull();
   expect(dialog.querySelector('.book-language-badge')).toBeNull();
   expect(dialog.textContent).toContain('Full book description.');
   expect(dialog.querySelector('.toc-book-description-full').classList.contains('d-none')).toBe(false);
@@ -87,12 +85,12 @@ test('keeps categories and controls English-only and hides empty sections after 
   expect(doc.querySelector('.book-catalog-details-button .bi-info-circle')).not.toBeNull();
   expect(doc.querySelector('.book-catalog-details-button').getAttribute('aria-label')).toContain('Book details:');
   expect(doc.querySelector('#book-catalog-dialog-title').textContent).toBe('Book details');
-  expect(pane.querySelector('.book-catalog-summary .tafsir-book-title-line a').textContent).toBe('Tabari');
-  expect(pane.querySelector('.book-catalog-summary .tafsir-book-title-line[lang="ar"] a').textContent).toBe('الطبري');
-  expect(pane.querySelector('.book-catalog-summary .tafsir-book-meta [lang="ar"]').textContent).toContain('ابن جرير الطبري');
+  expect(pane.querySelector('.book-catalog-summary .volume-name').textContent).toBe('Tabari');
+  expect(pane.querySelector('.book-catalog-summary .volume-arabic').textContent).toBe('الطبري');
+  expect(pane.querySelector('.tafsir-book-row-main .tafsir-book-meta [lang="ar"]').textContent).toContain('ابن جرير الطبري');
   const card = category.querySelector('.tafsir-book-row');
   expect(card.dataset.bookCatalogFilter).toContain('tabari');
-  expect(Array.from(card.querySelectorAll('.book-catalog-summary .book-catalog-pill')).map(pill => pill.textContent)).toEqual(['Tafsir', 'ar', 'Major Tafsirs']);
+  expect(Array.from(card.querySelectorAll('.tafsir-book-row-main .book-catalog-pill')).map(pill => pill.textContent)).toEqual(['Tafsir', 'ar', 'Major Tafsirs']);
   card.classList.add('d-none');
   await Promise.resolve();
   expect(category.hidden).toBe(true);
@@ -122,17 +120,19 @@ test('opens the redesigned catalog at its canonical collection URL', async () =>
   dom.window.close();
 });
 
-test('card and details pills drive the catalog filters', async () => {
+test('details pills drive the catalog filters', async () => {
   const dom = browser(await render('hadith'));
   const doc = dom.window.document;
   const card = doc.querySelector('#book-catalog-hadith .book-catalog-card');
-  card.querySelector('.book-catalog-summary [data-catalog-facet="group"]').click();
+  card.querySelector('.book-catalog-details-button').click();
+  doc.querySelector('dialog [data-catalog-facet="group"]').click();
   expect(dom.window.history.state.bookCatalog.group).toBe('sihah');
   card.querySelector('.book-catalog-details-button').click();
   doc.querySelector('dialog [data-catalog-facet="badge"]').click();
   expect(doc.querySelector('dialog').open).toBe(false);
   expect(dom.window.history.state.bookCatalog.badge).toBe('ar');
-  card.querySelector('.book-catalog-summary [data-catalog-facet="type"]').click();
+  card.querySelector('.book-catalog-details-button').click();
+  doc.querySelector('dialog [data-catalog-facet="type"]').click();
   expect(dom.window.history.state.bookCatalog.group).toBe('');
   dom.window.close();
 });
@@ -164,19 +164,17 @@ test.each(['tafsir', 'translation', 'sharh'])('%s keeps size indicators on cards
   dom.window.close();
 });
 
-test.each(['hadith', 'tafsir', 'translation', 'sharh'])('%s uses bilingual short author names and a separate death footer while preserving full modal metadata', async collection => {
+test.each(['hadith', 'tafsir', 'translation', 'sharh'])('%s uses the homepage directory link and an inline author and date while preserving full modal metadata', async collection => {
   const record = { ...book, author_en: 'Full English author name', author: 'اسم المؤلف الكامل', authorShortName_en: 'Ibn Jarir', authorShortName: 'ابْنُ جَرِيرٍ' };
   const dom = browser(await render(collection, false, [record]));
   const doc = dom.window.document;
   const card = doc.querySelector('.book-catalog-tab-pane.active .tafsir-book-row');
   const summary = card.querySelector('.book-catalog-summary');
-  const metadata = summary.querySelector('.tafsir-book-meta');
+  const metadata = summary.querySelector('a.library-volume .volume-author');
   expect(metadata.textContent).toContain('Ibn Jarir');
-  expect(metadata.textContent).toContain('ابْنُ جَرِيرٍ');
+  expect(summary.querySelectorAll('a')).toHaveLength(1);
   expect(metadata.textContent).not.toContain('Full English author name');
-  expect(metadata.textContent).not.toContain('310');
-  expect(summary.lastElementChild.classList.contains('book-catalog-death')).toBe(true);
-  expect(summary.lastElementChild.textContent).toBe(`d. 310 ${collection === 'translation' ? 'CE' : 'AH'}`);
+  expect(metadata.querySelector('.book-catalog-death').textContent).toBe(`d. 310 ${collection === 'translation' ? 'CE' : 'AH'}`);
   summary.querySelector('.book-catalog-details-button').click();
   expect(doc.querySelector('dialog').textContent).toContain('Full English author name');
   dom.window.close();
@@ -188,10 +186,10 @@ test('sharh cards keep clean titles and display authors in their separate metada
     { ...book, id: 2, type: 'sharh', alias: 'nasai-suyuti', shortName_en: 'Sharḥ al-Suyūṭī', authorShortName_en: 'Jalal al-Din al-Suyuti' }
   ];
   const dom = browser(await render('sharh', false, records));
-  const titles = [...dom.window.document.querySelectorAll('.book-catalog-tab-pane.active .book-catalog-summary .tafsir-book-title-line:not([lang="ar"])')];
-  expect(titles[0].querySelector('a').textContent).toBe('Fatḥ al-Bārī');
+  const titles = [...dom.window.document.querySelectorAll('.book-catalog-tab-pane.active .book-catalog-summary .volume-name')];
+  expect(titles[0].textContent).toBe('Fatḥ al-Bārī');
   expect(titles[0].querySelector('.sharh-author-suffix')).toBeNull();
-  expect(titles[0].closest('.book-catalog-summary').querySelector('.tafsir-book-meta').textContent).toContain('Ibn Hajar al-Asqalani');
+  expect(titles[0].closest('.book-catalog-summary').querySelector('.volume-author').textContent).toContain('Ibn Hajar al-Asqalani');
   expect(titles[1].querySelector('.sharh-author-suffix')).toBeNull();
   expect(records[0].shortName_en).toBe('Fatḥ al-Bārī');
   dom.window.close();
@@ -272,7 +270,7 @@ test.each(['hadith', 'sharh'])('%s tags and filters sharh books by their hadith 
   }
   const scope = doc.querySelector('#book-catalog-sharh');
   expect(Array.from(scope.querySelectorAll('.book-catalog-category-title')).map(node => node.textContent)).toEqual(['Sahih al-Bukhari', 'Sahih Muslim']);
-  expect(scope.querySelector('.book-catalog-summary .book-catalog-classifications').textContent).toContain('Sahih al-Bukhari');
+  expect(scope.querySelector('.tafsir-book-row-main .book-catalog-classifications').textContent).toContain('Sahih al-Bukhari');
   doc.querySelector('[data-catalog-value="sharh-bukhari"]').click();
   expect(scope.querySelectorAll('.tafsir-book-row:not(.d-none)')).toHaveLength(1);
   expect(scope.querySelector('.tafsir-book-row:not(.d-none)').dataset.bookCatalogGroups).toBe('sharh-bukhari');

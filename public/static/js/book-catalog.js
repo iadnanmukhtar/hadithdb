@@ -161,7 +161,7 @@
       var details = card.querySelector('.tafsir-book-row-main');
       if (!details) return;
       var size = sizeOf(card);
-      card.classList.add('library-volume', 'catalog-volume');
+      card.classList.add('catalog-volume');
       card.dataset.bookCatalogSize = size;
       if (size && !details.querySelector('.tafsir-size-indicator, .hadith-size-indicator')) {
         var title = details.querySelector('.tafsir-book-title-line:not([lang="ar"])');
@@ -178,30 +178,36 @@
       var summary = document.createElement('div');
       summary.className = 'book-catalog-summary';
       var ids = (card.dataset.bookCatalogGroups || card.dataset.tafsirBookGroups || '').split(/\s+/).filter(Boolean);
-      ['.tafsir-book-title-pair', '.tafsir-book-meta'].forEach(function (selector) {
-        var source = details.querySelector(selector);
-        if (!source) return;
-        var copy = source.cloneNode(true);
-        copy.querySelectorAll('[id]').forEach(function (node) { node.removeAttribute('id'); });
-        copy.querySelectorAll('.book-language-badge').forEach(function (node) { node.remove(); });
-        // Cards use short author names; full names and dates stay in the original modal metadata.
-        if (selector === '.tafsir-book-meta') {
-          var englishAuthor = source.querySelector(':scope > div:not([lang="ar"]) > span');
-          var arabicAuthor = source.querySelector(':scope > [lang="ar"] > span');
-          var authorEn = card.dataset.bookAuthorShortEn || (englishAuthor ? englishAuthor.textContent.trim() : '');
-          var authorAr = card.dataset.bookAuthorShortAr || (arabicAuthor ? arabicAuthor.textContent.trim() : '');
-          if (authorEn || authorAr) {
-            copy.replaceChildren();
-            if (authorEn) {
-              var en = document.createElement('div'); en.textContent = authorEn; copy.append(en);
-            }
-            if (authorAr) {
-              var ar = document.createElement('div'); ar.lang = 'ar'; ar.dir = 'rtl'; ar.textContent = authorAr; copy.append(ar);
-            }
-          } else Array.from(copy.children).slice(2).forEach(function (node) { node.remove(); });
-        }
-        summary.append(copy);
-      });
+      var sourceTitle = details.querySelector('.tafsir-book-title-line a[href]');
+      if (!sourceTitle) return;
+      var reader = document.createElement('a');
+      reader.className = 'library-volume';
+      reader.href = sourceTitle.getAttribute('href');
+      var face = document.createElement('span');
+      face.className = 'volume-face';
+      face.setAttribute('aria-hidden', 'true');
+      if (typeIcon) face.append(typeIcon.content.firstElementChild.cloneNode(true));
+      var name = document.createElement('span');
+      name.className = 'volume-name';
+      name.textContent = card.dataset.directoryTitle || sourceTitle.textContent.trim();
+      var sizeMark = sourceTitle.parentElement.querySelector('[role="img"]');
+      if (sizeMark) name.append(sizeMark.cloneNode(true));
+      reader.append(face, name);
+      var arabicTitle = details.querySelector('.tafsir-book-title-line[lang="ar"] a');
+      if (arabicTitle) {
+        var arabic = document.createElement('span');
+        arabic.className = 'volume-arabic'; arabic.lang = 'ar'; arabic.dir = 'rtl';
+        arabic.textContent = arabicTitle.textContent.trim();
+        reader.append(arabic);
+      }
+      var metadata = details.querySelector('.tafsir-book-meta');
+      var author = document.createElement('span');
+      author.className = 'volume-author';
+      author.textContent = card.dataset.bookAuthorShortEn
+        || metadata?.querySelector(':scope > div:not([lang="ar"]) > span')?.textContent.trim()
+        || card.dataset.bookAuthorShortAr || (metadata && !metadata.children.length ? metadata.textContent.trim() : '');
+      reader.append(author);
+      summary.append(reader);
       var classifications = document.createElement('div');
       classifications.className = 'book-catalog-classifications';
       classifications.setAttribute('aria-label', 'Book classifications');
@@ -232,18 +238,17 @@
         languagePill.classList.add('book-catalog-language-pill');
         classifications.insertBefore(languagePill, classifications.children[1] || null);
       }
-      summary.append(classifications);
-      var detailClassifications = classifications.cloneNode(true);
+
       var detailTitles = details.querySelector('.tafsir-book-title-pair');
-      if (detailTitles) detailTitles.after(detailClassifications);
-      else details.prepend(detailClassifications);
+      if (detailTitles) detailTitles.after(classifications);
+      else details.prepend(classifications);
       if (languageBadge) languageBadge.remove();
       var button = document.createElement('button');
       button.type = 'button'; button.className = 'book-catalog-details-button';
       button.innerHTML = '<span class="bi bi-info-circle" aria-hidden="true"></span>';
       button.title = 'Book details';
       button.setAttribute('aria-haspopup', 'dialog');
-      button.setAttribute('aria-label', 'Book details: ' + (summary.querySelector('a') || summary).textContent.trim());
+      button.setAttribute('aria-label', 'Book details: ' + name.textContent.trim());
       button.addEventListener('click', function () {
         current = { card: card, details: details }; opener = button;
         var titleLink = detailTitles && detailTitles.querySelector('a[href]');
@@ -262,34 +267,27 @@
         document.body.classList.add('book-catalog-dialog-open');
         dialog.showModal(); body.scrollTop = 0;
       });
-      var titles = summary.querySelector('.tafsir-book-title-pair');
-      if (titles && typeIcon) {
-        var icon = typeIcon.content.firstElementChild.cloneNode(true);
-        icon.classList.add('volume-face');
-        titles.querySelector('.tafsir-book-title-line')?.prepend(icon);
-      }
-      if (titles) titles.insertBefore(button, titles.children[1] || null);
-      else summary.prepend(button);
+      summary.append(button);
       var death = Number(card.dataset.bookDeath);
       var legacyDeath = details.querySelector('.tafsir-book-meta');
       var deathMatch = legacyDeath && legacyDeath.textContent.match(/\bd\.\s*(\d+)\s*(AH|CE)?/);
       if (!death && deathMatch) death = Number(deathMatch[1]);
       if (card.dataset.bookDeathLabel || death > 0) {
-        var deathLine = document.createElement('div');
+        var deathLine = document.createElement('span');
         deathLine.className = 'book-catalog-death';
         deathLine.textContent = card.dataset.bookDeathLabel || ('d. ' + death + ' ' + (type === 'Translation' ? 'CE' : 'AH'));
-        summary.append(deathLine);
+        author.append(deathLine);
       }
       if (type === 'Translation' && card.dataset.bookPublicationYear) {
-        var publicationLine = document.createElement('div');
+        var publicationLine = document.createElement('span');
         publicationLine.className = 'book-catalog-publication text-muted';
         publicationLine.textContent = 'Pub. ' + card.dataset.bookPublicationYear;
-        var datesRow = document.createElement('div');
+        var datesRow = document.createElement('span');
         datesRow.className = 'book-catalog-dates';
         datesRow.append(publicationLine);
         var existingDeathLine = summary.querySelector('.book-catalog-death');
         if (existingDeathLine) datesRow.append(existingDeathLine);
-        summary.append(datesRow);
+        author.append(datesRow);
       }
       card.prepend(summary); details.hidden = true;
       var id = ids.find(function (candidate) { return groups.has(candidate); }) || '';

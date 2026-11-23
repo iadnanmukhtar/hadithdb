@@ -220,7 +220,7 @@
                 var descriptionKey = `${descriptionId}-body`;
               %>
               <% var bookGroupIds = bookType === 'hadith' ? catalogGroupIds(book.alias, 'hadith') : []; %>
-              <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= book.size || '' %>" data-book-author-short-en="<%= book.authorShortName_en || '' %>" data-book-author-short-ar="<%= book.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(book) %>" data-book-death="<%= book.death || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+              <article class="book-catalog-card tafsir-book-row" data-directory-title="<%= book.name_en || book.shortName_en || book.alias %>" data-book-catalog-size="<%= book.size || '' %>" data-book-author-short-en="<%= book.authorShortName_en || '' %>" data-book-author-short-ar="<%= book.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(book) %>" data-book-death="<%= book.death || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
                 bookGroupIds.map(function (id) { var group = catalogBookGroups.hadith.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                 bookType,
                 book.alias,
