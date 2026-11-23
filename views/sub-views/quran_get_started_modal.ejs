@@ -1,7 +1,7 @@
 <div class="modal fade" id="quran-get-started-modal" tabindex="-1" aria-labelledby="quran-get-started-title" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <form class="modal-content" id="quran-get-started-form">
-      <header class="modal-header"><h2 class="modal-title fs-5" id="quran-get-started-title">Get started memorizing</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></header>
+      <header class="modal-header"><h2 class="modal-title fs-5" id="quran-get-started-title">Get started memorizing</h2><%- include('modal_close.ejs', { closeLabel: 'Close' }) %></header>
       <div class="modal-body">
         <section id="quran-get-started-learning-step">
           <p class="fw-bold mb-1">What surah do you want to memorize?</p>
@@ -12,7 +12,7 @@
         </section>
         <p class="small text-muted mt-3 mb-0" id="quran-get-started-status" role="status" aria-live="polite"></p>
       </div>
-      <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-success" id="quran-get-started-submit">Start Review</button></footer>
+      <footer class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button><button type="submit" class="btn btn-primary" id="quran-get-started-submit">Start Review</button></footer>
     </form>
   </div>
 </div>

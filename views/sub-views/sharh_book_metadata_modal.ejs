@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="<%= modalId %>-heading">Sharh book metadata — <%= sharhBook.shortName_en || sharhBook.title %></h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
       </div>
       <div class="modal-body">
         <p class="small text-muted">Changes save when you leave a field and apply everywhere this Sharh book is used.</p>

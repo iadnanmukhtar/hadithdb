@@ -106,7 +106,8 @@ describe('static assets', () => {
 
     const legal = fs.readFileSync(path.join(__dirname, '../views/legal.ejs'), 'utf8');
     expect(legal).toContain("include('sub-views/header.ejs'");
-    expect(legal).toContain("include('sub-views/footer.ejs'");
+    expect(legal).toContain("include('sub-views/page_end.ejs'");
+    expect(fs.readFileSync(path.join(__dirname, '../views/sub-views/page_end.ejs'), 'utf8')).toContain("include('footer.ejs'");
     expect(termsHtml).toContain('Model Context Protocol (“MCP”) server');
     expect(termsHtml).toContain('href="/html/privacy.html"');
     expect(termsHtml).toContain('mailto:adnanmukhtar@gmail.com');

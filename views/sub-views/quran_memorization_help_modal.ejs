@@ -6,7 +6,7 @@
           <p class="quran-memorization-help-kicker mb-1"><span class="badge rounded-pill text-bg-primary">FSRS 6</span> Quran memorization guide</p>
           <h2 class="modal-title fs-5" id="quran-memorization-help-title">How Quran memorization works</h2>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
       </header>
       <div class="modal-body quran-memorization-help-body">
         <%- include('quran_memorization_help_content.ejs', { helpIdPrefix: 'quran-memorization-help' }); %>

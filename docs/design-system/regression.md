@@ -8,7 +8,7 @@ Run `npm test -- --runInBand` for the repository suite. For browser checks, star
 | `npm run test:frontend:admin` | Renders the administration template and shared editor against disposable responses. Opens all five bilingual pair managers and the legacy grader manager, adds, edits, merges and removes disposable pairs, saves a book alias, edits formatted Markdown and an RTL field, retries a rejected save and changes a draft during an in-flight save. Checks immediate select updates and explicit commentary submission. |
 | `npm run test:frontend:personal` | Exercises failed and successful preference saves and reads the result on the Quran Settings route. Checks a shared note outline link and keyboard zoom. Account identity and persistence use local fixtures. |
 
-The Jest checks in `spec/frontendMakeover.spec.js` enumerate HTML document templates and confirm that admin modal triggers resolve to labelled, dismissible dialogs. The route suite checks the retired translation request list and both feeds for HTTP 410. The sitemap suite checks that an older cached sitemap omits the retired list when served.
+The Jest checks in `spec/frontendMakeover.spec.js` compile every EJS file, resolve local includes, enumerate HTML document templates and confirm that admin modal triggers resolve to labelled, dismissible dialogs. The route suite checks the retired translation request list and both feeds for HTTP 410. The route suite also verifies all twelve retired list, feed and RSS URLs redirect to Community. The sitemap suite checks that an older cached sitemap omits the retired list when served.
 
 ## Interpreting results
 

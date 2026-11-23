@@ -18,7 +18,7 @@ routes.set('/community/unsubscribe/' + '0'.repeat(64), 200);
 routes.set('/community/write?kind=article', 200);
 routes.set('/community/email-preferences?from=/quran/settings', 200);
 
-const comparableTitles = new Set(['/settings', '/books', '/about', '/community', '/bookmarks', '/notebook', '/quran/review']);
+const comparableTitles = new Set(['/settings', '/books', '/about', '/community', '/bookmarks', '/notebook', '/quran/review', '/adab/introduction', '/quran/tafsir/mokhtasar/introduction']);
 
 async function verifyRoute(page, route, status, titles) {
   const response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -152,6 +152,15 @@ async function main() {
   const browser = await chromium.launch({ channel: process.env.UX_BROWSER_CHANNEL || 'chrome' });
   const failures = [];
   try {
+    const request = await browser.newContext();
+    for (const route of ['liked', 'highlights', 'titled', 'commented']) {
+      for (const suffix of ['', '/rss', '/feed']) {
+        const response = await request.request.get(base + '/' + route + suffix, { maxRedirects: 0 });
+        assert.equal(response.status(), 301);
+        assert.equal(response.headers().location, '/community');
+      }
+    }
+    await request.close();
     await Promise.all([390, 1440].map(async width => {
       const page = await browser.newPage({ viewport: { width, height: 850 } });
       page.setDefaultTimeout(8000);

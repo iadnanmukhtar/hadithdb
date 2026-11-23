@@ -1,22 +1,4 @@
 main.ux-book-toc { margin-block-start: var(--ux-page-start); }
-.ux-book-toc .ux-page-title { overflow-wrap: anywhere; }
-.ux-book-toc .toc-arabic-title {
-  color: var(--ivory-heading, var(--ux-text));
-  font-size: calc(var(--content-size-h1) * 1.1);
-  line-height: 1.65;
-  text-align: start;
-  overflow-wrap: anywhere;
-}
-.toc-arabic-title > span { font-size: inherit; }
-@media (min-width: 576px) {
-  .ux-book-toc .ux-page-heading:has(> .toc-arabic-title) {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: .75rem;
-  }
-  .ux-book-toc .toc-arabic-title { margin: 0; line-height: 1.35; }
-}
 .ux-book-toc .tafsir-book-meta { font-size: var(--ux-secondary-size); }
 .ux-book-toc .ux-section-title { margin-block: var(--ux-title-gap) .5rem; }
 .ux-toc-table { --bs-table-bg: var(--ux-surface); --bs-table-border-color: var(--ux-border); }

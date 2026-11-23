@@ -37,7 +37,7 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
       <button id="notebook-float" type="button" class="notebook-tool" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
       <button id="notebook-minimize" type="button" class="notebook-tool" title="Minimize note" aria-label="Minimize note" hidden><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
       <button id="notebook-fullscreen" type="button" class="notebook-tool me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
     </div>
     <section id="notebook-share-panel" class="px-3 py-2" aria-label="Share note" hidden>
       <p class="small mb-2">Anyone with the link can see your name, profile image, and this note’s title and latest saved text without signing in. Your other notes and Google Drive remain private.</p>

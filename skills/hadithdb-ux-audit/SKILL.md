@@ -47,6 +47,8 @@ Reuse the accepted component or shared CSS owner when the tasks match. Preserve 
 
 Revisit the same surfaces and states after edits. Check keyboard operation, focus, and the affected behavior (for example reload persistence, rollback, or return navigation). Record visual comparisons separately from functional tests. A passing save test cannot establish that two fields align.
 
+Before retiring a template, trace its mounted route, parent includes, conditional render targets, fragment endpoints and cached HTML producers. Check test-only callers against the current route and exercise its replacement with fresh HTML.
+
 For cross-route changes, compare the full Jest run against a pre-edit baseline. Run `npm run test:frontend` against the local app and both `npm run test:frontend:admin` and `npm run test:frontend:personal` with intercepted writes. Verify public readers have no bound editing controls, and check initial and dynamically inserted admin fields, RTL, failed-save retry, dialog dismissal and explicit versus immediate submission.
 
 At the end of each makeover page, and whenever the user identifies a miss, review this skill. If the work exposed a reusable blind spot, add the smallest comparison that would have caught it and how to verify it. Merge overlapping guidance. Keep design values and component specimens in the library, and keep audit methods here. Make warranted updates on the makeover branch alongside the page change.

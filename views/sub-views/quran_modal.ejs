@@ -57,7 +57,7 @@
 				</button>
 			</div>
 		</div>
-		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		<%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
 	  </header>
       <section class="modal-body hadith-share-body">
 		<article class="hadith-share-card quran-share-card" data-share-card data-share-url="<%= utils.quranUrl(req, '/' + shareRef.replace(/^quran:/, '')) %>" data-share-ref="<%= shareRef %>">

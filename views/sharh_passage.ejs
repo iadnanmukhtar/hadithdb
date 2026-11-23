@@ -102,7 +102,6 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 </div>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
 <% if (site.editMode) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: 'sharh-book-metadata' }); %><% } %>
-<%- include('sub-views/footer.ejs', { site, page }); %>
-<%- include('sub-views/scripts.ejs', { site, page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 </body>
 </html>

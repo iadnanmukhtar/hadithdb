@@ -93,7 +93,7 @@ const patterns = [
     sample: '<details><summary><strong>Translation</strong> · Saheeh International</summary><hr><div class="row"><span class="chip">English</span><span>Saheeh International</span></div></details>'
   },
   {
-    name: 'Progression & pagination', evidence: ['passage','trans-section'], source: 'quran_commentary_pagination',
+    name: 'Progression & pagination', evidence: ['passage','trans-section'], source: '../tafsir_passage',
     observed: 'The ayah hero has edge arrows. Section readers also have numbered references, a contents rail and a bottom navigation strip. These controls move through different units.',
     standard: 'Name the unit in each accessible label: previous ayah, next section or next results page. Keep the current reference between its adjacent destinations. Preserve script, work and mode.',
     check: 'At the first and last item expose the unavailable direction. Test chapter boundaries and ranges with both right-to-left and left-to-right content.',

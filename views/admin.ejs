@@ -26,7 +26,7 @@
 		</div>
 		<aside class="modal fade hadith-pair-manager-modal" id="admin-pair-manager" aria-labelledby="admin-pair-manager-title" tabindex="-1" aria-hidden="true" data-hadith-pair-manager>
 			<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
-				<div class="modal-header"><h2 class="modal-title fs-5" id="admin-pair-manager-title" data-hadith-pair-manager-title>Bilingual pairs</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+				<div class="modal-header"><h2 class="modal-title fs-5" id="admin-pair-manager-title" data-hadith-pair-manager-title>Bilingual pairs</h2><%- include('sub-views/modal_close.ejs', { closeLabel: 'Close' }) %></div>
 				<div class="modal-body">
 					<label class="visually-hidden" for="admin-pair-filter">Filter pairs</label>
 					<div class="hadith-pair-manager-filter mb-3"><span class="bi bi-funnel" aria-hidden="true"></span><input id="admin-pair-filter" type="search" class="form-control form-control-sm hadith-admin-combobox" dir="auto" data-hadith-pair-manager-filter placeholder="Search Arabic or English (ignores diacritics)" aria-label="Search pairs by Arabic or English" autocomplete="off"></div>
@@ -59,7 +59,7 @@
 		
 <aside class="modal fade" id="admin-legacy-graders" tabindex="-1" aria-labelledby="legacy-graders-title" aria-hidden="true" data-legacy-graders>
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
-    <div class="modal-header"><h2 class="modal-title fs-5" id="legacy-graders-title">Legacy graders</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-header"><h2 class="modal-title fs-5" id="legacy-graders-title">Legacy graders</h2><%- include('sub-views/modal_close.ejs', { closeLabel: 'Close' }) %></div>
     <div class="modal-body">
       <p>These records populate the legacy grader dropdown on hadith pages. Editing a record keeps its existing hadith assignments.</p>
       <label for="legacy-grader-filter" class="form-label">Find a grader</label>
@@ -83,7 +83,7 @@
 </aside>
 <aside class="modal fade" id="admin-book-aliases" tabindex="-1" aria-labelledby="book-aliases-title" aria-hidden="true" data-book-aliases>
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
-    <div class="modal-header"><h2 class="modal-title fs-5" id="book-aliases-title">Book aliases</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+    <div class="modal-header"><h2 class="modal-title fs-5" id="book-aliases-title">Book aliases</h2><%- include('sub-views/modal_close.ejs', { closeLabel: 'Close' }) %></div>
     <div class="modal-body">
       <div class="row g-3 mb-3">
         <div class="col-sm-4"><label for="book-alias-type" class="form-label">Book type</label><select id="book-alias-type" class="form-select" data-book-alias-type><option value="">All types</option><option value="hadith">Hadith</option><option value="sharh">Sharḥ</option><option value="tafsir">Tafsīr</option><option value="trans">Translation</option><option value="sirah">Sīrah</option><option value="quran">Quran</option></select></div>
@@ -101,6 +101,5 @@
   </div></div>
 </aside>
 </main>
-<%- include('sub-views/footer.ejs', { site, page }); %>
-<%- include('sub-views/scripts.ejs', { site, page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 </body></html>

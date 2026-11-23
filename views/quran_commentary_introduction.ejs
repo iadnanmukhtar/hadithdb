@@ -47,10 +47,7 @@
         Tafsir: Tafsir
       }); %>
 
-      <heading class="row major">
-        <h1 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a></h1>
-        <% if (commentaryNameAr && commentaryNameAr !== commentaryNameEn) { %><h1 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameAr %></a></h1><% } %>
-      </heading>
+      <%- include('sub-views/introduction_title.ejs', { bookHref: utils.quranUrl(req, commentaryBookPath), englishTitle: commentaryNameEn, arabicTitle: commentaryNameAr !== commentaryNameEn && commentaryNameAr }); %>
 
       <section class="row breadcrumbs pagination">
         <div class="col-12" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a> &gt; Introduction</div>
@@ -95,8 +92,7 @@
     prevTitle: commentaryIntroductionPreviousPassage ? `Previous: ${commentaryIntroductionPreviousPassage.title}` : 'Previous',
     nextTitle: commentaryIntroductionNextUrl ? 'Next: §1.0' : 'Next'
   }); %>
-  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/page_end.ejs', { site, page }); %>
   <% if (site.editMode) { %>
   <script>
   (function () {

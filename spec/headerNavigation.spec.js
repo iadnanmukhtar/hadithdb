@@ -44,14 +44,12 @@ describe('shared header navigation', () => {
   const quranToc = fs.readFileSync(path.join(__dirname, '..', 'views', 'toc.ejs'), 'utf8');
   const quranStudy = fs.readFileSync(path.join(__dirname, '..', 'views', 'section_quran.ejs'), 'utf8');
   const tafsirPassage = fs.readFileSync(path.join(__dirname, '..', 'views', 'tafsir_passage.ejs'), 'utf8');
-  const tafsirBooks = fs.readFileSync(path.join(__dirname, '..', 'views', 'tafsir_books.ejs'), 'utf8');
   const mushaf = fs.readFileSync(path.join(__dirname, '..', 'views', 'quran_mushaf.ejs'), 'utf8');
   const translationPassage = fs.readFileSync(path.join(__dirname, '..', 'views', 'translation_passage.ejs'), 'utf8');
   const searchResults = fs.readFileSync(path.join(__dirname, '..', 'views', 'search.ejs'), 'utf8');
   const readerModes = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_reader_modes.ejs'), 'utf8');
   const commentaryBookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_commentary_book_nav.ejs'), 'utf8');
   const quranTafsirs = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_tafsirs.ejs'), 'utf8');
-  const tafsirBookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'tafsirBookNav.ejs'), 'utf8');
   const bookNav = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'bookNav.ejs'), 'utf8');
   const tafsirLanguageSwitch = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'tafsirCarouselLanguageSwitch.ejs'), 'utf8');
 
@@ -303,7 +301,7 @@ describe('shared header navigation', () => {
 	});
 
 	test('keeps a passage-linked tafsir carousel at the top below the live header height', () => {
-	  expect(tafsirPassage.indexOf("include('sub-views/quran_commentary_book_nav.ejs'")).toBeLessThan(tafsirPassage.indexOf('<heading class="row major">'));
+	  expect(tafsirPassage.indexOf("include('sub-views/quran_commentary_book_nav.ejs'")).toBeLessThan(tafsirPassage.indexOf("include('sub-views/commentary_surah_heading.ejs'"));
 	  expect(tafsirPassage).toContain('quranCommentaryPassage: { surah: surah.num, ayah: tafsirEntryStart, endAyah: tafsirEntryEnd }');
 	  expect(commentaryBookNav).toContain("Tafsir.passageUrl(book, commentaryNavPassageSurah, commentaryNavPassageAyah, endAyah)");
 	  expect(commentaryBookNav).toContain("' quran-commentary-passage-carousel'");
@@ -318,7 +316,7 @@ describe('shared header navigation', () => {
 	});
 
 	test('filters tafsir carousels by English or Arabic-only without hover descriptions', () => {
-	  for (const template of [commentaryBookNav, tafsirBookNav, bookNav]) {
+	  for (const template of [commentaryBookNav, bookNav]) {
 	    expect(template.indexOf("include('tafsirCarouselLanguageSwitch')")).toBeLessThan(template.indexOf("include('bookCarouselFilter')"));
 	    expect(template).toContain('data-tafsir-carousel-language=');
 	    expect(template).not.toContain('tafsir-book-tooltip');

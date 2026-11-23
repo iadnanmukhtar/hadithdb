@@ -8,7 +8,8 @@ function fn(name) {
 }
 function setup() {
   const surahs = Array.from({ length: 114 }, (_, i) => ({ num: i + 1, ayahs: i === 113 ? 6 : 7, name_en: 'Surah ' + (i + 1) }));
-  const html = ejs.render(fs.readFileSync('views/sub-views/quran_audio_range_modal.ejs', 'utf8'), { global: { surahs } });
+  const filename = require.resolve('../views/sub-views/quran_audio_range_modal.ejs');
+  const html = ejs.render(fs.readFileSync(filename, 'utf8'), { global: { surahs } }, { filename });
   const dom = new JSDOM(html, { runScripts: 'outside-only' });
   const w = dom.window;
   Object.assign(w, {

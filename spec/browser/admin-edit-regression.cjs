@@ -24,7 +24,7 @@ async function adminFixture() {
   }, { includer(name) {
     if (name.endsWith('/head.ejs')) return { template: head.replace(/<%/g, '<%%') };
     if (name.endsWith('/header.ejs')) return { template: masthead };
-    if (!name.endsWith('/scripts.ejs')) return { template: ' ' };
+    if (!['page_end.ejs', 'scripts.ejs', 'modal_close.ejs'].includes(path.basename(name))) return { template: ' ' };
   } });
 }
 

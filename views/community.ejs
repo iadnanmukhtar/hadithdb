@@ -197,16 +197,16 @@
 <% if (view === 'write') { %>
 <div class="modal fade" id="community-markdown-help-modal" tabindex="-1" aria-labelledby="community-markdown-help-title" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable modal-fullscreen-sm-down"><div class="modal-content">
-    <div class="modal-header"><h2 class="modal-title fs-5" id="community-markdown-help-title">Markdown help</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close help"></button></div>
+    <div class="modal-header"><h2 class="modal-title fs-5" id="community-markdown-help-title">Markdown help</h2><%- include('sub-views/modal_close.ejs', { closeLabel: 'Close help' }) %></div>
     <div class="modal-body"><%- include('sub-views/markdown_help_content.ejs', { articleHelp: true }); %></div>
     <div class="modal-footer"><button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Got it</button></div>
   </div></div>
 </div>
 <% } %>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
-<%- include('sub-views/footer.ejs', { site, page }); %>
-<% if (!['unsubscribe','email-unsubscribe'].includes(view)) { %>
-<%- include('sub-views/scripts.ejs', { site, page }); %>
+<% const includePageScripts = !['unsubscribe', 'email-unsubscribe'].includes(view); %>
+<%- include('sub-views/page_end.ejs', { site, page, includePageScripts }); %>
+<% if (includePageScripts) { %>
 <script src="/static/js/community-bio.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-profile-photo.js?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="/static/js/community-social-share.js?v=<%= utils.scriptAssetVersion() %>"></script>

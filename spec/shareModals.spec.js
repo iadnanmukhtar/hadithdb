@@ -176,11 +176,12 @@ test.each(['nested', 'flat'])('server Quran share uses %s alt Arabic through the
  const normal='فَسَقَى لَهُمَا ثُمَّ تَوَلَّى إِلَى الظِّلِّ';
  const ayah={num:'28:24',ar:{num:'٢٨:٢٤',body:'DISPLAY \uE000 \uE001'},en:{num:'28:24',body:'So he watered for them.'}};
  if(field==='nested')ayah.ar.body_alt=normal;else ayah.body_ar_alt=normal;
- const html=ejs.render(source('views/sub-views/quran_modal.ejs'),{
+ const filename = require.resolve('../views/sub-views/quran_modal.ejs');
+ const html=ejs.render(fs.readFileSync(filename, 'utf8'),{
   selectedAyahs:[ayah],page:{context:{}},quranShareId:'test-share',req:{},
   utils:{socialMetadata:()=>require('../lib/SocialMetadata'),quranUrl:(_req,url)=>url,quranDisplayText:s=>s || '',defaultQuranTranslationLabel:()=> 'Translation'},
   arabic:{toLatinDigits:s=>s,toArabicDigits:s=>s}
- });
+ }, { filename });
  const dom=new JSDOM(html,{runScripts:'outside-only'});
  try{
   const w=dom.window,client=source('public/static/js/script.js');
