@@ -20,7 +20,7 @@ main.home-library {
   background: transparent; color: var(--ux-muted); border: 0; border-bottom: 2px solid transparent;
   padding: .6rem .75rem; min-height: 42px; font: var(--ux-local-nav-font);
 }
-.library-shelf-tabs button[aria-pressed="true"] { border-color: var(--ux-accent); color: var(--ux-accent); font-weight: var(--ux-emphasis-weight); }
+.library-shelf-tabs button:is([aria-pressed="true"], [aria-selected="true"]) { border-color: var(--ux-accent); color: var(--ux-accent); font-weight: var(--ux-emphasis-weight); }
 .library-shelf-tabs button:hover { color: var(--ux-accent); background: var(--ux-inset); }
 .library-volumes { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .5rem 1rem; }
 .library-volume {

@@ -152,7 +152,7 @@
       sirah: books.filter(book => book.type === 'sirah').map(book => book.alias),
       mushaf: (locals.mushafs || []).map(book => book.alias),
       'tafsir-all': Tafsir.englishHighlights(tafsirGroups[0].tafsirs).map(book => book.alias),
-      translations: translationGroups.find(group => group.id === 'trans-21st-century')?.aliases || [],
+      translations: BookGroups.modernTranslationAliases(translationGroups),
       sharh: ['bukhari-ibnhajar', 'muslim-nawawi', 'abudawud-shamsalhaqq', 'tirmidhi-mubarakfuri', 'nasai-suyuti', 'ibnmajah-sindi', 'riyad-ibnallan']
     };
 %>

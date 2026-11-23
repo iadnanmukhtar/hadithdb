@@ -183,13 +183,20 @@ async function verifyRoute(page, route, status, titles) {
     await rail.waitFor({ state: 'hidden' });
   }
   if (route === '/quran') {
-    const highlights = page.getByRole('region', { name: 'Highlighted Tafsir' });
+    const translations = page.getByRole('tabpanel', { name: 'Translations', exact: true });
+    await translations.getByRole('button', { name: 'Next book' }).click();
+    const translation = await translations.locator('[data-position="center"]').getAttribute('href');
+    assert.match(translation, /\/quran\/(?!tafsir\/)/);
+    await page.getByRole('tab', { name: 'Tafsirs', exact: true }).click();
+    const highlights = page.getByRole('tabpanel', { name: 'Tafsirs' });
     const selected = highlights.locator('[data-position="center"]');
     assert.equal(await selected.getAttribute('data-alias'), 'mokhtasar');
     await highlights.getByRole('button', { name: 'Next book' }).click();
     assert.match(await selected.getAttribute('href'), /\/quran\/tafsir\//);
     assert.notEqual(await selected.getAttribute('data-alias'), 'mokhtasar');
     await page.locator('#toc-tab-surahs').click();
+    await page.getByRole('tablist', { name: 'Quran library' }).getByRole('tab', { name: 'Translations' }).click();
+    assert.equal(await translations.locator('[data-position="center"]').getAttribute('href'), translation);
     const toggle = page.locator('#toc-surahs [data-toc-toggle]').first();
     await toggle.click();
     await page.locator('#toc-surahs tr.toc-subsection-row:visible').first().waitFor();

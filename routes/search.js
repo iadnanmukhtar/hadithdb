@@ -2950,7 +2950,7 @@ router.get('/:bookAlias', async function (req, res, next) {
       ? (req.query.toc || req.query.view || req.query.tab || 'juz')
       : 'surahs';
     var cachedFile = book.alias === 'quran'
-      ? Utils.cacheFileFromFilename('_quran.highlights-' + (['surahs', 'manzils'].includes(quranTocDefaultView) ? quranTocDefaultView : 'juz') + Utils.cacheReqToFilename(req), 'html', 'quran', 'quran')
+      ? Utils.cacheFileFromFilename('_quran.library-shelves-' + (['surahs', 'manzils'].includes(quranTocDefaultView) ? quranTocDefaultView : 'juz') + Utils.cacheReqToFilename(req), 'html', 'quran', 'quran')
       : Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache && req.params.bookAlias === 'quran')
@@ -2980,6 +2980,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     var results;
     var random;
     var tafsirs;
+    var translations;
     var hadithIntroductionArticles = [];
     results = await Library.instance.findBook(book.alias).getChapters();
     var quranJuzRows = book.alias === 'quran' ? await QuranTocSubdivisions.juzRows() : [];
@@ -2994,7 +2995,7 @@ router.get('/:bookAlias', async function (req, res, next) {
     if (random && random.length > 0)
       random = new Item(random[0]);
     if (book.alias === 'quran')
-      tafsirs = await Tafsir.visibleTafsirs();
+      [tafsirs, translations] = await Promise.all([Tafsir.visibleTafsirs(), Tafsir.visibleTranslations()]);
     else
       hadithIntroductionArticles = await CommentaryHeadings.introductionArticles(book.id);
 
@@ -3024,7 +3025,7 @@ router.get('/:bookAlias', async function (req, res, next) {
           toc: results,
           random: random,
           Tafsir: Tafsir,
-          tafsirs: tafsirs,
+          tafsirs, translations,
 		  hadithIntroductionArticles: hadithIntroductionArticles,
           req: req,
           res: res
@@ -3044,7 +3045,7 @@ router.get('/:bookAlias', async function (req, res, next) {
         toc: results,
         random: random,
         Tafsir: Tafsir,
-        tafsirs: tafsirs,
+        tafsirs, translations,
 		hadithIntroductionArticles: hadithIntroductionArticles
       });
     }

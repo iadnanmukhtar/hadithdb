@@ -14,6 +14,14 @@
     var quranCommentaryBook = locals.quranCommentaryBook;
     const tafsirHighlights = isQuranToc && !quranCommentaryBook && locals.tafsirs?.length
       ? Tafsir.englishHighlights(Tafsir.catalogOrder(locals.tafsirs)) : [];
+    const translationBooks = isQuranToc && !quranCommentaryBook ? locals.translations || [] : [];
+    const translationsByAlias = new Map(translationBooks.map(book => [book.alias, book]));
+    const modernTranslations = translationBooks.length
+      ? BookGroups.modernTranslationAliases(BookGroups.translationGroups(translationBooks)).map(alias => translationsByAlias.get(alias)) : [];
+    const homeShelves = [
+      { id: 'translations', label: 'Translations', books: modernTranslations, icon: 'bi-translate' },
+      { id: 'tafsirs', label: 'Tafsirs', books: tafsirHighlights, icon: 'bi-book-half' }
+    ].filter(shelf => shelf.books.length);
     var quranCommentaryBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
     var quranCommentaryBookSlug = quranCommentaryBook && (quranCommentaryBook.quranBookSlug || quranCommentaryBook.slug || quranCommentaryBook.alias);
     function displayName(value) {
@@ -536,7 +544,7 @@
   <%- include('sub-views/head.ejs', { site: site, page: page }); %>
   
   <%- include('sub-views/toc_styles.ejs'); %>
-  <% if (tafsirHighlights.length) { %>
+  <% if (isQuranToc && !quranCommentaryBook && homeShelves.length) { %>
     <link rel="stylesheet" href="/static/css/home-library.css?v=<%= utils.styleAssetVersion() %>">
     <script defer src="/static/js/home-library.js?v=<%= utils.scriptAssetVersion() %>"></script>
   <% } %>
@@ -555,11 +563,21 @@
           <%- include('sub-views/toc_actions.ejs', actions); %>
         </header>
         <div data-toc-mobile-tools></div>
-        <% if (tafsirHighlights.length) { %>
-          <section class="library-shelf" data-library-shelf data-layout="covers" aria-labelledby="highlighted-tafsir">
-            <h2 class="ux-section-title" id="highlighted-tafsir">Highlighted Tafsir</h2>
-            <%- include('sub-views/library_volumes', { shelfId: 'quran-highlight-books', shelfLabel: 'Highlighted Tafsir', shelfBooks: tafsirHighlights, bookHref: quranCommentaryPaginationHref, bookIcon: () => 'bi-book-half', hadithSizeIndicator: Tafsir.sizeIndicator }) %>
-          </section>
+        <% if (isQuranToc && !quranCommentaryBook && homeShelves.length) { %>
+          <div class="library-shelf-toolbar">
+            <div class="library-shelf-tabs" role="tablist" aria-label="Quran library">
+              <% homeShelves.forEach((shelf, index) => { %>
+                <button type="button" id="home-tab-<%= shelf.id %>" role="tab" data-bs-toggle="tab" data-bs-target="#home-panel-<%= shelf.id %>" aria-controls="home-panel-<%= shelf.id %>" aria-selected="<%= index === 0 %>" class="<%= index === 0 ? 'active' : '' %>"><%= shelf.label %></button>
+              <% }); %>
+            </div>
+          </div>
+          <div class="tab-content">
+            <% homeShelves.forEach((shelf, index) => { %>
+              <section class="tab-pane library-shelf <%= index === 0 ? 'active' : '' %>" id="home-panel-<%= shelf.id %>" role="tabpanel" aria-labelledby="home-tab-<%= shelf.id %>" data-library-shelf data-layout="covers">
+                <%- include('sub-views/library_volumes', { shelfId: 'quran-home-' + shelf.id, shelfLabel: shelf.label, shelfBooks: shelf.books, bookHref: quranCommentaryPaginationHref, bookIcon: () => shelf.icon, hadithSizeIndicator: shelf.id === 'tafsirs' ? Tafsir.sizeIndicator : () => '' }) %>
+              </section>
+            <% }); %>
+          </div>
         <% } %>
       <% } %>
       
