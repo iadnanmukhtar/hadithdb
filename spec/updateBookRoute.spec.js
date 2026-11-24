@@ -60,7 +60,9 @@ describe('book update route', () => {
     jest.spyOn(Index, 'update').mockResolvedValue();
     jest.spyOn(require('../lib/SharhNavigationIndex'), 'syncSourceBooks').mockResolvedValue();
     global.query = jest.fn(async sql => {
-      const match = sql.match(/WHERE hId=(\d+)/);
+      if (sql.includes('AS pending')) return [{ scheduled: 1, pending: 0 }];
+      if (sql.startsWith('SELECT id,tocId FROM hadiths')) return [{ tocId: 90 }];
+      const match = sql.match(/WHERE h\.id=(\d+)/);
       return match ? [{ hId: Number(match[1]), book_id: 1, book_alias: 'bukhari', num: match[1], books: '{riyad}' }] : [];
     });
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
@@ -68,7 +70,7 @@ describe('book update route', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json.mock.calls[0][0]).toMatchObject({ refreshPending: true });
       await new Promise(resolve => setImmediate(resolve));
-      expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(61)');
+      expect(global.query).not.toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(61)');
       expect(Utils.flushBookDiskCache).toHaveBeenCalledWith('riyad', { strict: true });
       expect(RuntimeRefresh.publish).toHaveBeenCalled();
       expect(Index.update).toHaveBeenCalledTimes(2);
@@ -107,7 +109,7 @@ describe('book update route', () => {
     jest.spyOn(Snapshot, 'queueHadith').mockImplementation(() => {});
     let failRefresh;
     global.query = jest.fn(() => new Promise((resolve, reject) => { failRefresh = reject; }));
-    global.query.mockResolvedValueOnce([{ hId:123,ref:'bukhari:1',body_en:'Original' }]);
+    global.query.mockResolvedValueOnce([{ tocId: 90 }]).mockResolvedValueOnce([{ hId:123,ref:'bukhari:1',body_en:'Original' }]);
     const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
     const saving = updateHandler()({ body: { value: '' }, params: { id: '123', prop: 'hadith.revise' }, user: { uid: 'admin' } }, res, jest.fn());
     await new Promise(resolve => setImmediate(resolve));

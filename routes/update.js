@@ -1099,7 +1099,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           // The transaction is committed. A whole-book snapshot/index refresh can
           // exceed the proxy timeout and must not turn a saved edit into a failure.
           status.refreshPending = true;
-          void safeBackground(`refreshing saved virtual hadith ${selected.id}`, () => refreshVirtualHadithEdit(selected));
+          void safeBackground(`refreshing saved virtual hadith ${selected.id}`, () => refreshVirtualHadithEdit(selected, true));
         }
         status.code = 200;
         status.message = col === 'del' ? 'Virtual hadith deleted' : action === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
@@ -3246,8 +3246,30 @@ async function safeBackground(label, fn) {
   }
 }
 
-async function refreshVirtualHadithEdit(selected) {
-  await global.query(`CALL refresh_v_hadiths_virtual_snapshot(${selected.bookId})`);
+async function waitForQueuedVirtualSnapshot(bookId) {
+  for (;;) {
+    let state;
+    try {
+      [state] = await global.query(`SELECT
+        EXISTS(SELECT 1 FROM v_hadiths_virtual_snapshot_refresh_queue WHERE book_id=${Number(bookId)}) AS pending,
+        (@@global.event_scheduler='ON' AND EXISTS(SELECT 1 FROM information_schema.EVENTS
+          WHERE EVENT_SCHEMA=DATABASE() AND EVENT_NAME='process_v_hadiths_virtual_snapshot_refresh_queue'
+            AND STATUS='ENABLED')) AS scheduled`);
+    } catch (error) {
+      if (error.code === 'ER_NO_SUCH_TABLE') return false;
+      throw error;
+    }
+    if (!Number(state?.scheduled)) return false;
+    if (!Number(state.pending)) return true;
+    await new Promise(resolve => setTimeout(resolve, 5000));
+  }
+}
+
+async function refreshVirtualHadithEdit(selected, useDatabaseQueue = false) {
+  // The virtual-row triggers enqueue the edit inside its transaction. The
+  // scheduled event removes the request after committing the snapshot.
+  if (!useDatabaseQueue || !await waitForQueuedVirtualSnapshot(selected.bookId))
+    await global.query(`CALL refresh_v_hadiths_virtual_snapshot(${selected.bookId})`);
   await Books.touchBookContentLastmodById(selected.bookId);
   invalidateBookChapterCache({ book_id: selected.bookId });
   await flushBookCaches(new Set([selected.alias]));
