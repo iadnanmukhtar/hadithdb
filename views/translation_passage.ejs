@@ -69,26 +69,27 @@
 
   <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
     <div class="container quran-heading-content quran-heading-content-tafsir">
-    <main class="chapter mt-10 tafsir-only-page translation-only-page" data-reader-quran-ref="<%= ref %>"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
+    <main class="chapter tafsir-only-page translation-only-page" data-reader-quran-ref="<%= ref %>"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %>>
+      <h1 class="visually-hidden" data-reader-page-title><%= page.title_en %></h1>
 	      <%- include('sub-views/commentary_surah_heading.ejs', { site, surah, quranChapter, quranChapterHref, quranChapterTitleEn, quranChapterTitleAr, quranChapterSurahNameGlyph, quranSurahRevelation }); %>
 
 	      <section class="row breadcrumbs pagination">
 	        <div class="col-md-6 col-sm-12" lang="en">
 	          <a title="The Holy Quran" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a>
 	          &gt;
-	          <a title="<%- quranChapterTitleEn %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabel %></a>
+	          <a title="<%= quranChapterTitleEn %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabel %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <a title="<%- quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= quranSectionHref %>">Passage <%= quranSection.h2 %></a>
+	            <a title="<%= quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= quranSectionHref %>">Passage <%= quranSection.h2 %></a>
 	          <% } %>
 	        </div>
 	        <div class="col-md-6 col-sm-12" lang="ar">
 	          <a title="القرآن" href="<%= utils.quranUrl(req, '/quran') %>">القرآن</a>
 	          &gt;
-	          <a title="<%- quranChapterTitleAr %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabelAr %></a>
+	          <a title="<%= quranChapterTitleAr %>" href="<%= quranChapterHref %>"><%= quranChapterBreadcrumbLabelAr %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <a title="<%- quranSection.title || quranSection.title_en || 'مقطع' %>" href="<%= quranSectionHref %>">مقطع <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
+	            <a title="<%= quranSection.title || quranSection.title_en || 'مقطع' %>" href="<%= quranSectionHref %>">مقطع <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
 	          <% } %>
 	        </div>
 	      </section>

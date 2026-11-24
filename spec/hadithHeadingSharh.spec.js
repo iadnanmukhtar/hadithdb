@@ -39,8 +39,8 @@ describe('Hadith heading and virtual-book sharh', () => {
 
 	test('English explanations use the smaller English introduction font size', () => {
 		const css = fs.readFileSync(path.join(__dirname, '../public/static/css/style.css'), 'utf8');
-		expect(css).toMatch(/main \.intro\[lang="en"\]\[data-prop="toc\.intro_en"\]\s*\{\s*font-size: calc\(\.81rem \* var\(--content-font-scale\)\);/);
-		expect(css).toMatch(/\.hadith-sharh-column:lang\(en\) \.hadith-sharh-body,\s*\.hadith-sharh-column:lang\(en\) \.hadith-sharh-more \{ font-size: calc\(\.81rem \* var\(--content-font-scale\)\) !important; \}/);
+		expect(css).toMatch(/main \.intro\[lang="en"\]\[data-prop="toc\.intro_en"\]\s*\{\s*font-size: var\(--reader-intro-en\);/);
+		expect(css).toMatch(/\.hadith-sharh-column:lang\(en\) \.hadith-sharh-body,\s*\.hadith-sharh-column:lang\(en\) \.hadith-sharh-more \{ font-size: var\(--reader-secondary-en\) !important; \}/);
 	});
 
 	test('reinitializes paired More and Less controls in appended reader sections', () => {

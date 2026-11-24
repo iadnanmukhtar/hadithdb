@@ -13,10 +13,10 @@
   const headingPath = heading.path || [heading.book_alias, heading.h1, Number(heading.level) >= 2 ? heading.h2 : null, Number(heading.level) >= 3 ? heading.h3 : null].filter(value => value !== null && value !== undefined && value !== '').map((value, index) => index ? utils.formatHadithHeadingNumber(value) : value).join('/');
 %>
 <section class="mb-3" aria-label="<%= Number(heading.level) === 1 ? 'Chapter' : 'Section' %>">
-  <heading<% if (Number(heading.level) === 1) { %> data-reader-chapter="<%= headingPath %>"<% } %> class="row <%= index === 0 ? 'major' : 'heading py-2' %>" dir="ltr">
+  <header<% if (Number(heading.level) === 1) { %> data-reader-chapter="<%= headingPath %>"<% } %> class="row <%= index === 0 ? 'major' : 'heading py-2' %>" dir="ltr">
     <h2 class="col-md-6 col-sm-12 <%= index === 0 ? 'fs-4' : 'fs-5' %> title" lang="en"><a href="/<%= headingPath %>"><%- heading.title_en || '' %></a></h2>
     <h2 class="col-md-6 col-sm-12 <%= index === 0 ? 'fs-4' : 'fs-5' %> title" lang="ar" dir="rtl"><a href="/<%= headingPath %>"><%- heading.title || '' %></a></h2>
-  </heading>
+  </header>
   <% if (heading.intro || heading.intro_en) { %>
   <details class="hadith-detail-disclosure">
     <summary class="hadith-detail-disclosure-summary">

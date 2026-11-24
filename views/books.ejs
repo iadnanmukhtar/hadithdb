@@ -10,7 +10,7 @@
       site.editMode = false;
 
     var page = {
-    menu: 'Books',
+    menu: 'Books', schemaType: 'CollectionPage',
     title_en: `Hadith Unlocked | All Books`,
     description_en: 'Browse hadith collections with Arabic source texts, English translations, chapter navigation, and references.',
     subtitle_en: `Available Books`,
@@ -174,18 +174,10 @@
     <% for (const [label, icon] of Object.entries({ Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'sirah' })) { %>
     <template data-catalog-icon="<%= label %>"><%- include('sub-views/menu_icon.ejs', { type: icon }) %></template>
     <% } %>
+    <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
     <header class="ux-page-heading">
       <h1 class="ux-page-title" data-catalog-title><%= catalogTypes[catalogType].title %></h1>
     </header>
-
-    <%- utils.jsonLdScript({
-      '@context': 'https://schema.org',
-      '@type': 'Table',
-      name: 'Available Books',
-      about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
-    }) %>
-
-    <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
 
     <% if (!site.editMode) { for (const collection of railCollections) {
       const pane = collection.pane.slice('book-catalog-'.length);
@@ -220,7 +212,7 @@
                 var descriptionKey = `${descriptionId}-body`;
               %>
               <% var bookGroupIds = bookType === 'hadith' ? catalogGroupIds(book.alias, 'hadith') : []; %>
-              <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= book.size || '' %>" data-book-author-short-en="<%= book.authorShortName_en || '' %>" data-book-author-short-ar="<%= book.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(book) %>" data-book-death="<%= book.death || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+              <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= book.size || '' %>" data-book-author-short-en="<%= book.authorShortName_en || '' %>" data-book-author-short-ar="<%= book.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(book) %>" data-book-death="<%= book.death || '' %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%= [
                 bookGroupIds.map(function (id) { var group = catalogBookGroups.hadith.find(function (candidate) { return candidate.id === id; }); return group && group.label; }).filter(Boolean).join(' '),
                 bookType,
                 book.alias,
@@ -314,7 +306,7 @@
                     var editableBookId = tafsir.id || '';
                   %>
                   <% var bookGroupIds = catalogGroupIds(tafsir.alias, 'tafsir'); %>
-                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(tafsir) %>" data-book-death="<%= tafsir.death || '' %>" data-book-catalog-language="<%= catalogLanguageCodes(tafsir) %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%- [
+                  <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= tafsir.size || '' %>" data-book-author-short-en="<%= tafsir.authorShortName_en || '' %>" data-book-author-short-ar="<%= tafsir.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(tafsir) %>" data-book-death="<%= tafsir.death || '' %>" data-book-catalog-language="<%= catalogLanguageCodes(tafsir) %>" data-book-catalog-groups="<%= bookGroupIds.join(' ') %>" data-book-catalog-filter="<%= [
                     bookGroupIds.map(function (id) { var bookGroup = catalogBookGroups.tafsir.find(function (candidate) { return candidate.id === id; }); return bookGroup && bookGroup.label; }).filter(Boolean).join(' '),
                     'tafsir',
                     tafsir.alias,
@@ -434,7 +426,7 @@
                   var descriptionKey = `${descriptionId}-body`;
                   var editableBookId = translation.id || '';
                 %>
-                <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(translation) %>" data-book-death="<%= translation.death || '' %>" data-book-death-label="<%= translationDeathLabel(translation) %>" data-book-publication-year="<%= translation.published_year || '' %>" data-book-catalog-groups="<%= translationGroups.filter(group => group.aliases.includes(translation.alias)).map(group => group.id).join(' ') %>" data-book-catalog-language="<%= translation.lang || '' %>" data-book-catalog-filter="<%- [
+                <article class="book-catalog-card tafsir-book-row" data-book-catalog-size="<%= translation.size || '' %>" data-book-author-short-en="<%= translation.authorShortName_en || '' %>" data-book-author-short-ar="<%= translation.authorShortName || '' %>" data-book-sort-year="<%= BookGroups.sortYear(translation) %>" data-book-death="<%= translation.death || '' %>" data-book-death-label="<%= translationDeathLabel(translation) %>" data-book-publication-year="<%= translation.published_year || '' %>" data-book-catalog-groups="<%= translationGroups.filter(group => group.aliases.includes(translation.alias)).map(group => group.id).join(' ') %>" data-book-catalog-language="<%= translation.lang || '' %>" data-book-catalog-filter="<%= [
                   'translation',
                   translation.alias,
                   translation.name_en,
@@ -616,10 +608,21 @@
             document.title = 'Hadith Unlocked | ' + type.title;
             var title = document.querySelector('[data-catalog-title]');
             if (title) title.textContent = type.title;
-            var description = document.querySelector('meta[name="description"]');
-            if (description) description.content = type.description;
-            var canonical = document.querySelector('link[rel="canonical"]');
-            if (canonical) canonical.href = canonical.href.split('?')[0] + '?' + tab.getAttribute('href').split('?')[1];
+            const canonical = document.querySelector('link[rel="canonical"]');
+            if (canonical) {
+              const url = new URL(canonical.href);
+              url.search = new URL(tab.href).search;
+              canonical.href = url.href;
+              document.querySelector('meta[property="og:url"]').content = url.href;
+              for (const tag of document.querySelectorAll('meta[property="og:title"], meta[name="twitter:title"]')) tag.content = document.title;
+              for (const tag of document.querySelectorAll('meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]')) tag.content = type.description;
+              const script = document.querySelector('script[data-page-schema]');
+              if (script) {
+                const schema = JSON.parse(script.textContent);
+                Object.assign(schema, { '@id': url.href, url: url.href, name: document.title, description: type.description });
+                script.textContent = JSON.stringify(schema);
+              }
+            }
           }
         }
       });

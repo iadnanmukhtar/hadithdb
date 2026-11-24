@@ -24,9 +24,10 @@ async function passage(req, res, next) {
 	const kind = req.params.kind || (req.route.path.includes('/heading/') ? 'heading' : 'hadith');
 	const editMode = Boolean(req.admin && req.editMode);
 	const cacheEnabled = Utils.diskCacheEnabled();
-	const cachedFile = Utils.cacheFileFromFilename(Utils.cacheReqToFilename({
+	const cacheName = Utils.cacheReqToFilename({
 		...req, url: req.originalUrl || req.url || req.path
-	}), 'html', req.params.alias, 'sharh');
+	});
+	const cachedFile = Utils.cacheFileFromFilename(cacheName + '.source-outline', 'html', req.params.alias, 'sharh');
 	const flushCache = Utils.shouldFlushCache(req);
 	if (flushCache) await Utils.flushCachedFile(cachedFile, { strict: true });
 	if (cacheEnabled && !editMode && !flushCache && Utils.cachedTextPathForRead(cachedFile)) {
@@ -64,6 +65,9 @@ router.get('/:alias', handle(async (req, res, next) => {
 	const books = await Sharh.catalog();
 	const book = books.find(book => book.alias === req.params.alias);
 	if (!book) return next(createError(404, 'Sharh book not found'));
-	res.render('sharh_books', { books, sharhBook: book, coveredBooks: await Sharh.coveredBooks(book), entries: [], offset: 0, Sharh });
+	const coveredBooks = await Sharh.coveredBooks(book);
+	const selectedBook = coveredBooks.find(source => source.alias === req.query?.book) || coveredBooks[0];
+	const chapters = selectedBook ? await Sharh.sourceContents(book, selectedBook) : [];
+	res.render('sharh_books', { books, sharhBook: book, coveredBooks, selectedBook, chapters });
 }));
 module.exports = router;

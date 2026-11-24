@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <% 
-    var site = new Object(global.settings.blog);
+    var site = { ...global.settings.blog };
     site.admin = false;
     site.editMode = false;
     
     var pagination = locals.pagination || { number: 1, hasPrev: false, hasNext: false, offset: 0, prevOffset: 0, nextOffset: 0 };
 
     var page = {
-      menu: 'Blog',
+      menu: 'Blog', schemaType: 'CollectionPage',
       title_en: `Pearls of the Deep Blog`,
       description_en: 'Read Pearls of the Deep articles exploring Islamic faith, spiritual growth, Quran, hadith, and lessons for everyday life.',
       subtitle_en: `Blog Posts`,

@@ -21,6 +21,7 @@
     };
     if (q) {
         page.menu = 'Search';
+        page.schemaType = 'SearchResultsPage';
         page.title_en = `Search Results for ${q}`;
         page.description_en = `Search results for “${q}”${isQuranSearchProxy ? ' across the Quran and tafsir' : ' across Hadith, Sharh, History, Tafsir, Quran, Blog, and Community articles'}.`;
         page.canonical = searchAction;
@@ -33,6 +34,8 @@
           ? (results[0].ref_ref || `${results[0].book_alias_ref}:${results[0].num_ref}`)
           : `${book.alias}:${results[0].num}`;
         page.canonical = `/${canonicalReference}`;
+        page.articleType = 'Article';
+        page.articleAuthor = book.author_en || book.author;
         var hadithHeadingTitle = (results[0].en && results[0].en.title) || results[0].title_en
           || (results[0].section && (results[0].section.title_en || results[0].section.h2_title_en))
           || results[0].h2_title_en

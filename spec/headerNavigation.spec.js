@@ -125,16 +125,15 @@ describe('shared header navigation', () => {
 	});
 
 	test('filters command autocomplete and renders removable selected-book pills', () => {
-		expect(searchDialog).toContain('data-command-search-filter-search="all"');
-		expect(searchDialog.match(/class="page-content-filter input-group command-search-filter-find"/g)).toHaveLength(1);
-		expect(searchDialog.match(/class="input-group-text bi bi-funnel"/g)).toHaveLength(1);
-		expect(styles).toContain('.page-content-filter .input-group-text');
-		expect(styles).toContain('.nav-tabs .nav-link:not(.active)');
+		const finder = searchDialog.split('\n').find(line => line.includes("'command-search-filter-search'"));
+		const html = require('ejs').render(finder, { utils: {scriptAssetVersion: () => 'test'} }, {
+			filename: path.join(__dirname, '../views/sub-views/global_search_dialog.ejs')
+		});
+		const field = require('cheerio').load(html)('[data-rail-search]');
+		expect(field.length).toBe(1);
+		expect(field.find('input[type="search"]').attr('data-command-search-filter-search')).toBe('all');
+		expect(field.find('button').attr('aria-label')).toBe('Clear source filter');
 		expect(styles).toContain('.command-search-scope');
-		expect(styles).toMatch(/\.command-search-filter-find > \.input-group-text,[\s\S]*?font-size: 0\.82rem;/);
-		expect(styles).toMatch(/\.page-content-filter \{[\s\S]*?border: 1px solid var\(--bs-border-color\);/);
-		expect(styles).toMatch(/\.page-content-filter \.input-group-text \{[\s\S]*?border: 0;[\s\S]*?color: var\(--bs-secondary-color\);/);
-		expect(styles).toMatch(/\.page-content-filter \.form-control,[\s\S]*?border: 0;[\s\S]*?box-shadow: none;/);
 		expect(styles).toMatch(/\.nav-tabs \.nav-link:not\(\.active\) \{\s*color: var\(--bs-secondary-color\);/);
 		expect(searchDialog).toContain('name="tafsir"');
 		expect(searchDialog).toContain('data-command-search-pills');

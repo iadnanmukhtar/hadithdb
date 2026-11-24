@@ -82,6 +82,8 @@ test.each([false, true])('renders bilingual hadith above uncollapsed commentary 
  expect($('main').attr('data-reader-infinite')).toBe('hadith-sharh');
  expect($('main').attr('data-reader-sharh-book')).toBe(book.alias);
  expect($('.hadith-detail-disclosure[open]')).toHaveLength(0);
+ expect($('summary .sharh-body-preview[lang="en"]')).toHaveLength(0);
+ expect($('summary .sharh-body-preview[lang="ar"]').text()).toBe('متن');
  expect($('.shared-hadith').text()).toContain('Hadith');
  expect($('.shared-hadith').text()).toContain('متن');
  expect(html.indexOf('Referenced hadith')).toBeLessThan(html.indexOf('aria-label="Explanation"'));
@@ -108,11 +110,11 @@ test.each([1, 2, 3])('heading context retains bilingual titles and introductions
   utils: require('../lib/Utils'), Tafsir: { renderCommentaryText: s => `<p>${s}</p>` }
  }, { filename });
  const $ = cheerio.load(html);
- expect($('heading [lang=en]').text()).toContain('Heading');
- expect($('heading [lang=ar]').text()).toContain('عنوان');
+ expect($('header [lang=en]').text()).toContain('Heading');
+ expect($('header [lang=ar]').text()).toContain('عنوان');
  expect($('.heading-intro [lang=en]').text()).toContain('Introduction');
  expect($('.heading-intro [lang=ar]').text()).toContain('مقدمة');
- expect($('heading a').first().attr('href')).toBe('/riyad/0.12' + (level >= 2 ? '/2' : '') + (level >= 3 ? '/3' : ''));
+ expect($('header a').first().attr('href')).toBe('/riyad/0.12' + (level >= 2 ? '/2' : '') + (level >= 3 ? '/3' : ''));
 });
 
 test('source context follows the explicit virtual-entry link instead of the original narration chapter', async () => {
@@ -124,6 +126,22 @@ test('source context follows the explicit virtual-entry link instead of the orig
  expect(global.query.mock.calls[0][0]).toContain('hv.hadithId=42');
  expect(context.chapter.path).toBe('riyad/0.12');
  expect(context.chapter.title_en).toBe('Later life');
+});
+
+test('a numbered introduction keeps its chapter zero paths in the reader', () => {
+ const { Item } = require('../lib/Model');
+ const item = new Item({ book_alias: 'muslim', hId: 107168, h1: 0, h1_id: 33613,
+  h1_title_en: 'Introduction', h2: 2, h2_id: 33606 });
+ expect(item.chapter).toMatchObject({ id: 33613, path: 'muslim/0', title_en: 'Introduction' });
+ expect(item.section.path).toBe('muslim/0/2');
+});
+
+test('the explanation picker includes SQL books absent from the search index', async () => {
+ Index.docsFromQueryFields.mockResolvedValue([{ id: 87678, bookId: 100390, ref: 'muslim:i001' }]);
+ const rows = [{ alias: 'muslim-nawawi' }, { alias: 'mushkil-tahawi' }];
+ global.query = jest.fn(async sql => sql.includes('hs.id IN') ? rows.slice(0, 1) : rows);
+ const choices = await Sharh.availableBooks({ owner: { id: 107168, book_alias: 'muslim', num: 'i001' }, kind: 'hadith' });
+ expect(choices.map(book => book.url)).toEqual(['/sharh/muslim-nawawi/muslim:i001', '/sharh/mushkil-tahawi/muslim:i001']);
 });
 
 test('unlinked commentary keeps its original hadith context', async () => {

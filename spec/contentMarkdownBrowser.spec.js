@@ -168,7 +168,7 @@ test.each([390, 1100])('hadith footnotes sit below the bilingual chain and matn 
         expect(sizes[lang].footer).toBeLessThan(sizes[lang].matn);
         expect(sizes[lang].tafsir).toBeCloseTo(sizes[lang].chain);
       }
-      expect(sizes.en.matn / sizes.ar.matn).toBeCloseTo(9/13);
+      expect(sizes.en.matn / sizes.ar.matn).toBeCloseTo(10/13);
     }
     await page.evaluate(() => document.fonts.ready);
     await page.screenshot({ path: `/tmp/source-reader-size-${width}.png` });
@@ -268,7 +268,7 @@ test('bilingual tafsir Arabic nested in an English Markdown root matches hadith'
     return {arabic:size('.quran-tafsir-local-pair [lang=ar] .notebook-arabic'),chain:size('.chain'),english:size('.quran-tafsir-local-pair [lang=en] p')};
    });
    expect(sizes.arabic).toBeCloseTo(sizes.chain);
-   expect(sizes.english/sizes.arabic).toBeCloseTo(9/13);
+   expect(sizes.english/sizes.arabic).toBeCloseTo(10/13);
   }
  }finally{await page.close();}
 });

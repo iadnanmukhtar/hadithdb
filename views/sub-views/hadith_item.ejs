@@ -93,7 +93,8 @@
 	function bilingualLabel(english, arabic) {
 		return [english, arabic].filter(Boolean).join(' — ');
 	}
-	const sharhBody = !isQuranItem ? plainText(i.ar?.body || '') : '';
+	const showHadithDetailsLink = lang === 'en' && !isQuranItem && !i.single;
+	const detailsLabel = 'View hadith details';
 	const hadithClassification = i.hdithClassification || i.hdithMetadata || {};
 	const hadithClassificationOptions = i.hdithClassificationOptions || i.hdithMetadata || {};
 	const sourceHadithNarrator = i.hdithNarrator || (i.hdithMetadata && i.hdithMetadata.narrator ? {
@@ -200,7 +201,7 @@
 		<!--
 		<%# Verification %>
 		<% if (lang === 'en' && site.editMode) { %>
-			<input class="_e form-check-input" title="Verified" type="text" size="1" value="<%- i.verified ? 'x' : '' %>"" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.verified">
+			<input class="_e form-check-input" title="Verified" type="text" size="1" value="<%= i.verified ? 'x' : '' %>" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.verified">
 		<% } else if (lang === 'en') { %>
 			<%- i.verified ? `<span title="Verified Translation" class="bi bi-patch-check-fill"></span>` : '' %>
 		<% } %>
@@ -237,7 +238,9 @@
 
 		<%# Item Number + Chain %>
 		<% const referenceHeading = searchResult && !langData.title; %>
-		<% if (referenceHeading) { %><h2 class="d-inline fs-6"><% } else { %><b><% } %><a href="<%= itemHref %>" title="<%= linkTitle(itemLinkTitleSource) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a><% if (referenceHeading) { %></h2><% } else { %></b><% } %><% if (displayedChain || site.editMode) { %> –
+		<% if (referenceHeading) { %><h2 class="d-inline fs-6"><% } else { %><b><% } %><a href="<%= itemHref %>" title="<%= linkTitle(itemLinkTitleSource) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a><% if (referenceHeading) { %></h2><% } else { %></b><% } %>
+		<% if (showHadithDetailsLink) { %><a href="<%= itemHref %>" class="icon" title="<%= detailsLabel %>" aria-label="<%= detailsLabel %>"><span class="bi bi-info-circle" aria-hidden="true"></span></a><% } %>
+		<% if (displayedChain || site.editMode) { %> –
 		<% if (showPrimaryNarrator) { %>
 			<% if (narratorInlineEditable) { %><input type="search" class="_e chain hadith-admin-combobox hadith-primary-narrator-input <%= _p %> l3" title="Ḥadīth Narrator" value="<%= displayedChain %>" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>><% } else { %><span class="chain <%= _p %> l3" title="Ḥadīth Narrator"><%= displayedChain %></span><% } %>
 		<% } else { %>
@@ -400,9 +403,8 @@
 			<a href="<%= quranTafsirHref %>" title="Tafsir of this ayah" class="icon" data-open-quran-tafsir="1" aria-label="Tafsir of this ayah"><span class="bi bi-book-half" aria-hidden="true"></span></a>
 
 		<% } %>
-		<% if (sharhBody) { %>
-			<a href="#" title="Search the web for this hadith’s explanation" aria-label="Search the web for this hadith’s explanation" class="icon hadith-sharh-link" data-hadith-sharh-body="<%= sharhBody %>"><span class="bi bi-globe2" aria-hidden="true"></span></a>
-
+		<% if (showHadithDetailsLink) { %>
+			<a href="<%= itemHref %>" class="icon" title="<%= detailsLabel %>" aria-label="<%= detailsLabel %>"><span class="bi bi-info-circle" aria-hidden="true"></span></a>
 		<% } %>
 		<a href="#H<%= i.id %>" type="button" title="<%= linkTitle(itemLinkTitleSource) %>" class="btn btn-sm icon content-translate-button hadith-share-action-link" data-bs-toggle="modal" data-bs-target="#H<%= i.id %>" aria-label="<%= linkTitle(itemLinkTitleSource) %>">
 			<span class="bi bi-share content-translate-button-icon" aria-hidden="true"></span>

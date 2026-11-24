@@ -2,7 +2,7 @@
   <%- include('search_result_header.ejs', { resultKind: 'Quran · Translation' }); %>
 	<section class="col-md-6 col-sm-12 h" lang="en" data-reader-language-column="english">
 		<section lang="en">
-			<b><a href="<%= utils.quranUrl(req, translation.url) %>" title="<%- translation.translation_name %>"><%= `${translation.translation_alias}:${translation.translation_ref}` %></a></b>
+			<b><a href="<%= utils.quranUrl(req, translation.url) %>" title="<%= translation.translation_name %>"><%= `${translation.translation_alias}:${translation.translation_ref}` %></a></b>
 			<% if (translation.translation_author) { %>
 				<span class="text-muted"> – <%- translation.translation_author %></span>
 			<% } %>

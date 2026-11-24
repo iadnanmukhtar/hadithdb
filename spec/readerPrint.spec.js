@@ -45,7 +45,7 @@ describe('Current address-bar print selection', () => {
     return dom;
   }
   test.each(['tafsir', 'hadith-sharh', 'hadith-section', 'hadith-sirah-reader'])('%s prints the history-selected passage and restores the DOM', mode => {
-    const dom = reader(`<main data-reader-infinite="${mode}" data-reader-current-url="/book/1"><heading class="row major" id="chapter">Chapter</heading><article id="original">Original</article><section class="reader-infinite-page" data-reader-infinite-page="1" data-reader-url="/book/2" id="current"><section class="breadcrumbs">Current breadcrumb</section><article>Current</article></section><section data-reader-infinite-page="1" data-reader-url="/book/3" id="next">Next</section></main>`, 'https://example.com/book/1');
+    const dom = reader(`<main data-reader-infinite="${mode}" data-reader-current-url="/book/1"><header class="row major" id="chapter">Chapter</header><article id="original">Original</article><section class="reader-infinite-page" data-reader-infinite-page="1" data-reader-url="/book/2" id="current"><section class="breadcrumbs">Current breadcrumb</section><article>Current</article></section><section data-reader-infinite-page="1" data-reader-url="/book/3" id="next">Next</section></main>`, 'https://example.com/book/1');
     const w = dom.window, d = w.document;
     try {
       w.history.pushState({}, '', '/book/2#anchor');

@@ -75,12 +75,6 @@
 		</header>
 	<% } %>
 
-    <% if (locals.detailIdentity === i) { %>
-      <div class="col-12">
-        <%- include('bookNav.ejs'); %>
-      </div>
-    <% } %>
-
 	<% if (site.editMode && Array.isArray(i.contentTranslations) && i.contentTranslations.length) { %>
 		<div class="admin-content-translation-panel" data-admin-content-translation-panel="en">
 			<%- include('hadith_item.ejs', { site: site, page: page, i: i, lang: 'en', main: main, title: title, searchResult: searchResult, similarSection: isSimilarSection, adminContentTranslationOptions: i.contentTranslations, adminContentTranslationSelected: 'en', adminContentTranslationItemId: contentTranslationItemId }); %>

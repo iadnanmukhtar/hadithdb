@@ -71,7 +71,7 @@
 			};
 		})
 	}) %></script><% } %>
-	<heading class="quran-tafsir-heading row heading py-2">
+	<header class="quran-tafsir-heading row heading py-2">
 		<h2 class="col-12 fs-5 title quran-section-heading-title mb-0" lang="en">
 			<span class="quran-section-heading-text"><% if (dedicatedTafsirPage) {
                 const noteStart = initialTafsirEntries.length ? initialTafsirEntries[0].startAyah : Math.min(...passageAyahs);
@@ -98,7 +98,7 @@
 				<% } %>
 			</span>
 		</h2>
-	</heading>
+	</header>
 	<div class="h-menu-wrap mb-3<%= dedicatedTafsirPage ? ' d-none' : '' %>"<% if (dedicatedTafsirPage) { %> aria-hidden="true"<% } %>>
 		<details class="book-switch-picker">
       <%- include('bookSwitchSummary', { switchLabel: 'Switch tafsir', currentLabel: '' }) %>

@@ -24,7 +24,7 @@
     var tafsirMetaDescription = `Read ${tafsirTitle}${tafsirAuthor ? ` by ${tafsirAuthor}` : ''} for Quran ${tafsirMetaRef}, Surat ${surah.name_en}, as a dedicated tafsir passage.`;
     tafsirMetaDescription = utils.socialMetadata().description(`${tafsirTitle} — ${surah.name_en} ${tafsirMetaRef}`, entries.map(entry => entry.translationHtml || entry.html || entry.arabicHtml), tafsirMetaDescription);
     var page = {
-      menu: 'Section',
+      menu: 'Section', articleType: 'Article', articleAuthor: tafsirAuthor,
       dateModified: utils.pageFreshness().latest(entries.map(entry => entry.lastmod)),
       title_en: tafsirMetaTitle,
       description_en: tafsirMetaDescription,
@@ -88,7 +88,8 @@
 
 	<div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
 	  <div class="container quran-heading-content quran-heading-content-tafsir">
-	<main data-book-print-reverse="<%= Number(tafsir.surah_dir) === 1 %>" data-book-print-path="<%= tafsirPath %>" data-book-print-chapter="<%= surah.num %>" data-book-print-section="<%= section ? section.h2 : '' %>" class="chapter mt-10 tafsir-only-page" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-quran-ref="<%= ref %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
+	<main data-book-print-reverse="<%= Number(tafsir.surah_dir) === 1 %>" data-book-print-path="<%= tafsirPath %>" data-book-print-chapter="<%= surah.num %>" data-book-print-section="<%= section ? section.h2 : '' %>" class="chapter tafsir-only-page" data-reader-infinite="tafsir" data-reader-context-key="<%= surah.num %>" data-reader-quran-ref="<%= ref %>" data-reader-current-url="<%= tafsirReaderCurrentUrl %>"<% if (tafsirReaderPrevUrl) { %> data-reader-prev-url="<%= tafsirReaderPrevUrl %>" data-reader-prev-title="<%= tafsirReaderPrevTitle %>"<% } %><% if (tafsirReaderNextUrl) { %> data-reader-next-url="<%= tafsirReaderNextUrl %>" data-reader-next-title="<%= tafsirReaderNextTitle %>"<% } %>>
+	  <h1 class="visually-hidden" data-reader-page-title><%= page.title_en %></h1>
 	      <%- include('sub-views/quran_commentary_book_nav.ejs', {
 	        quranCommentaryBook: tafsir,
 	        quranCommentaryBooks: tafsirBooks,
@@ -99,21 +100,21 @@
 
 	      <section class="row breadcrumbs pagination">
 	        <div class="col-md-6 col-sm-12" lang="en">
-	          <a title="<%- tafsirTitle %>" href="<%= tafsirBookHref %>"><%- tafsirPassageTitle %></a>
+	          <a title="<%= tafsirTitle %>" href="<%= tafsirBookHref %>"><%- tafsirPassageTitle %></a>
 	          &gt;
-	          <a title="<%- quranChapterTitleEn %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabel %></a>
+	          <a title="<%= quranChapterTitleEn %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabel %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <a title="<%- quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= tafsirPassageHref %>">Passage <%= quranSection.h2 %></a>
+	            <a title="<%= quranSection.title || quranSection.title_en || 'Passage' %>" href="<%= tafsirPassageHref %>">Passage <%= quranSection.h2 %></a>
 	          <% } %>
 	        </div>
 	        <div class="col-md-6 col-sm-12" lang="ar">
-	          <a title="<%- tafsirTitleAr %>" href="<%= tafsirBookHref %>"><%- tafsirPassageTitleAr %></a>
+	          <a title="<%= tafsirTitleAr %>" href="<%= tafsirBookHref %>"><%- tafsirPassageTitleAr %></a>
 	          &gt;
-	          <a title="<%- quranChapterTitleAr %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabelAr %></a>
+	          <a title="<%= quranChapterTitleAr %>" href="<%= tafsirSurahHref %>"><%= quranChapterBreadcrumbLabelAr %></a>
 	          <% if (quranSection) { %>
 	            &gt;
-	            <a title="<%- quranSection.title || quranSection.title_en || 'مقطع' %>" href="<%= tafsirPassageHref %>">مقطع <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
+	            <a title="<%= quranSection.title || quranSection.title_en || 'مقطع' %>" href="<%= tafsirPassageHref %>">مقطع <%= arabic.toArabicDigits(quranSection.h2 + '') %></a>
 	          <% } %>
 	        </div>
 	      </section>

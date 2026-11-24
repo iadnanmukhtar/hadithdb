@@ -5,7 +5,7 @@
 %>
 <% if (site.editMode || renderedHeadingShuruh.length) { %>
 <section class="hadith-heading-sharh hadith-metadata-section mt-3" aria-label="Heading explanations">
-  <heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Explanations</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">الشروح</h3></heading>
+  <header class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Explanations</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">الشروح</h3></header>
 <% if (site.editMode) { %><p class="small text-muted text-start" lang="en" dir="ltr">Choose an existing book from the name suggestions, or enter a new book name. Use book metadata to rename a book everywhere.</p><% } %>
   <div<% if (site.editMode) { %> data-hdith-sharh-sort-list data-sharh-owner-id="<%= heading.id %>" data-sharh-update-prop="hdith_toc_sharh.reorder"<% } %>>
 	  <% renderedHeadingShuruh.forEach(function (entry, entryIndex) { const bodyId = `${headingSharhBase}-body-${entryIndex + 1}`; const englishBodyId = `${bodyId}-en`; entry.text_en = utils.emptyIfNull(entry.text_en).replace(/[«﴿]/g, '"').replace(/[»﴾]/g, '"'); %>

@@ -14,6 +14,7 @@ main.ux-book-toc { margin-block-start: var(--ux-page-start); }
   .ux-book-toc #toc { table-layout: fixed; }
   .ux-book-toc .toc-start-column { width: 2.9rem; }
   .ux-book-toc .toc-number-column { width: 4rem; }
+  .ux-book-toc .sharh-toc-table .toc-number-column { width: 5.5rem; }
   .ux-book-toc #toc td { overflow-wrap: anywhere; padding-inline: .25rem; }
   .ux-book-toc #toc .toc-section-number { white-space: normal; }
   .ux-book-toc .ux-toc-table { --toc-section-indent: .25rem; --toc-subsection-indent: .5rem; }

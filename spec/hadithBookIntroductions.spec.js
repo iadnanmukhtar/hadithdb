@@ -170,7 +170,7 @@ describe('Hadith book introductions', () => {
 			article: { id: 91, h1: 0, h2: 1, title: 'المقدمة', title_en: '', intro: 'نص المقدمة', intro_en: '' }
 		});
 
-		expect(require('cheerio').load(html)('h2[lang="en"] [data-prop="toc.title_en"]')).toHaveLength(1);
+		expect(require('cheerio').load(html)('summary h2 [lang="en"] [data-prop="toc.title_en"]')).toHaveLength(1);
 		expect(html).toContain('lang="en" data-id="91" data-prop="toc.intro_en"');
 		expect(html).toContain('lang="ar" dir="rtl" data-id="91" data-prop="toc.intro"');
 	});

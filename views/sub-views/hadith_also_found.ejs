@@ -1,6 +1,6 @@
 <% if (Array.isArray(i.virtualReferences) && i.virtualReferences.length) { %>
 <section class="hadith-metadata-section hadith-also-found-section mt-4" id="<%= metadataBase %>-also-found" data-toc-heading-target data-toc-heading-key="also-found">
-	<heading class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Also found in</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">ورد أيضًا في</h3></heading>
+	<header class="row heading hadith-metadata-heading py-2" dir="ltr"><h3 class="col-md-6 col-sm-12 fs-5 title" lang="en">Also found in</h3><h3 class="col-md-6 col-sm-12 title" lang="ar" dir="rtl">ورد أيضًا في</h3></header>
 	<ul class="list-unstyled mb-0" dir="ltr">
 		<% i.virtualReferences.forEach(function (ref) { %>
 		<li class="py-2 border-bottom text-start">

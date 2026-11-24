@@ -37,7 +37,7 @@ test.each([390,768,1200])('article header aligns and fullscreen actions stay anc
  try {
   const source=fs.readFileSync('views/community.ejs','utf8');
   const fragment=source.slice(source.indexOf('<section class="community-editor"'),source.indexOf("<% if (view === 'post')")).replace(/<% } %>\s*$/,'');
-  const html=require('ejs').render(fragment,{articleCategories:[]},{filename:require('path').resolve('views/community.ejs')});
+  const html=require('ejs').render(fragment,{articleCategories:[],utils:{scriptAssetVersion:()=>'test'}},{filename:require('path').resolve('views/community.ejs')});
   await page.setContent(`<style>*{box-sizing:border-box}:root{--bs-body-bg:white;--bs-body-color:#222}body{margin:0}main{padding:20px}form{margin-bottom:16px}.form-control{display:block;width:100%}[hidden]{display:none!important}</style><main>${html}</main>`);
   await page.addStyleTag({path:'public/static/css/community.css'});
   await page.addScriptTag({path:'public/static/js/community-editor-layout.js'});

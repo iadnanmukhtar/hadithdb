@@ -25,6 +25,32 @@ const comparableTitles = new Set(['/settings', '/books', '/about', '/community',
 async function verifyRoute(page, route, status, titles) {
   const response = await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 60000 });
   assert.equal(response.status(), status, 'HTTP status');
+  if (status === 200 && !route.includes('/_app_restarting.html')) {
+    // The review starter immediately navigates away from its initial document.
+    const html = route === '/quran/review?start' ? await (await page.request.get(base + route)).text() : await response.text();
+    const $ = require('cheerio').load(html);
+    assert.equal($('html[lang]').length, 1, 'document language');
+    assert.equal($('head meta[charset="utf-8"]').length, 1, 'document encoding');
+    assert.equal($('main').length, 1, 'main landmark');
+    const field = (selector, attr) => {
+      const el = $('head').find(selector);
+      assert.equal(el.length, 1, selector);
+      const value = attr ? el.attr(attr) : el.text();
+      assert.ok(value?.trim(), selector);
+      return value;
+    };
+    const title = field('title');
+    const description = field('meta[name="description"]', 'content');
+    const canonical = field('link[rel="canonical"]', 'href');
+    assert.match(canonical, /^https?:\/\//);
+    assert.equal(new URL(canonical).href, canonical);
+    assert.equal(field('meta[property="og:title"]', 'content'), title);
+    assert.equal(field('meta[property="og:description"]', 'content'), description);
+    assert.equal(field('meta[property="og:url"]', 'content'), canonical);
+    const nodes = $('script[type="application/ld+json"]').toArray().map(el => JSON.parse($(el).text()));
+    assert.ok(nodes.every(node => node['@context'] === 'https://schema.org'));
+    assert.equal(nodes.filter(node => node['@id'] === canonical && node.name === title && node.description === description).length, 1, 'canonical page schema');
+  }
   if (route === '/admin') {
     assert.equal(await page.locator('[data-hadith-pair-manager]').count(), 0);
     return;
@@ -121,6 +147,15 @@ async function verifyRoute(page, route, status, titles) {
       await pill.press('Enter');
       await shortcut.waitFor();
       assert.deepEqual(await picker.evaluate(el => new FormData(el.form).getAll('b')), []);
+      await page.locator('[data-command-filter-toggle]:visible').click();
+      const sourceFilter = page.getByRole('searchbox', {name: 'Filter books and sources'});
+      await sourceFilter.fill('Bukhari');
+      await page.getByRole('button', {name: 'Clear source filter'}).click();
+      assert.equal(await sourceFilter.inputValue(), '');
+      await sourceFilter.fill('Bukhari');
+      await sourceFilter.press('Escape');
+      assert.equal(await sourceFilter.inputValue(), '');
+      assert.ok(await page.locator('#global-search-dialog').isVisible());
       await page.keyboard.press('Escape');
     } finally { await page.unroute(endpoint); }
   }
@@ -128,6 +163,13 @@ async function verifyRoute(page, route, status, titles) {
     const headings = page.locator('main h1:visible');
     assert.equal(await headings.count(), 1, 'related narrations must not repeat the detail heading');
     assert.equal(await headings.innerText(), 'Bukhari ' + route.split(':')[1]);
+    const title = await headings.boundingBox();
+    const controls = await page.locator('[data-reader-language-toolbar]:visible').first().boundingBox();
+    assert.ok(controls.y >= title.y + title.height, 'language controls follow the detail heading');
+  }
+  if (route === '/bookmarks') {
+    await page.locator('#bookmarks-empty').waitFor();
+    assert.ok(await page.locator('#clear-bookmarks-btn').isHidden());
   }
   if (route.includes('?q=')) {
     assert.equal(await page.locator('main h1:visible').count(), 1);
@@ -158,7 +200,12 @@ async function verifyRoute(page, route, status, titles) {
     const accountReady = new Promise(resolve => { releaseAccount = resolve; });
     const endpoint = '**/api/**';
     await page.route(endpoint, async route => {
-      if (new URL(route.request().url()).pathname === '/api/community/me') {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/api/notebook') {
+        const notes = [{title: 'Reading notes'}, {title: 'Friday notes'}];
+        return route.fulfill({json: {notes: notes.filter(note => note.title.includes(url.searchParams.get('q')))}});
+      }
+      if (url.pathname === '/api/community/me') {
         await accountReady;
         return route.fulfill({json: {author: {name: 'Fixture Author', handle: 'fixture'}}});
       }
@@ -173,6 +220,14 @@ async function verifyRoute(page, route, status, titles) {
     assert.ok(await title.isHidden());
     releaseAccount();
     await title.waitFor();
+    await page.locator('#community-import').click();
+    const matches = page.locator('#community-notebook-results');
+    await matches.getByText('Friday notes').waitFor();
+    await page.locator('#community-notebook-search').fill('Reading');
+    await matches.getByText('Friday notes').waitFor({state: 'hidden'});
+    await matches.getByText('Reading notes').waitFor();
+    await page.getByRole('button', {name: 'Clear note search'}).click();
+    await matches.getByText('Friday notes').waitFor();
     await title.fill('Fixture draft');
     await page.evaluate(() => {
       window.hadithAuth.getToken = async () => null;
@@ -288,6 +343,9 @@ async function verifyRoute(page, route, status, titles) {
     assert.ok(allBooks > 1);
     await filter.fill('bukhari');
     assert.equal(await shelf.count(), 0);
+    // A pending scroll event may be delivered after filtering hides the shelf.
+    await page.locator('[data-highlight-pane] .library-volumes').evaluateAll(directories =>
+      directories.forEach(directory => directory.dispatchEvent(new Event('scroll'))));
     await page.waitForFunction(count => {
       const matches = [...document.querySelectorAll('.book-catalog-details-button')].filter(button => button.getClientRects().length);
       return matches.length > 0 && matches.length < count;
@@ -327,13 +385,28 @@ async function verifyRoute(page, route, status, titles) {
     await translations.getByRole('button', { name: 'Next book' }).click();
     const translation = await translations.locator('[data-position="center"]').getAttribute('href');
     assert.match(translation, /\/quran\/(?!tafsir\/)/);
-    await page.getByRole('tab', { name: 'Tafsirs', exact: true }).click();
-    const highlights = page.getByRole('tabpanel', { name: 'Tafsirs' });
+    await page.getByRole('tab', { name: 'English Tafsirs', exact: true }).click();
+    const highlights = page.getByRole('tabpanel', { name: 'English Tafsirs' });
     const selected = highlights.locator('[data-position="center"]');
     assert.equal(await selected.getAttribute('data-alias'), 'mokhtasar');
     await highlights.getByRole('button', { name: 'Next book' }).click();
     assert.match(await selected.getAttribute('href'), /\/quran\/tafsir\//);
     assert.notEqual(await selected.getAttribute('data-alias'), 'mokhtasar');
+    const english = await highlights.locator('.library-volume').evaluateAll(links => links.map(link => link.dataset.alias));
+    const tabs = page.getByRole('tablist', { name: 'Quran library' });
+    await tabs.getByRole('tab', {name: 'Other', exact: true}).click();
+    const directory = page.getByRole('tabpanel', {name: 'Other', exact: true});
+    const remaining = await directory.locator('.library-volume:visible').evaluateAll(links => links.map(link => link.dataset.alias));
+    assert.ok(remaining.length > 0 && remaining.every(alias => !english.includes(alias)));
+    assert.equal(await directory.getByRole('button', {name: 'Next book'}).count(), 0);
+    const filter = page.locator('#quran-library-filter');
+    await filter.fill('khattab');
+    await page.locator('#quran-library-results .library-volume:visible').first().waitFor();
+    assert.ok(await directory.isHidden());
+    await filter.fill('no-such-book-712');
+    await page.locator('#quran-library-results .library-empty').waitFor();
+    await page.getByRole('button', {name: 'Clear book search'}).click();
+    await directory.waitFor();
     await page.locator('#toc-tab-surahs').click();
     await page.getByRole('tablist', { name: 'Quran library' }).getByRole('tab', { name: 'Translations' }).click();
     assert.equal(await translations.locator('[data-position="center"]').getAttribute('href'), translation);

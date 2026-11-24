@@ -24,7 +24,7 @@ test('renders a Surah 0 H2 as a bilingual introductory article', async () => {
 	expect(require('cheerio').load(html)('section[lang=ar] strong').text()).toBe('الكتاب');
 	expect(html).toContain('data-prop="toc.intro_en"');
 	expect(html).toContain('<details class="quran-commentary-introduction-disclosure">');
-	expect(html).toMatch(/<summary>\s*<heading class="row heading py-2">/);
+	expect(html).toMatch(/<summary>\s*<h2 class="row heading py-2">/);
 	expect(html).not.toContain('Read article');
 	expect(html).not.toContain('Collapse article');
 	expect(html).not.toContain('<details class="quran-commentary-introduction-disclosure" open>');
@@ -76,7 +76,7 @@ test('gives a one-language article the full row and hides the empty language sid
 		site: { editMode: false },
 		article: { id: 93, h1: 0, h2: 1, title_en: 'Foreword', title: 'المقدمة', intro_en: 'English only.', intro: '' }
 	});
-	expect(html).toContain('<h2 class="col-12 fs-5 title" lang="en">');
+	expect(require('cheerio').load(html)('summary h2 > .col-12[lang=en]').text()).toContain('Foreword');
 	expect(html).toContain('<section class="_e col-12 intro content-markdown" lang="en"');
 	expect(html).not.toContain('lang="ar"');
 });
@@ -87,7 +87,7 @@ test('shows an empty Arabic side in Edit mode for authoring', async () => {
 		site: { editMode: true },
 		article: { id: 93, h1: 0, h2: 1, title_en: 'Foreword', title: '', intro_en: 'English only.', intro: '' }
 	});
-	expect(html).toContain('<h2 class="col-md-6 col-sm-12 fs-5 title" lang="ar"');
+	expect(require('cheerio').load(html)('summary h2 > .col-md-6[lang=ar] [data-prop="toc.title"]')).toHaveLength(1);
 	expect(html).toContain('lang="ar" dir="rtl" data-id="93" data-prop="toc.intro"');
 	expect(html).toContain('data-markdown-empty-html="&hellip;"');
 });

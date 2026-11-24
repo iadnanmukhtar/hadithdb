@@ -12,15 +12,19 @@
         
     var isQuranToc = book.alias === 'quran';
     var quranCommentaryBook = locals.quranCommentaryBook;
-    const tafsirHighlights = isQuranToc && !quranCommentaryBook && locals.tafsirs?.length
-      ? Tafsir.englishHighlights(Tafsir.catalogOrder(locals.tafsirs)) : [];
+    const homeTafsirs = isQuranToc && !quranCommentaryBook && locals.tafsirs?.length
+      ? Tafsir.catalogOrder(locals.tafsirs) : [];
+    const tafsirHighlights = homeTafsirs.length ? Tafsir.englishHighlights(homeTafsirs) : [];
+    const otherTafsirs = homeTafsirs.filter(book => Tafsir.carouselLanguage(book) !== 'en')
+      .sort((a, b) => (a.name_en || a.alias).localeCompare(b.name_en || b.alias));
     const translationBooks = isQuranToc && !quranCommentaryBook ? locals.translations || [] : [];
     const translationsByAlias = new Map(translationBooks.map(book => [book.alias, book]));
     const modernTranslations = translationBooks.length
       ? BookGroups.modernTranslationAliases(BookGroups.translationGroups(translationBooks)).map(alias => translationsByAlias.get(alias)) : [];
     const homeShelves = [
       { id: 'translations', label: 'Translations', books: modernTranslations, icon: 'bi-translate' },
-      { id: 'tafsirs', label: 'Tafsirs', books: tafsirHighlights, icon: 'bi-book-half' }
+      { id: 'tafsirs', label: 'English Tafsirs', books: tafsirHighlights, icon: 'bi-book-half' },
+      { id: 'other', label: 'Other', books: otherTafsirs, icon: 'bi-book-half' }
     ].filter(shelf => shelf.books.length);
     var quranCommentaryBooks = Array.isArray(locals.quranCommentaryBooks) ? locals.quranCommentaryBooks : [];
     var quranCommentaryBookSlug = quranCommentaryBook && (quranCommentaryBook.quranBookSlug || quranCommentaryBook.slug || quranCommentaryBook.alias);
@@ -109,7 +113,7 @@
         : 'Browse the Quran table of contents by surah and passage, with Arabic text, English translation, and tafsir.')
       : `Browse the table of contents for ${book.name_en || book.shortName_en}, with chapter and section links to Arabic hadith and English translations.`;
     var page = {
-      menu: 'Books',
+      menu: 'Books', schemaType: 'CollectionPage',
       title_en: pageTitleEn,
       description_en: pageDescriptionEn,
       subtitle_en: quranCommentaryBook
@@ -558,22 +562,29 @@
     <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
     <main class="ux-system ux-book-toc toc<%= !isQuranToc ? ' hadith-toc-page' : '' %><%= quranCommentaryBook && quranCommentaryBook.type === 'tafsir' ? ' tafsir-toc-page' : '' %><%= isQuranToc && !quranCommentaryBook ? ' quran-toc-reader-modes' : '' %>"<% if (quranCommentaryBook && quranCommentaryBook.type === 'trans') { %> data-quran-selected-translation-book="<%= quranCommentaryBook.alias %>"<% } %>>
       <% if (isQuranToc && !quranCommentaryBook) { %>
-        <header class="ux-page-heading toc-title-actions">
+        <header class="ux-page-heading quran-library-header">
           <h1 class="ux-page-title">Quran contents</h1>
           <%- include('sub-views/toc_actions.ejs', actions); %>
-        </header>
-        <% if (isQuranToc && !quranCommentaryBook && homeShelves.length) { %>
-          <div class="library-shelf-toolbar">
+          <% if (homeShelves.length) { %>
             <div class="library-shelf-tabs" role="tablist" aria-label="Quran library">
               <% homeShelves.forEach((shelf, index) => { %>
                 <button type="button" id="home-tab-<%= shelf.id %>" role="tab" data-bs-toggle="tab" data-bs-target="#home-panel-<%= shelf.id %>" aria-controls="home-panel-<%= shelf.id %>" aria-selected="<%= index === 0 %>" class="<%= index === 0 ? 'active' : '' %>"><%= shelf.label %></button>
               <% }); %>
             </div>
+            <div class="library-shelf-tools" hidden>
+              <%- include('sub-views/rail_search.ejs', { inputId: 'quran-library-filter', label: 'Search translations and tafsirs by title or author', placeholder: 'Search books', clearLabel: 'Clear book search', resultsId: 'quran-library-results' }) %>
+            </div>
+          <% } %>
+        </header>
+        <% if (homeShelves.length) { %>
+          <div id="quran-library-results" hidden>
+            <%- include('sub-views/library_volumes', { shelfId: 'quran-library-matches', shelfLabel: 'Matching translations and tafsirs', shelfBooks: [...translationBooks, ...homeTafsirs].sort((a,b) => (a.name_en || a.alias).localeCompare(b.name_en || b.alias)), bookHref: quranCommentaryPaginationHref, bookIcon: book => book.type === 'trans' ? 'bi-translate' : 'bi-book-half', hadithSizeIndicator: book => book.type === 'trans' ? '' : Tafsir.sizeIndicator(book), directoryOnly: true }) %>
+            <p class="library-empty" hidden>No books match your search.</p>
           </div>
-          <div class="tab-content">
+          <div class="tab-content" id="quran-library-panels">
             <% homeShelves.forEach((shelf, index) => { %>
-              <section class="tab-pane library-shelf <%= index === 0 ? 'active' : '' %>" id="home-panel-<%= shelf.id %>" role="tabpanel" aria-labelledby="home-tab-<%= shelf.id %>" data-library-shelf data-layout="covers">
-                <%- include('sub-views/library_volumes', { shelfId: 'quran-home-' + shelf.id, shelfLabel: shelf.label, shelfBooks: shelf.books, bookHref: quranCommentaryPaginationHref, bookIcon: () => shelf.icon, hadithSizeIndicator: shelf.id === 'tafsirs' ? Tafsir.sizeIndicator : () => '' }) %>
+              <section class="tab-pane library-shelf <%= index === 0 ? 'active' : '' %>" id="home-panel-<%= shelf.id %>" role="tabpanel" aria-labelledby="home-tab-<%= shelf.id %>" <% if (shelf.id !== 'other') { %>data-library-shelf data-layout="covers"<% } %>>
+                <%- include('sub-views/library_volumes', { shelfId: 'quran-home-' + shelf.id, shelfLabel: shelf.label, shelfBooks: shelf.books, bookHref: quranCommentaryPaginationHref, bookIcon: () => shelf.icon, hadithSizeIndicator: shelf.id === 'translations' ? () => '' : Tafsir.sizeIndicator }) %>
               </section>
             <% }); %>
           </div>
@@ -657,7 +668,7 @@
           <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" tabindex="0" aria-labelledby="toc-tab-juz">
 
             <h2 class="ux-section-title">Juz/Siparas</h2>
-            <table id="toc-juz" class="table ux-toc-table" title="<%- `Juz and Siparas for ${book.name_en} (فهرس ${book.title})` %>">
+            <table id="toc-juz" class="table ux-toc-table" title="<%= `Juz and Siparas for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
                 <% for (var j = 0; j < quranJuzRows.length; j++) {
                   var juz = quranJuzRows[j];
@@ -690,7 +701,7 @@
             <% if (quranCommentaryIntroductionAdminHref && !quranCommentaryIntroductionHref) { %>
             <p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= quranCommentaryIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
             <% } %>
-            <table id="toc-surahs" class="table ux-toc-table" title="<%- `Surahs for ${book.name_en} (فهرس ${book.title})` %>">
+            <table id="toc-surahs" class="table ux-toc-table" title="<%= `Surahs for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
                 <% quranCommentaryIntroductionArticles.forEach(function (article) { %>
                 <% if (quranCommentaryIntroductionHref && (utils.trimToEmpty(article.intro) || utils.trimToEmpty(article.intro_en))) { %>
@@ -774,7 +785,7 @@
           <div class="tab-pane fade <%= quranTocDefaultView === 'manzils' ? 'show active' : '' %>" id="toc-view-manzils" role="tabpanel" tabindex="0" aria-labelledby="toc-tab-manzils">
 
             <h2 class="ux-section-title">Manzils</h2>
-            <table id="toc-manzils" class="table ux-toc-table" title="<%- `Manzils for ${book.name_en} (فهرس ${book.title})` %>">
+            <table id="toc-manzils" class="table ux-toc-table" title="<%= `Manzils for ${book.name_en} (فهرس ${book.title})` %>">
               <tbody>
                 <% for (var m = 0; m < quranManzilRows.length; m++) {
                   var manzil = quranManzilRows[m];
@@ -810,7 +821,7 @@
 		<p class="mb-2"><a class="btn btn-sm btn-outline-primary" href="<%= hadithIntroductionAdminHref %>"><span class="bi bi-plus-circle"></span> Manage introduction articles</a></p>
 		<% } %>
         
-        <table id="toc" class="table ux-toc-table<%= book.type === 'sirah' ? ' sirah-toc' : '' %>" title="<%- `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
+        <table id="toc" class="table ux-toc-table<%= book.type === 'sirah' ? ' sirah-toc' : '' %>" title="<%= `Chapters Headings for ${book.name_en} (فهرس ${book.title})` %>">
           <% if (book.type === 'sirah') { %>
           <colgroup><col class="sirah-toc-number-column"><col><col></colgroup>
           <% } else { %>

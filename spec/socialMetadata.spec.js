@@ -49,3 +49,24 @@ test.each([['/bukhari:2', false], ['/quran:30:16', true]])('renders social tags 
   expect($('meta[property="og:image:height"]').attr('content')).toBe('512');
   expect($('link[rel="apple-touch-icon"]').attr('href')).toContain('apple-touch-icon.png');
 });
+
+test('a sharh reader identifies its commentary, source book and public author separately', () => {
+  const nodes = metadata.structuredData({
+    page: {
+      articleType: 'Article', articleAuthor: 'al-Nawawi',
+      sharhBook: { name_en: 'al-Minhaj', author_en: 'al-Nawawi' },
+      context: { book: { name_en: 'Sahih Muslim' } }
+    },
+    title: 'Muslim 1864 | al-Minhaj', description: 'Explanation of Muslim 1864.',
+    url: 'https://example.org/sharh/muslim-nawawi/muslim:1864',
+    siteName: 'Hadith Unlocked', siteUrl: 'https://example.org',
+    bookUrl: 'https://example.org/muslim', commentaryUrl: 'https://example.org/sharh/muslim-nawawi',
+    breadcrumbs: []
+  });
+  const page = nodes.find(node => node['@type'] === 'WebPage');
+  const article = nodes.find(node => node['@id'] === page.mainEntity['@id']);
+  expect(nodes.filter(node => node['@type'] === 'Book').map(book => book.name)).toEqual(['Sahih Muslim', 'al-Minhaj']);
+  expect(article.author).toEqual({ '@type': 'Person', name: 'al-Nawawi' });
+  expect(article.isPartOf['@id']).toBe('https://example.org/sharh/muslim-nawawi#book');
+  expect(article.mainEntityOfPage['@id']).toBe(page.url);
+});

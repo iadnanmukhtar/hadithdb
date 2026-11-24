@@ -137,7 +137,7 @@ test.each([['yqsirah','sirah'],['ibnhisham','sirah'],['history','sirah'],['histo
  const heading = renderHeading(bookType,3);
  const passage = render({book_alias:alias,num:'19',ref:`${alias}:19`,title:'',body:'',title_en:'Pre-Islamic Arabia: Various Paganistic Practices',body_en:'Passage text'});
  const $ = cheerio.load(heading + passage.html());
- expect($('heading.heading')).toHaveLength(0);
+ expect($('header.heading')).toHaveLength(0);
  expect($('h1[lang=en]').text()).toBe('Pre-Islamic Arabia: Various Paganistic Practices');
  expect($(`[data-hadith-heading-key="${alias}:3.3.1"]`)).toHaveLength(1);
  expect($('#S3-1')).toHaveLength(1);
@@ -145,9 +145,9 @@ test.each([['yqsirah','sirah'],['ibnhisham','sirah'],['history','sirah'],['histo
  expect($('.hadith-bookmark-btn')).toHaveLength(1);
  expect($('[data-hadith-heading-key]').hasClass('mt-4')).toBe(false);
  for(const [type,level,hasTitle] of [['sirah',2,true],['hadith',3,true]])
-  expect(cheerio.load(renderHeading(type,level,hasTitle))('heading.heading')).toHaveLength(1);
+  expect(cheerio.load(renderHeading(type,level,hasTitle))('header.heading')).toHaveLength(1);
  const untitledPassage = cheerio.load(renderHeading('sirah',3,false));
- expect(untitledPassage('heading.heading')).toHaveLength(0);
+ expect(untitledPassage('header.heading')).toHaveLength(0);
  expect(untitledPassage('.sirah-subsection-heading')).toHaveLength(1);
 });
 

@@ -81,7 +81,7 @@
     <span class="bi bi-arrow-clockwise mobile-bottom-nav-icon" aria-hidden="true"></span>
     <span class="mobile-bottom-nav-label">Refresh</span>
   </button>
-  <a class="mobile-bottom-nav-item" data-mobile-bottom-nav-community href="<%- mobileCommunityHref %>" title="Community" aria-label="Community">
+  <a class="mobile-bottom-nav-item" data-mobile-bottom-nav-community href="<%= mobileCommunityHref %>" title="Community" aria-label="Community">
     <span class="bi bi-people mobile-bottom-nav-icon" aria-hidden="true"></span>
     <span class="mobile-bottom-nav-label">Community</span>
   </a>
@@ -100,7 +100,7 @@
     </button>
   </div>
   <% if (mobilePrev) { %>
-    <a class="mobile-bottom-nav-item" href="<%- mobilePrevHref %>" rel="prev" title="<%- mobilePrevTitle %>" aria-label="Previous" data-mobile-bottom-nav-prev>
+    <a class="mobile-bottom-nav-item" href="<%= mobilePrevHref %>" rel="prev" title="<%= mobilePrevTitle %>" aria-label="Previous" data-mobile-bottom-nav-prev>
       <span class="bi bi-chevron-left mobile-bottom-nav-icon" aria-hidden="true"></span>
       <span class="mobile-bottom-nav-label">Prev</span>
     </a>
@@ -111,7 +111,7 @@
     </span>
   <% } %>
   <% if (mobileNext) { %>
-    <a class="mobile-bottom-nav-item" href="<%- mobileNextHref %>" rel="next" title="<%- mobileNextTitle %>" aria-label="Next" data-mobile-bottom-nav-next>
+    <a class="mobile-bottom-nav-item" href="<%= mobileNextHref %>" rel="next" title="<%= mobileNextTitle %>" aria-label="Next" data-mobile-bottom-nav-next>
       <span class="bi bi-chevron-right mobile-bottom-nav-icon" aria-hidden="true"></span>
       <span class="mobile-bottom-nav-label">Next</span>
     </a>

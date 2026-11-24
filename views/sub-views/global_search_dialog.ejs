@@ -85,10 +85,7 @@
       <details id="command-search-filter-options" class="command-search-filter-details command-search-combined-filters" data-command-search-combined-filters>
         <summary hidden>Search filters</summary>
         <div class="command-search-filter-popover">
-          <label class="page-content-filter input-group command-search-filter-find">
-            <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-            <input type="search" class="form-control" placeholder="Filter books and sources" aria-label="Filter books and sources" data-command-search-filter-search="all" autocomplete="off">
-          </label>
+          <%- include('rail_search.ejs', { inputId: '', label: 'Filter books and sources', placeholder: 'Filter books and sources', resultsId: 'command-search-quran-filters command-search-hadith-filters', clearLabel: 'Clear source filter', filterClass: 'command-search-filter-find', filterData: { 'command-search-filter-search': 'all' } }) %>
           <div class="command-search-source-options" data-command-global-source-options>
             <label class="command-search-book-option">
               <input class="form-check-input" type="checkbox" name="b" value="quran" <%= commandQuranTextSelected ? 'checked' : '' %> data-command-filter data-command-filter-label="Quran">

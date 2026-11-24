@@ -25,8 +25,7 @@
   </div>
   <p id="notebook-signin" class="text-muted mb-3" role="status">Sign-in is required to take notes.</p>
   <p class="small text-muted mb-3">Tip: In addition to creating a general note, you can take notes on hadith, Quran verses, and tafsir using the <i class="bi bi-sticky" aria-hidden="true"></i> note icon beside the content.</p>
-  <label class="visually-hidden" for="notebook-search">Search notes</label>
-  <input class="form-control mb-3" id="notebook-search" disabled type="search" dir="auto" placeholder="Search all notes by source or text">
+  <%- include('sub-views/rail_search.ejs', { inputId: 'notebook-search', label: 'Search notes', placeholder: 'Search all notes by source or text', resultsId: 'notebook-list', clearLabel: 'Clear note search', filterClass: 'mb-3', filterDisabled: true }) %>
   <p id="notebook-list-status" role="status">Loading your notebook…</p>
   <div id="notebook-list"></div>
   <div id="notebook-sentinel" aria-hidden="true" style="height:1px"></div>
@@ -34,11 +33,7 @@
   </section>
   <div class="notebook-tag-rail-slot">
   <aside class="notebook-tag-rail" aria-label="Notebook tags">
-    <label class="visually-hidden" for="notebook-tag">Filter by tag</label>
-    <div class="page-content-filter input-group command-search-filter-find mb-3">
-      <span class="input-group-text bi bi-funnel" aria-hidden="true"></span>
-      <input class="form-control" id="notebook-tag" disabled type="search" dir="auto" placeholder="Filter by tag">
-    </div>
+    <%- include('sub-views/rail_search.ejs', { inputId: 'notebook-tag', label: 'Filter by tag', placeholder: 'Filter by tag', resultsId: 'notebook-tags', clearLabel: 'Clear tag filter', filterClass: 'mb-3', filterDisabled: true }) %>
     <div id="notebook-tags" class="nav flex-column"></div>
   </aside>
   </div>

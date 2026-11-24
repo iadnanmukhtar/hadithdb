@@ -5,7 +5,7 @@
 const site = Object.assign({}, global.settings.site, { admin: !locals.noadmin && req.admin, editMode: !locals.noadmin && req.admin && req.editMode });
 const context = { book, chapter: item.chapter, section: item.section, subsection: item.subsection };
 const canonical = `/${item.ref}`;
-const page = Object.assign({ menu: 'History', canonical, context,
+const page = Object.assign({ menu: 'History', articleType: 'Article', articleAuthor: book.author_en || book.author, canonical, context,
   title_en: utils.socialMetadata().qualifiedTitle(`${book.name_en || book.shortName_en} ${item.num}`, item.title_en || item.title),
   description_en: utils.socialMetadata().description(`${book.shortName_en || book.name_en} ${item.num}`, [item.body_en || item.body], 'Read this history passage.')
 }, readerNavigation);
@@ -22,7 +22,7 @@ const outlineKey = currentHeading ? `${book.alias}:${currentHeading.h1}${Number(
 <%- include('sub-views/header.ejs', { site, page }); %>
 <div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
 <div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
-<main class="chapter mt-10 sirah-only-page" data-reader-infinite="hadith-sirah-item" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
+<main class="chapter sirah-only-page" data-reader-infinite="hadith-sirah-item" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
   <header class="quran-tafsir-source row text-muted">
     <section class="col-6 text-start" lang="en">
       <strong><a class="quran-tafsir-book-modal-trigger" href="/<%= book.alias %>"><%= book.name_en || book.shortName_en %></a></strong>

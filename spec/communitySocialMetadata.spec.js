@@ -25,8 +25,8 @@ test('Community route puts recent anonymous activity into crawler-visible Open G
     {activity:'comment',kind:'comment',author:{name:'Amina'},excerpt:'**Mercy** & رحمة'},
     {activity:'repost',kind:'article',author:{name:'Original author'},repostedBy:{name:'Reader'},title:'A reflection'}
   ]});
-  const result=await page('/',{path:'/'}),$=head(result);
-  expect(feed).toHaveBeenCalledWith();
+  const result=await page('/',{path:'/',query:{}}),$=head(result);
+  expect(feed).toHaveBeenCalledWith({ kind: 'all', category: undefined, tag: undefined });
   expect($('meta[property="og:description"]').attr('content')).toBe('Recent community activity — Amina commented: Mercy & رحمة • Reader reposted: A reflection');
   expect($('meta[property="og:url"]').attr('content')).toBe('https://hadith.example/community');
 });
@@ -70,10 +70,11 @@ test('an image in the published body takes precedence over the author-photo fall
  const result=metadata('post',{post:{title:'With image',author:{name:'Amina',photo:'/profile.png'},html:'<p>Text</p><img src="/community/media/public">'}});
  expect(result.cover).toBe('/community/media/public');expect(result.title_en).toBe('With image — Amina');
 });
-test('imported articles without a cover do not acquire a fake /blog/ image',async()=>{
+test('imported articles without a cover use the public Pearls artwork in previews',async()=>{
  const sql=jest.spyOn(C,'sql').mockResolvedValue([{post_id:2,slug:'reflection',attributes_json:'{"title":"Reflection"}'}]);
  const item={id:2,kind:'article',title:'Reflection',coverUrl:'',author:{name:'Amina'}};
  await require('../lib/CommunityBlogImport').decorate([item]);
- expect(item.coverUrl).toBeNull();expect(item.mediaHtml).not.toContain('<img');
+ expect(item.coverUrl).toBe(require('../lib/BlogCover'));
+ expect(load(item.mediaHtml)('img').attr('src')).toBe(item.coverUrl);
  sql.mockRestore();
 });

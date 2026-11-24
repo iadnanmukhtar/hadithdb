@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <% 
   function cleanCanonicalPath(path) {
     if (!path)
@@ -38,22 +39,14 @@
       ))
     );
   var isQuranCanonicalPage = page && page.canonical && isQuranHeadPage;
-  var isQuranPathHeadPage = page
-    && (
-      (page.context && page.context.quranSearchProxy)
-      || (page.canonical && (
-        page.canonical === '/quran'
-        || page.canonical.indexOf('/quran/') === 0
-      ))
-    );
   var headRequestPath = req && req.originalUrl ? req.originalUrl.split('?')[0] : (req && req.path ? req.path : '');
   var isMudhakkirHeadPage = headRequestPath === '/quran/review'
     || ((headRequestPath === '/quran/page' || headRequestPath.indexOf('/quran/page/') === 0)
       && req && req.query
       && (req.query.memorize !== undefined || req.query.review !== undefined || req.query.reviewRef !== undefined));
   var quranHeadBrandName = isMudhakkirHeadPage ? 'Mudhakkir' : 'Quran Unlocked';
-  var headTitle = utils.socialMetadata().title(page.title_en, '', isQuranPathHeadPage ? quranHeadBrandName : site.name);
-  var headDescription = utils.socialMetadata().excerpt(page.description_en || site.desc || '');
+  var headTitle = utils.socialMetadata().title(page.title_en, '', isQuranHeadPage ? quranHeadBrandName : site.name);
+  var headDescription = utils.socialMetadata().excerpt(page.description_en || site.desc || headTitle);
   var headSiteName = isQuranHeadPage ? quranHeadBrandName : site.name;
   var headSiteUrl = isQuranHeadPage ? quranCanonicalBaseUrl : site.url;
   var headAppLogo = isMudhakkirHeadPage
@@ -66,19 +59,11 @@
   var headAppIcoPath = isMudhakkirHeadPage ? '/static/img/quran/mudhakkir.ico' : (isQuranHeadPage ? '/static/img/quran-favicon.ico' : '/favicon.ico');
   var headLogo = utils.socialMetadata().image(utils.staticAssetUrl(page.cover) || (isMudhakkirHeadPage ? headAppLogo : null), isQuranHeadPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl, isQuranHeadPage);
   var headUsesBrandSocialImage = headLogo === utils.socialMetadata().image(null, isQuranHeadPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl, isQuranHeadPage);
-  function quranCanonicalPath(path) {
-    if (!path)
-      return path;
-    return path;
-  }
+  var headCanonicalBaseUrl = (isQuranCanonicalPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl).replace(/\/$/, '');
   function canonicalUrlForPath(path) {
-    if (isQuranCanonicalPage)
-      return quranCanonicalBaseUrl + quranCanonicalPath(path);
-    return hadithCanonicalBaseUrl + path;
+    return new URL(headCanonicalBaseUrl + path).href;
   }
-  var headCanonicalPath = isQuranCanonicalPage ? quranCanonicalPath(page.canonical) : page.canonical;
-  var headCanonicalBaseUrl = isQuranCanonicalPage ? quranCanonicalBaseUrl : hadithCanonicalBaseUrl;
-  var headCanonicalUrl = headCanonicalBaseUrl + headCanonicalPath;
+  var headCanonicalUrl = canonicalUrlForPath(page.canonical || headRequestPath || '/');
   var pageContext = page.context || {};
   var contextBook = pageContext.book;
   var contextCommentaryBook = pageContext.quranCommentaryBook || pageContext.commentaryBook;
@@ -145,19 +130,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.9/dist/css/bootstrap.min.css" integrity="sha384-yEPZ7jP9S0QKiUQ0m3jjsO4ProIW7wvR9gXkI7JOGa2XVsw53Yke2bsdkBbjmmiX" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
 <link rel="stylesheet" href="/vendor/toastr/toastr.min.css">
-<link rel="stylesheet" href="/static/css/style.css?v=<%= utils.styleAssetVersion() %>" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/style.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/community.css?v=<%= utils.styleAssetVersion() %>">
-<% if (page.feed || page.rss) { 
-  if (page.feed) { %>
-    <link rel="alternate" type="application/atom+xml" title="<%= page.title_en %>" href="<%= page.feed %>" />
-  <% }
-  if (page.rss) { %>
-    <link rel="alternate" type="application/rss+xml" title="<%= page.title_en %>" href="<%= page.rss %>" />
-  <% } %>
-<% } else { %>
+<% if (page.feed) { %>
+<link rel="alternate" type="application/atom+xml" title="<%= headTitle %>" href="<%= page.feed %>">
+<% } %>
+<% if (page.rss) { %>
+<link rel="alternate" type="application/rss+xml" title="<%= headTitle %>" href="<%= page.rss %>">
 <% } %>
 
-<link rel="image_src" href="<%= headLogo %>" />
 <link rel="icon" type="image/svg+xml" href="<%= headAppLogoVectorPath %>" />
 <link rel="icon" type="image/png" sizes="32x32" href="<%= headAppLogo32Path %>" />
 <link rel="icon" type="image/png" sizes="16x16" href="<%= headAppFavicon16Path %>" />
@@ -165,16 +146,17 @@
 <link rel="icon" href="<%= headAppIcoPath %>" sizes="any" />
 
 
+<% if (page.menu !== 'Error') { %>
 <link rel="canonical" href="<%= headCanonicalUrl %>" />
-<% 	if (page && page.menu !== 'Home') {
-		if (page.prev) { %>
-<link rel="prev" href="<%= page.prev %>" />
-<% 		}
-		if (page.next) { %>
-<link rel="next" href="<%= page.next %>" />
-<% 		}
-	} %>
+<% } %>
+<% if (page.menu !== 'Home' && page.prev) { %>
+<link rel="prev" href="<%= page.prev %>">
+<% } %>
+<% if (page.menu !== 'Home' && page.next) { %>
+<link rel="next" href="<%= page.next %>">
+<% } %>
 
+<% if (page.menu !== 'Error') { %>
 <meta property="og:site_name" content="<%= headSiteName %>">
 <meta property="og:locale" content="en_US">
 <meta property="og:image" content="<%= headLogo %>">
@@ -187,7 +169,7 @@
 <meta property="og:url" content="<%= headCanonicalUrl %>">
 <meta property="og:title" content="<%= headTitle %>">
 <meta property="og:description" content="<%= headDescription %>">
-<meta property="og:type" content="article" />
+<meta property="og:type" content="<%= page.articleType ? 'article' : 'website' %>" />
 
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="<%= headLogo %>">
@@ -195,162 +177,42 @@
 <meta name="twitter:title" content="<%= headTitle %>">
 <meta name="twitter:description" content="<%= headDescription %>">
 
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'Organization',
-  name: headSiteName,
-  url: headSiteUrl,
-  logo: headLogo
-}) %>
-
-<%
-  var websiteJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    name: headSiteName,
-    url: headSiteUrl
-  };
-  if (page.menu === 'Home') {
-    websiteJsonLd.potentialAction = {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${site.url}/?q={search_term_string}`
-      },
-      'query-input': 'required name=search_term_string'
-    };
-  }
-%>
-<%- utils.jsonLdScript(websiteJsonLd) %>
-
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'WebPage',
-  dateModified: page.dateModified,
-  name: headTitle,
-  headline: headTitle,
-  description: headDescription,
-  url: headCanonicalUrl,
-  isPartOf: {
-    '@type': 'WebSite',
-    name: headSiteName,
-    url: headSiteUrl
-  }
-}) %>
-
-<% if (contextCommentaryBook) {
-  var commentaryBookName = contextCommentaryBook.type === 'tafsir'
-    ? `Tafsir ${contextCommentaryBook.shortName_en || contextCommentaryBook.name_en || contextCommentaryBook.alias}`
-    : (contextCommentaryBook.name_en || contextCommentaryBook.title || contextCommentaryBook.shortName_en || contextCommentaryBook.alias);
-  var commentaryBookSlug = contextCommentaryBook.quranBookSlug || contextCommentaryBook.slug || contextCommentaryBook.alias;
-  var commentaryBookUrl = contextCommentaryBook.type === 'tafsir'
-    ? `${quranCanonicalBaseUrl}/quran/tafsir/${commentaryBookSlug}`
-    : `${quranCanonicalBaseUrl}/quran/${commentaryBookSlug}`;
-%>
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'Book',
-  name: commentaryBookName,
-  author: (contextCommentaryBook.author_en || contextCommentaryBook.author) ? {
-    '@type': 'Person',
-    name: contextCommentaryBook.author_en || contextCommentaryBook.author
-  } : undefined,
-  inLanguage: contextCommentaryBook.lang || 'English',
-  url: commentaryBookUrl
-}) %>
-<% } %>
-
-<% if (contextBook !== undefined) { %>
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'Book',
-  name: contextBook.name_en || contextBook.shortName_en || contextBook.alias || contextBook.name || contextBook.shortName,
-  author: (contextBook.author_en || contextBook.author) ? {
-    '@type': 'Person',
-    name: contextBook.author_en || contextBook.author
-  } : undefined,
-  inLanguage: 'English',
-  url: contextBookUrl(contextBook) || headCanonicalUrl
-}) %>
-<% if (contextBook.title || contextBook.name || contextBook.shortName) { %>
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'Book',
-  name: contextBook.title || contextBook.name || contextBook.shortName,
-  inLanguage: 'Arabic',
-  url: contextBookUrl(contextBook) || headCanonicalUrl
-}) %>
-<% } %>
-<% } %>
-
-<% if (contextBook && contextChapter) { %>
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'Chapter',
-  name: `${isQuranBookContext ? `Surah ${contextChapter.title_en || contextChapter.h1}` : `${contextBook.shortName_en || contextBook.name_en || contextBook.alias} ${contextChapter.h1} | ${contextChapter.title_en || ''}`}`.trim(),
-  alternateName: `${contextBook.shortName || contextBook.name || ''}، ${arabic.toArabicDigits(contextChapter.h1 + '')}- ${contextChapter.title || ''}`.trim(),
-  pageStart: contextChapter.start0,
-  url: headCanonicalUrl,
-  isPartOf: {
-    '@id': contextBookUrl(contextBook) || headCanonicalUrl
-  }
-}) %>
-<% } %>
-
 <%
   var breadcrumbItems = [];
   if (contextBook) {
     breadcrumbItems.push(breadcrumbItem(1, contextCatalogName, contextCatalogUrl));
-    if (!isQuranBookContext)
+    if (page.sharhBreadcrumb)
+      breadcrumbItems.push(breadcrumbItem(2, page.sharhBreadcrumb.title, canonicalUrlForPath(page.sharhBreadcrumb.href)));
+    else if (!isQuranBookContext)
       breadcrumbItems.push(breadcrumbItem(2, contextBook.name_en || contextBook.shortName_en || contextBook.alias || contextBook.name || contextBook.shortName, contextBookUrl(contextBook) || headCanonicalUrl));
     if (contextChapter) {
 	  var contextChapterName = isQuranBookContext
 	    ? utils.quranSurahBreadcrumbLabel(contextChapter.h1, contextChapter.title_en)
 	    : `${contextChapter.h1}. ${contextChapter.title_en || chapterLabel(contextChapter)}`;
-	  breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, contextChapterName, contextChapterUrl(contextBook, contextChapter) || headCanonicalUrl));
+	  breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, contextChapterName, page.sharhBreadcrumb ? canonicalUrlForPath(page.sharhBreadcrumb.chapterHref) : contextChapterUrl(contextBook, contextChapter) || headCanonicalUrl));
     }
     if (contextSection) {
 	  var contextSectionName = isQuranBookContext
 	    ? sectionLabel(contextSection)
 	    : (contextSection.title_en ? `${contextSection.h2}. ${contextSection.title_en}` : sectionLabel(contextSection));
-	  breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, contextSectionName, contextSectionUrl(contextBook, contextChapter, contextSection) || headCanonicalUrl));
+	  breadcrumbItems.push(breadcrumbItem(breadcrumbItems.length + 1, contextSectionName, page.sharhBreadcrumb ? canonicalUrlForPath(page.sharhBreadcrumb.sectionHref) : contextSectionUrl(contextBook, contextChapter, contextSection) || headCanonicalUrl));
     }
   }
 %>
-<% if (breadcrumbItems.length > 0) { %>
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'BreadcrumbList',
-  name: breadcrumbItems.map(function (item) { return item.name; }).join(' > '),
-  itemListElement: breadcrumbItems
-}) %>
+<%
+  var commentarySlug = contextCommentaryBook && (contextCommentaryBook.quranBookSlug || contextCommentaryBook.slug || contextCommentaryBook.alias);
+  var commentaryUrl = page.sharhBook ? canonicalUrlForPath('/sharh/' + encodeURIComponent(page.sharhBook.alias)) : commentarySlug && quranCanonicalBaseUrl + (contextCommentaryBook.type === 'tafsir' ? '/quran/tafsir/' : '/quran/') + encodeURIComponent(commentarySlug);
+  var nodes = utils.socialMetadata().structuredData({
+    page, title: headTitle, description: headDescription, image: headLogo, url: headCanonicalUrl,
+    siteName: isQuranHeadPage ? 'Quran Unlocked' : site.name, siteUrl: headSiteUrl, logo: utils.socialMetadata().image(null, headSiteUrl, isQuranHeadPage),
+    breadcrumbs: breadcrumbItems, bookUrl: contextBookUrl(contextBook),
+    chapterUrl: contextChapterUrl(contextBook, contextChapter), commentaryUrl
+  });
+  for (const node of nodes) { %>
+<%- utils.jsonLdScript(node, node['@id'] === headCanonicalUrl) %>
 <% } %>
 
-<% if (pageContext.hadiths && !pageContext.fromSearch && pageContext.hadiths[0]) { %>
-<%- utils.jsonLdScript({
-  '@context': 'https://schema.org',
-  '@type': 'Article',
-  name: headTitle,
-  headline: headTitle,
-  url: headCanonicalUrl,
-  mainEntityOfPage: {
-    '@type': 'WebPage',
-    '@id': headCanonicalUrl
-  },
-  genre: 'Hadith',
-  author: [{
-      '@type': 'Book',
-      name: pageContext.hadiths[0].book.name_en,
-      url: canonicalUrlForPath(`/${pageContext.hadiths[0].book.alias}`)
-    },
-    {
-      '@type': 'Person',
-      name: pageContext.hadiths[0].book.author_en || pageContext.hadiths[0].book.author
-    }
-  ]
-}) %>
 <% } %>
-
 <link rel="stylesheet" href="/static/css/ux-shell.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/ux-foundations.css?v=<%= utils.styleAssetVersion() %>">
 <link rel="stylesheet" href="/static/css/quran-navigation.css?v=<%= utils.styleAssetVersion() %>">

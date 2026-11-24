@@ -14,16 +14,13 @@
 }
 @container quran-toolbar (max-width: 774px) {
   .quran-mode-toolbar:has(.quran-mode-picker:not([hidden])) [data-quran-reader-mode-link] { display: none; }
-  .quran-mode-toolbar .quran-mode-picker:not([hidden]) { display: inline-block; max-width: 9rem; }
+  .quran-mode-toolbar .quran-mode-picker:not([hidden]) { display: inline-flex; align-items: center; }
   .quran-mode-toolbar { flex-wrap: wrap; gap: .3rem; }
   .quran-mode-toolbar:has(.quran-mode-picker:not([hidden])) { flex-wrap: nowrap; }
-  .quran-mode-toolbar .quran-reader-modes { min-width: 0; }
-  .quran-mode-toolbar .quran-mode-picker { width: 7rem; min-width: 0; }
+  .quran-mode-toolbar .quran-reader-modes { min-width: 0; padding-block: 0; }
+  .quran-mode-toolbar .quran-reader-modes :is(.dropdown-toggle, .quran-mode-picker) { min-height: 44px; }
   .quran-mode-toolbar .dropdown-toggle > i { display: none; }
   .quran-mode-toolbar .ux-secondary-action, .quran-mode-toolbar .ux-view-option { padding-inline: .45rem; }
-}
-@media (max-width: 375px) {
-  .quran-mode-toolbar .quran-mode-picker { width: 5.5rem; }
 }
 .quran-navigation-rail { --bs-offcanvas-width: min(26rem, 100vw); --drawer-pad: clamp(.75rem, 3vw, 1.15rem); }
 .quran-navigation-rail .offcanvas-header { padding: .8rem var(--drawer-pad); border-bottom: 1px solid var(--ux-border); }
@@ -145,10 +142,8 @@ body:has(#mushaf-book[open]) { overflow: hidden; }
     padding-inline: .8rem;
     padding-block-start: max(0px, calc((var(--mushaf-book-row) - 1lh) / 2)); }
 }
-@media (max-width: 600px) and (orientation: portrait) {
-  .mushaf-book-leaf { scroll-margin-block-start: 3.6rem; }
-  .mushaf-book-spread { grid-template-columns: minmax(0,1fr); gap: .75rem; }
-  .mushaf-book-leaf { --book-type-size: clamp(18px,5vw,29px); }
+@media (max-width: 600px), (orientation: landscape) and (max-height: 600px) and (pointer: coarse) {
+  .quran-mushaf-page-heading .mushaf-book-opener { display: none; }
 }
 .mushaf-book-controls [data-turn] { min-width: 2.4rem; min-height: 2.4rem; border-radius: 50%; }
 .mushaf-book-leaf nav a { font-weight: var(--ux-body-weight); color: var(--ux-muted); text-decoration: none; }

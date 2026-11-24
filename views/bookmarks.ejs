@@ -14,24 +14,15 @@
     padding-bottom: 3rem;
   }
   .bookmarks-page-header {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid var(--ux-border);
     padding: 1.5rem 0 1rem;
   }
   .bookmark-section {
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    border-top: 1px solid var(--ux-border);
     padding-top: 1.25rem;
     margin-top: 1.25rem;
   }
-  .bookmark-section:not(.d-none) {
-    margin-top: 1.25rem;
-  }
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none),
-  .bookmarks-page-header + #bookmarks-loading.d-none + #bookmarks-empty.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section.d-none + .bookmark-section:not(.d-none) {
+  .bookmark-section:nth-child(1 of .bookmark-section:not(.d-none)) {
     border-top: 0;
     margin-top: 0;
   }
@@ -47,12 +38,12 @@
     align-items: center;
     gap: .5rem;
     margin: 0;
-    font-size: 1.5rem;
-    font-weight: 500;
+    font-size: var(--ux-section-size);
+    font-weight: var(--ux-emphasis-weight);
     line-height: 1.2;
   }
   .bookmark-section-count {
-    color: #6c757d;
+    color: var(--ux-muted);
     font-size: .85rem;
     white-space: nowrap;
   }
@@ -81,11 +72,11 @@
     text-decoration: underline;
   }
   .bookmark-compact-ref {
-    color: #6c757d;
+    color: var(--ux-muted);
     font-size: .85rem;
   }
   .bookmark-compact-ar {
-    color: #6c757d;
+    color: var(--ux-muted);
     margin-top: .15rem;
     text-align: right;
     width: 100%;
@@ -124,7 +115,7 @@
   }
   .bookmark-heading-meta,
   .bookmark-tafsir-meta {
-    color: #6c757d;
+    color: var(--ux-muted);
     font-size: .875rem;
   }
   .bookmark-list > :last-child {
@@ -154,14 +145,14 @@
             <h1 class="ux-page-title mb-1">Bookmarks</h1>
             <p class="text-muted mb-0">Saved Quran pages and passages, tafsir passages, hadith chapters, and hadiths.</p>
           </div>
-          <button type="button" class="btn btn-outline-primary btn-sm" id="clear-bookmarks-btn">
+          <button type="button" class="ux-text-action" hidden id="clear-bookmarks-btn">
             <i class="bi bi-trash3 me-1"></i>Clear all
           </button>
         </div>
       </div>
 
       <div id="bookmarks-loading" class="text-muted mt-3 d-none">Loading...</div>
-      <div id="bookmarks-empty" class="alert alert-info mt-3 d-none">You have not bookmarked any content yet.</div>
+      <div id="bookmarks-empty" role="status" class="text-muted mt-3 d-none">You have not bookmarked any content yet.</div>
 
       <section class="bookmark-section d-none" data-bookmark-section="mushafPages">
         <div class="bookmark-section-header">
@@ -636,7 +627,9 @@
 
       resetSections();
       loadingEl.classList.remove('d-none');
-      emptyEl.classList.add('d-none');
+      clearBtn.hidden = true;
+      emptyEl.className = 'text-muted mt-3 d-none';
+      emptyEl.textContent = 'You have not bookmarked any content yet.';
 
       if (!sectionKeys.some(key => sections[key] && sections[key].count) && !window.contentItemBookmarks?.count()) {
         loadingEl.classList.add('d-none');
@@ -655,12 +648,14 @@
 
         const total = sectionKeys.reduce((sum, key) => sum + (parseInt(sectionEls[key]?.dataset.bookmarkCount || '0', 10) || 0), 0);
         emptyEl.classList.toggle('d-none', total > 0 || window.contentItemBookmarks?.count() > 0);
+        clearBtn.hidden = !emptyEl.classList.contains('d-none');
         if (window.refreshHadithActions) window.refreshHadithActions();
         if (window.refreshHeadingBookmarks) window.refreshHeadingBookmarks();
         if (window.refreshTafsirBookmarks) window.refreshTafsirBookmarks();
       } catch (err) {
         console.warn(err);
         resetSections();
+        clearBtn.hidden = true;
         emptyEl.className = 'alert alert-warning mt-3';
         emptyEl.textContent = 'Unable to load bookmarks. Please try again.';
       } finally {

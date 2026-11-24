@@ -195,13 +195,13 @@
   font-size: inherit;
 }
 
-/* Keep the established 0.9rem English / 1.3rem Arabic reader proportion at
+/* Keep the shared English reading size at
    every reader zoom level, including mobile and standalone tafsir pages. */
 .h:lang(en),
 .quran-tafsir-text.content-markdown:lang(en),
 .tafsir-only-page .quran-tafsir-text.content-markdown:lang(en),
 .quran-tafsir-local-pair .content-markdown:lang(en) {
-  font-size: calc(var(--f-size-ar) * 9 / 13);
+  font-size: var(--reader-body-en);
 }
 
 /* Resolve one Arabic hadith line height at the reader size. Sharing a length
@@ -242,7 +242,7 @@
   font-size: var(--f-size-ar);
 }
 .tafsir-only-page .quran-tafsir-local-pair .content-markdown:lang(en) {
-  font-size: calc(var(--f-size-ar) * 9 / 13);
+  font-size: var(--reader-body-en);
 }
 
 /* Introductory notes and inline sharh are the deliberately smaller surfaces. */
@@ -250,7 +250,7 @@ main .intro.content-markdown:lang(ar) {
   font-size: calc(1.05rem * var(--content-font-scale)) !important;
 }
 main .intro.content-markdown:lang(en) {
-  font-size: calc(.81rem * var(--content-font-scale));
+  font-size: var(--reader-intro-en);
 }
 
 /* Inline explanations need a quieter hierarchy than full-page readers. */
@@ -258,7 +258,7 @@ main .hadith-sharh-body.content-markdown:lang(ar) {
   font-size: calc(.95rem * var(--content-font-scale)) !important;
 }
 main .hadith-sharh-body.content-markdown:lang(en) {
-  font-size: calc(.78rem * var(--content-font-scale)) !important;
+  font-size: var(--reader-secondary-en) !important;
 }
 .hadith-sharh-body.content-markdown :is(h1, h2, h3, h4, h5, h6) {
   margin-block: 1em .35em;
@@ -280,7 +280,7 @@ main .hadith-sharh-body.content-markdown:lang(en) {
   font-size: inherit;
 }
 .tafsir-only-page .quran-tafsir-local-pair > [lang="en"] {
-  font-size: calc(var(--f-size-ar) * 9 / 13);
+  font-size: var(--reader-body-en);
 }
 
 /* Native contenteditable indentation nests a list directly inside another list.

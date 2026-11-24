@@ -309,9 +309,13 @@
     show(page % 2 ? page : page - 1, false, page);
   });
 
+  const phoneViewport = matchMedia('(max-width: 600px), (orientation: landscape) and (max-height: 600px) and (pointer: coarse)');
+  phoneViewport.addEventListener('change', () => {
+    if (phoneViewport.matches && dialog.open) dialog.close();
+  });
   document.addEventListener('click', event => {
     const opener = event.target.closest('[data-open-mushaf-book]');
-    if (!opener || dialog.open) return;
+    if (!opener || phoneViewport.matches || dialog.open) return;
     entryPage = Number(opener.dataset.openMushafBook);
     setReadingPage(entryPage);
     first = entryPage;

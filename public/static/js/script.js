@@ -338,8 +338,7 @@ function initSearchInfiniteScroll(root) {
 
 			var remoteUrl = remoteMain.getAttribute('data-search-current-url') || targetUrl;
 			var chunk = $('<section class="search-infinite-page search-results-page" data-search-infinite-page="1" aria-label="More search results"></section>').attr({
-				'data-search-url': remoteUrl,
-				'data-page-title': parsed.title || ''
+				'data-search-url': remoteUrl
 			});
 			Array.from(remotePage.children).forEach(function (node) {
 				chunk[0].appendChild(document.importNode(node, true));
@@ -1111,6 +1110,11 @@ function initTocExpandCollapse(root) {
 			scheduleTocHeadingRailUpdate();
 		});
 	});
+	const target = document.getElementById(location.hash.slice(1));
+	if (target?.matches('.sharh-toc-table .toc-section-row.d-none')) {
+		document.getElementById(target.dataset.tocParent)?.querySelector('[data-toc-toggle]')?.click();
+		target.scrollIntoView();
+	}
 }
 
 function normalizeContentFilterText(value) {
@@ -4792,6 +4796,11 @@ function ensureReaderLanguageColumnToolbar(root) {
 	toolbar.setAttribute('data-reader-language-toolbar', '1');
 	root._readerLanguageColumnToolbar = toolbar;
 	if (kind === 'hadith' || kind === 'search') {
+		var detailTitle = root.querySelector('[data-reader-language-item="hadith"] > h1');
+		if (detailTitle) {
+			detailTitle.insertAdjacentElement('afterend', toolbar);
+			return;
+		}
 		if (introduction && introduction.parentNode) {
 			introduction.parentNode.insertBefore(toolbar, introduction);
 			return;
@@ -11102,27 +11111,22 @@ function updateQuranMushafFooterPageLinks(pageNumber) {
 	});
 }
 
-function updateLazyReaderDocumentTitle(title) {
-	title = (title || '').toString().trim();
-	if (!title)
-		return;
-	document.title = title;
-	var ogTitle = document.querySelector('meta[property="og:title"]');
-	var twitterTitle = document.querySelector('meta[name="twitter:title"]');
-	if (ogTitle)
-		ogTitle.setAttribute('content', title);
-	if (twitterTitle)
-		twitterTitle.setAttribute('content', title);
-	document.querySelectorAll('script[type="application/ld+json"]').forEach(function (script) {
-		try {
-			var data = JSON.parse(script.textContent || '');
-			if (data && data['@type'] === 'WebPage') {
-				data.name = title;
-				data.headline = title;
-				script.textContent = JSON.stringify(data);
-			}
-		} catch (err) {}
-	});
+// Each infinite-reader marker owns the metadata rendered for its public URL.
+const readerHeadSelector = 'title, link[rel="canonical"], link[rel="prev"], link[rel="next"], meta[name="description"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"], script[type="application/ld+json"]';
+const readerPageHeads = new WeakMap();
+let activeReaderHead;
+function rememberReaderHead(source, marker) {
+	if (!source.head || !marker) return;
+	readerPageHeads.set(marker, Array.from(source.head.querySelectorAll(readerHeadSelector), node => document.importNode(node, true)));
+}
+function updateLazyReaderHead(marker) {
+	const nodes = readerPageHeads.get(marker);
+	if (!nodes || activeReaderHead === marker) return;
+	document.head.querySelectorAll(readerHeadSelector).forEach(node => node.remove());
+	document.head.append(...nodes.map(node => node.cloneNode(true)));
+	const heading = document.querySelector('main > [data-reader-page-title]');
+	if (heading) heading.textContent = document.title;
+	activeReaderHead = marker;
 }
 
 function copyQuranReaderModeHrefs(source, target) {
@@ -11971,7 +11975,7 @@ function updateQuranMushafVisiblePage(pageNumber, pageElement) {
 		subtitle.textContent = `Page ${pageNumber}`;
 	pageElement = pageElement || document.querySelector(`[data-quran-mushaf-page="${pageNumber}"]`);
 	updateQuranReaderModeHrefs(pageElement);
-	updateLazyReaderDocumentTitle(pageElement && pageElement.getAttribute('data-page-title'));
+	updateLazyReaderHead(pageElement);
 }
 
 function initQuranMushafLastPageLinks(root) {
@@ -12117,8 +12121,8 @@ function initReaderPrintSelection() {
 				target.setAttribute('data-reader-print-current', '1');
 				// Infinite readers omit repeated chapter titles on screen. Retain the
 				// applicable title when printing a later passage by itself.
-				if (!target.hasAttribute('data-quran-mushaf-page') && !target.querySelector('heading.row.major')) {
-					var headings = Array.from(main.querySelectorAll('heading.row.major')).filter(function (node) {
+				if (!target.hasAttribute('data-quran-mushaf-page') && !target.querySelector('.row.major')) {
+					var headings = Array.from(main.querySelectorAll('.row.major')).filter(function (node) {
 						return node.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING;
 					});
 					if (headings.length) {
@@ -12268,7 +12272,7 @@ function initQuranMushafInfinite(root) {
 	}
 	var initialPage = reader.querySelector('[data-quran-mushaf-page]');
 	if (initialPage) {
-		initialPage.setAttribute('data-page-title', document.title);
+		rememberReaderHead(document, initialPage);
 		copyQuranReaderModeHrefs(document, initialPage);
 		updateQuranMushafVisiblePage(initialPage.getAttribute('data-quran-mushaf-page'), initialPage);
 	}
@@ -12294,8 +12298,8 @@ function initQuranMushafInfinite(root) {
 			var importedPage = document.importNode(page, true);
 			if (reader.hasAttribute('data-quran-review-reader'))
 				importedPage.querySelectorAll('.quran-memorize-rating').forEach(function (controls) { controls.remove(); });
-			importedPage.setAttribute('data-page-title', parsed.title || '');
 			highlightQuranMushafSelection(importedPage);
+			rememberReaderHead(parsed, importedPage);
 			copyQuranReaderModeHrefs(parsed, importedPage);
 			pageInstance += 1;
 			var originalScope = importedPage.getAttribute('data-quran-audio-scope') || '';
@@ -12373,6 +12377,24 @@ function initQuranDynamicPassageHero(root) {
 		return;
 	$(document).data('quranDynamicPassageHeroBound', true);
 	var pendingRequest = null;
+	const initialPath = location.pathname + location.search;
+	const initialHead = {};
+	rememberReaderHead(document, initialHead);
+	async function syncSelectedAyahHead() {
+		const path = location.pathname + location.search;
+		if (path === initialPath) {
+			updateLazyReaderHead(initialHead);
+			return;
+		}
+		// Use the destination's public identity, including its translation and chapter.
+		const response = await fetch(quranApiPath(path), { credentials: 'same-origin' });
+		if (!response.ok) return;
+		const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+		if (path !== location.pathname + location.search || !parsed.head.querySelector('[data-page-schema]')) return;
+		const selectedHead = {};
+		rememberReaderHead(parsed, selectedHead);
+		updateLazyReaderHead(selectedHead);
+	}
 	var selectedRefFromPath = function () {
 		var match = window.location.pathname.match(/\/quran:(\d+):(\d+)(?:-\d+)?$/);
 		if (match)
@@ -12433,7 +12455,7 @@ function initQuranDynamicPassageHero(root) {
 		syncHeroToolbar(hero);
 		if (pushHistory && href && window.history && window.history.pushState)
 			window.history.pushState({ quranDynamicAyahRef: '' }, '', href);
-		document.title = document.title.replace(/^Quran\s+\d+:\d+(?:-\d+)?\s+\|\s+/, '');
+		syncSelectedAyahHead().catch(console.warn);
 	};
 	var loadAyahHero = function (href, pushHistory, heroTarget) {
 		var target = new URL(href, window.location.origin);
@@ -12484,7 +12506,7 @@ function initQuranDynamicPassageHero(root) {
 				window.history.pushState({ quranDynamicAyahRef: ref }, '', `${target.pathname}${target.search}${target.hash}`);
 			if (pushHistory)
 				scrollSelectedAyahHeroIntoView(hero);
-			document.title = `Quran ${ref} | ${document.title.replace(/^Quran\s+\d+:\d+(?:-\d+)?\s+\|\s+/, '')}`;
+			syncSelectedAyahHead().catch(console.warn);
 		}).catch(function (err) {
 			if (err && err.name === 'AbortError')
 				return;
@@ -12602,13 +12624,13 @@ function initQuranInfinitePassageNavigation(root) {
 	var initialAnchor = $('<span class="quran-infinite-url-marker" aria-hidden="true" data-quran-infinite-anchor="1"></span>').attr({
 		'data-quran-url': currentUrl,
 		'data-study-path': translationPicker && translationPicker.dataset.passagePath,
-		'data-page-title': document.title,
 		'data-quran-surah': lastSurah,
 		'data-quran-prev-url': main.attr('data-quran-prev-url') || '',
 		'data-quran-prev-title': main.attr('data-quran-prev-title') || 'Previous',
 		'data-quran-next-url': main.attr('data-quran-next-url') || '',
 		'data-quran-next-title': main.attr('data-quran-next-title') || 'Next'
 	});
+	rememberReaderHead(document, initialAnchor[0]);
 	copyQuranReaderModeHrefs(document, initialAnchor[0]);
 	var firstHeading = main.children('article.col-12.mt-4').first();
 	if (firstHeading.length)
@@ -12681,7 +12703,7 @@ function initQuranInfinitePassageNavigation(root) {
 		var normalized = normalizeQuranInfiniteUrl(url);
 		if (translationPicker && marker && marker.dataset.studyPath)
 			translationPicker.dataset.passagePath = marker.dataset.studyPath;
-		updateLazyReaderDocumentTitle(marker && marker.getAttribute('data-page-title'));
+		updateLazyReaderHead(marker);
 		if (!window.history || !window.history.replaceState)
 			return;
 		if (!url || !normalized || normalized === activeUrl)
@@ -12800,20 +12822,20 @@ function initQuranInfinitePassageNavigation(root) {
 			// retain the public passage URL that initiated the request.
 			'data-quran-url': url,
 			'data-study-path': remoteMain.querySelector('[data-quran-passage-translation-select]')?.dataset.passagePath,
-			'data-page-title': parsed.title || '',
 			'data-quran-surah': remoteSurah,
 			'data-quran-prev-url': publicQuranInfiniteUrl(remoteMain.getAttribute('data-quran-prev-url') || ''),
 			'data-quran-prev-title': remoteMain.getAttribute('data-quran-prev-title') || 'Previous',
 			'data-quran-next-url': publicQuranInfiniteUrl(remoteMain.getAttribute('data-quran-next-url') || ''),
 			'data-quran-next-title': remoteMain.getAttribute('data-quran-next-title') || 'Next'
 		});
+		rememberReaderHead(parsed, chunk[0]);
 		copyQuranReaderModeHrefs(parsed, chunk[0]);
 		if (remoteCorpusUrl)
 			chunk.attr('data-quran-corpus-url', remoteCorpusUrl);
 		var remoteChildren = Array.from(remoteMain.children);
 		var nodes = [];
 		var chapterHeading = remoteChildren.find(function (node) {
-			return node.matches && node.matches('heading.row.major');
+			return node.matches && node.matches('.row.major');
 		});
 		var breadcrumbs = remoteChildren.find(function (node) {
 			return node.matches && node.matches('section.breadcrumbs.pagination');
@@ -13024,7 +13046,6 @@ function initReaderInfiniteNavigation(root) {
 			'data-reader-mode': mode,
 			'data-reader-url': currentUrl,
 			'data-reader-quran-ref': main.attr('data-reader-quran-ref') || '',
-			'data-page-title': document.title,
 			'data-reader-context-key': lastContextKey,
 			'data-reader-starts-introduction': startsAtReaderIntroduction ? '1' : '',
 			'data-reader-prev-url': main.attr('data-reader-prev-url') || '',
@@ -13032,8 +13053,9 @@ function initReaderInfiniteNavigation(root) {
 			'data-reader-next-url': main.attr('data-reader-next-url') || '',
 			'data-reader-next-title': main.attr('data-reader-next-title') || 'Next'
 		});
+		rememberReaderHead(document, initialAnchor[0]);
 		copyQuranReaderModeHrefs(document, initialAnchor[0]);
-		var firstContent = main.children('heading.row.major, article, section').filter(function () {
+		var firstContent = main.children('.row.major, article, section').filter(function () {
 			return !this.matches('.reader-infinite-status, .reader-infinite-sentinel');
 		}).first();
 		if (mode === 'hadith-sharh')
@@ -13173,7 +13195,7 @@ function initReaderInfiniteNavigation(root) {
 			var marker = pageMarkers()[currentPageIndex()];
 			var url = marker && marker.getAttribute('data-reader-url');
 			var normalized = normalizeReaderInfiniteUrl(url);
-			updateLazyReaderDocumentTitle(marker && marker.getAttribute('data-page-title'));
+			updateLazyReaderHead(marker);
 			if (!window.history || !window.history.replaceState)
 				return;
 			if (!url || !normalized || normalized === activeUrl)
@@ -13204,7 +13226,7 @@ function initReaderInfiniteNavigation(root) {
 			var nodes = [];
 			var remoteContextKey = remoteMain.getAttribute('data-reader-context-key') || '';
 			var chapterHeading = remoteChildren.find(function (node) {
-				return node.matches && node.matches('heading.row.major');
+				return node.matches && node.matches('.row.major');
 			});
 			var breadcrumbs = remoteChildren.find(function (node) {
 				return node.matches && node.matches('section.breadcrumbs.pagination');
@@ -13259,7 +13281,7 @@ function initReaderInfiniteNavigation(root) {
 			Array.from(remoteMain.children).forEach(function (node) {
 				if (!node.matches)
 					return;
-				if (node.matches('.reader-infinite-status, .reader-infinite-sentinel, [data-reader-infinite-anchor]'))
+				if (node.matches('.reader-infinite-status, .reader-infinite-sentinel, [data-reader-infinite-anchor], [data-reader-page-title]'))
 					return;
 				if (mode === 'hadith-sirah-item') {
 					if (node.matches('.quran-tafsir-source, .page-updated'))
@@ -13331,7 +13353,6 @@ function initReaderInfiniteNavigation(root) {
 				'data-reader-mode': mode,
 				'data-reader-url': remoteUrl,
 				'data-reader-quran-ref': remoteMain.getAttribute('data-reader-quran-ref') || '',
-				'data-page-title': parsed.title || '',
 				'data-reader-context-key': remoteContextKey,
 				'data-reader-prev-url': remoteMain.getAttribute('data-reader-prev-url') || '',
 				'data-reader-prev-title': remoteMain.getAttribute('data-reader-prev-title') || 'Previous',
@@ -13342,6 +13363,7 @@ function initReaderInfiniteNavigation(root) {
 				var value = remoteMain.getAttribute('data-book-print-' + key);
 				if (value !== null) chunk[0].setAttribute('data-book-print-' + key, value);
 			});
+			rememberReaderHead(parsed, chunk[0]);
 			copyQuranReaderModeHrefs(parsed, chunk[0]);
 			if (mode === 'tafsir')
 				appendTafsirPage(remoteMain, chunk);

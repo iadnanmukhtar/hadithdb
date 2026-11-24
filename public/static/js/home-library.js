@@ -1,6 +1,36 @@
 (() => {
   document.querySelectorAll('[data-library-shelf]').forEach(initializeShelf);
 
+  const filter = document.getElementById('quran-library-filter');
+  if (filter) {
+    const results = document.getElementById('quran-library-results');
+    const panels = document.getElementById('quran-library-panels');
+    const tabs = filter.closest('header').querySelector('[role="tablist"]');
+    const books = Array.from(results.querySelectorAll('.library-volume'), link => ({
+      link, text: window.normalizeContentFilterText(link.dataset.search)
+    }));
+    function filterBooks() {
+      const term = window.normalizeContentFilterText(filter.value);
+      panels.hidden = Boolean(term);
+      results.hidden = !term;
+      let count = 0;
+      for (const {link, text} of books) {
+        link.hidden = !text.includes(term);
+        if (!link.hidden) count++;
+      }
+      results.querySelector('.library-empty').hidden = count > 0;
+    }
+    filter.addEventListener('input', filterBooks);
+    function restoreTabs() {
+      filter.value = '';
+      filterBooks();
+    }
+    tabs.addEventListener('click', restoreTabs);
+    tabs.addEventListener('shown.bs.tab', restoreTabs);
+    filter.closest('.library-shelf-tools').hidden = false;
+    filterBooks();
+  }
+
   function initializeShelf(shelf) {
     const directory = shelf.querySelector('.library-volumes');
     const controls = shelf.querySelector('.library-deck-controls');
@@ -44,7 +74,8 @@
     }
 
     directory.addEventListener('scroll', () => {
-      if (!deck.length) return;
+      // A hidden shelf has no usable geometry for picking its nearest cover.
+      if (!deck.length || !directory.clientWidth) return;
       const center = directory.scrollLeft + directory.clientWidth / 2;
       const distance = book => Math.abs(book.offsetLeft + book.offsetWidth / 2 - center);
       selectBook(deck.reduce((nearest, book, i) => distance(book) < distance(deck[nearest]) ? i : nearest, 0));

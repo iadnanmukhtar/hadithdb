@@ -5,7 +5,7 @@
   var site = Object.assign({}, global.settings.site, { admin: false, editMode: false });
   var quranAbout = !!req.quranArea;
   var page = {
-    menu: 'About',
+    menu: 'About', schemaType: 'AboutPage',
     title_en: `About ${quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked'}`,
     description_en: 'Discover Hadith Unlocked, Quran Unlocked, and Mudhakkir: tools for reading, researching, and remembering Islamic sources.',
     subtitle_en: 'About', canonical: '/about', context: {}

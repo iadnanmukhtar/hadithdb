@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
 @import url('./ivory.css?v=7');
 
-@import url('/static/css/kitab.css?v=1');
+@import url('/static/css/kitab.css?v=2');
 @import url('/static/css/hafs.css?v=1');
 
 /* Keep disclosure indicators thin and consistent instead of using native filled triangles. */
@@ -144,17 +144,20 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--c-primary-soft-12: rgba(var(--bs-primary-rgb), .12);
 	--content-font-scale: 1;
 	--content-font-size-desktop: 1rem;
-	--content-font-size-mobile: 0.95rem;
+	--content-font-size-mobile: 1rem;
 	--content-font-size: calc(var(--content-font-size-desktop) * var(--content-font-scale));
 	--content-line-height: 1.58;
 	--content-line-height-tight: 1.25;
 	--content-line-height-heading: 1.18;
-	--content-size-xs: 0.72em;
-	--content-size-sm: 0.84em;
+	--content-size-xs: .82rem;
+	--content-size-sm: .875em;
 	--content-size-meta: 0.9em;
-	--content-size-breadcrumb: 0.92em;
+	--content-size-breadcrumb: 0.82em;
 	--content-size-breadcrumb-ar: 1.06em;
 	--content-size-body: 1em;
+	--reader-body-en: calc(1rem * var(--content-font-scale));
+	--reader-intro-en: calc(.94rem * var(--content-font-scale));
+	--reader-secondary-en: calc(.9rem * var(--content-font-scale));
 	--content-size-lead: 1.08em;
 	--content-size-h1: 1.72em;
 	--content-size-h2: 1.46em;
@@ -543,7 +546,6 @@ main .form-check {
 
 main small,
 main .small,
-main .text-muted,
 main .caution {
 	font-size: var(--content-size-sm);
 }
@@ -622,7 +624,7 @@ body:has(.search-results-layout) {
 .home-article-copy { min-width: 0; }
 .home-article-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: .84rem; line-height: 1.25; font-weight: 600; }
 .home-article-meta { display: flex; align-items: center; flex-wrap: wrap; gap: .2rem .4rem; margin-top: .25rem; }
-.home-article-author { display: block; color: var(--bs-secondary-color); font-size: .65rem; line-height: 1.3; overflow-wrap: anywhere; min-width: 0; }
+.home-article-author { display: block; color: var(--bs-secondary-color); font-size: var(--ux-caption-size); line-height: 1.3; overflow-wrap: anywhere; min-width: 0; }
 .home-article:hover { color: var(--c-accent); background: var(--c-primary-soft-08); }
 .home-community-explore { display: flex; align-items: center; gap: .65rem; margin: .5rem .3rem .2rem; padding: .6rem; border: 1px solid var(--bs-border-color); border-radius: .65rem; background: var(--c-primary-soft-08); color: var(--c-accent); text-decoration: none; }
 .home-community-icon { font-size: 1.2rem; }
@@ -664,8 +666,8 @@ body:has(.search-results-layout) {
 .heading-toc-book-name {
 	color: var(--bs-secondary-color);
 	display: block;
-	font-size: .68rem;
-	font-weight: 600;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	letter-spacing: .06em;
 	margin: 0 0 .12rem .7rem;
 	text-decoration: none;
@@ -755,7 +757,7 @@ body:has(.search-results-layout) {
 
 .quran-heading-toc-subnav .nav-link,
 .hadith-heading-toc-subnav .nav-link {
-	font-size: .77rem;
+	font-size: var(--ux-caption-size);
 	padding-left: 1.3rem;
 }
 
@@ -771,7 +773,8 @@ body:has(.search-results-layout) {
 
 [data-quran-heading-target],
 [data-hadith-heading-target],
-[data-toc-heading-target] {
+[data-toc-heading-target],
+.sharh-toc-table [data-toc-parent] {
 	scroll-margin-top: calc(var(--site-fixed-header-height, 0px) + 1rem);
 }
 
@@ -1581,17 +1584,6 @@ button:is(.ux-overlay-close, .btn-close[data-bs-dismiss="modal"], .btn-close[dat
 
 .command-search-filter-find {
 	margin-bottom: 0.65rem;
-}
-
-.command-search-filter-find > .input-group-text,
-.command-search-filter-find > .form-control {
-	font-size: 0.82rem;
-	padding-bottom: 0.25rem;
-	padding-top: 0.25rem;
-}
-
-.command-search-filter-find > .form-control {
-	min-width: 0;
 }
 
 .command-search-source-options {
@@ -3841,7 +3833,6 @@ del em strong {
 	flex-direction: column;
 	gap: 3.2cqw;
 	width: 100%;
-	aspect-ratio: 2 / 3;
 	padding: 6.5cqw 5.3cqw 5.8cqw;
 	overflow: hidden;
 }
@@ -3862,13 +3853,13 @@ del em strong {
 	display: grid;
 	gap: 1.1cqw;
 	color: #17202b;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-family: var(--ux-font-ui);
 }
 
 .quran-memorization-preview-concept .quran-memorization-preview-kicker {
 	color: var(--c-accent);
-	font-size: clamp(.5rem, 3.4cqw, 1.375rem);
-	font-weight: 700;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	letter-spacing: .01em;
 	line-height: 1;
 	text-transform: uppercase;
@@ -3883,16 +3874,16 @@ del em strong {
 }
 
 .quran-memorization-preview-concept strong {
-	font-size: clamp(.78rem, 5.3cqw, 2.125rem);
-	font-weight: 800;
+	font-size: 1.12rem;
+	font-weight: var(--ux-heading-weight);
 	line-height: 1.08;
 }
 
 .quran-memorization-preview-concept > span:last-child {
 	color: #5d6772;
-	font-size: clamp(.5rem, 2.8cqw, 1.125rem);
-	font-weight: 500;
-	line-height: 1.2;
+	font-size: var(--ux-secondary-size);
+	font-weight: var(--ux-body-weight);
+	line-height: 1.4;
 }
 
 .quran-memorization-preview-screenshot {
@@ -3928,19 +3919,19 @@ del em strong {
 	display: grid;
 	gap: .2rem;
 	padding: .9rem 1rem 1rem;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	font-family: var(--ux-font-ui);
 }
 
 .quran-memorization-preview-card figcaption strong {
 	font-size: .95rem;
-	font-weight: 750;
-	line-height: 1.2;
+	font-weight: var(--ux-emphasis-weight);
+	line-height: 1.4;
 }
 
 .quran-memorization-preview-card figcaption span {
 	color: var(--bs-secondary-color);
-	font-size: .78rem;
-	font-weight: 500;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-body-weight);
 	line-height: 1.35;
 }
 
@@ -4410,20 +4401,20 @@ del em strong {
 
 .quran-memorization-help-kicker {
 	color: var(--bs-secondary-color);
-	font-size: .7rem;
-	font-weight: 650;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	letter-spacing: .025em;
 }
 
 .quran-memorization-help-body {
 	display: grid;
-	font-size: .78rem;
+	font-size: 1rem;
 	gap: 1.35rem;
 	line-height: 1.5;
 }
 
 .quran-memorization-help-body > .lead {
-	font-size: .84rem !important;
+	font-size: 1rem !important;
 	line-height: 1.55;
 }
 
@@ -4435,13 +4426,13 @@ del em strong {
 
 .quran-memorization-help-body h3 {
 	font-size: 1rem;
-	font-weight: 750;
+	font-weight: var(--ux-emphasis-weight);
 	margin: 0 0 .65rem;
 }
 
 .quran-memorization-help-body section > p,
 .quran-memorization-help-body section > ul {
-	font-size: .76rem;
+	font-size: var(--ux-secondary-size);
 	line-height: 1.5;
 }
 
@@ -4470,21 +4461,21 @@ del em strong {
 	color: #fff;
 	display: inline-flex;
 	flex: 0 0 1.45rem;
-	font-size: .72rem;
-	font-weight: 750;
+	font-size: var(--ux-secondary-size);
+	font-weight: var(--ux-emphasis-weight);
 	height: 1.45rem;
 	justify-content: center;
 }
 
 .quran-memorization-help-steps strong {
 	display: block;
-	font-size: .78rem;
+	font-size: 1rem;
 	margin-bottom: .16rem;
 }
 
 .quran-memorization-help-steps p {
 	color: var(--bs-secondary-color);
-	font-size: .72rem;
+	font-size: var(--ux-secondary-size);
 	line-height: 1.45;
 	margin: 0;
 }
@@ -4517,7 +4508,7 @@ del em strong {
 .quran-memorization-help-states dt {
 	align-items: center;
 	display: flex;
-	font-size: .76rem;
+	font-size: var(--ux-secondary-size);
 	gap: .38rem;
 	white-space: nowrap;
 }
@@ -4531,7 +4522,7 @@ del em strong {
 
 .quran-memorization-help-states dd {
 	color: var(--bs-secondary-color);
-	font-size: .72rem;
+	font-size: var(--ux-secondary-size);
 	line-height: 1.45;
 	margin: 0;
 }
@@ -4542,14 +4533,14 @@ del em strong {
 
 .quran-memorization-help-grades td {
 	color: var(--bs-secondary-color);
-	font-size: .72rem;
+	font-size: var(--ux-secondary-size);
 }
 
 .quran-memorization-help-grades th span {
 	border-radius: .3rem;
 	color: #fff;
 	display: inline-block;
-	font-size: .66rem;
+	font-size: var(--ux-caption-size);
 	min-width: 3.6rem;
 	padding: .26rem .42rem;
 	text-align: center;
@@ -4708,10 +4699,6 @@ del em strong {
 	}
 }
 
-.memorization-progress-filter {
-	max-width: none;
-	width: 100%;
-}
 
 .memorization-progress-table-wrap {
 	background: var(--bs-body-bg);
@@ -6253,31 +6240,6 @@ del em strong {
 	}
 }
 
-.page-content-filter {
-	background: var(--bs-body-bg);
-	border: 1px solid var(--bs-border-color);
-	border-radius: 0.5rem;
-	overflow: hidden;
-}
-
-.page-content-filter .input-group-text {
-	background: var(--bs-body-bg);
-	border: 0;
-	color: var(--bs-secondary-color);
-}
-
-.page-content-filter .form-control,
-.page-content-filter .form-control:focus {
-	background: var(--bs-body-bg);
-	border: 0;
-	box-shadow: none;
-}
-
-.page-content-filter .form-control::placeholder {
-	color: var(--bs-secondary-color);
-	opacity: 1;
-}
-
 .pagination,
 .pagination a,
 .pagination div,
@@ -6295,6 +6257,8 @@ del em strong {
 }
 
 .breadcrumbs.pagination {
+	color: var(--ivory-accent, var(--bs-link-color));
+	font-weight: var(--ux-body-weight, 400);
 	font-size: var(--content-size-breadcrumb);
 	line-height: var(--content-line-height-tight);
 }
@@ -6302,6 +6266,8 @@ del em strong {
 .breadcrumbs.pagination a,
 .breadcrumbs.pagination div,
 .breadcrumbs.pagination div span {
+	color: inherit;
+	font-weight: inherit;
 	font-size: inherit;
 }
 
@@ -6963,12 +6929,12 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .heading h3 {
-	font-weight: bolder;
+	font-weight: var(--ux-emphasis-weight, 500);
 }
 
 .quran-tafsir-heading .quran-section-heading-title,
 .quran-translation-heading .quran-section-heading-title {
-	font-weight: bolder;
+	font-weight: var(--ux-emphasis-weight, 500);
 	margin-bottom: .5rem !important;
 }
 
@@ -7212,6 +7178,9 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-detail-disclosure-summary { align-items: center; cursor: pointer; display: flex; gap: 1rem; justify-content: space-between; padding: .85rem 0; }
 .hadith-detail-disclosure-label { align-items: baseline; display: inline-flex; flex-wrap: wrap; font-weight: 600; gap: .5rem 1rem; }
 .hadith-detail-disclosure-label [lang="ar"] { font-size: var(--content-size-body); font-weight: 400; }
+.sharh-reference-summary { flex: 1; min-width: 0; }
+.sharh-body-preview { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hadith-detail-disclosure[open] .sharh-body-preview { display: none; }
 .hadith-detail-disclosure-chevron { color: var(--bs-secondary-color); transition: transform .2s ease; }
 .hadith-detail-disclosure[open] .hadith-detail-disclosure-chevron { transform: rotate(180deg); }
 .hadith-detail-disclosure-content { padding-bottom: .5rem; }
@@ -7306,7 +7275,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-sharh-body { font-size: calc(1.05rem * var(--content-font-scale)) !important; line-height: var(--content-line-height); text-indent: 0; }
 .hadith-sharh-body:not(.content-markdown) * { font-size: inherit !important; }
 .hadith-sharh-column:lang(en) .hadith-sharh-body,
-.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: calc(.81rem * var(--content-font-scale)) !important; }
+.hadith-sharh-column:lang(en) .hadith-sharh-more { font-size: var(--reader-secondary-en) !important; }
 .hadith-sharh-body[data-hadith-sharh-collapsible]:not(.is-expanded):not(.hadith-sharh-no-overflow) { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 10; line-clamp: 10; overflow: hidden; }
 .hadith-sharh-more { background: var(--bs-body-bg); border: 0; bottom: 0; color: var(--c-accent); cursor: pointer; font-family: inherit; font-size: calc(1.05rem * var(--content-font-scale)) !important; font-style: inherit; font-weight: inherit; left: 0; line-height: var(--content-line-height) !important; padding: 0 .15rem 0 .85rem; position: absolute; }
 .hadith-sharh-column:lang(en) .hadith-sharh-more { direction: ltr; left: auto; right: 0; text-align: right; }
@@ -7410,9 +7379,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	width: 1.5rem;
 }
 .hadith-pair-manager-modal .modal-dialog { max-width: min(56rem, calc(100vw - 2rem)); }
-.hadith-pair-manager-filter { align-items: center; display: flex; position: relative; }
-.hadith-pair-manager-filter > .bi { color: var(--bs-secondary-color); font-size: .72rem; inset-inline-start: .65rem; pointer-events: none; position: absolute; z-index: 2; }
-.hadith-pair-manager-filter .hadith-admin-combobox { padding-inline-start: 1.8rem; width: 100%; }
 .hadith-pair-manager-row,
 .hadith-pair-manager-new {
 	align-items: center;
@@ -7473,7 +7439,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 main .intro[lang="en"][data-prop="toc.intro_en"] {
-	font-size: calc(.81rem * var(--content-font-scale));
+	font-size: var(--reader-intro-en);
 }
 
 main .intro[lang="ar"][data-prop="toc.intro"] {
@@ -8166,7 +8132,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 
 .quran-mushaf-page-heading .mushaf-book-opener,
 .quran-mushaf-page-toolbar .quran-ayah-select-btn {
-	font-size: .9em;
+	font-size: calc(var(--quran-mushaf-page-toolbar-font-size) * .9);
 	padding: .17em .39em;
 }
 
@@ -8572,12 +8538,12 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	vertical-align: middle;
 }
 
-.chapter heading.major h2:lang(ar) .quran-surah-name-font {
+.chapter header.major h2:lang(ar) .quran-surah-name-font {
 	font-size: 1.625em;
 	line-height: 0.75;
 }
 
-main.chapter heading.major h2:lang(ar) :is(.quran-surah-name-font, .quran-surah-name) {
+main.chapter header.major h2:lang(ar) :is(.quran-surah-name-font, .quran-surah-name) {
 	font-weight: 400;
 }
 
@@ -9572,8 +9538,8 @@ main.chapter heading.major h2:lang(ar) :is(.quran-surah-name-font, .quran-surah-
 }
 
 .quran-translation-source span {
-	color: var(--c-gray-mid);
-	font-size: .9em;
+	color: var(--bs-secondary-color);
+	font-size: var(--ux-caption-size);
 }
 
 .quran-translation-source-title,
@@ -11926,18 +11892,17 @@ a.cmd-btn:hover {
 }
 
 .mcp-marketing-main h1 {
-	font-size: clamp(2.45rem, 5.6vw, 4.65rem) !important;
+	font-size: var(--ux-title-size) !important;
 	font-weight: var(--ux-heading-weight);
-	letter-spacing: -.055em;
-	line-height: .99;
-	max-width: 12ch;
+	letter-spacing: -.02em;
+	line-height: 1.2;
+	max-width: 28ch;
 }
 
 .mcp-marketing-main h2 {
-	font-size: clamp(1.9rem, 3.7vw, 3rem) !important;
-	font-weight: var(--ux-heading-weight);
-	letter-spacing: -.04em;
-	line-height: 1.08;
+	font-size: var(--ux-section-size) !important;
+	font-weight: var(--ux-emphasis-weight);
+	line-height: 1.3;
 }
 
 .mcp-marketing-main h3 {
@@ -11959,9 +11924,9 @@ a.cmd-btn:hover {
 .mcp-eyebrow,
 .mcp-kicker {
 	color: var(--c-link-dark);
-	font-size: .75rem;
-	font-weight: 750;
-	letter-spacing: .13em;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
+	letter-spacing: .05em;
 	text-transform: uppercase;
 }
 
@@ -12000,7 +11965,7 @@ a.cmd-btn:hover {
 .mcp-hero-actions .btn {
 	border-radius: .72rem;
 	font-size: .9rem;
-	font-weight: 700;
+	font-weight: var(--ux-emphasis-weight);
 	padding: .75rem 1.1rem;
 }
 
@@ -12042,7 +12007,7 @@ a.cmd-btn:hover {
 .mcp-endpoint-flow {
 	align-items: center;
 	display: flex;
-	font-size: .72rem;
+	font-size: var(--ux-caption-size);
 	justify-content: space-between;
 }
 
@@ -12055,7 +12020,7 @@ a.cmd-btn:hover {
 
 .mcp-endpoint-label {
 	color: rgba(255,255,255,.58);
-	font-size: .68rem !important;
+	font-size: var(--ux-caption-size) !important;
 	letter-spacing: .08em;
 	margin: 2.7rem 0 .45rem;
 	text-transform: uppercase;
@@ -12069,7 +12034,7 @@ a.cmd-btn:hover {
 
 .mcp-copy-row code {
 	color: inherit;
-	font-size: .72rem;
+	font-size: var(--ux-caption-size);
 	min-width: 0;
 	overflow-wrap: anywhere;
 }
@@ -12086,7 +12051,7 @@ a.cmd-btn:hover {
 	align-items: center;
 	display: inline-flex;
 	flex: 0 0 auto;
-	font-size: .68rem;
+	font-size: var(--ux-caption-size);
 	gap: .3rem;
 }
 
@@ -12103,7 +12068,7 @@ a.cmd-btn:hover {
 
 .mcp-copy-status {
 	color: #7eebc1;
-	font-size: .68rem !important;
+	font-size: var(--ux-caption-size) !important;
 	min-height: 1rem;
 	margin: .5rem 0 -.5rem;
 	text-align: right;
@@ -12122,7 +12087,7 @@ a.cmd-btn:hover {
 .mcp-question-card-top {
 	align-items: center;
 	display: flex;
-	font-size: .72rem;
+	font-size: var(--ux-caption-size);
 	justify-content: space-between;
 }
 
@@ -12134,7 +12099,7 @@ a.cmd-btn:hover {
 
 .mcp-question-card blockquote {
 	font-size: clamp(1.1rem, 2vw, 1.35rem);
-	font-weight: 650;
+	font-weight: var(--ux-emphasis-weight);
 	line-height: 1.55;
 	margin: 2.1rem 0;
 }
@@ -12151,7 +12116,7 @@ a.cmd-btn:hover {
 
 .mcp-answer-preview p {
 	color: rgba(255,255,255,.72);
-	font-size: .78rem !important;
+	font-size: var(--ux-caption-size) !important;
 	line-height: 1.55 !important;
 	margin: 0;
 }
@@ -12170,7 +12135,7 @@ a.cmd-btn:hover {
 
 .mcp-question-note {
 	color: #7eebc1;
-	font-size: .72rem !important;
+	font-size: var(--ux-caption-size) !important;
 	margin: 1rem 0 0;
 }
 
@@ -12215,8 +12180,8 @@ a.cmd-btn:hover {
 
 .mcp-simple-step > span {
 	color: var(--mcp-muted);
-	font-size: .7rem;
-	font-weight: 750;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	position: absolute;
 	right: 1rem;
 	top: 1rem;
@@ -12238,7 +12203,7 @@ a.cmd-btn:hover {
 
 .mcp-guidance-note {
 	color: var(--mcp-muted);
-	font-size: .77rem !important;
+	font-size: var(--ux-caption-size) !important;
 	margin: 1.5rem auto 0;
 	max-width: 50rem;
 	text-align: center;
@@ -12288,7 +12253,7 @@ a.cmd-btn:hover {
 .mcp-card-meta {
 	border-top: 1px solid var(--mcp-line);
 	color: var(--mcp-muted);
-	font-size: .68rem;
+	font-size: var(--ux-caption-size);
 	margin-top: auto;
 	padding-top: .8rem;
 }
@@ -12320,8 +12285,8 @@ a.cmd-btn:hover {
 .mcp-technical-details summary {
 	color: var(--c-link-dark);
 	cursor: pointer;
-	font-size: .75rem;
-	font-weight: 650;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 }
 
 .mcp-technical-details .mcp-tool-pills {
@@ -12344,8 +12309,8 @@ a.cmd-btn:hover {
 
 .mcp-capability-item > span {
 	color: var(--c-link-dark);
-	font-size: .7rem;
-	font-weight: 750;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	padding-top: .14rem;
 }
 
@@ -12396,7 +12361,7 @@ a.cmd-btn:hover {
 
 .mcp-no-auth-callout p {
 	color: var(--mcp-muted);
-	font-size: .78rem !important;
+	font-size: var(--ux-caption-size) !important;
 	line-height: 1.55 !important;
 	margin: 0;
 }
@@ -12432,7 +12397,7 @@ a.cmd-btn:hover {
 
 .mcp-platform-accordion .accordion-button small {
 	color: var(--mcp-muted);
-	font-size: .68rem;
+	font-size: var(--ux-caption-size);
 	font-weight: 400;
 }
 
@@ -12442,8 +12407,8 @@ a.cmd-btn:hover {
 	border-radius: .58rem;
 	color: white;
 	display: inline-flex;
-	font-size: .62rem;
-	font-weight: 800;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	height: 2.1rem;
 	justify-content: center;
 	letter-spacing: .04em;
@@ -12480,8 +12445,8 @@ a.cmd-btn:hover {
 	border-radius: 50%;
 	color: var(--c-link-dark);
 	display: inline-flex;
-	font-size: .66rem;
-	font-weight: 750;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 	height: 1.55rem;
 	justify-content: center;
 	width: 1.55rem;
@@ -12495,7 +12460,7 @@ a.cmd-btn:hover {
 	background: var(--mcp-surface);
 	border-left: 3px solid var(--c-accent);
 	border-radius: .35rem;
-	font-size: .74rem;
+	font-size: var(--ux-caption-size);
 	margin: 1rem 0;
 	padding: .65rem .8rem;
 }
@@ -12505,8 +12470,8 @@ a.cmd-btn:hover {
 }
 
 .mcp-doc-link {
-	font-size: .74rem;
-	font-weight: 650;
+	font-size: var(--ux-caption-size);
+	font-weight: var(--ux-emphasis-weight);
 }
 
 .mcp-code-block {
@@ -12519,7 +12484,7 @@ a.cmd-btn:hover {
 }
 
 .mcp-code-block pre {
-	font-size: .7rem;
+	font-size: var(--ux-caption-size);
 	margin: 0;
 	overflow-x: auto;
 	white-space: pre;
@@ -12536,7 +12501,7 @@ a.cmd-btn:hover {
 	border-radius: .42rem;
 	color: white;
 	display: inline-flex;
-	font-size: .62rem;
+	font-size: var(--ux-caption-size);
 	gap: .27rem;
 	padding: .34rem .48rem;
 	position: absolute;
@@ -12618,11 +12583,11 @@ a.cmd-btn:hover {
 .mcp-final-cta-inner > .btn {
 	flex: 0 0 auto;
 	font-size: .86rem;
-	font-weight: 700;
+	font-weight: var(--ux-emphasis-weight);
 }
 
 .mcp-final-cta h2 {
-	font-size: clamp(1.45rem, 3vw, 2.25rem) !important;
+	font-size: var(--ux-section-size) !important;
 	margin: .5rem 0 0;
 }
 
@@ -12639,7 +12604,7 @@ a.cmd-btn:hover {
 	align-items: center;
 	display: inline-flex;
 	flex: 0 0 auto;
-	font-size: .68rem;
+	font-size: var(--ux-caption-size);
 	gap: .32rem;
 }
 
@@ -12674,9 +12639,6 @@ a.cmd-btn:hover {
 		padding-top: 3.4rem;
 	}
 
-	.mcp-marketing-main h1 {
-		font-size: 2.5rem !important;
-	}
 
 	.mcp-hero-actions .btn {
 		width: 100%;
@@ -12792,7 +12754,7 @@ main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 .book-catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 0 1.3rem; }
 .book-catalog-category-title {
 	display: flex; justify-content: space-between; gap: 1rem;
-	font-size: var(--ux-section-size, 1rem) !important; font-weight: var(--ux-heading-weight, 600); margin: 0; padding-bottom: .5rem;
+	font-size: var(--ux-section-size, 1rem) !important; font-weight: var(--ux-emphasis-weight, 500); margin: 0; padding-bottom: .5rem;
 	border-bottom: 1px solid var(--bs-border-color);
 }
 .book-catalog-compact .catalog-volume {
@@ -13203,7 +13165,7 @@ center [dir] { text-align: center !important; }
   main .row { flex-direction: column; margin-inline: 0 !important; }
   main .row > [class*="col-"] { width: 100% !important; max-width: none !important; }
   /* Keep short bilingual source headings compact; only the long text stacks. */
-  main :is(heading.row, header.row, .hadith-sharh-entry-heading) {
+  main :is(header.row, .hadith-sharh-entry-heading) {
     display: flex !important;
     flex-direction: row;
     flex-wrap: wrap;
@@ -13211,7 +13173,7 @@ center [dir] { text-align: center !important; }
     padding-block: 0 !important;
     break-inside: avoid;
   }
-  main :is(heading.row, header.row, .hadith-sharh-entry-heading) > [class*="col-"] {
+  main :is(header.row, .hadith-sharh-entry-heading) > [class*="col-"] {
     width: 50% !important;
   }
   main :is(h1, h2, h3, h4, h5, h6) { break-after: avoid; }
@@ -13303,11 +13265,11 @@ center [dir] { text-align: center !important; }
 }
 
 .hadith-metadata-page-layout article[data-toc-heading-key="hadith"] header h2.fs-5,
-heading.hadith-chapter-title h2.title.fs-4 {
+header.hadith-chapter-title h2.title.fs-4 {
   font-size: clamp(1.2rem, 1rem + .65vw, 1.55rem) !important;
   font-weight: 500;
 }
-heading.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
+header.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
   font-size: inherit;
   font-weight: inherit;
 }

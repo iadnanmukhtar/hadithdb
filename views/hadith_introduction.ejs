@@ -37,7 +37,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir hadith-introduction-layout">
     <div class="container quran-heading-content quran-heading-content-tafsir">
-    <main class="chapter mt-10 hadith-introduction-page" data-reader-infinite="<%= introductionReaderMode %>" data-reader-starts-introduction="1" data-reader-context-key="<%= `${book.alias}:introduction` %>" data-reader-current-url="<%= utils.urlFor(req, introductionPath) %>"<% if (previousUrl) { %> data-reader-prev-url="<%= previousUrl %>" data-reader-prev-title="<%= page.prevTitle %>"<% } %><% if (nextUrl) { %> data-reader-next-url="<%= nextUrl %>" data-reader-next-title="<%= page.nextTitle %>"<% } %>>
+    <main class="chapter hadith-introduction-page" data-reader-infinite="<%= introductionReaderMode %>" data-reader-starts-introduction="1" data-reader-context-key="<%= `${book.alias}:introduction` %>" data-reader-current-url="<%= utils.urlFor(req, introductionPath) %>"<% if (previousUrl) { %> data-reader-prev-url="<%= previousUrl %>" data-reader-prev-title="<%= page.prevTitle %>"<% } %><% if (nextUrl) { %> data-reader-next-url="<%= nextUrl %>" data-reader-next-title="<%= page.nextTitle %>"<% } %>>
       <%- include('sub-views/introduction_title.ejs', { bookHref: utils.urlFor(req, bookPath), englishTitle: book.name_en || book.shortName_en, arabicTitle: book.title || book.shortName }); %>
       <section class="row breadcrumbs pagination">
         <div class="col-12" lang="en"><a href="<%= utils.urlFor(req, bookPath) %>"><%= book.shortName_en %></a> &gt; <a href="<%= utils.urlFor(req, introductionPath) %>">Introduction</a></div>

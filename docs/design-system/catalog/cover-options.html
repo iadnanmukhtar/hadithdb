@@ -4,9 +4,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Book cover options · HadithDB</title>
 <style>
-@font-face { font-family:Amiri; src:url(cover-fonts/amiri.ttf) }
-@font-face { font-family:Naskh; src:url(cover-fonts/notonaskharabic.ttf) }
-@font-face { font-family:Kufi; src:url(cover-fonts/notokufiarabic.ttf) }
 @font-face { font-family:Kitab; src:url(../../../public/static/fonts/kitab-base.woff2) }
 @font-face { font-family:Inter; src:url(../../../public/static/fonts/inter/inter-latin-wght-normal.woff2) }
 * { box-sizing:border-box }
@@ -16,13 +13,12 @@ h1,h2,p { margin:0 }
 h1 { font: bold clamp(2rem,5vw,3.4rem)/1.2 Georgia,serif }
 header p { margin:.6rem 0 1.4rem }
 section { margin-top:2rem; border-top:1px solid #c8c5ba; padding-top:1rem }
-.tools { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:16px }
 label { display:inline-flex; align-items:center; gap:.55rem }
 select { font:inherit; padding:.45rem; border:1px solid #aaa99e; background:white; border-radius:4px; color:inherit }
 .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(12px,2vw,24px) }
 figure { margin:0; min-width:0 }
 .face { position:relative; isolation:isolate; aspect-ratio:1/1.08; display:grid; place-items:center; padding:12% 11%; border-radius:3px 7px 6px 3px; box-shadow:0 4px 7px #28312728; container-type:inline-size }
-.face span { text-align:center; font:400 clamp(1.2rem,16cqi,2.3rem)/1.5 var(--arabic),serif; overflow-wrap:anywhere }
+.face span { text-align:center; font:400 clamp(1.2rem,16cqi,2.3rem)/1.5 Kitab,serif; overflow-wrap:anywhere }
 .face::before,.face::after { content:''; position:absolute; pointer-events:none; z-index:-1 }
 .leather { background:#283b2b url(../../../public/static/img/bookbinding-grain.webp) center/12rem; background-blend-mode:soft-light; color:#efd291; border-left:5px solid #1e2e21 }
 .leather::before { inset:7% 7% 8% 9%; border:1px solid #ddbc7999; border-block:3px double #ddbc7999 }
@@ -39,10 +35,9 @@ figcaption { margin-top:.55rem; font-weight:600 }
 @media(max-width:720px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)) } }
 </style>
 <main>
-<header><h1>Book cover options</h1><p>Compare the finishes in the first row and the Arabic lettering in the second. Kitab is the selected cover font.</p>
+<header><h1>Book cover options</h1><p>Compare the four finishes with the selected Kitab lettering.</p>
 <label>Book <select id="book"></select></label><p id="byline"></p></header>
-<section><div class="tools"><h2>Cover finishes</h2><label>Arabic font <select id="font"></select></label></div><div class="grid" id="finishes"></div></section>
-<section><div class="tools"><h2>Arabic lettering</h2><label>Cover finish <select id="finish"></select></label></div><div class="grid" id="lettering"></div></section>
+<section><h2>Cover finishes</h2><div class="grid" id="finishes"></div></section>
 </main>
 <script>
 const books = [
@@ -51,19 +46,13 @@ const books = [
   ['Sirah Ibn Hisham', 'السِّيرَةُ النَّبَوِيِّةُ لِابْنِ هِشَامٍ', 'Abd al-Malik Ibn Hisham']
 ];
 const finishes = [['leather','Forest leather'],['cloth','Indigo cloth'],['paper','Sand & terracotta'],['tile','Teal geometric']];
-const fonts = [['Amiri','Amiri'],['Naskh','Noto Naskh Arabic'],['Kitab','Kitab'],['Kufi','Noto Kufi Arabic']];
 const find = id => document.getElementById(id);
-for (const [control, choices] of [['book',books.map(([name],i)=>[i,name])],['finish',finishes],['font',fonts]]) {
-  for (const [value,label] of choices) find(control).add(new Option(label,value));
-  find(control).addEventListener('change', render);
-}
-find('font').value='Kitab';
-find('finish').value='cloth';
-function card(finish,font,label,title) {
+books.forEach(([name], index) => find('book').add(new Option(name, index)));
+find('book').addEventListener('change', render);
+function card(finish,label,title) {
   const figure=document.createElement('figure');
   const face=document.createElement('div');
   face.className='face '+finish;
-  face.style.setProperty('--arabic',font);
   const text=document.createElement('span');
   text.lang='ar';
   text.dir='rtl';
@@ -77,8 +66,7 @@ function card(finish,font,label,title) {
 function render() {
   const [,title,author]=books[find('book').value];
   find('byline').textContent=author;
-  find('finishes').replaceChildren(...finishes.map(([style,label])=>card(style,find('font').value,label,title)));
-  find('lettering').replaceChildren(...fonts.map(([font,label])=>card(find('finish').value,font,label,title)));
+  find('finishes').replaceChildren(...finishes.map(([style,label])=>card(style,label,title)));
 }
 render();
 </script>

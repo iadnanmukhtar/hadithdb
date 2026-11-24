@@ -85,7 +85,7 @@ describe('Hadith and Tafsir language columns', () => {
     expect(css).toContain('.quran-tafsir-entry > .reader-language-toolbar');
 		expect(css).toMatch(/main \.intro\[lang="ar"\]\[data-prop="toc\.intro"\] \{\s*font-size: calc\(1\.05rem \* var\(--content-font-scale\)\) !important;/);
 		expect(css).toMatch(/main \.intro\[lang="ar"\]\[data-prop="toc\.intro"\] \* \{\s*font-size: inherit !important;/);
-		expect(css).toMatch(/main \.intro\[lang="en"\]\[data-prop="toc\.intro_en"\] \{\s*font-size: calc\(\.81rem \* var\(--content-font-scale\)\);/);
+		expect(css).toMatch(/main \.intro\[lang="en"\]\[data-prop="toc\.intro_en"\] \{\s*font-size: var\(--reader-intro-en\);/);
     expect(script).toContain('quran-ayah-select-btn quran-passage-display-btn quran-passage-view-btn reader-language-toggle');
     expect(script).not.toContain("label.textContent = 'Columns'");
     expect(script).not.toContain('text.textContent = choice.label');

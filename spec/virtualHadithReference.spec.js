@@ -70,7 +70,7 @@ test.each(['en', 'ar'])('renders both virtual and source references in %s', lang
   const item = new Item({ ...row, single: true, book_shortName: 'رياض', book_shortName_ref: 'مسلم' });
   const html = ejs.render(template.slice(start, end), {
     i: item, lang, langData: item[lang], langActual: item[lang].actual, searchResult: false,
-    site: { editMode: false }, itemHref: '/muslim:2664',
+    site: { editMode: false }, showHadithDetailsLink: false, itemHref: '/muslim:2664',
     itemBookShortName: item[lang].actual.book_shortName,
     itemLinkTitleSource: '', linkTitle: value => value
   });

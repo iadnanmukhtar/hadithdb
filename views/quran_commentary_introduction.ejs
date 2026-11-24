@@ -40,7 +40,7 @@
 
   <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
     <div class="container quran-heading-content quran-heading-content-tafsir">
-    <main class="chapter mt-10 tafsir-only-page<%= commentaryIsTranslation ? ' translation-only-page' : '' %>"<% if (!commentaryIsTranslation) { %> data-reader-infinite="tafsir" data-reader-context-key="0" data-reader-quran-ref="0:1" data-reader-current-url="<%= utils.quranUrl(req, commentaryIntroductionPath) %>"<% if (commentaryIntroductionPreviousPassage) { %> data-reader-prev-url="<%= utils.quranUrl(req, commentaryIntroductionPreviousPassage.href) %>" data-reader-prev-title="Previous: <%= commentaryIntroductionPreviousPassage.title %>"<% } %><% if (commentaryIntroductionNextUrl) { %> data-reader-next-url="<%= utils.quranUrl(req, commentaryIntroductionNextUrl) %>" data-reader-next-title="Next: §1.0"<% } %><% } %>>
+    <main class="chapter tafsir-only-page<%= commentaryIsTranslation ? ' translation-only-page' : '' %>"<% if (!commentaryIsTranslation) { %> data-reader-infinite="tafsir" data-reader-context-key="0" data-reader-quran-ref="0:1" data-reader-current-url="<%= utils.quranUrl(req, commentaryIntroductionPath) %>"<% if (commentaryIntroductionPreviousPassage) { %> data-reader-prev-url="<%= utils.quranUrl(req, commentaryIntroductionPreviousPassage.href) %>" data-reader-prev-title="Previous: <%= commentaryIntroductionPreviousPassage.title %>"<% } %><% if (commentaryIntroductionNextUrl) { %> data-reader-next-url="<%= utils.quranUrl(req, commentaryIntroductionNextUrl) %>" data-reader-next-title="Next: §1.0"<% } %><% } %>>
       <%- include('sub-views/quran_commentary_book_nav.ejs', {
         quranCommentaryBook: commentaryBook,
         quranCommentaryBooks: commentaryBooks,

@@ -5,7 +5,12 @@
 const site = Object.assign({}, global.settings.site, { admin: req.admin, editMode: req.admin && req.editMode });
 const title = sharhBook ? (sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias) : 'Sharḥ books';
 const canonical = sharhBook ? `/sharh/${encodeURIComponent(sharhBook.alias)}` : '/sharh';
-const page = { menu: 'Books', title_en: title, description_en: `Browse ${title}.`, canonical: canonical + (offset ? `?o=${offset}` : ''), subtitle_en: sharhBook ? (sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias) : '', subtitle: sharhBook ? sharhBook.shortName : '', context: {} };
+const contents = locals.chapters || [];
+const source = locals.selectedBook;
+const headingNumber = value => Number.isInteger(Number(value)) ? String(value) : Number(value).toFixed(2);
+const bookLabel = book => book.shortName_en || book.name_en || book.alias;
+const sourceUrl = book => canonical + '?book=' + encodeURIComponent(book.alias);
+const page = { sharhBook, menu: 'Books', schemaType: 'CollectionPage', title_en: title, description_en: source ? `Browse ${title} by chapter and section of ${bookLabel(source)} and open its explanations.` : `Browse ${title} and the hadith collections they explain.`, canonical: source && source !== coveredBooks[0] ? sourceUrl(source) : canonical, subtitle_en: sharhBook ? (sharhBook.shortName_en || sharhBook.name_en || sharhBook.alias) : '', subtitle: sharhBook ? sharhBook.shortName : '', context: {} };
 if (sharhBook) {
   const currentIndex = books.findIndex(book => book.id === sharhBook.id);
   const prevBook = currentIndex > 0 ? books[currentIndex - 1] : null;
@@ -32,27 +37,48 @@ if (sharhBook) {
     <article>
     <%- include('sub-views/book_metadata.ejs', {
       site, book: sharhBook,
-      actions: { primaryHref: coveredBooks.length ? '/' + encodeURIComponent(coveredBooks[0].alias) : '',
-        primaryLabel: coveredBooks.length ? 'Open ' + (coveredBooks[0].shortName_en || coveredBooks[0].alias) : '' }, tocDisplayBook: sharhBook,
+      actions: contents.length ? {
+        primaryHref: contents[0].href,
+        primaryLabel: 'Read commentary on ' + bookLabel(source)
+      } : null,
+      tocDisplayBook: sharhBook,
       tocDisplayBookNameEn: sharhBook.name_en || title,
       tocDisplayBookTitle: sharhBook.name || sharhBook.title || sharhBook.shortName,
       showBookLayout: true, showBookMetadata: true,
       quranCommentaryBook: null, isEnglishQuranTranslation: false
     }); %>
-    <section aria-labelledby="sharh-covered-books-title">
-      <h2 id="sharh-covered-books-title" class="ux-section-title">Commentary on</h2>
-      <% if (coveredBooks.length) { %>
-      <table id="toc-covered" class="table ux-toc-table" aria-label="Books with commentary and hadith counts">
-        <thead><tr><th scope="col">Book</th><th scope="col" lang="ar" dir="rtl">الكتاب</th><th scope="col" class="text-end">Hadiths</th></tr></thead>
-        <tbody><% coveredBooks.forEach(function(book) { %>
-          <tr class="chapter" data-toc-chapter="<%= book.alias %>" data-toc-heading-target data-toc-heading-key="<%= book.alias %>">
-            <td><a href="/<%= encodeURIComponent(book.alias) %>"><%= book.shortName_en || book.name_en || book.alias %></a></td>
-            <td lang="ar" dir="rtl"><a href="/<%= encodeURIComponent(book.alias) %>"><%= book.shortName || book.name || book.title %></a></td>
-            <td class="text-end"><%= Number(book.hadith_count).toLocaleString('en-US') %></td>
+    <section aria-labelledby="sharh-chapters">
+      <% if (coveredBooks.length > 1) { %>
+      <nav class="nav ux-view-selector mb-3" aria-label="Referenced hadith book">
+        <% for (const book of coveredBooks) { %>
+        <a class="ux-view-option" href="<%= sourceUrl(book) %>" <% if (book === source) { %>aria-current="page"<% } %>><%= bookLabel(book) %></a>
+        <% } %>
+      </nav>
+      <% } %>
+      <h2 id="sharh-chapters" class="ux-section-title">Chapters</h2>
+      <% if (contents.length) { %>
+      <table id="toc" class="table ux-toc-table sharh-toc-table" aria-label="<%= bookLabel(source) %> chapters">
+        <colgroup><col class="toc-start-column"><col class="toc-number-column"><col><col></colgroup>
+        <tbody>
+          <% for (const chapter of contents) {
+            const key = 'toc-chapter-' + chapter.id;
+            for (const row of [chapter, ...chapter.sections]) {
+              const top = row === chapter;
+          %>
+          <tr <% if (top) { %>class="chapter" id="<%= key %>" data-toc-chapter="<%= key %>" data-toc-heading-target data-toc-heading-key="<%= key %>"<% } else { %>class="title toc-section-row d-none<%= row.level === 3 ? ' toc-subsection-row' : '' %>" id="toc-section-<%= row.id %>" data-toc-parent="<%= key %>" data-toc-level="<%= row.level %>"<% } %>>
+            <td><%= row.start %></td>
+            <% if (top) { %>
+            <td><% if (chapter.sections.length) { %><button type="button" class="toc-expand-btn" data-toc-toggle="<%= key %>" aria-expanded="false" aria-controls="<%= chapter.sections.map(section => 'toc-section-' + section.id).join(' ') %>" title="Show sections"><span class="toc-expand-icon bi bi-chevron-right"></span></button><% } else { %><span class="toc-expand-spacer"></span><% } %> C<%= headingNumber(row.h1) %></td>
+            <% } else { %>
+            <td class="toc-outline-cell"><span class="toc-section-number">S<%= [row.h1, row.h2, ...(row.level === 3 ? [row.h3] : [])].map(headingNumber).join('.') %></span></td>
+            <% } %>
+            <td colspan="<%= row.title ? 1 : 2 %>" class="<%= top ? '' : 'toc-outline-cell' %>"><a href="<%= row.href %>"><%= row.title_en || (top ? 'Chapter' : 'Section') %></a></td>
+            <% if (row.title) { %><td lang="ar" dir="rtl"><a href="<%= row.href %>"><%= row.title %></a></td><% } %>
           </tr>
-        <% }); %></tbody>
+          <% } } %>
+        </tbody>
       </table>
-      <% } else { %><p class="text-muted">No linked books yet.</p><% } %>
+      <% } else { %><p class="text-muted"><%= source ? 'No linked commentary passages for this book.' : 'No linked books yet.' %></p><% } %>
     </section>
     </article>
   <% } else { %>
@@ -64,8 +90,8 @@ if (sharhBook) {
   <% } %>
 </main>
 </div>
-<% if (sharhBook && coveredBooks.length) { %>
-<%- include('sub-views/toc_heading_rail.ejs', { mode: 'covered', groups: [{ mode: 'covered', items: coveredBooks.map(book => ({ key: book.alias, title: book.shortName_en || book.name_en || book.alias, href: '/' + encodeURIComponent(book.alias) })) }] }); %>
+<% if (contents.length) { %>
+<%- include('sub-views/toc_heading_rail.ejs', { mode: 'chapters', groups: [{ mode: 'chapters', items: contents.map(chapter => ({ key: 'toc-chapter-' + chapter.id, number: 'C' + headingNumber(chapter.h1), title: chapter.title_en || chapter.title || 'Chapter', href: chapter.href })) }] }); %>
 <% } %>
 </div>
 <% if (site.editMode) { (sharhBook ? [] : books).forEach(function(book) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: `sharh-book-${book.id}` }); %><% }); } %>

@@ -19,6 +19,7 @@
 
 :root {
   --ux-font-ui: 'Inter', Kitab, system-ui, sans-serif;
+  --ux-title-size: 1.72rem;
   --ux-page-start: calc(var(--site-fixed-header-height, 4rem) + 1rem);
   --ux-title-row: 2.25rem;
   --ux-title-gap: 1rem;
@@ -46,7 +47,6 @@
   --ux-surface: var(--bs-body-bg, #fff);
   --ux-inset: var(--bs-tertiary-bg, #f8f9fa);
   --ux-border: var(--bs-border-color, #dee2e6);
-  --ux-title-size: clamp(2rem, 3vw, 2.75rem);
   --ux-section-size: 1.3rem;
   --ux-focus-ring: 2px solid var(--ux-accent);
 }
@@ -110,10 +110,10 @@ body[data-bs-theme="dark"]:has(.ux-masthead) {
 .ux-menu-list a:is(:hover, :focus-visible) .app-menu-icon-img { filter: brightness(0) invert(1); }
 
 /* Interface titles use the root scale even inside compact reader or marketing containers. */
-.ux-page-title { --content-size-h1: 1.72rem; line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
+.ux-page-title { --content-size-h1: var(--ux-title-size); line-height: var(--ux-title-line); color: var(--ivory-heading, var(--ux-text)); font-family: var(--ux-font-ui); font-size: var(--content-size-h1); font-weight: var(--ux-heading-weight); margin: 0; }
 
 @media (max-width: 575.98px) {
-  .ux-page-title { --content-size-h1: 1.5rem; }
+  :root { --ux-title-size: 1.5rem; }
 }
 .ux-system .ux-section-title {
   --content-size-h2: var(--ux-section-size);
@@ -175,7 +175,7 @@ body[data-bs-theme="dark"]:has(.ux-masthead) {
   border-radius: 999px;
   background: var(--ux-secondary-fill);
   color: var(--ux-secondary-ink);
-  font: var(--ux-light-weight) .75rem/1.4 var(--ux-font-ui);
+  font: var(--ux-light-weight) var(--ux-caption-size)/1.4 var(--ux-font-ui);
   text-decoration: none;
   overflow-wrap: anywhere;
   vertical-align: middle;
@@ -310,14 +310,14 @@ body:has(.ux-masthead) :is(.btn-secondary, .btn-outline-secondary, .btn-outline-
 .ux-rail-search input { flex: 1; min-width: 0; height: 32px; border: 0; padding: 0; background: transparent; color: var(--ux-text); font: inherit; }
 .ux-rail-search input[type="search"]:focus-visible { outline: none; }
 .ux-rail-search input::-webkit-search-cancel-button { appearance: none; }
-.ux-rail-search input:placeholder-shown + button { display: none; }
+.ux-rail-search input:is(:disabled, :placeholder-shown) + button { display: none; }
 .ux-rail-search button { width: 32px; height: 32px; padding: 0; border: 0; background: transparent; color: inherit; }
 
 .ux-rail-title {
   color: var(--ivory-heading, var(--bs-heading-color));
   margin: 0 .7rem var(--ux-title-gap);
   --content-size-h2: 1.12rem;
-  font: var(--ux-heading-weight) 1.12rem/1.35 var(--ux-font-ui);
+  font: var(--ux-emphasis-weight) 1.12rem/1.35 var(--ux-font-ui);
 }
 @media (max-width: 991.98px) {
   .ux-rail-filter-slot { padding: 0; }

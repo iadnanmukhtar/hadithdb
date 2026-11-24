@@ -10,11 +10,25 @@ main.home-library {
 .home-library [hidden] { display: none !important; }
 .library-shelf { padding-bottom: 1.6rem; }
 .home-library :is(.home-reading-heading, .home-articles-heading) h2 {
-  font: var(--ux-heading-weight) var(--ux-section-size)/1.3 var(--ux-font-ui);
+  font: var(--ux-emphasis-weight) var(--ux-section-size)/1.3 var(--ux-font-ui);
   font-size: var(--ux-section-size) !important; margin: 0; color: var(--ivory-heading, var(--ux-text));
 }
-.library-shelf-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .35rem 1rem; margin-block: .5rem 1rem; padding-bottom: .3rem; border-bottom: 1px solid var(--ux-border); }
-.library-shelf-tools { width: min(14rem, 100%); }
+.library-shelf-toolbar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .35rem 1rem; margin-block: .5rem 1rem; }
+.library-shelf-toolbar, .quran-library-header { padding-block-end: .3rem; border-block-end: 1px solid var(--ux-border); }
+.home-library-heading .ux-primary-action, .home-library .library-shelf-tools { width: min(14rem, 100%); }
+.quran-library-header {
+  display: grid; grid-template-columns: minmax(0,1fr) min(14rem, 40%);
+  grid-template-areas: "title action" "tabs filter";
+  align-items: center; gap: .5rem 1rem;
+}
+.quran-library-header h1 { grid-area: title; }
+.quran-library-header .toc-actions { grid-area: action; margin: 0; }
+.quran-library-header .ux-primary-action { width: 100%; }
+.quran-library-header .library-shelf-tools { grid-area: filter; }
+.quran-library-header .library-shelf-tabs { grid-area: tabs; }
+@media (max-width: 700px) {
+  .quran-library-header { grid-template-columns: 1fr; grid-template-areas: "title" "action" "tabs" "filter"; }
+}
 .library-shelf-tabs { display: flex; flex-wrap: wrap; gap: .2rem; }
 .library-shelf-tabs button {
   background: transparent; color: var(--ux-muted); border: 0; border-bottom: 2px solid transparent;
@@ -74,6 +88,7 @@ main.home-library {
 }
 @media(max-width: 700px) {
   main.home-library { width: calc(100% - 2rem); }
+  .home-library-heading .ux-primary-action, .home-library .library-shelf-tools { width: 100%; }
   .home-library-heading { align-items: start; flex-direction: column; gap: .3rem; }
   .library-shelf[data-layout="covers"] .library-volumes { grid-template-columns: repeat(3,minmax(0,1fr)); row-gap: 1rem; }
   .library-volumes { grid-template-columns: minmax(0,1fr); }
@@ -81,9 +96,6 @@ main.home-library {
   .library-shelf-tabs button { padding-inline: .55rem; }
   .library-shelf[data-layout="covers"] .volume-name { font-size: .94rem; }
   .library-shelf[data-view="beginner"] .library-volumes { grid-template-columns: repeat(2,minmax(0,1fr)); }
-}
-@media(max-width: 480px) {
-  .library-shelf-tools { width: 100%; }
 }
 
 .library-shelf[data-deck] .library-volumes {

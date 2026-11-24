@@ -904,7 +904,15 @@
     notebookOffset += (data.notes || []).length; $('notebook-more').hidden = !data.hasMore;
   }
   $('import')?.addEventListener('click', () => run(async () => { $('import-panel').hidden = !$('import-panel').hidden; if (!$('import-panel').hidden) await loadNotebook(); }, $('import')));
-  $('notebook-search')?.addEventListener('change', () => run(() => loadNotebook()));
+  let notebookSearchTimer;
+  $('notebook-search')?.addEventListener('input', () => {
+    clearTimeout(notebookSearchTimer);
+    notebookRequest++;
+    $('notebook-more').hidden = true;
+    notebookSearchTimer = setTimeout(() => {
+      if (!$('import-panel').hidden && me) run(() => loadNotebook());
+    }, 200);
+  });
   $('notebook-more')?.addEventListener('click', () => run(() => loadNotebook(false), $('notebook-more')));
   async function report(commentId = null) {
     const reason = window.prompt('Why are you reporting this content?');

@@ -50,13 +50,22 @@
 	var breadcrumbBookHref = quranBreadcrumbBookSlug
 	  ? `/quran/${encodeURIComponent(quranBreadcrumbBookSlug)}`
 	  : `/${book.alias}`;
+    var breadcrumbChapterHref = `/${chapter.path}`;
+    if (page.sharhBreadcrumb) {
+      const crumb = page.sharhBreadcrumb;
+      breadcrumbBookLabelEn = breadcrumbBookTitleEn = crumb.title;
+      breadcrumbBookLabelAr = breadcrumbBookTitleAr = crumb.titleAr;
+      breadcrumbBookHref = crumb.href;
+      breadcrumbChapterHref = crumb.chapterHref;
+      sectionHref = utils.urlFor(req, crumb.sectionHref);
+    }
     if (chapter.h1 != Math.floor(chapter.h1))
       chapter.h1 = Number(chapter.h1).toFixed(2);
     var quranSurahNameGlyph = isQuranChapter && !site.editMode ? utils.quranSurahNameLigature(chapter.h1) : '';
 %>
 
 <%# Chapter Title %>
-<heading data-reader-chapter="<%= chapter.path %>" class="row major<%= !isQuranChapter && !sirahArabicChapterOnly ? ' hadith-chapter-title' : '' %>"<% if (hadithFlatHeadingRail) { %> data-hadith-heading-target data-hadith-heading-context="<%= hadithFlatHeadingContext %>" data-hadith-heading-key="<%= hadithFlatHeadingKey %>" data-hadith-heading-level="1"<% } %>>
+<header data-reader-chapter="<%= chapter.path %>" class="row major<%= !isQuranChapter && !sirahArabicChapterOnly ? ' hadith-chapter-title' : '' %>"<% if (hadithFlatHeadingRail) { %> data-hadith-heading-target data-hadith-heading-context="<%= hadithFlatHeadingContext %>" data-hadith-heading-key="<%= hadithFlatHeadingKey %>" data-hadith-heading-level="1"<% } %>>
 
   <% if (!sirahArabicChapterOnly) { %>
   <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>"<% if (isQuranChapter && !site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= chapter.h1 %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
@@ -82,15 +91,15 @@
     <span class="heading-bookmark-icon bi bi-bookmark text-accent" data-heading-id="<%= chapter.id %>"></span>
   </button></span><% } %></h2>
 
-</heading>
+</header>
 
 <%# Chapter Breadcrumbs %>
 <section class="row breadcrumbs pagination">
 
   <div class="col-md-6 col-sm-12" lang="en">
-    <a title="<%- breadcrumbBookTitleEn %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelEn %></a>
+    <a title="<%= breadcrumbBookTitleEn %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelEn %></a>
     &gt;
-    <a title="<%= chapter.title_en %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%= isQuranChapter ? quranChapterBreadcrumbLabel : `${chapterBreadcrumbLabelEn} ${chapter.h1}` %></a>
+    <a title="<%= chapter.title_en %>" href="<%= utils.urlFor(req, breadcrumbChapterHref) %>"><%= isQuranChapter ? quranChapterBreadcrumbLabel : `${chapterBreadcrumbLabelEn} ${chapter.h1}` %></a>
     <% if (heading.level == 2) { %>
       &gt;
       <a title="<%= section.title %>" href="<%= sectionHref %>"><%= isQuranChapter ? 'Passage' : 'Section' %> <%= section.h2 %></a>
@@ -98,9 +107,9 @@
   </div>
 
   <div class="col-md-6 col-sm-12" lang="ar">
-    <a title="<%- breadcrumbBookTitleAr %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelAr %></a>
+    <a title="<%= breadcrumbBookTitleAr %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelAr %></a>
     &gt;
-    <a title="<%= chapter.title %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%= isQuranChapter ? quranChapterBreadcrumbLabelAr : `${chapterBreadcrumbLabelAr} ${arabic.toArabicDigits(chapter.h1)}` %></a>
+    <a title="<%= chapter.title %>" href="<%= utils.urlFor(req, breadcrumbChapterHref) %>"><%= isQuranChapter ? quranChapterBreadcrumbLabelAr : `${chapterBreadcrumbLabelAr} ${arabic.toArabicDigits(chapter.h1)}` %></a>
     <% if (heading.level == 2) { %>
       &gt;
       <a title="<%= section.title %>" href="<%= sectionHref %>"><%= isQuranChapter ? 'مقطع' : 'باب' %> <%= arabic.toArabicDigits(section.h2) %></a>

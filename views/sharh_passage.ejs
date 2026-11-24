@@ -12,7 +12,14 @@ const referenceBookName = referenceBook.shortName_en || referenceBook.name_en ||
 const headingNumber = owner && kind === 'heading' ? [owner.h1, Number(owner.level) >= 2 ? owner.h2 : null, Number(owner.level) >= 3 ? owner.h3 : null].filter(value => value !== null && value !== undefined && value !== '').map(value => utils.formatHadithHeadingNumber(value)).join('.') : '';
 const referenceLabel = owner ? (kind === 'hadith' ? `${referenceBookName} ${owner.num}` : `${referenceBookName} §${headingNumber}`) : '';
 const headingTitle = owner && kind === 'heading' ? (owner.title_en || (context.chapter && context.chapter.title_en) || owner.title || '') : '';
-const page = { menu: 'Sharh', title_en: utils.socialMetadata().join([referenceLabel, headingTitle, title]), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
+const tocSource = context.book?.alias || owner?.book_alias;
+const tocHref = '/sharh/' + encodeURIComponent(book.alias) + (tocSource ? '?book=' + encodeURIComponent(tocSource) : '');
+const sharhBreadcrumb = {
+  title, titleAr, href: tocHref,
+  chapterHref: context.chapter?.id ? tocHref + '#toc-chapter-' + context.chapter.id : tocHref,
+  sectionHref: context.section?.id ? tocHref + '#toc-section-' + context.section.id : tocHref
+};
+const page = { sharhBook: book, sharhBreadcrumb, menu: 'Sharh', articleType: 'Article', articleAuthor: book.author_en || book.author, title_en: utils.socialMetadata().join([referenceLabel, headingTitle, title]), description_en: `Read ${title}${reference ? `, ${reference}` : ''}.`, canonical, context };
 page.dateModified = utils.pageFreshness().latest((locals.entries || [entry]).map(item => item.content_updated_at));
 page.description_en = utils.socialMetadata().description([title, referenceLabel].filter(Boolean).join(" — "), (locals.entries || [entry]).map(item => item.text_en || item.text), page.description_en);
 Object.assign(page, locals.readerNavigation || {});
@@ -30,7 +37,8 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 <%- include('sub-views/header.ejs', { site, page }); %>
 <div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
 <div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
-<main class="chapter mt-10 tafsir-only-page sharh-only-page" data-reader-infinite="hadith-sharh" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-sharh-book="<%= book.alias %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
+<main class="chapter tafsir-only-page sharh-only-page" data-reader-infinite="hadith-sharh" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-sharh-book="<%= book.alias %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
+  <h1 class="visually-hidden" data-reader-page-title><%= page.title_en %></h1>
   <% if (canSwitchExplanation) { %>
   <nav class="h-menu-wrap mb-3" aria-label="Available explanations">
     <details class="book-switch-picker">
@@ -38,7 +46,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
       <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap">
       <%- include('sub-views/bookCarouselFilter') %>
       <% availableSharhs.forEach(function (source) { %>
-      <a class="btn book-switch-item text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>" data-book-carousel-item data-book-carousel-search="<%= [utils.sharhDisplayName(source), source.title, source.name_en, source.author_en, source.author, source.alias].filter(Boolean).join(' ') %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= utils.sharhDisplayName(source) %></a>
+      <a class="btn book-switch-item text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>" data-book-carousel-item data-book-carousel-search="<%= [utils.sharhDisplayName(source), source.title, source.name_en, source.author_en, source.author, source.alias].filter(Boolean).join(' ') %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= source.choiceLabel || utils.sharhDisplayName(source) %></a>
       <% }); %>
     </div></div>
     </details>
@@ -58,11 +66,16 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
   <% } %>
   <% if (owner) { %>
     <%- include('sub-views/sharh_context.ejs', { owner, kind, site, page, Tafsir }); %>
-    <% if (kind === 'hadith') { %>
+    <% if (kind === 'hadith') {
+      const arabicPreview = utils.socialMetadata().excerpt(owner.ar?.body || owner.body);
+    %>
       <section aria-label="Referenced hadith">
         <details class="hadith-detail-disclosure">
           <summary class="hadith-detail-disclosure-summary">
-            <span class="hadith-detail-disclosure-label"><span lang="en">Hadith: <%= referenceLabel %></span><span class="text-muted" lang="ar" dir="rtl">الحديث</span></span>
+            <span class="sharh-reference-summary">
+              <span class="hadith-detail-disclosure-label"><span lang="en">Hadith: <%= referenceLabel %></span><span class="text-muted" lang="ar" dir="rtl">الحديث</span></span>
+              <% if (arabicPreview) { %><span class="sharh-body-preview" lang="ar" dir="rtl"><%= arabicPreview %></span><% } %>
+            </span>
             <span class="bi bi-chevron-down hadith-detail-disclosure-chevron" aria-hidden="true"></span>
           </summary>
           <div class="hadith-detail-disclosure-content">

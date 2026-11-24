@@ -1,8 +1,0 @@
-<div class="ux-system ux-rail-filter-slot book-catalog-group-filters catalog-tools">
-  <%- include('rail_search.ejs', { inputId: 'book-catalog-filter', placeholder: 'Search books', label: 'Search books in this collection', clearLabel: 'Clear book filter', resultsId: 'book-catalog-results' }) %>
-  <div hidden>
-    <% Object.values(catalogBookGroups).forEach(groups => groups.forEach(group => { %>
-      <span data-catalog-group-label="<%= group.id %>"><%= group.label %></span>
-    <% })); %>
-  </div>
-</div>

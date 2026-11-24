@@ -1,12 +1,14 @@
 'use strict';
-const { displayName, authorSuffix } = require('../lib/SharhDisplayName');
+const { displayName, authorSuffix, choiceLabels } = require('../lib/SharhDisplayName');
 const plan = require('../bin/utils/sharh-clean-names-plan.json');
 const { validatePlan } = require('../bin/utils/enrich-book-display-names');
 
 test('identical titles remain distinguishable through separately stored short authors', () => {
   const name = 'Fatḥ al-Bārī';
-  expect(displayName({ shortName_en: name, authorShortName_en: 'Ibn Hajar al-Asqalani' })).toBe(name + ' (Ibn Hajar al-Asqalani)');
-  expect(displayName({ shortName_en: name, authorShortName_en: 'Ibn Rajab' })).toBe(name + ' (Ibn Rajab)');
+  const books = ['Ibn Hajar al-Asqalani', 'Ibn Rajab'].map(authorShortName_en => ({ shortName_en: name, authorShortName_en }));
+  expect(books.map(book => displayName(book))).toEqual([name, name]);
+  expect(choiceLabels(books)).toEqual(books.map(book => name + ' (' + book.authorShortName_en + ')'));
+  expect(choiceLabels([books[0]])).toEqual([name]);
 });
 test.each([
   ['Sharḥ al-Suyūṭī', 'Jalal al-Din al-Suyuti'],
@@ -18,7 +20,7 @@ test.each([
   expect(authorSuffix({ authorShortName_en: author }, title)).toBe('');
 });
 test('does not confuse the base-book author with the commentator or invent missing authors', () => {
-  expect(displayName({ shortName_en: 'Sharh Riyad al-Salihin', authorShortName_en: 'Muhammad Ibn Uthaymin' })).toBe('Sharh Riyad al-Salihin (Muhammad Ibn Uthaymin)');
+  expect(displayName({ shortName_en: 'Sharh Riyad al-Salihin', authorShortName_en: 'Muhammad Ibn Uthaymin' })).toBe('Sharh Riyad al-Salihin');
   expect(displayName({ shortName_en: 'Title' })).toBe('Title');
 });
 test('reviewed cleanup changes only English title fields and preserves the title before the author suffix', () => {
@@ -31,8 +33,8 @@ test('reviewed cleanup changes only English title fields and preserves the title
   }
 });
 
-test('Arabic hadith labels use short authors and ignore tashkil when detecting embedded names', () => {
-  expect(displayName({ shortName: 'فَتْحُ الْبَارِي', authorShortName: 'ابْنُ حَجَرٍ الْعَسْقَلَانِيُّ' }, null, 'ar')).toBe('فَتْحُ الْبَارِي (ابْنُ حَجَرٍ الْعَسْقَلَانِيُّ)');
+test('Arabic labels preserve the title and its diacritics', () => {
+  expect(displayName({ shortName: 'فَتْحُ الْبَارِي', authorShortName: 'ابْنُ حَجَرٍ الْعَسْقَلَانِيُّ' }, null, 'ar')).toBe('فَتْحُ الْبَارِي');
   expect(displayName({ shortName: 'شَرْح السُّيُوطِيّ', authorShortName: 'جَلَالُ الدِّينِ السُّيُوطِيُّ' }, null, 'ar')).toBe('شَرْح السُّيُوطِيّ');
   expect(displayName({ shortName: 'شَرْح صَلَاحِي', authorShortName: 'عَادِلٌ صَلَاحِي' }, null, 'ar')).toBe('شَرْح صَلَاحِي');
 });

@@ -28,10 +28,9 @@
 			<div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
 				<div class="modal-header"><h2 class="modal-title fs-5" id="admin-pair-manager-title" data-hadith-pair-manager-title>Bilingual pairs</h2><%- include('sub-views/modal_close.ejs', { closeLabel: 'Close' }) %></div>
 				<div class="modal-body">
-					<label class="visually-hidden" for="admin-pair-filter">Filter pairs</label>
-					<div class="hadith-pair-manager-filter mb-3"><span class="bi bi-funnel" aria-hidden="true"></span><input id="admin-pair-filter" type="search" class="form-control form-control-sm hadith-admin-combobox" dir="auto" data-hadith-pair-manager-filter placeholder="Search Arabic or English (ignores diacritics)" aria-label="Search pairs by Arabic or English" autocomplete="off"></div>
+					<%- include('sub-views/rail_search.ejs', { inputId: 'admin-pair-filter', label: 'Search pairs by Arabic or English', placeholder: 'Search Arabic or English (ignores diacritics)', resultsId: 'admin-pair-list', clearLabel: 'Clear pair filter', filterClass: 'mb-3', filterData: { 'hadith-pair-manager-filter': '' } }) %>
 					<p class="small text-muted" data-pair-selection-count role="status">0 selected</p>
-					<div class="hadith-pair-manager-list" data-hadith-pair-manager-list></div>
+					<div class="hadith-pair-manager-list" id="admin-pair-list" data-hadith-pair-manager-list></div>
 					<div class="hadith-pair-manager-empty text-muted" data-hadith-pair-manager-empty hidden>No saved pairs.</div>
 					<section hidden class="hadith-pair-merge border rounded p-3 mb-3" aria-label="Merge selected pairs">
 						<h3 class="fs-6">Merge selected pairs</h3>
@@ -64,9 +63,9 @@
     <div class="modal-body">
       <p>These records populate the legacy grader dropdown on hadith pages. Editing a record keeps its existing hadith assignments.</p>
       <label for="legacy-grader-filter" class="form-label">Find a grader</label>
-      <input id="legacy-grader-filter" class="form-control mb-3" type="search" placeholder="Search Arabic or English" data-legacy-grader-filter>
+      <%- include('sub-views/rail_search.ejs', { inputId: 'legacy-grader-filter', label: 'Find a grader', placeholder: 'Search Arabic or English', resultsId: 'legacy-grader-select', clearLabel: 'Clear grader filter', filterClass: 'mb-3', filterData: { 'legacy-grader-filter': '' } }) %>
       <div class="d-flex gap-2 mb-3">
-        <select class="form-select" aria-label="Legacy grader to edit" data-legacy-grader-select><option value="new">Add a new grader</option></select>
+        <select id="legacy-grader-select" class="form-select" aria-label="Legacy grader to edit" data-legacy-grader-select><option value="new">Add a new grader</option></select>
         <button type="button" class="btn btn-outline-secondary text-nowrap" data-legacy-grader-new>New grader</button>
       </div>
       <form data-legacy-grader-form>
@@ -88,7 +87,7 @@
     <div class="modal-body">
       <div class="row g-3 mb-3">
         <div class="col-sm-4"><label for="book-alias-type" class="form-label">Book type</label><select id="book-alias-type" class="form-select" data-book-alias-type><option value="">All types</option><option value="hadith">Hadith</option><option value="sharh">Sharḥ</option><option value="tafsir">Tafsīr</option><option value="trans">Translation</option><option value="sirah">Sīrah</option><option value="quran">Quran</option></select></div>
-        <div class="col-sm-8"><label for="book-alias-search" class="form-label">Find a book</label><input id="book-alias-search" class="form-control" type="search" placeholder="Name or alias" data-book-alias-search></div>
+        <div class="col-sm-8"><label for="book-alias-search" class="form-label">Find a book</label><%- include('sub-views/rail_search.ejs', { inputId: 'book-alias-search', label: 'Find a book', placeholder: 'Name or alias', resultsId: 'book-alias-select', clearLabel: 'Clear book filter', filterData: { 'book-alias-search': '' } }) %></div>
       </div>
       <label for="book-alias-select" class="form-label">Book</label><select id="book-alias-select" class="form-select mb-3" data-book-alias-select></select>
       <form data-book-alias-form>

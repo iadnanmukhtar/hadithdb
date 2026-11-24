@@ -25,7 +25,7 @@ async function adminFixture() {
   }, { includer(name) {
     if (name.endsWith('/head.ejs')) return { template: head.replace(/<%/g, '<%%') };
     if (name.endsWith('/header.ejs')) return { template: masthead.outerHTML };
-    if (!['page_end.ejs', 'scripts.ejs', 'modal_close.ejs'].includes(path.basename(name))) return { template: ' ' };
+    if (!['page_end.ejs', 'scripts.ejs', 'modal_close.ejs', 'rail_search.ejs'].includes(path.basename(name))) return { template: ' ' };
   } });
 }
 
@@ -66,8 +66,10 @@ async function run(width, browser, html) {
     if (pathname === '/ux-admin-fixture') return route.fulfill({ contentType: 'text/html', body: html });
     if (pathname === '/admin/book-aliases') return route.fulfill({ json: [{ id: 1, type: 'hadith', alias: 'fixture', name_en: 'Fixture' }] });
     if (pathname.endsWith('/autocomplete/bilingual-pairs')) {
-      const type = new URL(req.url()).searchParams.get('type');
-      return route.fulfill({ json: type === 'attribution' ? pairs : [] });
+      const params = new URL(req.url()).searchParams;
+      const query = params.get('q') || '';
+      const matches = pairs.filter(pair => pair.value_en.includes(query) || pair.value_ar.includes(query));
+      return route.fulfill({ json: params.get('type') === 'attribution' ? matches : [] });
     }
     if (pathname === '/admin/legacy-graders') return route.fulfill({ json: [] });
     return route.continue();
@@ -90,8 +92,11 @@ async function run(width, browser, html) {
       }, fill);
     }
     for (const name of ['narrator', 'attribution', 'chain_classification', 'grader', 'grade']) {
-      await page.locator('[data-hadith-pair-manager-open="' + name + '"]').click();
-      await page.locator('#admin-pair-manager.show').waitFor();
+      await Promise.all([
+        page.locator('#admin-pair-manager').evaluate(modal => new Promise(resolve =>
+          modal.addEventListener('shown.bs.modal', () => resolve(), {once: true}))),
+        page.locator('[data-hadith-pair-manager-open="' + name + '"]').click()
+      ]);
       if (name === 'attribution') {
         const manager = page.locator('#admin-pair-manager');
         const row = key => manager.locator('[data-original-key="' + key + '"]');
@@ -99,6 +104,13 @@ async function run(width, browser, html) {
         assert.ok(await merge.isHidden());
         const count = manager.locator('[data-pair-selection-count]');
         assert.equal(await count.innerText(), '0 selected');
+        const filter = manager.getByRole('searchbox');
+        await filter.fill('الأول');
+        await row('a').waitFor();
+        await row('b').waitFor({state: 'hidden'});
+        await manager.getByRole('button', {name: 'Clear pair filter'}).click();
+        await row('b').waitFor();
+        assert.equal(await filter.inputValue(), '');
         await row('a').getByRole('checkbox').check();
         assert.equal(await count.innerText(), '1 selected');
         await manager.getByRole('button', {name: 'Clear selection'}).click();

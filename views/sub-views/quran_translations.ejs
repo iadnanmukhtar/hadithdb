@@ -42,7 +42,7 @@
 %>
 <% if (passageSurah && passageAyahs.length > 0) { %>
 <article class="quran-translations mt-4" data-translation-instance="<%= translationInstance %>" data-surah="<%= passageSurah %>" data-ayahs="<%= passageAyahs.join(',') %>">
-		<heading class="quran-translation-heading row heading py-2">
+		<header class="quran-translation-heading row heading py-2">
 			<h2 class="col-12 fs-5 title quran-section-heading-title mb-0" lang="en">
 				<span class="quran-section-heading-text"><%= translationHeading %></span>
 				<% if (translationSettingsHref || showAyahModalModeToggle) { %>
@@ -64,7 +64,7 @@
 					</span>
 				<% } %>
 			</h2>
-		</heading>
+		</header>
 	<div class="quran-translation-list">
 		<% if (!hideDefaultTranslation && defaultTranslationHtml) { %>
 			<details class="quran-translation-entry quran-translation-default" lang="en" dir="ltr" data-translation-alias="default" draggable="false" open>

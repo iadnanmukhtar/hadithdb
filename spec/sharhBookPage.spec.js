@@ -24,25 +24,51 @@ test.each([false, true])('shared metadata renders with admin editing=%s', async 
  expect($('#toc-details-toggle').attr('aria-expanded')).toBe(String(editMode));
 });
 
-test('book route supplies coverage and does not load a passage TOC', async () => {
+const sources = [{ id: 1, alias: 'malik' }, { id: 2, alias: 'muslim' }];
+test.each([['muslim', 1], ['unrelated', 0], [undefined, 0]])('book route selects covered source for %s', async (alias, index) => {
  jest.spyOn(Sharh, 'catalog').mockResolvedValue([book]);
- jest.spyOn(Sharh, 'coveredBooks').mockResolvedValue([{ alias: 'malik', hadith_count: 1200 }]);
- const entries = jest.spyOn(Sharh, 'bookEntries');
+ jest.spyOn(Sharh, 'coveredBooks').mockResolvedValue(sources);
+ const contents = jest.spyOn(Sharh, 'sourceContents').mockResolvedValue([]);
  const res = { render: jest.fn() };
- await router.stack.find(layer => layer.route?.path === '/:alias').route.stack[0].handle({ params: { alias: book.alias } }, res, jest.fn());
- expect(res.render).toHaveBeenCalledWith('sharh_books', expect.objectContaining({ sharhBook: book, coveredBooks: [{ alias: 'malik', hadith_count: 1200 }] }));
- expect(entries).not.toHaveBeenCalled();
+ await router.stack.find(layer => layer.route?.path === '/:alias').route.stack[0].handle({ params: { alias: book.alias }, query: { book: alias } }, res, jest.fn());
+ expect(contents).toHaveBeenCalledWith(book, sources[index]);
+ expect(res.render).toHaveBeenCalledWith('sharh_books', expect.objectContaining({ selectedBook: sources[index] }));
 });
 
-test.each([[[]], [[{ alias: 'malik', shortName_en: 'Muwatta Malik', shortName: 'موطأ مالك', hadith_count: 1200 }]]])('coverage list renders links and an empty state', async coveredBooks => {
+test('source outline keeps its numbering and inherits the first covered descendant', async () => {
+ const query = global.query;
+ global.query = jest.fn()
+  .mockResolvedValueOnce([
+   { id: 1, level: 1, h1: 5 }, { id: 2, level: 2, h1: 5, h2: 3 },
+   { id: 3, level: 3, h1: 5, h2: 3, h3: 1 }, { id: 4, level: 1, h1: 6 }
+  ])
+  .mockResolvedValueOnce([
+   { toc_id: 3, kind: 'heading', reference: '82' },
+   { toc_id: 3, kind: 'hadith', reference: 'muslim:10' },
+   { toc_id: 4, kind: 'hadith', reference: 'muslim:125' }
+  ]);
+ try {
+  const chapters = await Sharh.sourceContents(book, { id: 61 });
+  expect(chapters.map(chapter => [chapter.h1, chapter.href])).toEqual([
+   [5, '/sharh/malik-istidhkar/heading/82'], [6, '/sharh/malik-istidhkar/muslim:125']
+  ]);
+  expect(chapters[0].sections.map(section => section.href)).toEqual([chapters[0].href, chapters[0].href]);
+ } finally { global.query = query; }
+});
+
+test.each([0, 1, 2])('renders source navigation and reader links for %i sources', async count => {
+ const coveredBooks = sources.slice(0, count);
+ const chapter = { id: 4, h1: 1, start: 1, title_en: 'Chapter', href: '/sharh/malik-istidhkar/heading/42', sections: [
+  { id: 5, level: 2, h1: 1, h2: 2, title_en: 'Section', href: '/sharh/malik-istidhkar/malik:1-1' }
+ ] };
  const html = await ejs.renderFile(path.join(__dirname, '../views/sharh_books.ejs'), {
-  global: { settings: { site: {} } }, req: {}, utils: require('../lib/Utils'), sharhBook: book, books: [book], offset: 0, coveredBooks, include: () => ''
+  global: { settings: { site: {} } }, req: {}, utils: require('../lib/Utils'), sharhBook: book, books: [book],
+  coveredBooks, selectedBook: coveredBooks[0], chapters: count ? [chapter] : [], include: () => ''
  });
  const $ = cheerio.load(html);
- expect($('#toc')).toHaveLength(0);
- if (coveredBooks.length) {
-  expect($('tbody a').first().attr('href')).toBe('/malik');
-  expect($('tbody tr').text()).toContain('1,200');
+ expect($('.ux-view-option')).toHaveLength(count > 1 ? count : 0);
+ if (count) {
+  expect($('#toc a').map((_, el) => $(el).attr('href')).get()).toEqual([chapter.href, chapter.sections[0].href]);
  } else expect($('section').text()).toContain('No linked books yet.');
 });
 

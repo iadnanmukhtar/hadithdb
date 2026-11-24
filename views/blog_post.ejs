@@ -3,21 +3,21 @@
 
 <head> 
 <%
-    var site = new Object(global.settings.blog);
+    var site = { ...global.settings.blog };
     site.admin = false;
     site.editMode = false;
     const slugVal = (typeof locals !== 'undefined' && locals && typeof locals.slug !== 'undefined') ? locals.slug : req.params.title;
 
     var page = {
-      menu: 'Blog Post',
+      menu: 'Blog Post', articleType: 'BlogPosting', articleAuthor: attr.authorName,
       dateModified: utils.pageFreshness().latest([attr.publicUpdatedAt, attr.published]),
       title_en: `Pearls | ${attr.title}${attr.authorName ? ' — ' + attr.authorName : ''}`,
       description_en: attr.description || attr.subtitle || site.desc,
       subtitle_en: attr.subtitle || 'Blog Post',
       subtitle: null,
-      canonical: `/${slugVal}`,
+      canonical: `/${encodeURIComponent(slugVal)}`,
       feed: `${site.url}/feed`,
-      cover: encodeURI(attr.coverUrl),
+      cover: attr.coverUrl ? encodeURI(attr.coverUrl) : undefined,
       context: {},
       ...(attr.socialMetadata || {}),
     };
