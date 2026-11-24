@@ -158,10 +158,21 @@ async function run(width, browser, html) {
         '<span id="fixture-name" class="_e" lang="ar" dir="rtl" data-id="10" data-prop="book.name">اسم</span>' +
         '<div id="fixture-markdown" class="_e" data-id="13" data-prop="book.description" data-markdown-source="Original">Original</div>' +
         '<textarea id="fixture-explicit" class="_e quran-tafsir-editor" data-id="12" data-prop="toc.title_en"></textarea>' +
-        '<select id="fixture-choice" class="_e" data-id="11" data-prop="book.lang"><option>ar</option><option>en</option></select>');
+        '<div class="hadith-language-item"><select id="fixture-choice" class="_e form-select hadith-admin-select" data-id="11" data-prop="book.lang"><option>ar</option><option>en</option></select></div>');
     });
+    // Measure the painted picker icon; a select can still save with its arrow on a second line.
+    const dom = await page.context().newCDPSession(page);
+    const { root } = await dom.send('DOM.getDocument');
+    const { nodeId } = await dom.send('DOM.querySelector', { nodeId: root.nodeId, selector: '#fixture-choice' });
+    const { node } = await dom.send('DOM.describeNode', { nodeId, depth: 1 });
+    const icon = node.pseudoElements.find(element => element.pseudoType === 'picker-icon');
+    const controlBox = (await dom.send('DOM.getBoxModel', { nodeId })).model.border;
+    const iconBox = (await dom.send('DOM.getBoxModel', { backendNodeId: icon.backendNodeId })).model.border;
+    const centerOffset = (iconBox[1] + iconBox[5] - controlBox[1] - controlBox[5]) / 2;
+    assert.ok(Math.abs(centerOffset) <= 3, 'Chevron stays centered in the admin select');
+    await dom.detach();
     const field = page.locator('#fixture-name.ux-inline-editor');
-    assert.match(await page.locator('#fixture-markdown').evaluate(el => getComputedStyle(el).fontFamily), /^Inter\b/);
+    assert.match(await page.locator('#fixture-markdown').evaluate(el => getComputedStyle(el).fontFamily), /^"Inter Display",/);
     assert.match(await field.evaluate(el => getComputedStyle(el).fontFamily), /Kitab/);
     await field.focus();
     assert.equal(await field.getAttribute('contenteditable'), 'true');

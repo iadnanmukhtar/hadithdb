@@ -331,11 +331,11 @@
 						<option value="<%=grade.id%>" <%=(grade.id == (i.grade && i.grade.id)) ? 'selected' :''%>><%= bilingualLabel(grade.grade_en, grade.grade) %></option>
 					<% }); %>
 				</select>
-				(<select class="_e form-select form-select-sm hadith-admin-select" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.graderId" aria-label="Legacy hadith grader" title="Legacy hadith grader">
+				<select class="_e form-select form-select-sm hadith-admin-select" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.graderId" aria-label="Legacy hadith grader" title="Legacy hadith grader">
 					<% global.graders.forEach(function (grader) { %>
 						<option value="<%=grader.id%>" <%=(grader.id == (i.grader && i.grader.id)) ? 'selected' :''%>><%= bilingualLabel(grader.shortName_en, grader.shortName) %></option>
 					<% }); %>
-				</select>)
+				</select>
 				<% } else { %>
 				<% const displayedGrade = legacyGradeOverride ? (lang === 'en' ? legacyGradeOverride.grade_en : legacyGradeOverride.grade) : langData.grade_grade;
 				   const displayedGrader = legacyGradeOverride ? (lang === 'en' ? legacyGradeOverride.grader_en : legacyGradeOverride.grader) : langData.grader_shortName;
@@ -350,7 +350,7 @@
 		<aside class="title<%= isQuranItem && lang === 'ar' ? ' quran-search-title' : '' %>">
 			§ 
 			<% if (lang === 'en' && site.editMode && i.book_virtual===0 && chapter && chapter.sections) { %>
-				(<select dir="rtl" class="_e form-select form-select-sm hadith-admin-select" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId">
+				(<select dir="rtl" class="_e form-select form-select-sm hadith-admin-select" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.tocId" aria-label="Hadith section">
 					<option value="">-- خالي --</option>
 					<% for (var section of chapter.sections) { %>
 						<option value="<%=section.id%>" <%=(section.path === i.path) ? 'selected' :''%>><%=utils.truncate(section.title, 50, true, false, false)%></option>

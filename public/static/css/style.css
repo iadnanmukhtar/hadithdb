@@ -7105,6 +7105,15 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .hadith-inline-ruling-single { max-width: 100%; min-width: 0; }
 .hadith-inline-ruling-single .grade { cursor: text; display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+.hadith-inline-ruling .grade:has(.hadith-admin-select) {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: .35rem;
+	overflow: visible;
+	white-space: normal;
+}
+
 .h .hadith-attribution {
 	color: var(--c-accent);
 	font-weight: bold;
@@ -7125,7 +7134,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	border-radius: .5rem;
 	box-shadow: 0 1px 2px color-mix(in srgb, var(--bs-body-color) 6%, transparent);
 	color: var(--bs-body-color);
-	display: inline-block;
+	max-width: 100%;
 	font-size: var(--content-size-meta);
 	font-weight: 400;
 	min-height: 2.15rem;

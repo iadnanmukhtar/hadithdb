@@ -431,10 +431,15 @@ body:has(.ux-masthead[data-edit-mode]) {
     align-items: center;
     gap: .5em;
   }
+  select:not([hidden], [multiple]):is(:not([size]), [size="1"]) { display: inline-flex; }
+  select.form-select:not([multiple]):is(:not([size]), [size="1"]) {
+    padding-inline-end: .65rem;
+  }
   select::picker-icon {
     content: "";
     inline-size: .48em;
     block-size: .48em;
+    flex: none;
     margin-inline: auto .2em;
     border: solid currentColor;
     border-width: 0 .1em .1em 0;
