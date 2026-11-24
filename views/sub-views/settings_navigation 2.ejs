@@ -1,0 +1,4 @@
+<%- include('section_navigation.ejs', {
+    tabs: false, label: 'Settings sections', pickerLabel: 'Category', pickerName: 'Settings category',
+    items: settingsGroups.map(group => ({ label: group.title, href: '#' + group.id }))
+  }); %>

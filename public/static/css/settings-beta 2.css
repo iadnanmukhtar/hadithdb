@@ -1,0 +1,90 @@
+.settings-beta {
+  max-width: 67rem;
+  margin-inline: auto;
+  margin-bottom: 5rem;
+  padding-top: .75rem;
+  padding-inline: var(--bs-gutter-x, 1.5rem);
+}
+.settings-beta-index { display: flex; flex-direction: column; align-self: start; }
+.settings-beta-group { margin-bottom: 2rem; }
+.settings-beta-group > h2 { scroll-margin-top: calc(var(--site-fixed-header-height, 5rem) + 1rem); }
+.settings-beta-row + .settings-beta-row { border-top: 1px solid var(--ux-border); }
+.settings-beta-fields { padding: 1rem; background: var(--ux-inset); border-radius: .45rem; }
+@media (max-width: 700px) {
+
+  .settings-beta-row > summary { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 0 .75rem; }
+  .settings-beta-row > summary span { grid-column: 1; }
+  .settings-beta-row > summary i { grid-column: 2; grid-row: 1 / span 2; }
+}
+
+.script-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(12rem, 100%), 1fr));
+  gap: .65rem;
+}
+.script-choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: .4rem .55rem;
+  padding: .75rem 1rem;
+  cursor: pointer;
+}
+.script-choice input { accent-color: var(--ux-accent); }
+.script-choice:has(:checked) { border-color: var(--ux-accent); box-shadow: inset 0 0 0 1px var(--ux-accent); }
+.script-choice:has(:focus-visible) { outline: var(--ux-focus-ring); outline-offset: 2px; }
+.script-choice:has(:disabled) { cursor: default; }
+.script-choice .script-sample { grid-column: 1 / -1; text-align: center; font-size: 1.65rem; line-height: 1.9; }
+.script-choice .sample-uthmani { font-family: Hafs, serif; }
+.script-choice .sample-indo-pak { font-family: QuranIndoPak, serif; }
+.script-choice .sample-warsh { font-family: QuranWarsh, serif; }
+
+.settings-filter-slot { grid-column: 1 / -1; }
+.settings-filter-status { margin: .25rem 0 0; }
+.settings-filter-status:empty { margin: 0; }
+.settings-beta .settings-filter-miss, .settings-beta-index a[hidden] { display: none !important; }
+
+
+
+.settings-beta-fields .settings-preference-list-mini {
+  gap: .6rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(8.5rem, 100%), 1fr));
+}
+.settings-beta-fields .settings-preference-tile { min-height: 5rem; padding: .6rem; }
+.settings-beta-fields .settings-preference-tile .translation-setting-title { font-size: var(--ux-secondary-size); line-height: 1.2; font-weight: var(--ux-emphasis-weight); }
+.settings-beta-fields .settings-subsection-toggle { min-height: 2.5rem; justify-content: space-between; }
+.settings-beta-fields .settings-subsection-toggle .bi { order: 1; color: var(--ux-accent); font-size: .85rem; transform: rotate(180deg); }
+.settings-beta-fields .settings-subsection-toggle[aria-expanded="false"] .bi { transform: none; }
+.settings-beta-fields [data-notebook-drive-panel]:not([hidden]) {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.settings-beta-fields [data-notebook-drive-message] { flex: 1 1 14rem; }
+.settings-beta-fields [data-notebook-drive-panel] .ux-text-action { text-decoration: none; }
+.settings-beta-fields [data-notebook-drive-panel] [hidden] { display: none; }
+.settings-beta-fields :is(.settings-payment-auto, [data-community-drive-controls]) {
+  padding-top: .85rem;
+  border-top: 1px solid var(--ux-border);
+}
+.settings-beta-fields .settings-payment-panel { gap: 1rem; }
+.settings-beta-fields .settings-payment-panel select { min-width: 0; }
+@media (max-width: 700px) {
+  .settings-beta-fields { padding: .85rem .75rem; }
+}
+
+.settings-beta #settings-email-section { scroll-margin-top: calc(var(--site-fixed-header-height, 5rem) + 1rem); }
+
+@media (min-width: 992px) {
+  main.settings-beta { max-width: none; margin-top: 0; padding-block: 0; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
+  .settings-beta > .ux-page-heading, #settings-groups { grid-column: 2; padding-inline: calc(var(--bs-gutter-x, 1.5rem) * .5); }
+  .settings-beta > .ux-page-heading { grid-row: 1; margin-top: var(--ux-page-start); }
+  #settings-groups { grid-row: 2; }
+  .settings-beta .settings-beta-index { grid-area: 1 / 4 / 3 / 6; overflow-y: auto; border-inline-start: 1px solid var(--ux-border); }
+}
+@media (max-width: 991.98px) {
+  main.settings-beta { margin-top: var(--ux-page-start); padding-top: 0; }
+  body:has(.settings-category-picker:not([hidden])) .settings-beta-index > a { display: none; }
+  .settings-beta-index.hadith-heading-toc { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); margin-bottom: var(--ux-title-gap); position: static; width: 100%; margin-top: 0; max-height: none; }
+}
