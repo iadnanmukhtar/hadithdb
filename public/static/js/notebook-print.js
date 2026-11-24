@@ -19,9 +19,9 @@
         @page { margin: 18mm; }
         * { box-sizing: border-box; }
         html { font-size: 12pt; }
-        body { margin: 0; color: #111; background: white; font: 1rem/1.8 Georgia, "Times New Roman", Kitab, serif; }
+        body { margin: 0; color: #111; background: white; font: 1rem/1.8 var(--ux-font-ui); }
         main { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; overflow-wrap: anywhere; }
-        aside { padding: .75rem 1rem; background: #f3f3f3; font: 14px/1.5 system-ui, sans-serif; }
+        aside { padding: .75rem 1rem; background: #f3f3f3; font: 14px/1.5 var(--ux-font-ui); }
         button { margin-inline-end: 1rem; padding: .4rem .7rem; cursor: pointer; }
         .metadata { font-size: .85rem; color: #444; margin-block: .5rem; }
         header { border-bottom: 1px solid #ccc; padding-bottom: 1rem; margin-bottom: 1.5rem; }

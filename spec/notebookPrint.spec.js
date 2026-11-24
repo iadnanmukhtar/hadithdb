@@ -104,7 +104,7 @@ test('render failures close the empty window and preserve the error', async () =
 test('bilingual quote fonts and per-language borders agree in preview and PDF', async () => {
   const html = Notebook.render('> **نص عربي** [رابط](https://example.com)\n> English translation\n\n> English opening\n> نص عربي\n\n> نص عربي\n>\n> English separate paragraph\n\n-# Small __underlined__ text\n\n- [x] Complete\n\nH~2~O X^2^ :joy:\n\n```json\n{"x":true}\n```\n\n<div><p style="color:red">Native HTML العربية</p><details open><summary>More</summary>Details</details><script>window.htmlExecuted=true</script></div>');
   const css = fs.readFileSync(require.resolve('../public/static/css/markdown-content.css'), 'utf8');
-  await page.setContent(`<style>body { font-family: Georgia, serif; }${css}</style><article class="notebook-markdown">${html}</article>`);
+  await page.setContent(`<style>@import url(/static/css/ux-foundations.css);${css}</style><article class="notebook-markdown">${html}</article>`);
   const check = async target => {
     expect(await target.locator('.notebook-subtext').evaluate(el => parseFloat(getComputedStyle(el).fontSize) < parseFloat(getComputedStyle(el.parentElement).fontSize))).toBe(true);
     expect(await target.locator('.notebook-underline').evaluate(el => getComputedStyle(el).textDecorationLine)).toBe('underline');
@@ -125,10 +125,10 @@ test('bilingual quote fonts and per-language borders agree in preview and PDF', 
       { left: '0px', right: '3px' }, { left: '3px', right: '0px' }, { left: '3px', right: '0px' }, { left: '0px', right: '3px' }, { left: '0px', right: '3px' }, { left: '3px', right: '0px' }
     ]);
     for (const quote of quotes) {
-      expect(quote.font).toContain('Georgia');
+      expect(quote.font).toContain('Inter Display');
       if (quote.arabicFont) expect(quote.arabicFont).toContain('Kitab');
     }
-    expect(await target.locator('blockquote').nth(5).locator('p').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Georgia');
+    expect(await target.locator('blockquote').nth(5).locator('p').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Inter Display');
   };
   await check(page);
   const popupPromise = page.waitForEvent('popup');

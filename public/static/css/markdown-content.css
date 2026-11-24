@@ -18,7 +18,7 @@
   .markdown-video-copy strong { font-size: .95rem; }
   .markdown-video-copy small { font-size: .8rem; }
 }
-:is(.notebook-markdown, .content-markdown) { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
+:is(.notebook-markdown, .content-markdown) { font-family: var(--ux-font-ui); font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
 :is(.notebook-markdown, .content-markdown) a { color: var(--note-link, #0d6efd); }
 /* Each item chooses its own direction; reserve marker space on that side. */
 :is(.notebook-markdown, .content-markdown) :is(ul, ol) { padding-inline: 0; }
@@ -49,7 +49,7 @@
 :is(.notebook-markdown, .content-markdown) .notebook-arabic .notebook-arabic { font-size: inherit; }
 :is(.notebook-markdown, .content-markdown) .quran-ayah-end-marker { font-family: Hafs, serif; font-size: 1em; font-weight: 400; white-space: nowrap; }
 /* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
-:is(.notebook-markdown, .content-markdown) [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
+:is(.notebook-markdown, .content-markdown) [data-notebook-overline] { font-family: var(--ux-font-ui); }
 :is(.notebook-markdown, .content-markdown) blockquote { margin: 1rem 0; border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
 :is(.notebook-markdown, .content-markdown) blockquote > :first-child { margin-top: 0; }
 :is(.notebook-markdown, .content-markdown) blockquote > :last-child { margin-bottom: 0; }
@@ -137,7 +137,7 @@
   size-adjust: 120%;
   unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
 }
-.community-short-editor textarea[data-short-editor], .community-rich-input:is(.notebook-markdown, .content-markdown) { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
+.community-short-editor textarea[data-short-editor], .community-rich-input:is(.notebook-markdown, .content-markdown) { font-family: NotebookEditableArabic, var(--ux-font-ui); }
 .community-rich-input blockquote.notebook-edit-quote { border: 0; padding: 0; }
 .community-rich-input .notebook-quote-section { border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
 .community-rich-input .notebook-quote-section[dir="rtl"] { direction: rtl; text-align: right; }
@@ -145,7 +145,7 @@
 .community-rich-input .notebook-quote-section.notebook-quote-switch { margin-block-start: 1rem; }
 
 /* Keep native editable text nodes intact so browser undo remains reliable. */
-.community-rich-input .notebook-arabic.notebook-edit-mixed { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; font-size: 1em; line-height: 1lh; }
+.community-rich-input .notebook-arabic.notebook-edit-mixed { font-family: NotebookEditableArabic, var(--ux-font-ui); font-size: 1em; line-height: 1lh; }
 .community-rich-input .notebook-edit-has-arabic { line-height: 1.8em; }
 
 /* Source readers retain their surrounding language font and size. */
@@ -384,7 +384,7 @@ main .hadith-sharh-body.content-markdown:lang(en) {
 @media print { [data-heading-fold] { display: none !important; } .notebook-section-folded { display: revert !important; } }
 
 .notebook-hidden-text { --c-speech: var(--c-muted, #6c757d); --note-link: var(--c-muted, #6c757d); white-space: normal; color: var(--c-muted, #6c757d); background: var(--bs-tertiary-bg, #f4f5f6); border-inline-start: 3px solid var(--bs-border-color, #ccc); padding: .65rem .85rem; margin-block: 1rem; }
-.notebook-hidden-text::before { content: 'Hidden from sharing and printing'; display: block; font: .75rem/1.5 system-ui, sans-serif; margin-bottom: .4rem; }
+.notebook-hidden-text::before { content: 'Hidden from sharing and printing'; display: block; font: .75rem/1.5 var(--ux-font-ui); margin-bottom: .4rem; }
 @media print { [data-note-hidden] { display: none !important; } }
 
 .notebook-hidden-text :is(h1,h2,h3,h4,h5,h6,p,li,blockquote,a,strong,em) { color: inherit; }

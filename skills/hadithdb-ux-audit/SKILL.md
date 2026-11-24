@@ -69,3 +69,6 @@ Compare the actual note paragraph, inline reference and list marker across Study
 For language visibility, compare the search results toolbar with Quran Study at phone and desktop widths. Check the two eye buttons at opposite edges, their accessible names and the last-visible language after toggling and reloading.
 
 Compare local list filters across public, personal, dialog and admin surfaces, including clear, Escape, disabled state and accessible labels. Check empty, populated and failed lists for misplaced bulk actions. Follow a reference from a book listing to an individual hadith. Check that the book picker is absent on the detail page and that the title precedes its controls after client initialization.
+
+For Community typography, inspect a published article and a blog article. Check the rendered English paragraph and nested Arabic span inside the Markdown body as well as the page title. Include the article preview when changing its shared treatment.
+For site-wide font changes, search inline templates and print-window styles alongside stylesheets. Check direct text nodes in editor, preview and print, including the first applicable face in mixed-script stacks.

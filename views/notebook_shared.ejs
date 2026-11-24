@@ -12,7 +12,7 @@
   <style>
     <%- include('sub-views/notebook_content_styles.ejs') %>
     * { box-sizing: border-box; }
-    body { --shared-gutter: clamp(1rem, 4vw, 3rem); margin: 0; padding: var(--shared-gutter); padding-bottom: 5rem; background: #fff8db; color: #302a1b; font: 18px/1.8 Georgia, Kitab, serif; }
+    body { --shared-gutter: clamp(1rem, 4vw, 3rem); margin: 0; padding: var(--shared-gutter); padding-bottom: 5rem; background: #fff8db; color: #302a1b; font: 18px/1.8 var(--ux-font-ui); }
     main { max-width: 52rem; margin: auto; overflow-wrap: anywhere; }
     main:has(.shared-note-outline) { max-width: 70rem; }
     main:has(.shared-note-outline) > header { margin-inline-start: 16rem; }

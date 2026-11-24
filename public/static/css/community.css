@@ -464,7 +464,12 @@ body:has(#community-quick-dialog[open]) .mobile-bottom-nav { display: none !impo
 .community-quick-dialog :is(input[type="file"],.form-control) { max-width: 100%; min-width: 0; }
 .community-feed-media > img { max-width: 100%; height: auto; max-height: 420px; object-fit: contain; border-radius: .65rem; }
 .community-reading .community-reflection-body,
-.community-article [data-article-body] { font-size: 1rem; line-height: 1.8; }
+.community-article [data-article-body] { line-height: 1.8; }
+.community-article [data-article-body],
+.community-article-preview-body .notebook-markdown {
+  font-family: var(--ux-font-ui);
+  font-size: var(--ux-body-size);
+}
 .community-reading .community-reflection-body :is(img,video),
 .community-article [data-article-body] :is(img,video) { height: auto; border-radius: .65rem; }
 .community-preview-gallery { border: 1px solid var(--community-line); border-radius: .75rem; padding: .65rem; background: var(--community-paper); }
@@ -557,7 +562,7 @@ textarea[data-short-editor][hidden], .community-short-editor [hidden] { display:
 .comment-feed .comment-text { font-size: .95rem; line-height: 1.6; }
 .comment-feed .comment-meta { font-size: .85rem; }
 
-.community-parallel-icon { font-family: Arial, sans-serif; font-weight: 400; white-space: nowrap; unicode-bidi: isolate; }
+.community-parallel-icon { font-family: var(--ux-font-ui); font-weight: 400; white-space: nowrap; unicode-bidi: isolate; }
 
 /* Articles retain the full toolbar on the same quiet writing surface. */
 .community-editor .community-article-title { border: 0; border-radius: 0; background: transparent; padding-inline: 0; box-shadow: none; }
@@ -709,7 +714,7 @@ main.community .blog-cover-hero .community-cover-title { font-size: var(--ux-tit
 .community-remove-columns:hover, .community-remove-columns:focus-visible { color: var(--bs-danger); }
 
 /* Remove only the layout, using a quiet floating control after the active row. */
-.community-remove-columns[aria-label="Remove column layout"] { position: absolute; z-index: 4; width: 28px; height: 28px; margin: 0; padding: 0; display: grid; place-items: center; border: 1px solid var(--community-line); border-radius: 50%; background: var(--community-paper); color: var(--community-muted); font: 400 20px/1 Arial,sans-serif; box-shadow: 0 2px 6px #0001; }
+.community-remove-columns[aria-label="Remove column layout"] { position: absolute; z-index: 4; width: 28px; height: 28px; margin: 0; padding: 0; display: grid; place-items: center; border: 1px solid var(--community-line); border-radius: 50%; background: var(--community-paper); color: var(--community-muted); font: 400 20px/1 var(--ux-font-ui); box-shadow: 0 2px 6px #0001; }
 .community-edit-parallel { margin-bottom: 2rem; }
 
 /* Enter continues a quote line without paragraph-sized visual gaps. */
@@ -790,9 +795,9 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 .community-orphan-footnote { border-top-style: dashed; }
 .community-orphan-footnote .community-footnote-label { font-style: italic; }
 
-.community-footnote-icon { display: inline-block; font: 400 1rem/1 Arial, sans-serif; }
+.community-footnote-icon { display: inline-block; font: 400 1rem/1 var(--ux-font-ui); }
 .community-footnote-icon sup { font-size: .6em; margin-inline-start: .05em; }
-.community-script-icon { display: inline-block; font: 400 1rem/1 Arial, sans-serif; }
+.community-script-icon { display: inline-block; font: 400 1rem/1 var(--ux-font-ui); }
 .community-script-icon :is(sub,sup) { font-size: .65em; }
 
 /* Match the search results layout: fixed rail, fluid article, identical gutters. */
@@ -1025,7 +1030,7 @@ html:has(.community[data-view="write"]), body:has(.community[data-view="write"])
 
 /* Advanced content stays visibly bounded in the editing surface. */
 .community-rich-input .notebook-advanced-block { border: 1px solid var(--community-line, #ccc); border-radius: .35rem; margin-block: 1rem; padding: .65rem; }
-.community-advanced-tools { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; font: .75rem/1.4 system-ui, sans-serif; color: var(--community-muted, #666); }
+.community-advanced-tools { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .5rem; font: .75rem/1.4 var(--ux-font-ui); color: var(--community-muted, #666); }
 .community-advanced-tools button { border: 1px solid var(--community-line, #ccc); border-radius: .25rem; background: var(--community-paper, white); color: var(--community-ink, inherit); padding: .25rem .5rem; }
 .community-rich-input blockquote.notebook-edit-quote > blockquote.notebook-edit-quote { margin-inline-start: 1rem; }
 

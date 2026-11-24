@@ -159,7 +159,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-associated-notes > .text-muted { width: 100%; }
 #notebook-attachment-results { max-height: 14rem; overflow-y: auto; }
 /* Compact metadata controls share the note's paper and ink colors. */
-.notebook-metadata-tools { display: flow-root; position: relative; flex-shrink: 0; margin-bottom: .85rem; font-family: system-ui, sans-serif; font-size: .78rem; }
+.notebook-metadata-tools { display: flow-root; position: relative; flex-shrink: 0; margin-bottom: .85rem; font-family: var(--ux-font-ui); font-size: .78rem; }
 #notebook-editing-tools { float: inline-end; display: flex; align-items: center; justify-content: flex-end; gap: .2rem; }
 #notebook-mode-control { display: inline-flex; }
 #notebook-mode-control[hidden] { display: none; }
@@ -185,7 +185,7 @@ body:has(#notebook-modal.show) :is(#bmc-wbtn, #bmc-iframe) { display: none !impo
 #notebook-frontmatter-status:not(:empty) { margin-top: .5rem; }
 [data-bs-theme="dark"] .notebook-attachment-content, [data-bs-theme="dark"] #notebook-frontmatter-panel, [data-bs-theme="dark"] #notebook-frontmatter-editor { background: rgba(0,0,0,.1); }
 
-#notebook-editor { font-family: Georgia, "Times New Roman", serif; unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
+#notebook-editor { font-family: var(--ux-font-ui); unicode-bidi: plaintext; text-align: start; line-height: 1.8; }
 #notebook-wiki-options { position: absolute; z-index: 10; box-sizing: border-box; max-height: 12rem; overflow-y: auto; border: 1px solid var(--bs-border-color, #ccc); border-radius: .35rem; background: var(--bs-body-bg, white); box-shadow: 0 .2rem .6rem #0002; }
 #notebook-wiki-options [role="option"] { padding: .3rem .65rem; cursor: pointer; }
 #notebook-wiki-options [aria-selected="true"] { background: var(--bs-secondary-bg, #eee); color: var(--bs-body-color, #222); }
@@ -232,7 +232,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-navigator-items button { display: block; width: 100%; border: 0; border-left: 2px solid transparent; border-radius: .2rem; padding: .5rem; background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; overflow-wrap: anywhere; }
 #notebook-navigator-items button:hover, #notebook-navigator-items button[aria-current="page"] { background: rgba(212, 167, 44, .15); border-left-color: var(--note-edge); }
 #notebook-navigator-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
-#notebook-navigator-items button { font-family: var(--content-language-latin-font, Georgia), Kitab, serif; }
+#notebook-navigator-items button { font-family: var(--ux-font-ui); }
 #notebook-navigator-items button { display: flex; align-items: baseline; gap: .45rem; }
 #notebook-navigator-items button > .bi { flex: 0 0 auto; font-size: .8em; color: var(--note-ink); }
 #notebook-navigator-items button > span { min-width: 0; }
@@ -243,7 +243,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-outline-items button:hover, #notebook-outline-items button[aria-current="location"] { background: rgba(212, 167, 44, .15); color: var(--note-ink); border-inline-start-color: var(--note-edge); }
 #notebook-outline-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
 #notebook-outline-items button { display: flex; align-items: baseline; gap: .4rem; }
-#notebook-outline-items .notebook-outline-level { flex: 0 0 auto; font: 600 .6rem/1.5 system-ui, sans-serif; color: var(--note-ink); opacity: .7; }
+#notebook-outline-items .notebook-outline-level { flex: 0 0 auto; font: 600 .6rem/1.5 var(--ux-font-ui); color: var(--note-ink); opacity: .7; }
 #notebook-outline-items .notebook-outline-text { min-width: 0; }
 #notebook-outline-items .notebook-outline-arabic { font-family: Kitab, Hafs, serif; font-size: 1.2em; line-height: 2; }
 @media (max-width: 767.98px) {
@@ -293,8 +293,8 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 .notebook-theme-menu > summary::-webkit-details-marker { display: none; }
 .notebook-theme-popover { position: absolute; z-index: 1080; top: 100%; right: .5rem; width: min(19rem, calc(100% - 1rem)); padding: .75rem; border: 1px solid var(--note-edge); border-radius: .75rem; color: var(--note-ink); background: var(--note-paper); box-shadow: 0 .6rem 1.8rem #0003; }
 .notebook-theme-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; margin-top: .5rem; }
-.notebook-theme-choice { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-width: 0; min-height: 2.75rem; padding: .35rem .4rem; border: 2px solid transparent; border-radius: .55rem; background: var(--theme-paper); color: var(--theme-ink); font: 600 .72rem/1.1 system-ui, sans-serif; }
-.notebook-theme-choice::before { content: 'Aa'; flex: 0 0 auto; font: 1.15rem/1 Georgia, serif; }
+.notebook-theme-choice { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-width: 0; min-height: 2.75rem; padding: .35rem .4rem; border: 2px solid transparent; border-radius: .55rem; background: var(--theme-paper); color: var(--theme-ink); font: 600 .72rem/1.1 var(--ux-font-ui); }
+.notebook-theme-choice::before { content: 'Aa'; flex: 0 0 auto; font: 1.15rem/1 var(--ux-font-ui); }
 .notebook-theme-choice[aria-pressed="true"] { border-color: currentColor; box-shadow: 0 0 0 2px var(--note-paper), 0 0 0 4px var(--note-edge); }
 .notebook-theme-choice:focus-visible { outline: 2px solid var(--note-edge); outline-offset: 2px; }
 .settings-notebook-theme-options { grid-template-columns: repeat(6, minmax(0, 1fr)); max-width: 46rem; gap: .5rem; }
@@ -363,14 +363,14 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-format-toolbar[hidden], #notebook-surface .community-short-editor[hidden] { display: none !important; }
 .notebook-numbered-surface { position: relative; display: flex; flex: 1; min-height: 0; padding-left: 2.25rem; }
 .notebook-line-numbers { position: absolute; inset: 0 auto 0 0; width: 1.8rem; overflow: hidden; pointer-events: none; user-select: none; color: var(--note-ink); opacity: .4; }
-.notebook-line-numbers span { position: absolute; right: .25rem; font: 10px/1.6 system-ui, sans-serif; font-variant-numeric: tabular-nums; }
+.notebook-line-numbers span { position: absolute; right: .25rem; font: 10px/1.6 var(--ux-font-ui); font-variant-numeric: tabular-nums; }
 #notebook-surface .community-short-editor { display: flex; flex-direction: column; flex: 1; min-height: 0; --community-paper: var(--note-paper); --community-ink: var(--note-ink); }
-#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: Georgia, "Times New Roman", serif; font-size: var(--notebook-font-size, 1rem); line-height: 1.8; box-shadow: none; }
+#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: var(--ux-font-ui); font-size: var(--notebook-font-size, 1rem); line-height: 1.8; box-shadow: none; }
 #notebook-surface { --notebook-fold-gutter: 1.75rem; }
 #notebook-surface :is(.community-rich-input, #notebook-preview):has([data-heading-fold]:dir(ltr)) { padding-left: var(--notebook-fold-gutter); }
 #notebook-surface :is(.community-rich-input, #notebook-preview):has([data-heading-fold]:dir(rtl)) { padding-right: var(--notebook-fold-gutter); }
 #notebook-surface .community-rich-input { white-space: normal; }
-#notebook-surface :is(.community-rich-input, #notebook-editor) { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
+#notebook-surface :is(.community-rich-input, #notebook-editor) { font-family: NotebookEditableArabic, var(--ux-font-ui); }
 
 </style>
 <script src="/static/js/notebook-drive.js?v=<%= utils.scriptAssetVersion() %>" defer></script>
