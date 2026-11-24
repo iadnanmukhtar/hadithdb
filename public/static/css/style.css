@@ -143,8 +143,8 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--c-primary-soft-08: rgba(var(--bs-primary-rgb), .08);
 	--c-primary-soft-12: rgba(var(--bs-primary-rgb), .12);
 	--content-font-scale: 1;
-	--content-font-size-desktop: 1rem;
-	--content-font-size-mobile: 1rem;
+	--content-font-size-desktop: var(--ux-body-size, 1rem);
+	--content-font-size-mobile: var(--ux-body-size, 1rem);
 	--content-font-size: calc(var(--content-font-size-desktop) * var(--content-font-scale));
 	--content-line-height: 1.58;
 	--content-line-height-tight: 1.25;
@@ -155,10 +155,10 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--content-size-breadcrumb: 0.82em;
 	--content-size-breadcrumb-ar: 1.06em;
 	--content-size-body: 1em;
-	--reader-body-en: calc(1rem * var(--content-font-scale));
-	--reader-intro-en: calc(.94rem * var(--content-font-scale));
-	--reader-secondary-en: calc(.9rem * var(--content-font-scale));
-	--content-size-lead: 1.08em;
+	--reader-body-en: calc(var(--ux-body-size, 1rem) * var(--content-font-scale));
+	--reader-intro-en: calc(var(--ux-body-size, .94rem) * var(--content-font-scale));
+	--reader-secondary-en: calc(var(--ux-secondary-size, .9rem) * var(--content-font-scale));
+	--content-size-lead: calc(var(--ux-lead-size, 1.08rem) * var(--content-font-scale));
 	--content-size-h1: 1.72em;
 	--content-size-h2: 1.46em;
 	--content-size-h3: 1.24em;
@@ -171,7 +171,7 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--f-size-ar: calc(var(--f-size-ar-base) * var(--content-font-scale));
 	--f-size-ar-note: calc(var(--f-size-ar-note-base) * var(--content-font-scale));
 	--f-size-ar-sup: calc(var(--f-size-ar-sup-base) * var(--content-font-scale));
-	--content-language-latin-font: var(--ux-font-ui, Inter, system-ui, sans-serif);
+	--content-language-latin-font: var(--ux-font-ui, "Inter Display", system-ui, sans-serif);
 	--content-language-arabic-font: Kitab, "Noto Naskh Arabic", "Scheherazade New", Amiri, serif;
 	--content-language-urdu-font: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic", serif;
 	--content-language-urdu-line-height: 2.05;
@@ -181,7 +181,7 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--content-language-cjk-font: "Hiragino Mincho ProN", "Songti SC", "Noto Serif CJK SC", "Yu Mincho", serif;
 	--content-language-japanese-font: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
 	--content-language-korean-font: "Apple SD Gothic Neo", "Noto Serif KR", "Nanum Myeongjo", serif;
-	--content-language-cyrillic-font: var(--ux-font-ui, Inter, system-ui, sans-serif);
+	--content-language-cyrillic-font: var(--ux-font-ui, "Inter Display", system-ui, sans-serif);
 	--content-language-devanagari-font: "Kohinoor Devanagari", "Noto Serif Devanagari", serif;
 	--content-language-bengali-font: "Kohinoor Bangla", "Noto Serif Bengali", serif;
 	--content-language-gurmukhi-font: "Gurmukhi MN", "Noto Serif Gurmukhi", serif;
@@ -12718,7 +12718,7 @@ html:not([data-account-signed-in="true"]) .personal-note-btn { cursor: default; 
 
 /* Catalog typography is independent of the larger reader text settings. */
 main.book-catalog-page {
-	font-size: 1rem;
+	font-size: var(--ux-body-size, 1rem);
 	line-height: 1.5;
 }
 :where(body:not(.books-beta)) .book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
