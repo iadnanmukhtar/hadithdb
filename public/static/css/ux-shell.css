@@ -130,7 +130,7 @@ body:has(> .ux-footer) {
 }
 .ux-subnav .nav-item { flex: 0 0 auto; }
 .ux-subnav .nav-link {
-  display: grid; place-items: center; min-height: 2.55rem; padding: .45rem .35rem; margin: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-height: 2.55rem; padding: .45rem .35rem; margin: 0;
   border: 0; border-bottom: 3px solid transparent; border-radius: 0; white-space: nowrap; color: var(--bs-secondary-color);
 }
 .ux-subnav .nav-link:hover { color: var(--bs-emphasis-color); border-bottom-color: var(--bs-border-color); }

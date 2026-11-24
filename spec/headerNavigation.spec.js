@@ -110,21 +110,9 @@ describe('shared header navigation', () => {
 		expect(header).not.toContain('search-click-toggle');
 		expect(header).not.toMatch(/<div class="offcanvas-body">\s*<form[^>]*>/);
 		expect(searchDialog).toContain('id="global-search-dialog"');
-		expect(searchDialog).toContain('data-command-search-mode="hadith"');
-		expect(searchDialog).toContain('data-command-search-mode="quran"');
-		expect(searchDialog).toContain('class="nav nav-tabs book-catalog-tabs command-search-mode-switch"');
-		expect(searchDialog.match(/class="nav-link command-search-mode"/g)).toHaveLength(2);
-		expect(searchDialog).toContain("include('menu_icon.ejs', { type: 'hadith'");
-		expect(searchDialog).toContain("include('menu_icon.ejs', { type: 'quran'");
-		expect(searchDialog).not.toContain('bi-journal-text');
-		expect(searchDialog).not.toContain('command-search-submit');
-		expect(searchDialog).not.toContain('bi-arrow-right');
-		expect(searchDialog).toContain('Quran + Tafsir');
-		expect(searchDialog.match(/command-search-mode-icon/g)).toHaveLength(4);
-		expect(styles).toContain('.command-search-mode-icon .app-menu-icon');
-		expect(styles).toContain('color: inherit !important;');
-		expect(styles).toContain('background-color: currentColor;');
-		expect(styles).toContain("mask: url('/static/img/quran-icon.svg') center / contain no-repeat;");
+		expect(searchDialog).toContain('data-command-scope aria-label="Search scope"');
+		expect(searchDialog).not.toContain('data-command-search-mode');
+		expect(searchDialog).toContain('data-command-within-book');
 		expect(styles).toContain('border: 1px solid var(--c-accent);');
 		expect(styles).toContain('.command-search-trigger');
 		expect(styles).toContain('.command-search-dialog::backdrop');
@@ -137,13 +125,12 @@ describe('shared header navigation', () => {
 	});
 
 	test('filters command autocomplete and renders removable selected-book pills', () => {
-		expect(searchDialog).toContain('data-command-search-filter-search="hadith"');
-		expect(searchDialog).toContain('data-command-search-filter-search="quran"');
-		expect(searchDialog.match(/class="page-content-filter input-group command-search-filter-find"/g)).toHaveLength(2);
-		expect(searchDialog.match(/class="input-group-text bi bi-filter"/g)).toHaveLength(2);
+		expect(searchDialog).toContain('data-command-search-filter-search="all"');
+		expect(searchDialog.match(/class="page-content-filter input-group command-search-filter-find"/g)).toHaveLength(1);
+		expect(searchDialog.match(/class="input-group-text bi bi-funnel"/g)).toHaveLength(1);
 		expect(styles).toContain('.page-content-filter .input-group-text');
 		expect(styles).toContain('.nav-tabs .nav-link:not(.active)');
-		expect(styles).toContain('.command-search-dialog .command-search-mode-switch .nav-link:not(.active)');
+		expect(styles).toContain('.command-search-scope');
 		expect(styles).toMatch(/\.command-search-filter-find > \.input-group-text,[\s\S]*?font-size: 0\.82rem;/);
 		expect(styles).toMatch(/\.page-content-filter \{[\s\S]*?border: 1px solid var\(--bs-border-color\);/);
 		expect(styles).toMatch(/\.page-content-filter \.input-group-text \{[\s\S]*?border: 0;[\s\S]*?color: var\(--bs-secondary-color\);/);
@@ -164,7 +151,7 @@ describe('shared header navigation', () => {
 		expect(scripts).toContain('storage.setItem(searchTermStorageKeys[searchMode]');
 		expect(scripts).toContain('input.value = storage.getItem(searchTermStorageKeys[searchMode])');
 		expect(scripts).toMatch(/function openDialog\(trigger\) \{[\s\S]*?restoreSearchTerm\(mode\);[\s\S]*?dialog\.showModal\(\);/);
-		expect(scripts).toMatch(/if \(resolvedMode !== previousMode\)[\s\S]*?storeSearchTerm\(previousMode\);[\s\S]*?restoreSearchTerm\(mode\);/);
+		expect(scripts).toMatch(/scopePicker.addEventListener\('change'[\s\S]*?storeSearchTerm\(mode\)/);
 	});
 
 	test('removes legacy page search and Quran navigation controls in favor of the shared command search', () => {
@@ -172,16 +159,16 @@ describe('shared header navigation', () => {
 		expect(searchResults).not.toContain('id="search-bar"');
 		expect(searchResults).not.toContain('search-filter-toggle');
 		expect(searchResults).toContain('search-results-filter-pills command-search-pills');
-		expect(searchResults).toContain('command-search-pill badge rounded-pill');
+		expect(searchResults).toContain('ux-pill ux-pill-removable');
 		expect(searchResults).toContain('data-search-filter-remove');
 		expect(searchResults).toContain('data-search-filter-clear');
 		expect(scripts).toContain("url.searchParams.delete('b')");
 		expect(scripts).toContain("url.searchParams.delete('tafsir')");
-		expect(styles).toContain('.command-search-clear-all');
+		expect(searchResults).toContain('class="ux-text-action" data-search-filter-clear');
 		expect(searchResults).toContain('class="search-results-summary"');
 		expect(searchResults).toContain('<%= displayResultCount %> results found');
 		expect(searchResults).not.toContain('Found <%= displayResultCount %> results in');
-		expect(searchResults).toMatch(/if \(!isSearchResultsPage && !sirahDetailItem\) \{ %>\s*<%- include\('sub-views\/bookNav\.ejs'\); %>/);
+		expect(searchResults).toMatch(/if \(!isSearchResultsPage && !sirahDetailItem && !detailHadithItem\) \{ %>\s*<%- include\('sub-views\/bookNav\.ejs'\); %>/);
 		expect(styles).toMatch(/\.search-results-summary \{[\s\S]*?justify-content: space-between;/);
 		expect(styles).toMatch(/\.search-results-filter-pills \{\s*flex: 1 1 auto;\s*justify-content: flex-start;/);
 		expect(styles).toMatch(/\.search-results-count \{[\s\S]*?text-align: right;/);
@@ -193,28 +180,12 @@ describe('shared header navigation', () => {
 		});
 	});
 
-	test('preselects the current Hadith, Tafsir, or translation context', () => {
-		expect(header).toContain("requestPath !== '/' && searchContextBook");
-		expect(header).toContain("quranSearchContext: quranSearchContext");
-		expect(header).toContain('page.context.fromSearch === true');
-		expect(header).toContain('hadithSearchBookAliases: hadithSearchBookAliases');
-		expect(header).toContain('quranSearchBookFilters: quranSearchBookFilters');
-		expect(header).toContain('quranSearchCommentaryAliases: quranSearchCommentaryAliases');
-		expect(searchDialog).toContain('selectedCommandHadithAliases.indexOf(book.alias) >= 0');
-		expect(searchDialog).toContain('selectedCommandQuranBookFilters.indexOf(\'quran\') >= 0');
-		expect(searchDialog).toContain('selectedCommandCommentaryAliases.indexOf(tafsir.alias) >= 0');
-		expect(searchDialog).toContain('data-command-search-results-context=');
-		expect(scripts).toContain("dialog.dataset.commandSearchResultsContext !== '1'");
-		expect(searchDialog).toContain('data-quran-search-context=');
-		expect(searchDialog).toContain('data-command-commentary-kind="translation"');
-		expect(searchDialog).toContain('All Tafsir &amp; translations');
-		expect(scripts).toContain("context === 'study'");
-		expect(scripts).toContain('storedQuranSelectedTranslationAlias()');
-		expect(scripts).toContain("input[name=tafsir]:checked:not(:disabled)");
-		expect(scripts).toContain("params.push({ name: 'b', value: 'tafsir' });");
-		expect(searchRoutes).toContain('Tafsir.visibleTafsirsSync().concat(Tafsir.visibleTranslationsSync())');
-		expect(searchLibrary).toContain("type: isTranslation ? 'Translation' : 'Tafsir'");
-		expect(searchLibrary).toContain('translationAutocompleteUrl(doc)');
+	test('offers the current book as an explicit shortcut and restores filters on results', () => {
+		expect(header).toContain('contextualSearchBookAlias: contextualSearchBookAlias');
+		expect(searchDialog).toContain('data-command-within-book');
+		expect(scripts).toContain('field.checked = field === contextField');
+		expect(scripts).toContain('field.checked = field.defaultChecked');
+		expect(scripts).toContain("form.dataset.searchCollection = mode");
 	});
 
 	test('retains Mushaf, Study, or the active tafsir for Quran autocomplete destinations', () => {

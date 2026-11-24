@@ -56,7 +56,7 @@ test('Sirah passage detail stays on one item while search pagination remains ava
  const search = fs.readFileSync(path.join(__dirname, '../views/search.ejs'), 'utf8');
  expect(search).not.toContain('data-reader-infinite="hadith-sirah"');
  expect(search).toContain('data-search-next-url="<%= page.next %>"');
- expect(search).toContain("item.single && item.doctype === 'sirah'");
+ expect(search).toContain("item.single && (['sirah', 'history'].includes(item.doctype) || ['sirah', 'history'].includes(item.book_type))");
 });
 
 test('Sirah chapters and sections share one infinite reader mode across chapter boundaries', () => {

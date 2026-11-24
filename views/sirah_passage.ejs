@@ -23,7 +23,6 @@ const outlineKey = currentHeading ? `${book.alias}:${currentHeading.h1}${Number(
 <div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
 <div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
 <main class="chapter mt-10 sirah-only-page" data-reader-infinite="hadith-sirah-item" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
-  <%- include('sub-views/page_updated.ejs', { page }); %>
   <header class="quran-tafsir-source row text-muted">
     <section class="col-6 text-start" lang="en">
       <strong><a class="quran-tafsir-book-modal-trigger" href="/<%= book.alias %>"><%= book.name_en || book.shortName_en %></a></strong>

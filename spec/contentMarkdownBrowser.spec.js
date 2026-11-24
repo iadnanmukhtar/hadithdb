@@ -87,6 +87,7 @@ test.each(['ar', 'en'])('Arabic honorifics do not expand fixed %s line boxes', a
   try {
     await page.route('http://spacing.test/**', route => {
       const pathname = new URL(route.request().url()).pathname;
+      if (pathname === '/static/css/kitab.css') return route.fulfill({ path: 'public/static/css/kitab.css', contentType: 'text/css' });
       if (pathname.startsWith('/static/fonts/')) return route.fulfill({ body: fs.readFileSync(require('path').join(process.cwd(), 'public', pathname)) });
       return route.fulfill({ body: '<!doctype html>', contentType: 'text/html' });
     });
@@ -138,18 +139,19 @@ test('source quotations stay upright and green in reading and formatted editing'
   } finally { await page.close(); }
 });
 
-test.each([390, 1100])('hadith chain, matn and footer share a proportional bilingual size at %s px', async width => {
+test.each([390, 1100])('hadith footnotes sit below the bilingual chain and matn in the type scale at %s px', async width => {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   try {
     const Utils = require('../lib/Utils');
     await page.route('http://reader.test/**', route => {
       const pathname = new URL(route.request().url()).pathname;
+      if (pathname === '/static/css/kitab.css') return route.fulfill({ path: 'public/static/css/kitab.css', contentType: 'text/css' });
       if (pathname.startsWith('/static/fonts/')) return route.fulfill({ body: fs.readFileSync(require('path').join(process.cwd(), 'public', pathname)) });
       return route.fulfill({ body: '<!doctype html>', contentType: 'text/html' });
     });
     await page.goto('http://reader.test/');
     await page.setContent(`<main>${['en','ar'].map(lang => `<article class="h" lang="${lang}"><span class="chain">${lang === 'ar' ? 'حدثنا أحمد بن سعيد' : 'Ahmad b. Said narrated'}</span><section class="body"><div class="hadith-body-content content-markdown">${Utils.markdownToHtml(lang === 'ar' ? '*قال رسول الله ﷺ*' : '*The Prophet ﷺ said*')}</div></section><footer class="footnote content-markdown">${Utils.markdownToHtml(lang === 'ar' ? 'تابعه معمر' : 'Also narrated by Mamar')}</footer></article>`).join('')}<section class="tafsir-only-page">${['en','ar'].map(lang => `<div class="quran-tafsir-text content-markdown" lang="${lang}">${Utils.markdownToHtml(lang === 'ar' ? 'تفسير الآية الكريمة' : 'Explanation of the verse')}</div>`).join('')}</section></main>`);
-    for (const name of ['style','community','markdown-content']) await page.addStyleTag({ path: `public/static/css/${name}.css` });
+    for (const name of ['style','ux-foundations','community','markdown-content']) await page.addStyleTag({ path: `public/static/css/${name}.css` });
     for (const scale of [1, 1.25]) {
       await page.evaluate(scale => document.documentElement.style.setProperty('--content-font-scale',scale), scale);
       const sizes = await page.evaluate(() => {
@@ -163,7 +165,7 @@ test.each([390, 1100])('hadith chain, matn and footer share a proportional bilin
       });
       for (const lang of ['ar','en']) {
         expect(sizes[lang].matn).toBeCloseTo(sizes[lang].chain);
-        expect(sizes[lang].footer).toBeCloseTo(sizes[lang].chain);
+        expect(sizes[lang].footer).toBeLessThan(sizes[lang].matn);
         expect(sizes[lang].tafsir).toBeCloseTo(sizes[lang].chain);
       }
       expect(sizes.en.matn / sizes.ar.matn).toBeCloseTo(9/13);
@@ -173,7 +175,7 @@ test.each([390, 1100])('hadith chain, matn and footer share a proportional bilin
   } finally { await page.close(); }
 });
 
-test.each([390, 1100])('Arabic chain, matn and footer keep equal line boxes with honorifics at %s px', async width => {
+test.each([390, 1100])('Arabic chain, matn and smaller footnotes keep stable line boxes with honorifics at %s px', async width => {
   const page = await browser.newPage({ viewport: { width, height: 900 } });
   try {
     await page.route('http://line-height.test/**', route => {
@@ -186,7 +188,7 @@ test.each([390, 1100])('Arabic chain, matn and footer keep equal line boxes with
     const line = 'قَالَ رَسُولُ اللَّهِ ﷺ';
     const markdown = require('../lib/Utils').markdownToHtml(`*${line}*\n${line}\n${line}`);
     await page.setContent(`<main><article class="h" lang="ar"><section class="chain-block"><span class="chain">${[line,line,line].join('<br>')}</span></section><section class="body"><div class="hadith-body-content content-markdown">${markdown}</div></section><footer class="footnote content-markdown">${markdown}</footer></article></main>`);
-    for (const name of ['style','community','markdown-content']) await page.addStyleTag({ path: `public/static/css/${name}.css` });
+    for (const name of ['style','ux-foundations','community','markdown-content']) await page.addStyleTag({ path: `public/static/css/${name}.css` });
     await page.evaluate(() => document.fonts.ready);
     for (const scale of [1, 1.25]) {
       await page.evaluate(scale => document.documentElement.style.setProperty('--content-font-scale',scale), scale);
@@ -194,8 +196,9 @@ test.each([390, 1100])('Arabic chain, matn and footer keep equal line boxes with
         const el = document.querySelector(selector);
         return {line:parseFloat(getComputedStyle(el).lineHeight),height:el.getBoundingClientRect().height};
       }));
+      expect(metrics[1].line).toBeCloseTo(metrics[0].line);
+      expect(metrics[2].line).toBeLessThan(metrics[1].line);
       for (const metric of metrics) {
-        expect(metric.line).toBeCloseTo(metrics[0].line);
         expect(Math.abs(metric.height - metric.line * 3)).toBeLessThan(1);
       }
     }
@@ -237,7 +240,7 @@ test.each([390,1100])('full-page commentary and narrative readers share hadith s
       <div id="intro">${['ar','en'].map(lang=>`<section class="intro content-markdown" lang="${lang}">${text(lang)}</section>`).join('')}</div>
       <div id="inline">${['ar','en'].map(lang=>`<section class="hadith-sharh-column" lang="${lang}"><div class="hadith-sharh-body content-markdown">${text(lang)}</div></section>`).join('')}</div>
     </main>`);
-    for(const name of ['style','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
+    for(const name of ['style','ux-foundations','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
     for(const scale of [1,1.25]) {
       await page.evaluate(scale=>document.documentElement.style.setProperty('--content-font-scale',scale),scale);
       for(const lang of ['ar','en']) {
@@ -257,7 +260,7 @@ test('bilingual tafsir Arabic nested in an English Markdown root matches hadith'
  try {
   const text=require('../lib/Tafsir').renderCommentaryText('نص عربي ﷺ', '', 'md');
   await page.setContent(`<main class="tafsir-only-page"><div class="quran-tafsir-text content-markdown" lang="en"><div class="quran-tafsir-entry-body"><div class="row quran-tafsir-local-pair"><section lang="en"><p>English</p></section><section lang="ar">${text}</section></div></div></div><article class="h" lang="ar"><span class="chain">نص عربي</span></article></main>`);
-  for(const name of ['style','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
+  for(const name of ['style','ux-foundations','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
   for(const scale of [1,1.25]) {
    await page.evaluate(scale=>document.documentElement.style.setProperty('--content-font-scale',scale),scale);
    const sizes=await page.evaluate(()=>{
@@ -276,7 +279,7 @@ test.each([390,1000])('Sirah footnote previews keep Arabic quote borders on the 
   const notes='[^n]: English note.\n\n    > ﴿وَإِنَّهُ لَكِتَابٌ عَزِيزٌ﴾\n    >\n    > [فصلت ٤١](https://example.com/41)\n\n    <!-- -->\n\n    > It is indeed a mighty Book.';
   const html=require('../lib/ContentMarkdown').render('Note[^n].\n\n'+notes);
   await page.setContent('<article class="sirah-item"><div data-sirah-editor="body" data-edit-lang="en" data-markdown-source="Note[^n]."></div><div id="notes" class="content-markdown" lang="en" data-id="7" data-prop="hadith.footnote_en" data-sirah-editor="footnotes" data-edit-lang="en"></div></article>');
-  for(const name of ['style','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
+  for(const name of ['style','ux-foundations','community','markdown-content'])await page.addStyleTag({path:`public/static/css/${name}.css`});
   await page.addScriptTag({path:'node_modules/jquery/dist/jquery.js'});
   const preview=source.slice(source.indexOf('const contentPreview ='),source.indexOf('const setMarkdownPreview ='));
   await page.addScriptTag({content:`const editHadithApiPath=x=>x,isEnglishTafsirMarkdown=()=>false,isEnglishCommentaryIntroMarkdown=()=>false;window.fetch=async()=>({ok:true,json:async()=>({html:${JSON.stringify(html)}})});${preview}window.previewFootnotes=contentPreview;`});
@@ -285,4 +288,81 @@ test.each([390,1000])('Sirah footnote previews keep Arabic quote borders on the 
   expect(quotes).toEqual([{dir:'rtl',align:'right',left:0,right:3},{dir:'ltr',align:'left',left:3,right:0}]);
   expect(await page.locator('#notes .footnote-backref').getAttribute('href')).toBe('#fnref1');
  }finally{await page.close();}
+});
+
+test('Arabic prose and editor runs render the local Kitab faces for all emphasis levels', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.route('http://kitab.test/**', route => {
+      const path = new URL(route.request().url()).pathname;
+      if (path === '/') return route.fulfill({ contentType: 'text/html', body: '<main class="content-markdown"></main>' });
+      return route.fulfill({ path: 'public' + path });
+    });
+    await page.goto('http://kitab.test/');
+    await page.addStyleTag({ url: '/static/css/kitab.css' });
+    await page.addStyleTag({ url: '/static/css/markdown-content.css' });
+    const weights = [[100, 'Kitab-Regular'], [400, 'Kitab-Regular'], [500, 'HadithDBKitab-Medium'], [600, 'Kitab-Bold'], [700, 'Kitab-Bold'], [900, 'Kitab-Bold']];
+    await page.evaluate(async weights => {
+      for (const [weight] of weights) {
+        for (const family of ['Kitab', 'NotebookEditableArabic']) {
+          const run = document.createElement('span');
+          run.id = family + weight;
+          run.style.font = weight + ' 26px ' + family;
+          run.textContent = 'الرَّحْمَة';
+          document.querySelector('main').append(run);
+          await document.fonts.load(run.style.font, run.textContent);
+        }
+      }
+      await document.fonts.ready;
+    }, weights);
+    const inspector = await page.context().newCDPSession(page);
+    await inspector.send('DOM.enable');
+    await inspector.send('CSS.enable');
+    const { root } = await inspector.send('DOM.getDocument');
+    for (const [weight, expectedFace] of weights) {
+      for (const family of ['Kitab', 'NotebookEditableArabic']) {
+        const { nodeId } = await inspector.send('DOM.querySelector', { nodeId: root.nodeId, selector: '#' + family + weight });
+        const { fonts } = await inspector.send('CSS.getPlatformFontsForNode', { nodeId });
+        expect(fonts.map(font => font.postScriptName)).toEqual([expectedFace]);
+      }
+    }
+  } finally { await page.close(); }
+});
+
+test('Hafs passages render real medium and bold weights, including selected verses', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.route('**/*', route => {
+      const url = new URL(route.request().url());
+      if (url.hostname !== 'hafs.test') return route.abort();
+      if (url.pathname !== '/') return route.fulfill({ path: 'public' + url.pathname });
+      return route.fulfill({ contentType: 'text/html; charset=utf-8', body: `
+        <link rel="stylesheet" href="/static/css/style.css">
+        <link rel="stylesheet" href="/static/css/ux-foundations.css">
+        <main class="ux-system quran-passage-section"><section lang="ar"><div class="body passage">
+          <div class="quran-hafs"><span id="regular" class="quran-corpus-word">الرَّحْمَٰنِ</span>
+          <span id="medium" class="quran-corpus-word" style="font-weight:500">الرَّحْمَٰنِ</span>
+          <b id="bold">الرَّحْمَٰنِ</b><span class="ayah-selected"><strong><span class="quran-corpus-word" id="selected">الرَّحْمَٰنِ</span></strong></span></div>
+        </div><div class="quran-tafsir-ayah"><b><span id="tafsir">الرَّحْمَٰنِ</span></b></div></section></main>` });
+    });
+    await page.goto('http://hafs.test/');
+    await page.evaluate(() => document.fonts.ready);
+    const inspector = await page.context().newCDPSession(page);
+    await inspector.send('DOM.enable');
+    await inspector.send('CSS.enable');
+    const { root } = await inspector.send('DOM.getDocument');
+    for (const [id, expected] of Object.entries({
+      regular: 'DigitalKhattOldMadinaRegular', medium: 'HadithDBHafs-Medium',
+      bold: 'HadithDBHafs-Bold', selected: 'HadithDBHafs-Bold', tafsir: 'HadithDBHafs-Bold'
+    })) {
+      const { nodeId } = await inspector.send('DOM.querySelector', { nodeId: root.nodeId, selector: '#' + id });
+      const { fonts } = await inspector.send('CSS.getPlatformFontsForNode', { nodeId });
+      expect([id, ...fonts.map(face => face.postScriptName)]).toEqual([id, expected]);
+    }
+    for (const [mode, family] of [['indo-pak', 'QuranIndoPak'], ['warsh', 'QuranWarsh']]) {
+      await page.evaluate(mode => { document.body.className = 'quran-script-' + mode; }, mode);
+      for (const id of ['bold', 'selected', 'tafsir'])
+        expect(await page.locator('#' + id).evaluate(el => getComputedStyle(el).fontFamily)).toContain(family);
+    }
+  } finally { await page.close(); }
 });

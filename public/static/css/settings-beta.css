@@ -35,7 +35,7 @@
 .script-choice:has(:focus-visible) { outline: var(--ux-focus-ring); outline-offset: 2px; }
 .script-choice:has(:disabled) { cursor: default; }
 .script-choice .script-sample { grid-column: 1 / -1; text-align: center; font-size: 1.65rem; line-height: 1.9; }
-.script-choice .sample-uthmani { font-family: Quran, serif; }
+.script-choice .sample-uthmani { font-family: Hafs, serif; }
 .script-choice .sample-indo-pak { font-family: QuranIndoPak, serif; }
 .script-choice .sample-warsh { font-family: QuranWarsh, serif; }
 

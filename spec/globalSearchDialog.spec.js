@@ -59,7 +59,7 @@ function render(selectedHadithAliases, overrides = {}) {
 }
 
 describe('global search dialog', () => {
-	test.each(['tafsir', 'trans'])('limits contextual %s search to the viewed book', async kind => {
+	test.each(['tafsir', 'trans'])('offers the current %s book without preselecting it', async kind => {
 		const book = { alias: 'test-book', source: 'local', hidden: 0, shortName_en: 'Test Book' };
 		const html = await render([], {
 			initialSearchMode: 'quran', contextualSearchBookAlias: book.alias,
@@ -69,13 +69,13 @@ describe('global search dialog', () => {
 			quranSearchTranslations: kind === 'trans' ? [book] : []
 		});
 		expect(html).toContain('Search within Test Book');
-		expect(html).toContain('name="tafsir" value="test-book" checked');
+		expect(html).not.toContain('name="tafsir" value="test-book" checked');
 		expect(html).not.toContain('name="b" value="quran" checked');
 	});
 
 	test('General leaves all filters unselected without context', async () => {
 		const html = await render([]);
-		expect(html).toContain('command-search-mode-label">General</span>');
+		expect(html).toContain('<option value="all">All</option>');
 		for (const source of ['hadith', 'sharh', 'quran', 'tafsir', 'translations'])
 			expect(html).not.toContain(`name="b" value="${source}" checked`);
 	});
@@ -111,21 +111,20 @@ describe('global search dialog', () => {
 		expect(html).not.toMatch(/type="checkbox"[^>]* checked/);
 	});
 
-	test('Quran search includes Arabic ayat alongside the contextual translation by default', async () => {
+	test('global search starts broad in the Quran reader', async () => {
 		const html = await render([], {
 			initialSearchMode: 'quran',
 			quranSearchContext: 'study',
 			quranSearchCommentaryAliases: ['test-translation'],
 			quranSearchTranslations: [{ alias: 'test-translation', source: 'local', shortName_en: 'Test Translation' }]
 		});
-		expect(html).toContain('name="b" value="quran" checked');
-		expect(html).toContain('name="tafsir" value="test-translation" checked');
+		expect(html).not.toMatch(/type="checkbox"[^>]* checked/);
 	});
 
-	test('unfiltered Quran results reopen with Quran, Tafsir, and Translation visually unselected', async () => {
+	test('unfiltered Quran results restore their implied Quran and Tafsir filters', async () => {
 		const html = await render([], { initialSearchMode: 'quran', isSearchResultsContext: true });
-		expect(html).not.toContain('name="b" value="quran" checked');
-		expect(html).not.toContain('name="b" value="tafsir" checked');
+		expect(html).toContain('name="b" value="quran" checked');
+		expect(html).toContain('name="b" value="tafsir" checked');
 		expect(html).not.toContain('name="b" value="translations" checked');
 	});
 
@@ -143,20 +142,20 @@ describe('global search dialog', () => {
 			expect(html).not.toContain(`name="b" value="${source}" checked`);
 	});
 
-	test('selects only the contextual Hadith book', async () => {
-		const html = await render(['bukhari']);
+	test('restores a single Hadith book on results', async () => {
+		const html = await render(['bukhari'], {isSearchResultsContext:true});
 		expect(html).not.toMatch(/name="b" value="hadith" checked/);
 		expect(html).not.toMatch(/name="b" value="sharh" checked/);
 		expect(html).toMatch(/name="b" value="bukhari" checked/);
 	});
 	test('preserves an explicit Hadith-only selection', async () => {
-		const html = await render(['hadith', 'bukhari']);
+		const html = await render(['hadith', 'bukhari'], {isSearchResultsContext:true});
 		expect(html).toMatch(/name="b" value="hadith" checked/);
 		expect(html).not.toMatch(/name="b" value="sharh" checked/);
 	});
 
-	test('shows and contextually selects visible virtual Hadith books', async () => {
-		const html = await render(['riyad']);
+	test('shows and restores visible virtual Hadith books', async () => {
+		const html = await render(['riyad'], {isSearchResultsContext:true});
 
 		expect(html).toContain('Riyad al-Salihin');
 		expect(html).toMatch(/name="b" value="riyad" checked/);
@@ -165,7 +164,7 @@ describe('global search dialog', () => {
 	});
 
 	test('shows the canonical Hadith book groups', async () => {
-		const html = await render(['ninebooks']);
+		const html = await render(['ninebooks'], {isSearchResultsContext:true});
 
 		expect(html).toMatch(/name="b" value="sahihayn"[^>]*data-command-filter-label="Sahihayn"/);
 		expect(html).toMatch(/name="b" value="kutubarbaah"[^>]*data-command-filter-label="Four Sunan"/);
@@ -174,7 +173,7 @@ describe('global search dialog', () => {
 	});
 
 	test('keeps current filters and their removal controls outside the collapsible filter container', async () => {
-		const html = await render(['bukhari']);
+		const html = await render(['bukhari'], {isSearchResultsContext:true});
 		const selectedPosition = html.indexOf('data-command-search-selected');
 		const filterContainerPosition = html.indexOf('data-command-search-combined-filters');
 
@@ -204,40 +203,21 @@ describe('global search dialog', () => {
 	test('keeps selected groups expanded when filter-search text is cleared and uses accurate scope wording', () => {
 		const selectedGroupRule = "group.open = hasSelectedFilter || (query !== '' && !!group.querySelector('[data-command-search-book-option]:not([hidden])'));";
 		expect(client.match(new RegExp(selectedGroupRule.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'))).toHaveLength(2);
-		expect(client).toContain("'Search the Quran, translations, or tafsir'");
-		expect(client).toContain("'General library search'");
+		expect(client).toContain("scopePicker.value");
+		expect(client).toContain("input.setAttribute('aria-label', placeholder)");
 		expect(client).toContain("'Quran, Tafsir, and Translation'");
 		expect(client).toContain("'General search'");
 	});
 });
 
-test('Quran tab supplies its default while switches clear old filters and initialization preserves selections', async () => {
+test('inline scope exposes all collections and leaves URL filters to the form fields', async () => {
  const { JSDOM } = require('jsdom');
- const vm = require('vm');
- const dom = new JSDOM(await render(['blog'], {
-   quranSearchBookFilters: ['quran'],
-   quranSearchCommentaryAliases: ['tabari'],
-   quranSearchTafsirs: [{alias:'tabari',source:'local',hidden:0,shortName_en:'Tabari'}]
- }));
- const dialog = dom.window.document.querySelector('dialog');
- const ctx = vm.createContext({
-   dialog, mode:'hadith', form:dialog.querySelector('form'), input:dialog.querySelector('[name=q]'),
-   storeSearchTerm:jest.fn(), restoreSearchTerm:jest.fn(), normalizeQuranFilters:jest.fn(),
-   renderSelectedFilters:jest.fn(), refreshAutocomplete:jest.fn()
- });
- vm.runInContext(client.slice(client.indexOf('\tfunction setMode('),client.indexOf('\n\tfunction openDialog(',client.indexOf('\tfunction setMode('))),ctx);
- const selected = () => [...dialog.querySelectorAll('[data-command-filter]:checked')].map(node=>node.value);
- ctx.setMode('hadith',{refresh:false});
- expect(selected()).toEqual(expect.arrayContaining(['blog','quran','tabari']));
- ctx.setMode('quran');
- expect(selected()).toEqual(['quran']);
- dialog.querySelector('[value=tabari]').checked=true;
- dialog.querySelector('[value=quran]').checked=false;
- ctx.setMode('quran',{refresh:false});
- expect(selected()).toEqual(['tabari']);
- ctx.setMode('quran');
- expect(selected()).toEqual(['quran','tabari']);
- ctx.setMode('hadith');
- expect(selected()).toEqual([]);
+ const dom = new JSDOM(await render([]));
+ const select = dom.window.document.querySelector('[data-command-scope]');
+ expect([...select.options].filter(o => !o.hidden).map(o => o.value)).toEqual([
+   'all','quran','tafsir','translations','hadith','sharh','sirah','blog','community'
+ ]);
+ expect(select.name).toBe('');
+ expect(select.form.querySelector('[name=q]')).toBeTruthy();
  dom.window.close();
 });

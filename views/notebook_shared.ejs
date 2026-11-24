@@ -6,11 +6,13 @@
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta name="referrer" content="no-referrer">
   <title><%= note ? note.title : 'Shared note unavailable' %> · Hadith Unlocked</title>
+  <link rel="stylesheet" href="/static/css/hafs.css?v=1">
+  <link rel="stylesheet" href="/static/css/kitab.css?v=1">
   <link rel="stylesheet" href="/static/css/ux-foundations.css">
   <style>
     <%- include('sub-views/notebook_content_styles.ejs') %>
     * { box-sizing: border-box; }
-    body { --shared-gutter: clamp(1rem, 4vw, 3rem); margin: 0; padding: var(--shared-gutter); padding-bottom: 5rem; background: #fff8db; color: #302a1b; font: 18px/1.8 Georgia, NotebookKitab, serif; }
+    body { --shared-gutter: clamp(1rem, 4vw, 3rem); margin: 0; padding: var(--shared-gutter); padding-bottom: 5rem; background: #fff8db; color: #302a1b; font: 18px/1.8 Georgia, Kitab, serif; }
     main { max-width: 52rem; margin: auto; overflow-wrap: anywhere; }
     main:has(.shared-note-outline) { max-width: 70rem; }
     main:has(.shared-note-outline) > header { margin-inline-start: 16rem; }
@@ -28,7 +30,7 @@
     .shared-note-outline a { display: block; padding: .35rem .5rem; padding-inline-start: calc(.5rem + var(--outline-depth) * .7rem); color: inherit; text-decoration: none; border-inline-start: 2px solid transparent; }
     .shared-note-outline a:hover, .shared-note-outline a:focus-visible { background: rgba(212, 167, 44, .15); border-inline-start-color: #d4a72c; }
     .shared-note-outline a[aria-current="location"] { background: rgba(212, 167, 44, .2); border-inline-start-color: #d4a72c; font-weight: 600; }
-    .shared-note-outline .notebook-outline-arabic { font-family: NotebookKitab, Kitab, Quran, serif; font-size: 1.2em; line-height: 2; }
+    .shared-note-outline .notebook-outline-arabic { font-family: Kitab, Hafs, serif; font-size: 1.2em; line-height: 2; }
     .notebook-markdown :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 1rem; }
     @media (max-width: 767.98px) {
       main:has(.shared-note-outline) > header { margin-inline-start: 0; }
@@ -40,10 +42,10 @@
     header { border-bottom: 1px solid #d4a72c; margin-bottom: 1.5rem; padding-bottom: 1rem; }
     header p { margin: 0; font: .8rem/1.5 var(--ux-font-ui); color: #634800; }
     header h1 { margin: .5rem 0 0; font: var(--ux-heading-weight) 1.7rem/1.3 var(--ux-font-ui); }
-    header h1:dir(rtl) { font-family: NotebookKitab, serif; }
+    header h1:dir(rtl) { font-family: Kitab, serif; }
     .shared-note-author { display: flex; align-items: center; gap: .65rem; margin-top: 1rem; }
     .shared-note-author-name { font-size: .95rem; overflow-wrap: anywhere; }
-    .shared-note-author-name:dir(rtl) { font-family: NotebookKitab, serif; }
+    .shared-note-author-name:dir(rtl) { font-family: Kitab, serif; }
     .shared-note-avatar { position: relative; display: grid; place-items: center; flex: 0 0 2.5rem; width: 2.5rem; height: 2.5rem; border-radius: 50%; overflow: hidden; background: #e8dba4; color: #634800; font: 600 1rem/1 var(--ux-font-ui); }
     .shared-note-profile-image { position: absolute; inset: 0; background-size: cover; background-position: center; }
     a { color: #805d00; }

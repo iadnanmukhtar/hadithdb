@@ -16,14 +16,15 @@ async function adminFixture() {
   const shell = new JSDOM(await (await fetch(base + '/about')).text()).window.document;
   global.settings = { site: { url: base } };
   const head = shell.head.innerHTML;
-  const masthead = shell.querySelector('.ux-masthead').outerHTML;
+  const masthead = shell.querySelector('.ux-masthead');
+  masthead.setAttribute('data-edit-mode', '');
   return ejs.renderFile(path.join(views, 'admin.ejs'), {
     req: { path: '/admin', query: {} }, googleAnalyticsTagId: '',
     utils: { scriptAssetVersion: () => 'test', hadithBaseUrl: () => base, quranBaseUrl: () => base,
       defaultQuranTranslationLabel: () => 'Translation' }
   }, { includer(name) {
     if (name.endsWith('/head.ejs')) return { template: head.replace(/<%/g, '<%%') };
-    if (name.endsWith('/header.ejs')) return { template: masthead };
+    if (name.endsWith('/header.ejs')) return { template: masthead.outerHTML };
     if (!['page_end.ejs', 'scripts.ejs', 'modal_close.ejs'].includes(path.basename(name))) return { template: ' ' };
   } });
 }
@@ -95,6 +96,14 @@ async function run(width, browser, html) {
         const manager = page.locator('#admin-pair-manager');
         const row = key => manager.locator('[data-original-key="' + key + '"]');
         const merge = manager.locator('[data-pair-merge]');
+        assert.ok(await merge.isHidden());
+        const count = manager.locator('[data-pair-selection-count]');
+        assert.equal(await count.innerText(), '0 selected');
+        await row('a').getByRole('checkbox').check();
+        assert.equal(await count.innerText(), '1 selected');
+        await manager.getByRole('button', {name: 'Clear selection'}).click();
+        assert.ok(await merge.isHidden());
+        assert.ok(await manager.getByRole('searchbox').evaluate(el => el === document.activeElement));
         await row('a').getByLabel('English value').fill('Revised');
         await row('a').getByRole('button', { name: 'Save pair' }).click();
         await manager.getByText('Pair saved.', { exact: true }).waitFor();
@@ -140,6 +149,8 @@ async function run(width, browser, html) {
         '<select id="fixture-choice" class="_e" data-id="11" data-prop="book.lang"><option>ar</option><option>en</option></select>');
     });
     const field = page.locator('#fixture-name.ux-inline-editor');
+    assert.match(await page.locator('#fixture-markdown').evaluate(el => getComputedStyle(el).fontFamily), /^Inter\b/);
+    assert.match(await field.evaluate(el => getComputedStyle(el).fontFamily), /Kitab/);
     await field.focus();
     assert.equal(await field.getAttribute('contenteditable'), 'true');
     assert.equal(await field.getAttribute('dir'), 'rtl');

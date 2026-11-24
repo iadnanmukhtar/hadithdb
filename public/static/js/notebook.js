@@ -538,7 +538,7 @@
     container.replaceChildren();
     const tags = new Set([...(current?.hashtags || []), ...tagEditor.value.split(/\s+/u).filter(Boolean).map(tag => tag.replace(/^#/, ''))]);
     for (const tag of tags) {
-      const chip = document.createElement('span'); chip.className = 'notebook-tag-chip'; chip.dir = 'auto'; chip.textContent = tag; container.append(chip);
+      const chip = document.createElement('span'); chip.className = 'ux-pill notebook-tag-chip'; chip.dir = 'auto'; chip.textContent = tag; container.append(chip);
     }
     if (!tags.size) container.textContent = 'Add tags';
   }
@@ -1220,7 +1220,7 @@
     article.append(button);
     const tagBar = document.createElement('div'); tagBar.className = 'notebook-tile-tags';
     for (const tag of Array.isArray(note.hashtags) ? note.hashtags : []) {
-      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'notebook-tag-chip';
+      const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'ux-pill notebook-tag-chip';
       chip.textContent = tag; chip.dir = 'auto';
       chip.addEventListener('click', () => { document.getElementById('notebook-tag').value = tag; renderTagRail(); loadList(); });
       tagBar.append(chip);

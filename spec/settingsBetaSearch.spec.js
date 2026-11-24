@@ -6,7 +6,7 @@ const script = fs.readFileSync(require.resolve('../public/static/js/settings-fil
 test('searching for the saved reciter reveals its card even when the catalog arrives later', async () => {
   const dom = new JSDOM(`
     <nav class="settings-beta-index">
-      <div class="ux-rail-search"><input id="settings-filter"><button></button></div>
+      <div class="ux-rail-search" data-rail-search><input id="settings-filter"><button></button></div>
       <span data-settings-filter-status></span><a href="#reading">Reading</a>
     </nav>
     <main id="settings-groups"><section class="settings-beta-group"><h2 id="reading">Reading</h2>
@@ -29,7 +29,7 @@ test('searching for the saved reciter reveals its card even when the catalog arr
     expect(document.querySelectorAll('.reciter-setting-row:not(.settings-filter-miss)')).toHaveLength(1);
     expect(document.querySelector('.settings-filter-miss').textContent).toBe('Juhani');
 
-    input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
+    input.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     expect(input.value).toBe('');
     expect(document.activeElement).toBe(input);
     expect(document.querySelector('details').open).toBe(false);

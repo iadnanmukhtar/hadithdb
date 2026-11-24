@@ -21,7 +21,7 @@ test('browser filters retain category with tag, clear independently, and restore
  const source=fs.readFileSync('public/static/js/community.js','utf8');
  win.eval(source.slice(source.indexOf('  function writeFilterUrl('),source.indexOf("  $('more')?.addEventListener('click'")));
  const activity=win.document.getElementById('community-filter'),category=win.document.getElementById('community-category-filter'),tag=win.document.getElementById('community-tag-filter');
- expect(category.value).toBe('Fiqh');expect(activity.value).toBe('article');expect(tag.textContent).toBe('#prayer ×');
+ expect(category.value).toBe('Fiqh');expect(activity.value).toBe('article');expect(tag.textContent).toBe('#prayer');
  category.value='Hadith';category.dispatchEvent(new win.Event('change'));
  expect(new URL(win.location.href).searchParams.get('tag')).toBe('prayer');
  expect(new URL(win.location.href).searchParams.get('category')).toBe('Hadith');
@@ -29,6 +29,6 @@ test('browser filters retain category with tag, clear independently, and restore
  activity.value='note';activity.dispatchEvent(new win.Event('change'));
  expect(win.location.search).toBe('?filter=note');expect(category.value).toBe('');
  win.history.replaceState(null,'','?category=Fiqh&tag=fasting');win.dispatchEvent(new win.PopStateEvent('popstate'));
- expect(category.value).toBe('Fiqh');expect(activity.value).toBe('article');expect(tag.textContent).toBe('#fasting ×');
+ expect(category.value).toBe('Fiqh');expect(activity.value).toBe('article');expect(tag.textContent).toBe('#fasting');
  win.close();
 });

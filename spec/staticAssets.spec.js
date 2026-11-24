@@ -78,12 +78,17 @@ describe('static assets', () => {
   test('provides a local SVG title for every Surah header', () => {
     const titleDir = path.join(__dirname, '..', 'public', 'static', 'img', 'quran', 'surah-header', 'names');
 
-    expect(fs.existsSync(path.join(titleDir, '..', 'border.svg'))).toBe(true);
+    const checkDimensions = file => {
+      const svg = fs.readFileSync(file, 'utf8').split('>')[0];
+      expect(svg).toMatch(/\bwidth=["']\d+/);
+      expect(svg).toMatch(/\bheight=["']\d+/);
+    };
+    checkDimensions(path.join(titleDir, '..', 'border.svg'));
     expect(fs.existsSync(path.join(titleDir, '..', 'basmala.svg'))).toBe(true);
     for (let surahNumber = 1; surahNumber <= 114; surahNumber++) {
       expect(Utils.quranSurahHeaderSvgPath(surahNumber))
         .toBe(`/static/img/quran/surah-header/names/${surahNumber}.svg`);
-      expect(fs.existsSync(path.join(titleDir, `${surahNumber}.svg`))).toBe(true);
+      checkDimensions(path.join(titleDir, `${surahNumber}.svg`));
     }
     expect(Utils.quranSurahHeaderSvgPath(0)).toBe('');
     expect(Utils.quranSurahHeaderSvgPath(115)).toBe('');

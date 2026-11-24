@@ -1,6 +1,6 @@
-<div role="search" class="ux-rail-search" aria-label="<%= label %>">
+<div role="search" class="ux-rail-search" data-rail-search aria-label="<%= label %>">
   <i class="bi bi-funnel" aria-hidden="true"></i>
-  <input id="<%= inputId %>" type="search" placeholder="<%= placeholder %>" aria-label="<%= label %>" aria-controls="<%= resultsId %>" autocomplete="off"<% if (locals.tocFilter) { %> data-toc-content-filter="#<%= resultsId %>"<% } %>>
+  <input<% if (inputId) { %> id="<%= inputId %>"<% } %> type="search" placeholder="<%= placeholder %>" aria-label="<%= label %>"<% if (resultsId) { %> aria-controls="<%= resultsId %>"<% } %> autocomplete="off"<% if (locals.tocFilter) { %> data-toc-content-filter="#<%= resultsId %>"<% } %>>
   <button type="button" aria-label="<%= clearLabel %>"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
 </div>
 <% if (!locals.tocFilter) { %><script defer src="/static/js/rail-search.js?v=<%= utils.scriptAssetVersion() %>"></script><% } %>

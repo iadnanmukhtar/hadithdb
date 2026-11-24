@@ -6,7 +6,7 @@
           <span class="article-recommendation-title" dir="auto" title="<%= article.title %>"><%= article.title %></span>
           <% if (article.category || article.authorHandle) { %>
           <span class="article-recommendation-meta">
-            <% if (article.category) { %><span class="article-mini-pill"><%= article.category %></span><% } %>
+            <% if (article.category) { %><span class="ux-pill article-mini-pill"><%= article.category %></span><% } %>
           <% if (article.authorHandle) { %><span class="article-recommendation-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
           </span>
           <% } %>

@@ -2,7 +2,22 @@
 
 Reviewed the local ux-makeover checkout at `a4f1e565`. The main shell and catalog are substantially standardized. Search, readers, article typography, signed-out authoring and admin workflows still have visible inconsistencies.
 
-## Findings in priority order
+## Follow-up on ux-makeover
+
+The findings below describe the original review. The accepted fixes were checked in local Chrome at 390 × 850 and 1440 × 850.
+
+| Surface | Follow-up |
+| --- | --- |
+| Community writer | The server hides the workspace initially. The browser fixture holds the account response open, checks that the title is unavailable, releases the response, enters a draft, and signs out. The editor closes and the title clears. |
+| Search | The query owns the page H1. Hadith result titles and titleless Quran references use subordinate headings. Empty general and Quran searches reopen the corresponding dialog with the original query, including on a direct visit. |
+| Quran contents | At phone width the Juz, Surahs and Manzils filters follow the view selector. At desktop width each uses the contents rail. Both discovery carousels remain available. |
+| Articles and readers | On the sampled Blog and Community articles, the mobile cover title measured 27.5 px and its first body heading 22 px. Bukhari 1 shows its reference and title before the update date and book switcher. Bukhari 11, which has no title, retains one page heading when related narrations render. English and Arabic chapter names share the same heading rank. |
+| Admin pair manager | The modal opens on the search and results. Selecting a pair reveals merge options. Clearing the selection hides them and returns focus to search. The fixture also exercises canceling and confirming the merge. |
+| Error recovery | Both a missing URL and the explicit 404 page show the library link. At phone width the heading starts 25 px from the viewport edge. |
+
+The follow-up public browser run passed 172 of 172 route and viewport checks. The separate admin and personal browser fixtures passed at both widths. The full Jest suite still has failures outside these browser checks.
+
+## Original findings in priority order
 
 | Priority | Surface and observation | Proposed treatment and acceptance check |
 | --- | --- | --- |
@@ -22,6 +37,6 @@ Captured 77 distinct URLs in local Chrome at **390 × 850 and 1440 × 850**, inc
 
 The public browser regression passed all 170 route and viewport checks. Additional width probes on six core routes at 320, 768, 991 and 992 px found no horizontal document overflow. The Books/TOC layout comparisons passed for Hadith, Tafsir and Sharḥ at 390, 700, 701, 991, 992 and 1440 px. Header search inset and overlay close checks passed. Admin and personal browser fixtures passed at both primary widths. The admin measurements above use the real template and an isolated browser fixture. Signed-in production accounts, real billing and Drive, native mobile browsers, screen readers and every dark-theme state were outside this review.
 
-## Refactor status
+## Refactor status at the original review
 
 Shared shell adoption, valid route responses and working form submissions cover different questions from visual hierarchy and task order. Keep the current Books and Settings patterns as references. Prioritize the editor access state, search page semantics and the Quran mobile filter before a cosmetic pass. Recheck the article and reader findings at component level so the changes reach all consumers.

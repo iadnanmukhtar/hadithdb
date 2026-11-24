@@ -4,7 +4,7 @@
   const beginner = members('beginner-books');
   const twelve = members('ninebooks').flatMap(alias => alias === 'muslim' ? [alias, 'lulu-marjan'] : [alias]);
   twelve.push('ibnhibban', 'hakim', 'daraqutni', 'mishkat');
-  const shelfBooks = libraryBooks.slice().sort((a, b) => (a.shortName_en || a.alias).localeCompare(b.shortName_en || b.alias, 'en'));
+  const shelfBooks = libraryBooks.slice().sort((a, b) => (a.name_en || a.alias).localeCompare(b.name_en || b.alias, 'en'));
   const aliases = shelfBooks.map(book => book.alias);
   const history = shelfBooks.filter(book => ['history', 'sirah'].includes(book.type)).map(book => book.alias);
   const assigned = new Set([...beginner, ...twelve]);

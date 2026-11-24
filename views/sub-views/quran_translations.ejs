@@ -59,10 +59,7 @@
 							</a>
 						<% } %>
 						<% if (showAyahModalModeToggle) { %>
-							<span class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
-								<button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="tafsirs"><span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span></button>
-								<button type="button" class="btn btn-outline-secondary active" aria-pressed="true"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
-							</span>
+							<%- include('quran_ayah_view_switch', { activeView: 'translations' }) %>
 						<% } %>
 					</span>
 				<% } %>

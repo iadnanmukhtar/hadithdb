@@ -236,7 +236,8 @@
 		<% } %>
 
 		<%# Item Number + Chain %>
-		<b><a href="<%= itemHref %>" title="<%= linkTitle(itemLinkTitleSource) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a></b><% if (displayedChain || site.editMode) { %> –
+		<% const referenceHeading = searchResult && !langData.title; %>
+		<% if (referenceHeading) { %><h2 class="d-inline fs-6"><% } else { %><b><% } %><a href="<%= itemHref %>" title="<%= linkTitle(itemLinkTitleSource) %>"><%= `${itemBookShortName}:${i.actual ? (langActual?.num || i.actual?.num || i.num) : (langData.num || i.num)}` %></a><% if (referenceHeading) { %></h2><% } else { %></b><% } %><% if (displayedChain || site.editMode) { %> –
 		<% if (showPrimaryNarrator) { %>
 			<% if (narratorInlineEditable) { %><input type="search" class="_e chain hadith-admin-combobox hadith-primary-narrator-input <%= _p %> l3" title="Ḥadīth Narrator" value="<%= displayedChain %>" data-narrator-language="<%= lang %>" autocomplete="off" autocapitalize="none" spellcheck="false" <%- editAttrs('narrator', { prop: narratorEditProp, arabizi: 'false', placeholder: narratorEditPlaceholder }) %>><% } else { %><span class="chain <%= _p %> l3" title="Ḥadīth Narrator"><%= displayedChain %></span><% } %>
 		<% } else { %>

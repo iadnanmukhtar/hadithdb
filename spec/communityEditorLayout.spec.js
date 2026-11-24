@@ -41,6 +41,9 @@ test.each([390,768,1200])('article header aligns and fullscreen actions stay anc
   await page.setContent(`<style>*{box-sizing:border-box}:root{--bs-body-bg:white;--bs-body-color:#222}body{margin:0}main{padding:20px}form{margin-bottom:16px}.form-control{display:block;width:100%}[hidden]{display:none!important}</style><main>${html}</main>`);
   await page.addStyleTag({path:'public/static/css/community.css'});
   await page.addScriptTag({path:'public/static/js/community-editor-layout.js'});
+  const workspace = page.locator('#community-editor-workspace');
+  expect(await workspace.isHidden()).toBe(true);
+  await workspace.evaluate(editor => { editor.hidden = false; });
   for(const fullscreen of [false,true]) {
    if(fullscreen) await page.locator('#community-editor-fullscreen').click();
    const centers=await page.locator('.community-editor-window-actions > button').evaluateAll(elements=>elements.map(el=>{const r=el.getBoundingClientRect();return r.y+r.height/2;}));

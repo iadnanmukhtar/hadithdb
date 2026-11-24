@@ -1,17 +1,24 @@
-<nav class="row g-0 chapter-toc ux-subnav <%= (tabs || locals.routeLinks) ? 'book-catalog-navigation' : 'settings-navigation' %>" aria-label="<%= label %>">
+<nav class="row g-0 chapter-toc ux-subnav <%= locals.communityMenu ? 'community-section-menu' : (tabs || locals.routeLinks) ? 'book-catalog-navigation' : 'settings-navigation' %>" aria-label="<%= label %>">
   <div class="col-12 chapter-toc-toolbar">
-    <ul class="nav nav-tabs<%= tabs ? ' book-catalog-tabs' : '' %>"<% if (tabs) { %> role="tablist" aria-label="<%= label %>"<% } %>>
+    <ul class="nav nav-tabs<%= tabs ? ' book-catalog-tabs' : locals.communityMenu ? ' community-tabs' : '' %>"<% if (tabs) { %> role="tablist" aria-label="<%= label %>"<% } %>>
       <% items.forEach(item => { %>
       <li class="nav-item"<% if (tabs) { %> role="presentation"<% } %>>
-        <a href="<%= item.href %>" class="nav-link<%= item.active ? ' active' : '' %>"<% if (tabs) { %> id="<%= item.id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= item.id %>" role="tab" aria-controls="<%= item.id %>" aria-selected="<%= !!item.active %>"<% } else if (locals.routeLinks && item.active) { %> aria-current="location"<% } %>><%= item.label %></a>
+        <a href="<%= item.href %>" class="nav-link<%= item.active ? ' active' : '' %>"<% if (tabs) { %> id="<%= item.id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= item.id %>" role="tab" aria-controls="<%= item.id %>" aria-selected="<%= !!item.active %>"<% } else if (locals.routeLinks && item.active) { %> aria-current="<%= locals.communityMenu ? 'page' : 'location' %>"<% } %>><%= item.label %><% if (item.following) { %><span class="ux-pill community-alert-badge" data-community-alert-badge hidden aria-live="polite"></span><% } %></a>
       </li>
       <% }); %>
     </ul>
     <label class="ux-subnav-picker <%= locals.routeLinks ? 'toc-collection-picker' : tabs ? 'catalog-collection-picker' : 'settings-category-picker' %>" hidden><%= pickerLabel %>
       <select aria-label="<%= pickerName %>">
         <% if (!tabs && !locals.routeLinks) { %><option value="">Choose category</option><% } %>
-        <% items.forEach(item => { %><option value="<%= item.href %>"<% if (item.active) { %> selected<% } %>><%= item.label %></option><% }); %>
+        <% if (locals.communityMenu && !items.some(item => item.active)) { %><option value="" disabled selected>Choose section</option><% } %>
+        <% items.forEach(item => { %><option value="<%= item.href %>"<% if (item.following) { %> data-following-option<% } %><% if (item.active) { %> selected<% } %>><%= item.label %></option><% }); %>
       </select>
     </label>
+    <% if (locals.communityMenu && communityNotebook) { %>
+    <button type="button" class="btn btn-sm btn-outline-secondary community-notebook-filter" data-bs-toggle="collapse" data-bs-target="#notebook-mobile-filter-panel" aria-expanded="false" aria-controls="notebook-mobile-filter-panel">Filters</button>
+    <% } else if (locals.communityMenu && !communityBlog) { %>
+    <a id="community-moderation-link" class="ux-text-action" href="/community/moderation" hidden>Moderation</a>
+    <% } %>
   </div>
+  <% if (locals.communityMenu && communityNotebook) { %><div id="notebook-mobile-filter-panel" class="col-12 collapse chapter-toc-panel"></div><% } %>
 </nav>

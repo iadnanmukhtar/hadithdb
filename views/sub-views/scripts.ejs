@@ -844,7 +844,7 @@
 	          $chips.empty();
 	          $books.find('option:selected').each(function () {
 	            const alias = this.value, label = this.textContent;
-	            $('<button type="button">').addClass('btn btn-sm btn-outline-secondary').attr('aria-label', `Remove ${label}`).text(`${label} ×`).on('click', () => {
+	            $('<button type="button">').addClass('ux-pill ux-pill-removable').attr('aria-label', `Remove ${label}`).text(label).on('click', () => {
 	              $books.val(($books.val() || []).filter(value => value !== alias));
 	              booksChanged();
 	            }).appendTo($chips);
@@ -1328,13 +1328,15 @@
 	          if (result.code !== 200) throw new Error(result.message || 'Unable to remove pair');
 	        };
 	        const renderSelection = () => {
+	          $modal.find('[data-pair-selection-count]').text(selected.size + ' selected');
+	          $modal.find('.hadith-pair-merge').prop('hidden', selected.size === 0);
 	          const previous = $target.val();
 	          const $selected = $modal.find('[data-pair-merge-selected]').empty();
 	          $target.empty().append($('<option>').val('').text('Choose the pair to keep'));
 	          selected.forEach(pair => {
 	            const label = `${pair.value_en || ''} — ${pair.value_ar}`;
 	            $target.append($('<option>').val(pair.key).text(label));
-	            const $remove = $('<button type="button">').addClass('btn btn-sm btn-link').text('Remove').attr('aria-label', `Deselect ${label}`);
+	            const $remove = $('<button type="button">').addClass('ux-text-action').text('Remove').attr('aria-label', `Deselect ${label}`);
 	            $remove.on('click', () => {
 	              selected.delete(pair.key);
 	              $list.find('[data-pair-select]').each(function () { if (this.value === pair.key) this.checked = false; });
@@ -1354,6 +1356,7 @@
 	        });
 	        $modal.find('[data-pair-merge-clear]').on('click', () => {
 	          selected.clear(); $list.find('[data-pair-select]').prop('checked', false); renderSelection();
+	          $modal.find('[data-hadith-pair-manager-filter]').trigger('focus');
 	        });
 	        $merge.on('click', async () => {
 	          if (merging || selected.size < 2 || !$target.val()) return;

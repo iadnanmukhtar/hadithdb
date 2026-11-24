@@ -18,9 +18,10 @@ describe('dedicated Tafsir passage presentation', () => {
 		expect(styles).toMatch(/\.quran-section-heading-link:hover,[\s\S]*text-decoration: underline;/);
 	});
 
-	test('places muted book metadata above only the initial range separator', () => {
+	test('omits duplicate source metadata on dedicated pages and in the ayah dialog', () => {
 		const script = source('public/static/js/script.js');
 
+		expect(script).toMatch(/var appendSourceHeader = function \(panel, book\) \{\s*if \(isTafsirModal \|\| container.hasClass\('quran-tafsirs-dedicated'\)\)\s*return;/);
 		expect(script).toContain("container.closest('[data-reader-infinite-page=\"1\"]')");
 		expect(script).toContain("container.children('.quran-tafsir-source').length");
 		expect(script).toContain("header.addClass('text-muted').insertBefore(container.children('.quran-tafsir-heading').first())");

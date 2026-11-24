@@ -258,10 +258,13 @@ describe('Quran Study translation editing', () => {
       ].join('\n')
     }, false, 'en', 'unal');
 
-    expect(html.match(/<section class="footnotes">/g)).toHaveLength(1);
-    expect(html.match(/class="footnote-item"/g)).toHaveLength(2);
-    expect(html).toMatch(/<li[^>]*class="footnote-item"><p>First note paragraph\.<\/p>\s*<p>Second paragraph of the first note\./);
-    expect(html).not.toMatch(/<\/section>\s*<p>Second paragraph of the first note\./);
+    const $ = require('cheerio').load(html);
+    const notes = $('.footnotes .footnote-item');
+    expect(notes).toHaveLength(2);
+    expect(notes.first().children('p')).toHaveLength(2);
+    expect(notes.first().children('p').first().text()).toBe('First note paragraph.');
+    expect(notes.first().children('p').last().text()).toContain('Second paragraph of the first note.');
+    expect(notes.last().text()).toContain('Second note.');
   });
 
   test('keeps Quran emphasis italic and reserves green emphasis styling for Hadith', () => {

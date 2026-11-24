@@ -1351,7 +1351,7 @@ async function flushBookCaches(bookAliases) {
   for (const bookAlias of aliases)
     await Utils.flushCacheContaining(bookAlias);
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
-  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-makeover-v13', 'html', 'books', 'hadith'));
+  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-makeover-v14', 'html', 'books', 'hadith'));
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
   if (!fs.existsSync(cacheDir))
@@ -1385,7 +1385,7 @@ async function flushQuranCatalogBookCaches(bookAliases) {
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
-  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-makeover-v13', 'html', 'books', 'hadith'));
+  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-makeover-v14', 'html', 'books', 'hadith'));
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
   await Utils.flushCachedFile(`${cacheDir}/_books`);

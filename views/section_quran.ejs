@@ -214,12 +214,23 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   
   <div class="container-fluid quran-heading-layout quran-heading-layout-study">
-    <div class="quran-heading-content quran-heading-content-study">
+    <div class="container quran-heading-content quran-heading-content-study">
     <main class="chapter mt-10"<%- quranCorpusUrl ? ` data-quran-corpus-url="${quranCorpusUrl}"` : '' %> data-quran-infinite-passage="1" data-quran-surah="<%= chapter.h1 %>" data-quran-current-url="<%= req.originalUrl || req.url || req.path %>"<% if (page.prev) { %> data-quran-prev-url="<%= selectedAyahPrevHref || quranPassageHref(page.prev) %>" data-quran-prev-title="<%= (page.prevTitle || 'Previous').replace(/&nbsp;/g, ' ') %>"<% } %><% if (page.next) { %> data-quran-next-url="<%= selectedAyahNextHref || quranPassageHref(page.next) %>" data-quran-next-title="<%= (page.nextTitle || 'Next').replace(/&nbsp;/g, ' ') %>"<% } %>>
       
-      <%- include('sub-views/chapterTitle.ejs', { site: site, page: page }); %>
+      <% if (results.length) {
+        const studyTranslationLabel = utils.quranTranslationBookLabel(selectedTranslationBook || utils.defaultQuranTranslationBook()); %>
+      <details class="book-switch-picker quran-study-book-picker reader-source-picker mb-3">
+        <%- include('sub-views/bookSwitchSummary', { switchLabel: 'Switch translation', currentLabel: studyTranslationLabel }) %>
+        <select hidden data-quran-passage-translation-select="1" data-passage-path="<%= page.canonical %>" aria-label="Translation">
+          <option value="<%= selectedTranslationBook ? selectedTranslationBook.alias : '' %>"><%= studyTranslationLabel %></option>
+        </select>
+        <div class="h-menu-scroller"><div class="btn-group h-menu" role="group" aria-label="Translations">
+          <%- include('sub-views/bookCarouselFilter') %>
+        </div></div>
+      </details>
+      <% } %>
+      <%- include('sub-views/chapterTitle.ejs', { site, page, sectionLink: quranPassageHref }); %>
 
-      <%- include('sub-views/page_updated.ejs', { page }); %>
       <% if (selectedTranslationBook) { %>
         <%- include('sub-views/quran_commentary_surah_intro.ejs', {
           site: site,

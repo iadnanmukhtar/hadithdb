@@ -85,8 +85,8 @@ test('keeps categories and controls English-only and hides empty sections after 
   expect(doc.querySelector('.book-catalog-details-button .bi-info-circle')).not.toBeNull();
   expect(doc.querySelector('.book-catalog-details-button').getAttribute('aria-label')).toContain('Book details:');
   expect(doc.querySelector('#book-catalog-dialog-title').textContent).toBe('Book details');
-  expect(pane.querySelector('.book-catalog-summary .volume-name').textContent).toBe('Tabari');
-  expect(pane.querySelector('.book-catalog-summary .volume-arabic').textContent).toBe('الطبري');
+  expect(pane.querySelector('.book-catalog-summary .volume-name').textContent).toBe(book.name_en);
+  expect(pane.querySelector('.book-catalog-summary .volume-arabic').textContent).toBe(book.name);
   expect(pane.querySelector('.tafsir-book-row-main .tafsir-book-meta [lang="ar"]').textContent).toContain('ابن جرير الطبري');
   const card = category.querySelector('.tafsir-book-row');
   expect(card.dataset.bookCatalogFilter).toContain('tabari');
@@ -171,6 +171,8 @@ test.each(['hadith', 'tafsir', 'translation', 'sharh'])('%s uses the homepage di
   const card = doc.querySelector('.book-catalog-tab-pane.active .tafsir-book-row');
   const summary = card.querySelector('.book-catalog-summary');
   const metadata = summary.querySelector('a.library-volume .volume-author');
+  expect(summary.querySelector('.volume-name').textContent).toBe(record.name_en);
+  expect(summary.querySelector('.volume-arabic').textContent).toBe(record.name);
   expect(metadata.textContent).toContain('Ibn Jarir');
   expect(summary.querySelectorAll('a')).toHaveLength(1);
   expect(metadata.textContent).not.toContain('Full English author name');
@@ -187,7 +189,11 @@ test('sharh cards keep clean titles and display authors in their separate metada
   ];
   const dom = browser(await render('sharh', false, records));
   const titles = [...dom.window.document.querySelectorAll('.book-catalog-tab-pane.active .book-catalog-summary .volume-name')];
-  expect(titles[0].textContent).toBe('Fatḥ al-Bārī');
+  expect(titles[0].textContent).toBe(records[0].name_en);
+  const cover = dom.window.document.querySelector('#highlight-books-sharh .library-volume');
+  expect(cover.querySelector('.volume-name').textContent).toBe(records[0].name_en);
+  expect(cover.querySelector('.volume-arabic').textContent).toBe(records[0].name);
+  expect(cover.querySelector('.volume-author').textContent).toBe(records[0].authorShortName_en);
   expect(titles[0].querySelector('.sharh-author-suffix')).toBeNull();
   expect(titles[0].closest('.book-catalog-summary').querySelector('.volume-author').textContent).toContain('Ibn Hajar al-Asqalani');
   expect(titles[1].querySelector('.sharh-author-suffix')).toBeNull();

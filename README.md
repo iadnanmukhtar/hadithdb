@@ -187,7 +187,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * All **604 pages** use Digital Khatt Quran text in a page-faithful 15-line layout.
 * Pages load continuously with vertical infinite scroll; after page 604, reading can continue again from page 1.
 * The layout scales for desktop, portrait phones, and landscape phones without changing through the normal text-size controls or bleeding beyond the page.
-* Quranic surah headers use the QCF header font. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
+* Mushaf surah headers use per-surah SVG artwork. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
 * Subtle inner-edge shading distinguishes odd and even pages like an open printed book.
 * Alternating black and saddle-brown text reveals h3 subsection boundaries while preserving the Quranic styling of ayah markers.
 * Each page identifies its page number, juz, surah number, and Arabic surah name. Page, juz, and surah numbers are directly editable, while the custom surah picker opens at the current surah.

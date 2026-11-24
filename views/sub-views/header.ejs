@@ -52,7 +52,7 @@
     var contextualSearchBook = !isSearchResultsContext ? (quranSearchCommentaryBook || searchContextBook) : null;
     var contextualSearchBookAlias = contextualSearchBook ? contextualSearchBook.alias : '';
     var contextualSearchBookName = contextualSearchBook ? (contextualSearchBook.shortName_en || contextualSearchBook.name_en || contextualSearchBook.shortName || contextualSearchBook.alias) : '';
-    var headerSearchPlaceholder = contextualSearchBookName ? 'Search within ' + contextualSearchBookName : 'Search the library';
+    var headerSearchPlaceholder = 'Search the library';
     var headerSearchTerm = isSearchResultsContext && req && req.query && req.query.q
       ? req.query.q.toString()
       : '';
@@ -98,7 +98,7 @@
       return active ? ' active" aria-current="page' : '';
     }
   %>
-<div class="navbar site-navbar fixed-top ux-masthead">
+<div class="navbar site-navbar fixed-top ux-masthead"<% if (site.editMode) { %> data-edit-mode<% } %>>
   <nav class="container-fluid d-block" aria-label="Site navigation">
   <div class="row g-0 site-navbar-main">
     
@@ -191,11 +191,11 @@
   <% if (isSearchResultsContext) { %>
   <nav class="row g-0 chapter-toc search-filter-top-menu" aria-label="Search filters">
     <div class="col-12 chapter-toc-toolbar">
-      <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#search-mobile-filter-panel" role="button" aria-expanded="false" aria-controls="search-mobile-filter-panel" title="Show search filters">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#search-mobile-filter-panel" aria-expanded="false" aria-controls="search-mobile-filter-panel" title="Show search filters">
         <i class="bi bi-funnel" aria-hidden="true"></i>
-        <span>Search Filters</span>
+        <span>Search filters</span>
         <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
-      </a>
+      </button>
     </div>
     <div id="search-mobile-filter-panel" class="col-12 collapse chapter-toc-panel" data-search-mobile-filter-panel></div>
   </nav>

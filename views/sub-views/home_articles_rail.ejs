@@ -12,7 +12,7 @@
           <span class="home-article-title" dir="auto" title="<%= article.title %>"><%= article.title %></span>
           <% if (article.category || article.authorHandle) { %>
           <span class="home-article-meta">
-            <% if (article.category) { %><span class="home-article-category"><%= article.category %></span><% } %>
+            <% if (article.category) { %><span class="ux-pill home-article-category"><%= article.category %></span><% } %>
             <% if (article.authorHandle) { %><span class="home-article-author" dir="ltr">@<%= article.authorHandle %></span><% } %>
           </span>
           <% } %>

@@ -34,8 +34,9 @@
       <%- include('home_library_shelf.ejs', { libraryBooks: hadithNavBooks, hadithSizeIndicator }) %>
     <% } else { %>
     <div class="h-menu-wrap mb-3">
-      <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right"></i> Swipe to browse <%= isQuranBookNav ? 'tafsīr books' : 'books' %></div>
-    <div class="h-menu-scroller">
+      <details class="book-switch-picker">
+      <%- include('bookSwitchSummary', { switchLabel: isQuranBookNav ? 'Switch tafsir' : 'Switch book', currentLabel: (hadithNavBooks.find(book => book.alias === currentBookAlias) || {}).shortName_en }) %>
+      <div class="h-menu-scroller">
 		<div class="btn-group h-menu text-nowrap" role="group">
 			<% if (isQuranBookNav) { %><%- include('tafsirCarouselLanguageSwitch') %><% } %>
 			<%- include('bookCarouselFilter') %>
@@ -45,16 +46,17 @@
 					var carouselTafsirLabel = Tafsir.rawShortName(carouselTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
 					var carouselTafsirSlug = carouselTafsir.slug || Tafsir.tafsirSlug(carouselTafsir.alias);
 			%>
-			  <a class="btn btn-outline-primary text-nowrap" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(carouselTafsirSlug)}`) %>" data-book-carousel-item data-book-carousel-search="<%= [carouselTafsir.name_en, carouselTafsir.shortName_en, carouselTafsir.title, carouselTafsir.shortName, carouselTafsir.author_en, carouselTafsir.author, carouselTafsir.alias].filter(Boolean).join(' ') %>" data-tafsir-book-nav-item data-tafsir-alias="<%= carouselTafsir.alias %>" data-tafsir-lang="<%= carouselTafsir.lang || '' %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(carouselTafsir) %>"><%= carouselTafsirLabel %></a>
+			  <a class="btn book-switch-item text-nowrap" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(carouselTafsirSlug)}`) %>" data-book-carousel-item data-book-carousel-search="<%= [carouselTafsir.name_en, carouselTafsir.shortName_en, carouselTafsir.title, carouselTafsir.shortName, carouselTafsir.author_en, carouselTafsir.author, carouselTafsir.alias].filter(Boolean).join(' ') %>" data-tafsir-book-nav-item data-tafsir-alias="<%= carouselTafsir.alias %>" data-tafsir-lang="<%= carouselTafsir.lang || '' %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(carouselTafsir) %>"><%= carouselTafsirLabel %></a>
 			<% }
 			} else {
 			  for (b of hadithNavBooks) {
 				var isCurrentBook = b.alias === currentBookAlias;
 			%>
-			  <a class="btn btn-outline-primary text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %><%- hadithSizeIndicator(b) %></a>
+			  <a class="btn book-switch-item text-nowrap<%= isCurrentBook ? ' active' : '' %>"<%- isCurrentBook ? ' aria-current="page" data-current-book="true"' : '' %> href="<%= utils.urlFor(req, `/${b.alias}`) %>" data-book-carousel-item data-book-carousel-search="<%= [b.name_en, b.shortName_en, b.title, b.shortName, b.author_en, b.author, b.alias].filter(Boolean).join(' ') %>"><%= b.shortName_en %><%- hadithSizeIndicator(b) %></a>
 			<% }
 			} %>
 		</div>
 	</div>
+    </details>
 </div>
 <% } %>

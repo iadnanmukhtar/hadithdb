@@ -562,7 +562,6 @@
           <h1 class="ux-page-title">Quran contents</h1>
           <%- include('sub-views/toc_actions.ejs', actions); %>
         </header>
-        <div data-toc-mobile-tools></div>
         <% if (isQuranToc && !quranCommentaryBook && homeShelves.length) { %>
           <div class="library-shelf-toolbar">
             <div class="library-shelf-tabs" role="tablist" aria-label="Quran library">
@@ -653,6 +652,7 @@
           </li>
         </ul>
 
+        <% if (!quranCommentaryBook) { %><div data-toc-mobile-tools></div><% } %>
         <div class="tab-content" id="quran-toc-view-content">
           <div class="tab-pane fade <%= quranTocDefaultView === 'juz' ? 'show active' : '' %>" id="toc-view-juz" role="tabpanel" tabindex="0" aria-labelledby="toc-tab-juz">
 
@@ -902,7 +902,7 @@
         <section data-random-toc-item data-src="<%= utils.urlFor(req, randomTocItemSrc) %>">
           <% if (showRandomTocTitle) { %>
           <header >
-            <h2 class="ux-section-title">Random <%= isQuranToc ? 'āyah' : (book.type === 'sirah' ? 'heading' : 'ḥadīth') %> in <%- quranCommentaryBook ? quranCommentaryBookLabel : book.shortName_en %> <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h2>
+            <h2 class="ux-section-title"><%= book.type === 'sirah' ? 'History topic' : 'Hadith' %> Reminder <span class="spinner-border spinner-border-sm text-muted" role="status" aria-label="Loading"></span></h2>
           </header>
           <% } %>
         </section>

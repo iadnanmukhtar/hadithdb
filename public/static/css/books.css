@@ -15,11 +15,7 @@ main.book-catalog-page.ux-system { margin-top: var(--ux-page-start); }
 .tafsir-rail-group .catalog-rail-group-title { font: var(--ux-emphasis-weight) 1rem/1.35 var(--ux-font-ui); }
 .tafsir-rail-group ul { font-size: var(--ux-secondary-size); }
 .book-catalog-classifications { align-items: center; gap: .3rem; }
-.book-catalog-pill { padding: .05rem .4rem; text-decoration: none; font: var(--ux-light-weight) .75rem/1.35 var(--ux-font-ui); background: var(--ivory-inset, var(--bs-tertiary-bg)); }
-.book-catalog-type-pill { color: var(--ivory-accent, var(--c-accent)); background: var(--ivory-selected, var(--c-primary-soft-08)); }
 .book-catalog-page [data-highlight-pane][hidden],
 .book-catalog-page .library-deck-controls[hidden] { display: none; }
 
 .book-catalog-type-pill .app-menu-icon { width: 1em; height: 1em; font-size: 1em; line-height: 1; margin: 0 .35em 0 0; vertical-align: -.1em; }
-
-.book-catalog-pill:is(:hover, :focus-visible) { border-color: currentColor; text-decoration: underline; }

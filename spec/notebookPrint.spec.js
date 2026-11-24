@@ -8,11 +8,12 @@ let browser, context, page, server, origin;
 jest.setTimeout(30000);
 beforeAll(async () => {
   server = require('http').createServer((req, res) => {
-    if (/^\/static\/fonts\/[^/]+\.(woff2|otf)$/.test(req.url)) {
+    const pathname = new URL(req.url, 'http://localhost').pathname;
+    if (/^\/static\/fonts\/(?:inter\/)?[^/]+\.(woff2|otf)$/.test(pathname)) {
       res.setHeader('Content-Type', 'font/woff2');
-      res.end(fs.readFileSync(require('path').join(__dirname, '../public', req.url)));
-    } else if (req.url.startsWith('/static/css/markdown-content.css')) {
-      res.setHeader('Content-Type', 'text/css'); res.end(fs.readFileSync(require.resolve('../public/static/css/markdown-content.css')));
+      res.end(fs.readFileSync(require('path').join(__dirname, '../public', pathname)));
+    } else if (['/static/css/ux-foundations.css', '/static/css/markdown-content.css', '/static/css/kitab.css', '/static/css/hafs.css'].includes(pathname)) {
+      res.setHeader('Content-Type', 'text/css'); res.end(fs.readFileSync(require('path').join(__dirname, '../public', pathname)));
     } else { res.setHeader('Content-Type', 'text/html'); res.end('<button id="print">Print</button>'); }
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
@@ -60,7 +61,7 @@ test('prints the current draft with safe metadata, Arabic, links and complete pa
   expect(await popup.locator('.notebook-expand-reference').count()).toBe(0);
   expect(await popup.locator('body').textContent()).not.toContain('PRIVATE PRINT SENTINEL');
   expect(await popup.locator('body').textContent()).not.toContain('PRIVATE ONE-LINE PRINT');
-  expect(await popup.evaluate(() => document.fonts.check('16px Hafs'))).toBe(true);
+  expect(await popup.evaluate(() => document.fonts.check('16px Kitab'))).toBe(true);
   expect(await popup.locator('article p[dir="rtl"]').nth(0).evaluate(el => getComputedStyle(el).direction)).toBe('rtl');
   await popup.emulateMedia({ media: 'print' });
   expect(await popup.locator('aside').isVisible()).toBe(false);
@@ -125,7 +126,7 @@ test('bilingual quote fonts and per-language borders agree in preview and PDF', 
     ]);
     for (const quote of quotes) {
       expect(quote.font).toContain('Georgia');
-      if (quote.arabicFont) expect(quote.arabicFont).toContain('Hafs');
+      if (quote.arabicFont) expect(quote.arabicFont).toContain('Kitab');
     }
     expect(await target.locator('blockquote').nth(5).locator('p').evaluate(el => getComputedStyle(el).fontFamily)).toContain('Georgia');
   };

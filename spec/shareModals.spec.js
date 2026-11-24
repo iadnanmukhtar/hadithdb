@@ -179,7 +179,7 @@ test.each(['nested', 'flat'])('server Quran share uses %s alt Arabic through the
  const filename = require.resolve('../views/sub-views/quran_modal.ejs');
  const html=ejs.render(fs.readFileSync(filename, 'utf8'),{
   selectedAyahs:[ayah],page:{context:{}},quranShareId:'test-share',req:{},
-  utils:{socialMetadata:()=>require('../lib/SocialMetadata'),quranUrl:(_req,url)=>url,quranDisplayText:s=>s || '',defaultQuranTranslationLabel:()=> 'Translation'},
+  utils:{quranSurahHeaderSvgPath:require('../lib/Utils').quranSurahHeaderSvgPath,socialMetadata:()=>require('../lib/SocialMetadata'),quranUrl:(_req,url)=>url,quranDisplayText:s=>s || '',defaultQuranTranslationLabel:()=> 'Translation'},
   arabic:{toLatinDigits:s=>s,toArabicDigits:s=>s}
  }, { filename });
  const dom=new JSDOM(html,{runScripts:'outside-only'});
@@ -187,6 +187,7 @@ test.each(['nested', 'flat'])('server Quran share uses %s alt Arabic through the
   const w=dom.window,client=source('public/static/js/script.js');
   w.eval(client.slice(client.indexOf('function plainTextFromShareSection('),client.indexOf('function updateHadithShareMetadataFromEditable(')));
   const section=w.document.querySelector('.hadith-share-arabic-section');
+  expect(w.document.querySelector('.quran-share-surah-name').getAttribute('src')).toBe('/static/img/quran/surah-header/names/28.svg?v=2');
   const text=w.plainTextFromShareSection(section,true);
   expect(text).toContain(normal);
   expect(text).not.toMatch(/[\uE000-\uF8FF]/u);

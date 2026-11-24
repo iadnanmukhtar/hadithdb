@@ -27,7 +27,7 @@ describe('search results infinite scroll', () => {
   });
 
   test('uses the shared infinite-page, status, and sentinel presentation', () => {
-    expect(styles).toContain('.search-infinite-page');
+    expect(scripts).toContain('class="search-infinite-page search-results-page"');
     expect(styles).toContain('.search-infinite-status');
     expect(styles).toContain('.search-infinite-sentinel');
   });

@@ -11,11 +11,11 @@ function context(book, overrides = {}) {
   }));
 }
 describe('book context search defaults', () => {
-  test.each(['hadith', 'sharh', 'sirah', 'history'])('%s book selects General and its own filter', type => {
-    expect(context({ alias: 'test-book', type, shortName_en: 'Short Name' })).toEqual({ aliases: ['test-book'], commentary: [], placeholder: 'Search within Short Name', quran: false });
+  test.each(['hadith', 'sharh', 'sirah', 'history'])('%s book supplies its own filter shortcut', type => {
+    expect(context({ alias: 'test-book', type, shortName_en: 'Short Name' })).toEqual({ aliases: ['test-book'], commentary: [], placeholder: 'Search the library', quran: false });
   });
-  test.each(['tafsir', 'trans'])('%s book selects Quran and its commentary filter', type => {
-    expect(context({ alias: 'test-book', type, shortName_en: 'Short Name' })).toEqual({ aliases: [], commentary: ['test-book'], placeholder: 'Search within Short Name', quran: true });
+  test.each(['tafsir', 'trans'])('%s book supplies its commentary shortcut', type => {
+    expect(context({ alias: 'test-book', type, shortName_en: 'Short Name' })).toEqual({ aliases: [], commentary: ['test-book'], placeholder: 'Search the library', quran: true });
   });
   test('Sharh reader searches the explanation instead of the original hadith book', () => {
     const source = { alias: 'bukhari', type: 'hadith' };

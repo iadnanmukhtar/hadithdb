@@ -1,13 +1,13 @@
   <nav id="<%= shelfId %>" class="library-volumes" aria-label="<%= shelfLabel %>">
     <% for (const book of shelfBooks) {
-      const arabicTitle = book.shortName || book.name || book.title;
+      const arabicTitle = book.name;
     %>
-      <a class="library-volume" href="<%= bookHref(book) %>" data-alias="<%= book.alias %>" data-search="<%= [book.alias, book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
+      <a class="library-volume" href="<%= bookHref(book) %>" data-alias="<%= book.alias %>" data-search="<%= [book.alias, book.name_en, book.shortName_en, book.name, book.title, book.shortName, book.authorShortName_en, book.authorShortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
         <span class="volume-content">
           <span class="volume-face" aria-hidden="true"><i class="bi <%= bookIcon(book) %>"></i></span>
-          <span class="volume-name"><%= book.name_en || book.shortName_en || book.alias %><%- hadithSizeIndicator(book) %></span>
+          <span class="volume-name"><%= book.name_en || book.alias %><%- hadithSizeIndicator(book) %></span>
           <% if (arabicTitle) { %><span class="volume-arabic" lang="ar" dir="rtl"><%= arabicTitle %></span><% } %>
-          <span class="volume-author"><%= book.authorShortName_en || book.author_en || '' %></span>
+          <span class="volume-author"><%= book.authorShortName_en || book.authorShortName || '' %></span>
         </span>
       </a>
     <% } %>

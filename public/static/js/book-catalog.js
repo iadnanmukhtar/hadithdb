@@ -189,7 +189,7 @@
       if (typeIcon) face.append(typeIcon.content.firstElementChild.cloneNode(true));
       var name = document.createElement('span');
       name.className = 'volume-name';
-      name.textContent = card.dataset.directoryTitle || sourceTitle.textContent.trim();
+      name.textContent = sourceTitle.textContent.trim();
       var sizeMark = sourceTitle.parentElement.querySelector('[role="img"]');
       if (sizeMark) name.append(sizeMark.cloneNode(true));
       reader.append(face, name);
@@ -204,8 +204,7 @@
       var author = document.createElement('span');
       author.className = 'volume-author';
       author.textContent = card.dataset.bookAuthorShortEn
-        || metadata?.querySelector(':scope > div:not([lang="ar"]) > span')?.textContent.trim()
-        || card.dataset.bookAuthorShortAr || (metadata && !metadata.children.length ? metadata.textContent.trim() : '');
+        || card.dataset.bookAuthorShortAr || (type === 'Mushaf' && metadata ? metadata.textContent.trim() : '');
       reader.append(author);
       summary.append(reader);
       var classifications = document.createElement('div');
@@ -214,7 +213,7 @@
       var collection = { Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'history' }[type];
       function makePill(label, facet, value) {
         var link = document.createElement('a');
-        link.className = 'book-catalog-pill';
+        link.className = 'ux-pill book-catalog-pill';
         link.href = '/books?' + collection + (facet === 'type' ? '' : '&' + facet + '=' + encodeURIComponent(value));
         link.dataset.catalogFacet = facet;
         link.dataset.catalogValue = value;

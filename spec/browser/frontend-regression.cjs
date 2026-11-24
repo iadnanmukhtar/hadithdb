@@ -13,6 +13,8 @@ const routes = new Map(pages.map(page => [page.path, page.status]));
 for (const route of ['/quran/settings', '/quran/notebook', '/history']) routes.set(route, 200);
 for (const path of ['/requests', '/requests/feed', '/requests/rss']) routes.set(path, 410);
 routes.set('/admin', 401);
+routes.set('/bukhari:11', 200);
+routes.set('/quran/en-khattab/2/1', 200);
 routes.set('/notebook/shared/unavailable-fixture', 404);
 routes.set('/community/unsubscribe/' + '0'.repeat(64), 200);
 routes.set('/community/write?kind=article', 200);
@@ -43,6 +45,144 @@ async function verifyRoute(page, route, status, titles) {
   assert.ok(await page.locator('main').count(), 'main');
   assert.equal(await page.locator('.ux-inline-editor').count(), 0, 'anonymous edit control');
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true, 'viewport overflow');
+
+  if (route === '/quran/en-khattab/2/1') {
+    for (const index of [0, 1]) {
+      if (index) await page.locator('.quran-infinite-sentinel').first().scrollIntoViewIfNeeded();
+      const passage = page.locator('.quran-study-passage').nth(index);
+      await passage.locator('.quran-study-notes .footnote-item').first().waitFor({ state: 'attached' });
+      const issues = await passage.evaluate(element => {
+        const footer = element.querySelector('.quran-study-notes');
+        const items = [...footer.querySelectorAll('.footnote-item')];
+        const references = [...element.querySelectorAll('.quran-passage-section .footnote-ref a')];
+        const sections = [...element.querySelectorAll('.quran-passage-section')];
+        return {
+          inlineNotes: element.querySelectorAll('.ayah ol').length,
+          misplaced: sections.some(section => section.getBoundingClientRect().bottom > footer.getBoundingClientRect().top + 1),
+          mismatchedNumbers: items.some((item, i) => item.value !== i + 1),
+          brokenReferences: !references.length || references.some(ref => {
+            const note = document.getElementById(ref.hash.slice(1));
+            return !footer.contains(note) || ref.textContent !== '[' + note.value + ']';
+          }),
+          legacyFont: getComputedStyle(items[0].querySelector('p') || items[0]).fontFamily.includes('Gentium')
+        };
+      });
+      assert.deepEqual(issues, { inlineNotes: 0, misplaced: false, mismatchedNumbers: false, brokenReferences: false, legacyFont: false });
+    }
+  }
+  if (route === '/bukhari') {
+    await page.locator('[data-command-search-open]:visible').first().click();
+    const picker = page.getByRole('combobox', {name: 'Search scope'});
+    const query = page.locator('.command-search-input');
+    assert.equal(await picker.inputValue(), 'all');
+    const endpoint = '**/*autocomplete?*';
+    await page.route(endpoint, request => {
+      const filters = new URL(request.request().url()).searchParams.getAll('b');
+      return request.fulfill({json: [{label: 'Suggestion for ' + (filters.join(',') || 'all')}]});
+    });
+    try {
+      const term = 'قد أفلح';
+      await query.fill(term);
+      await query.click();
+      assert.equal(await query.evaluate(input => getComputedStyle(input).outlineStyle), 'none');
+      assert.notEqual(await query.evaluate(input => getComputedStyle(input.parentElement).boxShadow), 'none');
+      for (const [scope, filters] of Object.entries({
+        quran: ['quran','translations'], tafsir: ['tafsir'], translations: ['translations'],
+        hadith: ['hadith'], sharh: ['sharh'], sirah: ['sirah'], blog: ['blog'], community: ['community'], all: []
+      })) {
+        const request = page.waitForRequest(req => {
+          const url = new URL(req.url());
+          return url.pathname.endsWith('/autocomplete') && url.searchParams.get('q') === term
+            && JSON.stringify(url.searchParams.getAll('b')) === JSON.stringify(filters);
+        });
+        await picker.click();
+        await picker.locator('option[value="' + scope + '"]').click();
+        await request;
+        await page.locator('#global-search-dialog .ui-autocomplete:visible')
+          .getByText('Suggestion for ' + (filters.join(',') || 'all'), {exact: true}).waitFor();
+        assert.deepEqual(await picker.evaluate(el => new FormData(el.form).getAll('b')), filters);
+        assert.equal(await query.inputValue(), term);
+      }
+      await query.press('Escape');
+      const shortcut = page.getByRole('button', {name: 'Search within Bukhari'});
+      assert.equal(await shortcut.locator('.bi-book[aria-hidden="true"]').count(), 1);
+      assert.equal(await shortcut.evaluate(el => getComputedStyle(el).getPropertyValue('--bs-btn-bg').trim()),
+        await shortcut.evaluate(el => getComputedStyle(el).getPropertyValue('--ux-secondary-fill').trim()));
+      await shortcut.focus();
+      await shortcut.press('Enter');
+      await shortcut.waitFor({state: 'hidden'});
+      assert.deepEqual(await picker.evaluate(el => new FormData(el.form).getAll('b')), ['bukhari']);
+      const pill = page.getByRole('button', {name: 'Remove Bukhari filter'});
+      const count = page.locator('[data-command-filter-toggle] [data-command-search-filter-count]');
+      const appearance = el => ['fontSize', 'fontWeight', 'borderRadius', 'paddingInlineStart', 'backgroundColor']
+        .map(property => getComputedStyle(el)[property]);
+      assert.deepEqual(await pill.evaluate(appearance), await count.evaluate(appearance));
+      await pill.focus();
+      await pill.press('Enter');
+      await shortcut.waitFor();
+      assert.deepEqual(await picker.evaluate(el => new FormData(el.form).getAll('b')), []);
+      await page.keyboard.press('Escape');
+    } finally { await page.unroute(endpoint); }
+  }
+  if (route === '/bukhari:1' || route === '/bukhari:11') {
+    const headings = page.locator('main h1:visible');
+    assert.equal(await headings.count(), 1, 'related narrations must not repeat the detail heading');
+    assert.equal(await headings.innerText(), 'Bukhari ' + route.split(':')[1]);
+  }
+  if (route.includes('?q=')) {
+    assert.equal(await page.locator('main h1:visible').count(), 1);
+    await page.getByRole('button', {name: 'Edit search', exact: true}).waitFor();
+    const latinExcerpt = page.locator('.search-results-page [lang="en"] :is(p, mark, a):visible').first();
+    if (await latinExcerpt.count()) {
+      assert.match(await latinExcerpt.evaluate(el => getComputedStyle(el).fontFamily), /^Inter\b/);
+    }
+    const rail = page.locator('#search-rail-title');
+    assert.equal(await rail.isVisible(), page.viewportSize().width >= 992);
+    if (await rail.isVisible()) {
+      const heading = await page.locator('main h1').boundingBox();
+      assert.ok(Math.abs((await rail.boundingBox()).y - heading.y) < 2, 'search rail title alignment');
+    }
+    if (route.includes('xyzqzxqz')) {
+      await page.getByRole('button', {name: 'Edit search'}).click();
+      const dialog = page.locator('#global-search-dialog[open]');
+      assert.equal(await dialog.locator('[name="q"]').inputValue(), 'xyzqzxqz');
+      await page.keyboard.press('Escape');
+    }
+  }
+  if (route === '/community/write?kind=article') {
+    const signIn = page.getByRole('button', {name: 'Sign in to write'});
+    const title = page.locator('#community-title');
+    await signIn.waitFor();
+    assert.ok(await title.isHidden());
+    let releaseAccount;
+    const accountReady = new Promise(resolve => { releaseAccount = resolve; });
+    const endpoint = '**/api/**';
+    await page.route(endpoint, async route => {
+      if (new URL(route.request().url()).pathname === '/api/community/me') {
+        await accountReady;
+        return route.fulfill({json: {author: {name: 'Fixture Author', handle: 'fixture'}}});
+      }
+      return route.fulfill({json: {}});
+    });
+    const accountRequest = page.waitForRequest(request => request.url().endsWith('/community/me'));
+    await page.evaluate(() => {
+      window.hadithAuth.getToken = async () => 'fixture';
+      document.dispatchEvent(new Event('hadithAuthChanged'));
+    });
+    await accountRequest;
+    assert.ok(await title.isHidden());
+    releaseAccount();
+    await title.waitFor();
+    await title.fill('Fixture draft');
+    await page.evaluate(() => {
+      window.hadithAuth.getToken = async () => null;
+      document.dispatchEvent(new Event('hadithAuthChanged'));
+    });
+    await signIn.waitFor();
+    assert.ok(await title.isHidden());
+    assert.equal(await title.inputValue(), '');
+    await page.unroute(endpoint);
+  }
 
   if (comparableTitles.has(route)) {
     titles.set(route, await page.locator('main h1:visible').first().evaluate(node => {

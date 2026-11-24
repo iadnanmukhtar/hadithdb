@@ -30,17 +30,11 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container col-lg-8 mx-auto">
-    
-    <main class="search-results">
-
-      <div class="row"> 
-        <h1 class="ux-page-title"><%- res.statusCode %> <%- safeStatusTitle %></h1>
-        <p><%- safePublicMessage %></p>
-
-      </div>
-    </main>
-  </div>
+  <main class="container col-lg-8 mx-auto px-4 py-4 ux-system">
+    <header class="ux-page-heading"><h1 class="ux-page-title"><%= res.statusCode %> <%= safeStatusTitle %></h1></header>
+    <p><%- safePublicMessage %></p>
+    <a class="ux-secondary-action" href="/books">Browse the library</a>
+  </main>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/page_end.ejs', { site, page }); %>

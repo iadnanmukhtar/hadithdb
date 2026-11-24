@@ -11,7 +11,7 @@
   <main class="container col-lg-8 mx-auto mt-10 quran-review-top-offset quran-memorization-welcome" id="quran-memorization-welcome"<% if (!helpView) { %> hidden<% } %>>
     <section class="quran-memorization-welcome-hero text-center mx-auto">
       <img class="quran-memorization-welcome-logo" src="/static/img/quran/mudhakkir.svg" width="96" height="96" alt="Mudhakkir">
-      <p class="text-primary fw-semibold small mb-2"><span class="badge rounded-pill text-bg-success me-1">Mudhakkir</span> Adaptive spaced repetition for Quran hifz</p>
+      <p class="text-primary fw-semibold small mb-2"><span class="ux-pill me-1">Mudhakkir</span> Adaptive spaced repetition for Quran hifz</p>
       <h1 class="ux-page-title mb-1">Mudhakkir</h1>
       <p class="fs-5 fw-semibold mb-3">Keep your Quran memorization fresh</p>
       <p class="lead text-muted mx-auto mb-4">The app brings each āyah back for review before it is likely to fade. Your answers adjust future timing, helping keep your hifz strong without unnecessary repetition.</p>
@@ -103,7 +103,7 @@
     </section>
     <article class="quran-memorization-help-article text-start mx-auto" aria-labelledby="quran-memorization-help-article-title">
       <header class="quran-memorization-help-article-header">
-        <p class="quran-memorization-help-kicker mb-1"><span class="badge rounded-pill text-bg-primary">How it works</span> Quran memorization guide</p>
+        <p class="quran-memorization-help-kicker mb-1"><span class="ux-pill">How it works</span> Quran memorization guide</p>
         <h2 class="fs-4 mb-0" id="quran-memorization-help-article-title">How Quran memorization works</h2>
       </header>
       <div class="quran-memorization-help-body">
@@ -283,7 +283,7 @@
         const activeAyahCount=Math.max(0,Number(group.active_ayah_count)||totalFor(group));
         const unitType=group.group_type==='surah'?'short surah':'page';
         const actionLabel='Pause these āyāt or move them to Later';
-        return `<button type="button" class="quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="${actionLabel} for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
+        return `<button type="button" class="ux-pill quran-memorization-state-pill memorization-progress-group-state is-${escapeHtml(current)}" data-progress-group-state="${escapeHtml(group.group_key||'')}" data-current-state="${escapeHtml(current)}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-progress-group-state-menu" aria-label="${actionLabel} for this ${unitType}. Current state: ${escapeHtml(currentLabel)}, ${activeAyahCount} ${activeAyahCount===1?'āyah':'āyāt'}"><span class="quran-memorization-state-legend-swatch" aria-hidden="true"></span><strong>${escapeHtml(currentLabel)}</strong><span class="quran-page-state-count">${activeAyahCount.toLocaleString()}</span><span class="bi bi-chevron-down" aria-hidden="true"></span></button>`;
       };
       const groupStateOptions=['core','suspended','later'];
       const groupStateDescriptions={core:'Easy recall; no scheduled reviews',suspended:'Temporarily inactive',later:'Remove from memorization'};

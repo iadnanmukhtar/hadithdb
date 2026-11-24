@@ -1062,12 +1062,12 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
 
       await page.evaluate(()=>scrollTo(0,0));
       await page.screenshot({path:'/tmp/community-my-wall-mobile.png',fullPage:true});
-      expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toContain('Me');
+      expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toContain('My Profile');
       await page.screenshot({path:'/tmp/community-section-menu-mobile.png',fullPage:true});
-      await page.locator('.community-tabs a[href="/notebook"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'My Notebook'});
       expect(await page.locator('#personal-notebook > nav').count()).toBe(0);
       expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toContain('My Notebook');
-      await page.locator('.community-tabs a[href="/community"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'Everyone'});
       await page.waitForFunction(()=>document.getElementById('community-feed').textContent.includes('A quick reflection'));
       await page.waitForLoadState('load');
       await page.screenshot({path:'/tmp/community-feed-mobile.png',fullPage:true});
@@ -1075,12 +1075,12 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       if(overflow.width>overflow.viewport) console.log('Mobile overflow',overflow);
       expect(overflow.width).toBeLessThanOrEqual(overflow.viewport);
 
-      await page.locator('.community-tabs a[href="/blog"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'Blog'});
       expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toBe('Blog');
       expect(await page.locator('.site-navbar .nav-link.active[href="/community"]').count()).toBeGreaterThan(0);
       await page.waitForLoadState('load');
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-      await page.locator('.community-tabs a[href="/community"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'Everyone'});
       await page.waitForFunction(()=>document.getElementById('community-feed').textContent.includes('A quick reflection'));
       await page.addInitScript(() => { window.hadithAuth = {getUser: async () => null, getToken: async () => { throw new Error('Session unavailable'); }}; });
       await page.goto(base+'/community/@amina/'+savedId);

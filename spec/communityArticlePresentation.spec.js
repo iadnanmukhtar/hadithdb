@@ -4,21 +4,28 @@ const fs = require('fs');
 const path = require('path');
 const {load} = require('cheerio');
 const Community = require('../lib/Community');
-const row = {id: 42, kind: 'article', public_title: 'An article', public_subtitle: 'A subtitle', public_markdown: '## Heading\n\nالعربية\n\n[Source](https://example.com/source)\n\n![Image](https://example.com/image.jpg)', published_at: new Date('2026-10-31T12:00:00Z'), name: 'Author', handle: 'author'};
+const row = {id: 42, kind: 'article', public_title: 'An article', public_subtitle: 'A subtitle', public_markdown: '# Heading\n\nالعربية\n\n[Source](https://example.com/source)\n\n![Image](https://example.com/image.jpg)', published_at: new Date('2026-10-31T12:00:00Z'), name: 'Author', handle: 'author'};
 function render(post) {
   const file = path.resolve('views/community.ejs');
-  return ejs.render(fs.readFileSync(file, 'utf8'), {view:'post', post, author:post.author, page:{}, global:{settings:{site:{}}}, utils:{scriptAssetVersion:()=> 'test'}, include:(name, data)=>name.endsWith('blog_cover.ejs') ? ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),data,{filename:path.resolve('views',name)}) : ''}, {filename:file});
+  return ejs.render(fs.readFileSync(file, 'utf8'), {view:'post', post, author:post.author, page:{}, global:{settings:{site:{}}}, utils:{articleBodyHtml:require('../lib/Utils').articleBodyHtml,scriptAssetVersion:()=> 'test'}, include:(name, data)=>name.endsWith('blog_cover.ejs') ? ejs.render(fs.readFileSync(path.resolve('views',name),'utf8'),data,{filename:path.resolve('views',name)}) : ''}, {filename:file});
 }
 test('articles keep their cover and use post body rendering while preserving links and images', () => {
   const post=Community.postView(row), $=load(render(post));
   expect($('.community-article-layout > main.community-article')).toHaveLength(1);
   expect($('h1')).toHaveLength(1);
+  expect($('[data-article-body] h2').text()).toBe('Heading');
   expect($('.blog-cover-hero h1').text()).toBe(row.public_title);
   expect($('.blog-cover-hero .community-cover-subtitle').text()).toBe(row.public_subtitle);
   expect($('[data-article-body].notebook-markdown.community-reflection-body a').attr('href')).toBe('https://example.com/source');
   expect($('[data-article-body] img').attr('src')).toBe('https://example.com/image.jpg');
   expect($('[data-article-body]').text()).toContain('العربية');
   expect($('.community-link-preview, article.community-card, #community-author-profile')).toHaveLength(0);
+});
+test('article heading normalization preserves section anchors and nested links', () => {
+  const Utils = require('../lib/Utils');
+  const $ = load(Utils.articleBodyHtml('<h1 id="opening"><a href="#notes">Opening</a></h1><h2 id="notes">Notes</h2>'));
+  expect($('h2#opening a').attr('href')).toBe('#notes');
+  expect($('h3#notes').text()).toBe('Notes');
 });
 test('short posts retain their layout and standalone link previews', () => {
   const $=load(render(Community.postView({...row,kind:'note'})));

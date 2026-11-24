@@ -85,10 +85,8 @@ describe('content revision', () => {
 	});
 
 	test('uses the tafsir footnote color for revised content footnotes and their links', () => {
-		const css = fs.readFileSync(path.join(__dirname, '../public/static/css/style.css'), 'utf8');
-		expect(css).toContain(':is(.intro, .h .body) .footnote-ref a');
-		expect(css).toContain(':is(.intro, .h .body) .footnotes a');
-		expect(css).toMatch(/:is\(\.intro, \.h \.body\) \.footnotes li::marker \{[\s\S]*?color: var\(--c-footnote-muted\);/);
+		const css = fs.readFileSync(path.join(__dirname, '../public/static/css/ux-foundations.css'), 'utf8');
+		expect(css).toMatch(/body \.footnotes a, body \.footnote-item::marker,[^{}]*body \.footnote-ref a,[^{}]*\{ color: var\(--c-footnote-muted,/);
 	});
 
 	test('renders namespaced Markdown footnotes in English and Arabic content', () => {

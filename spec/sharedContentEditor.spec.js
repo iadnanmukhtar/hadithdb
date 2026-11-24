@@ -17,6 +17,7 @@ async function setup(kind,markdown,width=900){
  const markup=kind==='note'?await ejs.renderFile('views/sub-views/notebook_modal.ejs',{utils:{scriptAssetVersion:()=>''}}):
   `<section class="${kind==='article'?'community-editor':'community-quick-dialog'}"><form>${kind==='article'?'<div id="community-format-toolbar" class="community-format-toolbar">'+controls+'</div>':''}<textarea id="${kind==='article'?'community-markdown':'community-quick-text'}" data-short-editor ${kind==='article'?'data-article-editor':''}></textarea></form></section>`;
  await page.setContent('<style>html{font-size:18px} [hidden]{display:none!important}</style>'+markup.replace(/<script[^]*?<\/script>/g,''));
+ await page.addStyleTag({path:'public/static/css/ux-foundations.css'});
  await page.addStyleTag({path:'public/static/css/community.css'});
  await page.addStyleTag({path:'public/static/css/markdown-content.css'});
  if(kind==='note')await page.locator('#notebook-modal').evaluate(el=>el.setAttribute('aria-hidden','false'));
@@ -159,7 +160,7 @@ for(const kind of ['post','article','note'])describe(kind,()=>{
    const sections=[...el.querySelectorAll('.notebook-quote-section')].map(el=>{const s=getComputedStyle(el);return [s.direction,s.textAlign,s.borderInlineStartWidth,s.borderInlineStartColor];});
    return {arabic:[arabic.fontFamily,arabic.fontSize,arabic.lineHeight],sections};
   });
-  expect(metrics).toEqual({arabic:['Hafs, serif','21.6px','32.4px'],sections:[['rtl','right','3px','rgb(44, 155, 229)'],['ltr','left','3px','rgb(44, 155, 229)']]});
+  expect(metrics).toEqual({arabic:['Kitab, serif','21.6px','32.4px'],sections:[['rtl','right','3px','rgb(44, 155, 229)'],['ltr','left','3px','rgb(44, 155, 229)']]});
   await page.screenshot({path:`/tmp/shared-editor-${kind}-${width}.png`});
  });
 });
@@ -236,7 +237,7 @@ for(const kind of ['post','article','note'])describe(kind+' footnote audit',()=>
  test('footnotes use smaller text while keeping Arabic, bold, quote and heading formatting',async()=>{
   await setup(kind,'Main[^1]\n\n[^1]: **Bold** العربية\n\n    > العربية\n    > English\n\n    ## Heading');
   const metrics=await page.evaluate(()=>{const body=rich.querySelector('.community-footnote-body'),style=getComputedStyle(body);return {main:parseFloat(getComputedStyle(rich).fontSize),note:parseFloat(style.fontSize),arabic:parseFloat(getComputedStyle(body.querySelector('.notebook-arabic')).fontSize),bold:getComputedStyle(body.querySelector('strong')).fontWeight,heading:parseFloat(getComputedStyle(body.querySelector('h2')).fontSize),directions:[...body.querySelectorAll('.notebook-quote-section')].map(el=>el.dir)};});
-  expect(metrics.note).toBeCloseTo(metrics.main*.85);expect(metrics.arabic).toBeCloseTo(metrics.note*1.2);expect(metrics.bold).toBe('700');expect(metrics.heading).toBeGreaterThan(metrics.note);expect(metrics.directions).toEqual(['rtl','ltr']);
+  expect(metrics.note).toBeCloseTo(18*.84);expect(metrics.note).toBeLessThan(metrics.main);expect(metrics.arabic).toBeCloseTo(18);expect(metrics.bold).toBe('700');expect(metrics.heading).toBeGreaterThan(metrics.note);expect(metrics.directions).toEqual(['rtl','ltr']);
   await page.screenshot({path:'/tmp/footnote-editor-'+kind+'.png'});
  });
 });

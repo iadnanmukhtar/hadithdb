@@ -53,8 +53,8 @@
       <div class="home-reading-column">
       <% if (hasRandomReading) { %>
         <header class="home-reading-heading">
-          <h2>Random <%= random.remark == 2 ? 'āyah' : 'ḥadīth' %></h2>
-          <a href="/" aria-label="Show another random reading"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Another reading</a>
+          <h2><%= random.remark == 2 ? 'Ayah' : 'Hadith' %> Reminder</h2>
+          <a href="/" aria-label="Show another reminder"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Another reminder</a>
         </header>
 
         <% if (random.remark == 2) {

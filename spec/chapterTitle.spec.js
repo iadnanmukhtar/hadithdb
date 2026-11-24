@@ -2,6 +2,7 @@
 
 const path = require('path');
 const ejs = require('ejs');
+const { JSDOM } = require('jsdom');
 const Arabic = require('../lib/Arabic');
 
 const template = path.join(__dirname, '..', 'views', 'sub-views', 'chapterTitle.ejs');
@@ -120,8 +121,14 @@ test('uses the full row for a one-language chapter intro but shows both editors 
 	const publicHtml = await renderHadithChapterTitle({ introEn: 'English only' });
 	const editHtml = await renderHadithChapterTitle({ introEn: 'English only', editMode: true });
 
-	expect(publicHtml).toContain('class="_e col-12 intro" lang="en"');
+	expect(JSDOM.fragment(publicHtml).querySelector('.chapter-intro ._e.col-12.intro[lang="en"]')).not.toBeNull();
 	expect(publicHtml).not.toMatch(/class="chapter-intro[\s\S]*data-prop="toc\.intro"/);
-	expect(editHtml).toContain('class="_e col-md-6 col-sm-12 intro" lang="en"');
+	expect(JSDOM.fragment(editHtml).querySelector('.chapter-intro ._e.col-md-6.col-sm-12.intro[lang="en"]')).not.toBeNull();
 	expect(editHtml).toContain('lang="ar" data-id="41" data-prop="toc.intro"');
+});
+
+test.each([[0, '/bukhari/1'], [2, '/bukhari/1/2']])('links the final English and Arabic breadcrumb for section %s', async (sectionNumber, href) => {
+	const dom = JSDOM.fragment(await renderHadithChapterTitle({ sectionNumber }));
+	const links = [...dom.querySelectorAll('.breadcrumbs > div')].map(row => row.lastElementChild.getAttribute('href'));
+	expect(links).toEqual([href, href]);
 });

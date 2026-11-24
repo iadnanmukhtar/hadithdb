@@ -30,23 +30,24 @@
 				<div class="modal-body">
 					<label class="visually-hidden" for="admin-pair-filter">Filter pairs</label>
 					<div class="hadith-pair-manager-filter mb-3"><span class="bi bi-funnel" aria-hidden="true"></span><input id="admin-pair-filter" type="search" class="form-control form-control-sm hadith-admin-combobox" dir="auto" data-hadith-pair-manager-filter placeholder="Search Arabic or English (ignores diacritics)" aria-label="Search pairs by Arabic or English" autocomplete="off"></div>
-					<section class="hadith-pair-merge border rounded p-3 mb-3" aria-label="Merge selected pairs">
-<h4 class="fs-6">Merge selected pairs</h4>
-<p class="small text-muted">Selections stay when you search. Choose the pair to keep, then review its Arabic and English names.</p>
-<ul data-pair-merge-selected class="list-unstyled"></ul>
-<label for="pair-merge-target">Target pair</label>
-<select id="pair-merge-target" class="form-select form-select-sm mb-2" data-pair-merge-target><option value="">Select pairs below</option></select>
-<div class="row g-2 mb-2">
-<div class="col-sm-6"><label for="pair-merge-ar">Target Arabic name</label><input id="pair-merge-ar" class="form-control" lang="ar" dir="rtl" data-pair-merge-ar maxlength="255"></div>
-<div class="col-sm-6"><label for="pair-merge-en">Target English name</label><input id="pair-merge-en" class="form-control" lang="en" data-pair-merge-en maxlength="255"></div>
-</div>
-<button type="button" class="ux-primary-action btn btn-primary btn-sm" data-pair-merge disabled>Merge selected pairs</button>
-<button type="button" class="btn btn-outline-secondary btn-sm" data-pair-merge-clear>Clear selection</button>
-</section>
-<div class="hadith-pair-manager-list" data-hadith-pair-manager-list></div>
+					<p class="small text-muted" data-pair-selection-count role="status">0 selected</p>
+					<div class="hadith-pair-manager-list" data-hadith-pair-manager-list></div>
 					<div class="hadith-pair-manager-empty text-muted" data-hadith-pair-manager-empty hidden>No saved pairs.</div>
+					<section hidden class="hadith-pair-merge border rounded p-3 mb-3" aria-label="Merge selected pairs">
+						<h3 class="fs-6">Merge selected pairs</h3>
+						<p class="small text-muted">Selections stay when you search. Choose the pair to keep, then review its Arabic and English names.</p>
+						<ul data-pair-merge-selected class="list-unstyled"></ul>
+						<label for="pair-merge-target">Target pair</label>
+						<select id="pair-merge-target" class="form-select form-select-sm mb-2" data-pair-merge-target><option value="">Choose the pair to keep</option></select>
+						<div class="row g-2 mb-2">
+							<div class="col-sm-6"><label for="pair-merge-ar">Target Arabic name</label><input id="pair-merge-ar" class="form-control" lang="ar" dir="rtl" data-pair-merge-ar maxlength="255"></div>
+							<div class="col-sm-6"><label for="pair-merge-en">Target English name</label><input id="pair-merge-en" class="form-control" lang="en" data-pair-merge-en maxlength="255"></div>
+						</div>
+						<button type="button" class="ux-primary-action btn btn-primary btn-sm" data-pair-merge disabled>Merge selected pairs</button>
+						<button type="button" class="btn btn-outline-secondary btn-sm" data-pair-merge-clear>Clear selection</button>
+					</section>
 					<hr>
-					<h4 class="fs-6">Add a new pair</h4>
+					<h3 class="fs-6">Add a new pair</h3>
 					<div class="hadith-pair-manager-new" data-hadith-pair-manager-new>
 						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="ar" dir="rtl" data-hadith-pair-value-ar placeholder="Arabic value" aria-label="Arabic value">
 						<input type="text" class="form-control form-control-sm hadith-admin-combobox" lang="en" dir="ltr" data-hadith-pair-value-en placeholder="English value" aria-label="English value">

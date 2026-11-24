@@ -236,7 +236,7 @@ test('formatted editing and Markdown preview use identical Arabic spans and lang
  const rich=await metrics('.community-rich-input .notebook-quote-section');
  expect(rich.map(m=>m.dir)).toEqual(['rtl','rtl','ltr','ltr','rtl']);
  const font=await page.locator('.community-rich-input .notebook-arabic').first().evaluate(e=>{const s=getComputedStyle(e);return [s.fontFamily,s.fontSize,s.lineHeight]});
- expect(font[0]).toContain('Hafs');
+ expect(font[0]).toContain('Kitab');
  await page.screenshot({path:'/tmp/note-formatted-mode.png',fullPage:true});
  await page.evaluate(()=>edit(false));
  const rendered=await metrics('#notebook-preview blockquote');

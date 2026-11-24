@@ -1,4 +1,3 @@
-@font-face { font-family: Hafs; font-style: normal; src: url('/static/fonts/kd-hafs.woff2'); }
 .markdown-video-previews { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1.25rem; margin-block: 1.5rem; }
 /* Reader paragraphs indent their first line; preview titles and metadata must not. */
 .markdown-video-previews { text-indent: 0; }
@@ -19,10 +18,8 @@
   .markdown-video-copy strong { font-size: .95rem; }
   .markdown-video-copy small { font-size: .8rem; }
 }
-@font-face { font-family: QuranV1; font-style: normal; font-weight: 400; src: url('/static/fonts/DigitalKhattV1.otf'); }
 :is(.notebook-markdown, .content-markdown) { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
 :is(.notebook-markdown, .content-markdown) a { color: var(--note-link, #0d6efd); }
-:is(.notebook-markdown, .content-markdown) .footnotes-list { list-style-type: decimal; }
 /* Each item chooses its own direction; reserve marker space on that side. */
 :is(.notebook-markdown, .content-markdown) :is(ul, ol) { padding-inline: 0; }
 :is(.notebook-markdown, .content-markdown) li { margin-inline-start: 1.6em; }
@@ -40,7 +37,9 @@
 :is(.notebook-markdown, .content-markdown) [dir="ltr"] { direction: ltr; unicode-bidi: isolate; text-align: left; }
 :is(.notebook-markdown, .content-markdown) .notebook-text-line { display: block; }
 :is(.notebook-markdown, .content-markdown) [dir="auto"] { unicode-bidi: plaintext; text-align: start; }
-:is(.notebook-markdown, .content-markdown) .notebook-arabic { font-family: Hafs, serif; line-height: 1lh; font-synthesis: weight style; }
+:is(.notebook-markdown, .content-markdown) .notebook-arabic { font-family: Kitab, serif; line-height: 1lh; font-synthesis: style; }
+/* Keep Arabic runs within the surrounding Latin line box. */
+:is(.notebook-markdown, .content-markdown) [dir="ltr"] .notebook-arabic { vertical-align: top; }
 :is(.notebook-markdown, .content-markdown) strong, :is(.notebook-markdown, .content-markdown) strong .notebook-arabic { font-weight: 700; }
 :is(.notebook-markdown, .content-markdown) em, :is(.notebook-markdown, .content-markdown) em .notebook-arabic { font-style: italic; }
 :is(.notebook-markdown, .content-markdown) mark { background: #ffe680; color: #302a1b; padding: .05em 0; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
@@ -48,7 +47,7 @@
 :is(.notebook-markdown, .content-markdown) .notebook-underline { text-decoration: underline; text-underline-offset: .15em; }
 :is(.notebook-markdown, .content-markdown) .notebook-arabic { font-size: 1.2em; }
 :is(.notebook-markdown, .content-markdown) .notebook-arabic .notebook-arabic { font-size: inherit; }
-:is(.notebook-markdown, .content-markdown) .quran-ayah-end-marker { font-family: QuranV1, serif; font-size: 1em; font-weight: 400; white-space: nowrap; }
+:is(.notebook-markdown, .content-markdown) .quran-ayah-end-marker { font-family: Hafs, serif; font-size: 1em; font-weight: 400; white-space: nowrap; }
 /* Kitab lacks U+0305; use a face that shapes Arabic and its overline together. */
 :is(.notebook-markdown, .content-markdown) [data-notebook-overline] { font-family: Arial, 'Noto Naskh Arabic', sans-serif; }
 :is(.notebook-markdown, .content-markdown) blockquote { margin: 1rem 0; border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
@@ -89,9 +88,55 @@
 .notebook-markdown > p:last-child { margin-bottom: 0; }
 :is(.notebook-markdown, .content-markdown) .community-toc { border: 1px solid #ccc; padding: 1rem; margin-block: 1rem; }
 
-/* Raw Markdown and newly typed text use the same Hafs glyphs and 1.2 scale
-   through a script-specific font face. */
-@font-face { font-family: NotebookEditableArabic; src: url('/static/fonts/kd-hafs.woff2'); size-adjust: 120%; unicode-range: U+0600-06FF, U+0750-077F, U+0870-089F, U+08A0-08FF, U+FB50-FDFF, U+FE70-FEFF, U+1EE00-1EEFF; }
+/* Match the scaled Arabic spans while leaving mixed-script editing intact. */
+@font-face {
+  font-family: NotebookEditableArabic;
+  src: url("/static/fonts/kitab-base.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 100 449;
+  size-adjust: 120%;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-089F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF;
+}
+@font-face {
+  font-family: NotebookEditableArabic;
+  src: url("/static/fonts/kitab-medium.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 450 599;
+  size-adjust: 120%;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-089F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF;
+}
+@font-face {
+  font-family: NotebookEditableArabic;
+  src: url("/static/fonts/kitab-base-b.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 600 1000;
+  size-adjust: 120%;
+  unicode-range: U+0600-06FF,U+0750-077F,U+0870-089F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF;
+}
+@font-face {
+  font-family: NotebookEditableArabic;
+  src: url("/static/fonts/kitab-phrases.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 100 449;
+  size-adjust: 120%;
+  unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
+}
+@font-face {
+  font-family: NotebookEditableArabic;
+  src: url("/static/fonts/kitab-phrases.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 450 599;
+  size-adjust: 120%;
+  unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
+}
+@font-face {
+  font-family: NotebookEditableArabic;
+  src: url("/static/fonts/kitab-phrases.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 600 1000;
+  size-adjust: 120%;
+  unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
+}
 .community-short-editor textarea[data-short-editor], .community-rich-input:is(.notebook-markdown, .content-markdown) { font-family: NotebookEditableArabic, Georgia, "Times New Roman", serif; }
 .community-rich-input blockquote.notebook-edit-quote { border: 0; padding: 0; }
 .community-rich-input .notebook-quote-section { border: 0; border-inline-start: 3px solid #2c9be5; padding-inline: 0; padding-inline-start: 1rem; }
@@ -109,9 +154,6 @@
 
 /* Footnotes inherit the ordinary Markdown rules at a smaller relative scale.
    Reset legacy reader overrides here instead of restyling their contents. */
-:is(.notebook-markdown, .content-markdown) :is(.footnotes, .community-footnote-body) { font-size: .85em !important; line-height: 1.8 !important; }
-:is(.notebook-markdown, .content-markdown) .footnotes :is(p, li, s) { font-size: inherit !important; line-height: inherit !important; }
-:is(.notebook-markdown, .content-markdown) .footnotes .notebook-arabic { font-size: 1.2em; }
 
 /* Stop the legacy body :lang(ar) rule from resetting every descendant's size. */
 .content-markdown :is(p, li, span, a, strong, em, u, mark, blockquote, ul, ol, div) { font-size: inherit; }
@@ -122,14 +164,11 @@
 .content-markdown .community-rich-input :is(p, li) { font-size: inherit; line-height: inherit; }
 .content-markdown .community-rich-input p { margin-block: 0 .25rem; }
 .content-markdown .community-rich-input :is(p, .notebook-rich-line) { white-space: pre-wrap; }
-.content-markdown .footnote-ref { direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
-.content-markdown .footnote-ref, .content-markdown .footnote-ref a { font-family: system-ui, sans-serif !important; }
-.content-markdown .footnotes p { text-indent: 0; }
 [data-bs-theme="dark"] :is(.quran-commentary-introduction-article, .hadith-heading-sharh) { --c-ghostwhite: var(--bs-tertiary-bg); }
 [data-bs-theme="dark"] .hadith-sharh-title-input { background-color: var(--bs-body-bg) !important; color: var(--bs-body-color); }
 [data-bs-theme="dark"] :is(.quran-commentary-introduction-article, .hadith-heading-sharh) .hadith-admin-action { color: var(--bs-secondary-color); }
 
-/* Fix Arabic line boxes at the block's text size. Inline Hafs glyphs (including
+/* Fix Arabic line boxes at the block's text size. Inline Arabic glyphs (including
    ﷺ) paint within those lines without enlarging the baseline-to-baseline gap. */
 :is(.notebook-markdown, .content-markdown) :is(p, li, .notebook-text-line, .notebook-rich-line)[dir="rtl"] { line-height: 1.8em; }
 
@@ -166,14 +205,14 @@
 }
 
 /* Resolve one Arabic hadith line height at the reader size. Sharing a length
-   across the chain, matn and footer prevents inline font metrics (notably ﷺ)
+   across the chain and matn prevents inline font metrics (notably ﷺ)
    and the Markdown paragraph defaults from giving each section a new rhythm. */
 .h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) {
   --hadith-arabic-line-height: calc(var(--f-size-ar) * 1.58);
   line-height: var(--hadith-arabic-line-height);
 }
-.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) :is(.chain, .body, .hadith-body-content, footer.footnote),
-.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) :is(.hadith-body-content, footer.footnote) :is(p, li, .notebook-text-line, .notebook-rich-line) {
+.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) :is(.chain, .body, .hadith-body-content),
+.h:lang(ar):has(.hadith-body-content:not(.quran-hafs)) .hadith-body-content :is(p, li, .notebook-text-line, .notebook-rich-line) {
   line-height: var(--hadith-arabic-line-height);
 }
 

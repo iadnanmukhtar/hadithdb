@@ -457,7 +457,7 @@
 				const page = parseInt(button.dataset.quranMushafBookmarkPage, 10);
 				const bookmarked = page === mushafBookmarkPage;
 				const icon = button.querySelector('.quran-mushaf-bookmark-icon');
-				if (icon) icon.className = bookmarked ? 'quran-mushaf-bookmark-icon bi bi-bookmark-fill text-accent' : 'quran-mushaf-bookmark-icon bi bi-bookmark text-accent';
+				if (icon) icon.className = bookmarked ? 'quran-mushaf-bookmark-icon bi bi-bookmark-fill' : 'quran-mushaf-bookmark-icon bi bi-bookmark';
 				button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
 				button.title = `${bookmarked ? 'Remove bookmark from' : 'Bookmark'} Mushaf page ${page}`;
 			});

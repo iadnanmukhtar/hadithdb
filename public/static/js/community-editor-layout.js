@@ -29,6 +29,7 @@
     button.firstElementChild.className=expanded?'bi bi-fullscreen-exit':'bi bi-arrows-fullscreen';
     if(!expanded){window.scrollTo(...scroll);button.focus({preventScroll:true});}
   }
+  document.addEventListener('hadithAuthChanged', () => setExpanded(false));
   button.addEventListener('mousedown',event=>event.preventDefault());
   button.addEventListener('click',()=>setExpanded(!expanded));
   editor.addEventListener('keydown',event=>{
