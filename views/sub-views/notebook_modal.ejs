@@ -239,7 +239,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-outline[hidden] { display: none; }
 .notebook-outline-label { position: sticky; top: 0; padding-bottom: .5rem; background: var(--note-paper); color: var(--note-ink); font-size: .8rem; font-weight: 600; }
 #notebook-outline-items { list-style: none; padding: 0; margin: 0; }
-#notebook-outline-items button { display: block; width: 100%; border: 0; border-inline-start: 2px solid transparent; border-radius: .2rem; padding: .35rem .5rem; padding-inline-start: calc(.5rem + var(--outline-depth) * .7rem); background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; overflow-wrap: anywhere; }
+#notebook-outline-items button { display: block; width: 100%; border: 0; border-inline-start: 2px solid transparent; border-radius: .2rem; padding: .35rem .5rem; padding-inline-start: calc(.5rem + var(--outline-depth) * .7rem); background: transparent; color: inherit; font: inherit; text-align: start; overflow-wrap: anywhere; font-size: clamp(13px, calc(16px - var(--outline-depth, 0) * 2px), 16px); font-weight: clamp(400, calc(700 - var(--outline-depth, 0) * 300), 700); }
 #notebook-outline-items button:hover, #notebook-outline-items button[aria-current="location"] { background: rgba(212, 167, 44, .15); color: var(--note-ink); border-inline-start-color: var(--note-edge); }
 #notebook-outline-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
 #notebook-outline-items button { display: flex; align-items: baseline; gap: .4rem; }
@@ -264,7 +264,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-modal .modal-fullscreen #notebook-zoom-control { display: flex; }
 #notebook-zoom { width: clamp(4rem, 12vw, 10rem); min-width: 4rem; accent-color: var(--note-edge); }
 #notebook-zoom-value { min-width: 3em; font-variant-numeric: tabular-nums; }
-#notebook-modal .modal-fullscreen :is(#notebook-preview, #notebook-editor) { font-size: var(--notebook-font-size, 1rem); }
+#notebook-modal .modal-fullscreen :is(#notebook-preview, #notebook-editor) { font-size: var(--notebook-font-size, var(--ux-body-size)); }
 #notebook-preview:empty::before { content: attr(data-placeholder); white-space: pre-wrap; opacity: .55; }
 .notebook-tool { border: 0; background: transparent; color: var(--note-ink, #805d00); padding: .45rem; display: inline-flex; align-items: center; justify-content: center; border-radius: .3rem; }
 .notebook-tool:hover, .notebook-tool:focus-visible { color: var(--note-ink, #805d00); background: color-mix(in srgb, var(--note-edge, #d4a72c) 28%, transparent); }
@@ -365,7 +365,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 .notebook-line-numbers { position: absolute; inset: 0 auto 0 0; width: 1.8rem; overflow: hidden; pointer-events: none; user-select: none; color: var(--note-ink); opacity: .4; }
 .notebook-line-numbers span { position: absolute; right: .25rem; font: 10px/1.6 var(--ux-font-ui); font-variant-numeric: tabular-nums; }
 #notebook-surface .community-short-editor { display: flex; flex-direction: column; flex: 1; min-height: 0; --community-paper: var(--note-paper); --community-ink: var(--note-ink); }
-#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: var(--ux-font-ui); font-size: var(--notebook-font-size, 1rem); line-height: 1.8; box-shadow: none; }
+#notebook-surface :is(.community-rich-input, #notebook-preview, #notebook-editor) { flex: 1; min-height: 0; max-height: none; overflow: auto; padding: .75rem .5rem; border: 0; border-radius: 0; background: transparent; color: var(--note-ink); font-family: var(--ux-font-ui); font-size: var(--notebook-font-size, var(--ux-body-size)); line-height: 1.8; box-shadow: none; }
 #notebook-surface { --notebook-fold-gutter: 1.75rem; }
 #notebook-surface :is(.community-rich-input, #notebook-preview):has([data-heading-fold]:dir(ltr)) { padding-left: var(--notebook-fold-gutter); }
 #notebook-surface :is(.community-rich-input, #notebook-preview):has([data-heading-fold]:dir(rtl)) { padding-right: var(--notebook-fold-gutter); }

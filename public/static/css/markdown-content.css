@@ -18,7 +18,7 @@
   .markdown-video-copy strong { font-size: .95rem; }
   .markdown-video-copy small { font-size: .8rem; }
 }
-:is(.notebook-markdown, .content-markdown) { font-family: var(--ux-font-ui); font-size: 1rem; line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
+:is(.notebook-markdown, .content-markdown) { font-family: var(--ux-font-ui); font-size: var(--ux-body-size); line-height: 1.8; color: var(--note-ink, inherit); overflow-wrap: anywhere; text-align: start; }
 :is(.notebook-markdown, .content-markdown) a { color: var(--note-link, #0d6efd); }
 /* Each item chooses its own direction; reserve marker space on that side. */
 :is(.notebook-markdown, .content-markdown) :is(ul, ol) { padding-inline: 0; }
@@ -340,7 +340,7 @@ main .hadith-sharh-body.content-markdown:lang(en) {
 .markdown-editing .community-short-editor .community-rich-input,
 .markdown-editing .community-short-editor textarea[data-short-editor] {
   color: var(--bs-body-color);
-  font-size: 1rem;
+  font-size: var(--reader-body-en, var(--ux-body-size));
   line-height: 1.8;
   text-indent: 0;
 }

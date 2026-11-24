@@ -24,7 +24,7 @@
   --ux-local-nav-size: .9rem;
   --ux-local-nav-font: var(--ux-body-weight) var(--ux-local-nav-size)/1.35 var(--ux-font-ui);
   --ux-card-radius: .6rem;
-  --ux-body-size: 18px;
+  --ux-body-size: 15px;
   --ux-lead-size: 20px;
   --ux-secondary-size: 14px;
   --ux-caption-size: 14px;
@@ -46,7 +46,7 @@
 }
 
 @media (max-width: 1199px) {
-  :root { --ux-body-size: 16px; --ux-lead-size: 16px; }
+  :root { --ux-lead-size: 16px; }
 }
 
 .ux-system {
@@ -102,6 +102,19 @@ body[data-bs-theme="dark"]:has(.ux-masthead) {
   text-decoration: none;
 }
 .ux-menu-list :is(a, button.dropdown-item):focus-visible { outline: 2px solid white; outline-offset: -4px; }
+/* Reader and authored-content outlines share a three-level type scale. */
+:is(aside[data-quran-heading-toc], aside[data-hadith-heading-toc]) :is(.quran-heading-toc-title, .hadith-heading-toc-title, a.heading-toc-adjacent-h1),
+[data-hadith-heading-toc]:has(.heading-toc-book-title-link) a[data-hadith-heading-key] {
+  font-size: 16px;
+  font-weight: 700;
+}
+:is([data-quran-heading-toc], [data-hadith-heading-toc]) a:is([data-quran-heading-key], [data-hadith-heading-key]) {
+  font-size: 14px;
+}
+:is([data-quran-heading-toc], [data-hadith-heading-toc]) a:is([data-quran-heading-parent-key], [data-hadith-heading-parent-key]) {
+  font-size: 13px;
+  padding-inline-start: 1.3rem;
+}
 .ux-menu-list :is(.app-menu-icon, a > i) {
   flex: 0 0 20px; width: 20px; height: 20px; font-size: 18px; line-height: 20px; text-align: center;
 }

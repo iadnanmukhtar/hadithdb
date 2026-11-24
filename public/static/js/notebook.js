@@ -66,7 +66,7 @@
   const zoom = document.getElementById('notebook-zoom');
   const zoomValue = document.getElementById('notebook-zoom-value');
   zoom.addEventListener('input', () => {
-    modal.style.setProperty('--notebook-font-size', `${Number(zoom.value) / 100}rem`);
+    modal.style.setProperty('--notebook-font-size', `calc(var(--ux-body-size) * ${Number(zoom.value) / 100})`);
     zoomValue.value = `${zoom.value}%`;
     updateOutlinePosition();
   });
