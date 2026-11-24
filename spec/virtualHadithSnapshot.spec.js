@@ -44,3 +44,29 @@ test('refreshes all virtual books containing an edited physical hadith before re
   expect(global.query).toHaveBeenCalledWith('CALL refresh_v_hadiths_virtual_snapshot(62)');
   expect(flush).toHaveBeenCalledTimes(2);
 });
+
+test('retries the contended queued book and finishes the rest of the batch', async () => {
+  const contention = Object.assign(new Error('lock busy'), {
+    code: 'ER_SIGNAL_EXCEPTION',
+    sqlMessage: 'Unable to acquire v_hadiths_virtual_snapshot refresh lock'
+  });
+  const calls = [];
+  global.query = jest.fn(async sql => {
+    if (sql.startsWith('CALL')) {
+      calls.push(sql);
+      if (calls.length === 2) throw contention;
+    }
+    return [{ alias: 'book' }];
+  });
+  jest.spyOn(Utils, 'flushBookDiskCache').mockResolvedValue({});
+  jest.useFakeTimers();
+  try {
+    [61, 62, 63].forEach(Snapshot.queueBook);
+    await jest.advanceTimersByTimeAsync(0);
+    expect(calls).toHaveLength(2);
+    await jest.advanceTimersByTimeAsync(5000);
+    expect(calls).toEqual([61, 62, 62, 63].map(id => `CALL refresh_v_hadiths_virtual_snapshot(${id})`));
+  } finally {
+    jest.useRealTimers();
+  }
+});
