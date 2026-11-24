@@ -24,6 +24,7 @@
       button.type = 'button';
       button.className = 'notebook-theme-choice';
       button.textContent = theme.label;
+      button.setAttribute('aria-label', theme.label);
       button.style.setProperty('--theme-paper', theme.paper);
       button.style.setProperty('--theme-ink', theme.ink);
       button.setAttribute('aria-pressed', String(theme.id === selected));

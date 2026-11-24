@@ -5,13 +5,19 @@
   var content = rail.querySelector('.quran-navigation-content');
   var status = rail.querySelector('[role="status"]');
   var tabs = Array.from(rail.querySelectorAll('[data-navigation-tab]'));
-  // Cached HTML can predate the button-group markup while loading current assets.
-  var tabList = rail.querySelector('.quran-navigation-tabs');
-  if (tabList) tabList.classList.add('quran-reader-modes', 'btn-group', 'btn-group-sm');
-  tabs.forEach(button => {
-    button.classList.add('btn', 'btn-outline-secondary');
-    button.classList.toggle('active', button.getAttribute('aria-selected') === 'true');
-  });
+  var picker = document.querySelector('.quran-mode-picker');
+  if (picker) {
+    function showCurrentMode() {
+      picker.selectedIndex = Array.from(picker.options).findIndex(option => option.defaultSelected);
+    }
+    picker.hidden = false;
+    picker.addEventListener('change', function () {
+      var link = document.querySelector('[data-quran-reader-mode-link="' + picker.value + '"]');
+      showCurrentMode();
+      if (link) location.assign(link.href);
+    });
+    window.addEventListener('pageshow', showCurrentMode);
+  }
   var data, loading, tab = 'surah', surah = 1, currentRef = '', currentPage = 0, currentJuz = 0;
 
   function normalize(value) {
@@ -43,7 +49,7 @@
     var query = new URLSearchParams(window.location.search);
     ['memorize', 'ayat'].forEach(key => { if (query.has(key)) url.searchParams.set(key, ''); });
     if (query.has('script')) url.searchParams.set('script', query.get('script'));
-    return url.pathname + url.search;
+    return url.href;
   }
   function link(label, destination, active, arabic) {
     var a = document.createElement('a');
@@ -53,21 +59,33 @@
     if (active) { a.classList.add('is-current'); a.setAttribute('aria-current', 'location'); }
     return a;
   }
-  function column(label, items) {
+  function column(label, items, groups = []) {
     var col = document.createElement('div'); col.className = 'quran-navigation-column';
-    var input = document.createElement('input'); input.type = 'search'; input.className = 'form-control'; input.placeholder = label === 'Search Ayah' ? 'Ayah' : label; input.setAttribute('aria-label', label);
-    var filter = document.createElement('div'); filter.className = 'page-content-filter input-group quran-navigation-filter';
-    var icon = document.createElement('span'); icon.className = 'input-group-text bi bi-funnel'; icon.setAttribute('aria-hidden', 'true');
-    filter.append(icon, input);
-    var list = document.createElement('nav'); list.className = 'quran-navigation-list'; list.setAttribute('aria-label', label.replace('Search ', ''));
-    var empty = document.createElement('p'); empty.className = 'text-muted p-2'; empty.textContent = 'No matches'; empty.hidden = items.length > 0;
-    items.forEach(item => list.append(item)); list.append(empty);
+    var input = document.createElement('input'); input.type = 'search'; input.placeholder = label === 'Search Ayah' ? 'Ayah' : label; input.setAttribute('aria-label', label);
+    var filter = document.createElement('div'); filter.className = 'ux-rail-search quran-navigation-filter';
+    var icon = document.createElement('span'); icon.className = 'bi bi-funnel'; icon.setAttribute('aria-hidden', 'true');
+    var clear = document.createElement('button'); clear.type = 'button'; clear.setAttribute('aria-label', 'Clear ' + label.toLowerCase());
+    clear.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>';
+    function clearSearch() { input.value = ''; input.dispatchEvent(new Event('input')); input.focus(); }
+    clear.addEventListener('click', clearSearch);
+    filter.append(icon, input, clear);
+    var list = document.createElement('nav'); list.className = 'quran-navigation-list ux-menu-list'; list.setAttribute('aria-label', label.replace('Search ', ''));
+    var empty = document.createElement('p'); empty.className = 'ux-rail-status p-2'; empty.textContent = 'No matches'; empty.hidden = items.length > 0;
+    if (groups.length) list.append(...groups);
+    else list.append(...items);
+    list.append(empty);
     input.addEventListener('input', function () {
       var term = normalize(input.value), count = 0;
-      items.forEach(item => { item.hidden = !(item.navigationSearchNames || [item.textContent]).some(name => normalize(name).includes(term)); if (!item.hidden) count++; });
+      items.forEach(item => {
+        const names = groups.length && /^\d+$/.test(term) ? [item.textContent] : item.navigationSearchNames || [item.textContent];
+        item.hidden = !names.some(name => normalize(name).includes(term));
+        if (!item.hidden) count++;
+      });
+      groups.forEach(group => { group.hidden = !group.querySelector('a:not([hidden])'); });
       empty.hidden = count > 0;
     });
     input.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && input.value) { event.stopPropagation(); event.preventDefault(); clearSearch(); return; }
       if (event.key === 'Enter') { var first = items.find(item => !item.hidden); if (first) { event.preventDefault(); first.click(); } }
       if (event.key === 'ArrowDown') { var first = items.find(item => !item.hidden); if (first) { event.preventDefault(); first.focus(); } }
     });
@@ -106,9 +124,42 @@
       var activeSubdivision = rows.filter(row => { var p = row.ref.split(':').map(Number), c = currentRef.split(':').map(Number); return p[0] < c[0] || p[0] === c[0] && p[1] <= c[1]; }).pop();
       content.append(column('Search ' + label, rows.map(row => link(label + ' ' + row.num, href(row.ref), tab === 'juz' && currentJuz ? row.num === currentJuz : row === activeSubdivision, row.title))));
     } else {
-      content.append(column('Search Page', Array.from({length: data.pages}, (_, i) => link('Page ' + (i + 1), href('', i + 1), i + 1 === currentPage))));
+      content.append(pageColumn());
     }
     centerCurrent();
+  }
+  function pageColumn() {
+    const pages = Array.from({length: data.pages}, (_, index) => {
+      const page = index + 1;
+      return link('Page ' + page, href('', page), page === currentPage);
+    });
+    const divisions = data.juz || [];
+    if (!divisions.length || divisions[0].startPage !== 1 || !divisions.every((juz, i) =>
+      Number.isInteger(juz.startPage) && juz.startPage <= pages.length && (!i || juz.startPage > divisions[i - 1].startPage)
+    )) return column('Search Page', pages);
+
+    const groups = divisions.map((juz, index) => {
+      const group = document.createElement('section');
+      const heading = document.createElement('h3');
+      heading.className = 'quran-page-group-title';
+      heading.id = 'quran-page-juz-' + juz.num;
+      group.setAttribute('aria-labelledby', heading.id);
+      const label = 'Juz ' + juz.num;
+      const name = document.createElement('span');
+      name.lang = 'ar'; name.dir = 'rtl'; name.textContent = juz.title;
+      heading.append(label, name);
+      const grid = document.createElement('div');
+      grid.className = 'quran-page-grid';
+      const next = divisions[index + 1];
+      const end = next ? next.startPage - 1 : pages.length;
+      for (const page of pages.slice(juz.startPage - 1, end)) {
+        page.navigationSearchNames = [page.textContent, label, juz.title];
+        grid.append(page);
+      }
+      group.append(heading, grid);
+      return group;
+    });
+    return column('Search Page', pages, groups);
   }
   function renderAyahs() {
     var old = content.querySelectorAll('.quran-navigation-column')[1]; if (old) old.remove();
@@ -143,7 +194,7 @@
       .then(result => { data = result; status.textContent = ''; render(); })
       .catch(() => {
         status.textContent = 'Could not load navigation. ';
-        var retry = document.createElement('button'); retry.className = 'btn btn-link p-0'; retry.textContent = 'Retry';
+        var retry = document.createElement('button'); retry.className = 'ux-text-action'; retry.textContent = 'Retry';
         retry.addEventListener('click', () => rail.dispatchEvent(new Event('show.bs.offcanvas'))); status.append(retry);
       }).finally(() => { loading = null; });
   });

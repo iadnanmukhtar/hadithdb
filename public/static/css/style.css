@@ -1,9 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Gentium+Plus:ital,wght@0,400;0,700;1,400;1,700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Noto+Nastaliq+Urdu:wght@400;500;600;700&family=Scheherazade+New:wght@400;700&family=Vazirmatn:wght@400;500;600;700&display=swap');
+@import url('./ivory.css?v=7');
 
-@font-face {
-	font-family: Kitab;
-	src: url(/static/fonts/kitab-base.woff2);
-}
+@import url('/static/css/kitab.css?v=1');
+@import url('/static/css/hafs.css?v=1');
 
 /* Keep disclosure indicators thin and consistent instead of using native filled triangles. */
 details > summary {
@@ -16,35 +15,6 @@ details > summary::-webkit-details-marker {
 
 details > summary::marker {
 	content: '';
-}
-
-@font-face {
-	font-family: KitabBold;
-	src: url(/static/fonts/kitab-base-b.woff2);
-}
-
-@font-face {
-	font-family: QuranV1;
-	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
-	font-display: swap;
-}
-
-@font-face {
-	font-family: QuranV2;
-	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
-	font-display: swap;
-}
-
-@font-face {
-	font-family: Quran;
-	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
-	font-display: swap;
-}
-
-@font-face {
-	font-family: QuranBold;
-	src: url('/static/fonts/DigitalKhattV1.otf') format('opentype');
-	font-display: swap;
 }
 
 @font-face {
@@ -68,6 +38,7 @@ details > summary::marker {
 }
 
 body.quran-script-indo-pak .quran-hafs,
+body.quran-script-indo-pak :is(.quran-hafs, .quran-ayah-body, .quran-tafsir-ayah, .quran-ayah-hero-text, .quran-share-text) :is(b, strong),
 body.quran-script-indo-pak .quran-ayah-body,
 body.quran-script-indo-pak .quran-ayah-hero-text,
 body.quran-script-indo-pak .quran-share-text:lang(ar),
@@ -79,6 +50,7 @@ body.quran-script-indo-pak .quran-ayah-end-marker {
 }
 
 body.quran-script-warsh .quran-hafs,
+body.quran-script-warsh :is(.quran-hafs, .quran-ayah-body, .quran-tafsir-ayah, .quran-ayah-hero-text, .quran-share-text) :is(b, strong),
 body.quran-script-warsh .quran-ayah-body,
 body.quran-script-warsh .quran-ayah-hero-text,
 body.quran-script-warsh .quran-share-text:lang(ar),
@@ -91,12 +63,6 @@ body.quran-script-warsh .quran-ayah-end-marker {
 
 .quran-script-empty-ayah {
 	display: none;
-}
-
-@font-face {
-	font-family: Hafs;
-	src: url('/static/fonts/kd-hafs.woff2') format('woff2');
-	font-display: swap;
 }
 
 @font-face {
@@ -202,8 +168,8 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--f-size-ar: calc(var(--f-size-ar-base) * var(--content-font-scale));
 	--f-size-ar-note: calc(var(--f-size-ar-note-base) * var(--content-font-scale));
 	--f-size-ar-sup: calc(var(--f-size-ar-sup-base) * var(--content-font-scale));
-	--content-language-latin-font: "Gentium Plus", Georgia, "Times New Roman", serif;
-	--content-language-arabic-font: "Noto Naskh Arabic", "Scheherazade New", Amiri, Kitab, serif;
+	--content-language-latin-font: var(--ux-font-ui, Inter, system-ui, sans-serif);
+	--content-language-arabic-font: Kitab, "Noto Naskh Arabic", "Scheherazade New", Amiri, serif;
 	--content-language-urdu-font: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Noto Naskh Arabic", serif;
 	--content-language-urdu-line-height: 2.05;
 	--content-language-persian-font: Vazirmatn, "Noto Naskh Arabic", "Scheherazade New", Tahoma, serif;
@@ -212,7 +178,7 @@ body.quran-script-warsh .quran-ayah-end-marker {
 	--content-language-cjk-font: "Hiragino Mincho ProN", "Songti SC", "Noto Serif CJK SC", "Yu Mincho", serif;
 	--content-language-japanese-font: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif;
 	--content-language-korean-font: "Apple SD Gothic Neo", "Noto Serif KR", "Nanum Myeongjo", serif;
-	--content-language-cyrillic-font: "Gentium Plus", Georgia, "Times New Roman", serif;
+	--content-language-cyrillic-font: var(--ux-font-ui, Inter, system-ui, sans-serif);
 	--content-language-devanagari-font: "Kohinoor Devanagari", "Noto Serif Devanagari", serif;
 	--content-language-bengali-font: "Kohinoor Bangla", "Noto Serif Bengali", serif;
 	--content-language-gurmukhi-font: "Gurmukhi MN", "Noto Serif Gurmukhi", serif;
@@ -391,7 +357,7 @@ body.quran-script-warsh .quran-ayah-end-marker {
 html,
 body {
 	font-size: 13.5pt !important;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	max-width: 100%;
 	overflow-x: hidden;
 }
@@ -435,23 +401,21 @@ body :lang(ar) {
 .quran-hafs .quran-corpus-word,
 .quran-surah-name:lang(ar),
 :lang(ar) .quran-surah-name {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .h:lang(ar) .body .hadith-body-content.quran-hafs,
 .h:lang(ar) .body .hadith-body-content.quran-hafs p,
 .h:lang(ar) .body .hadith-body-content.quran-hafs .quran-corpus-word,
 .h:lang(ar) .body .hadith-body-content.quran-hafs .ayah-selected {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
-.quran-hafs:lang(ar) b,
-.quran-hafs:lang(ar) strong,
-.quran-hafs :lang(ar) b,
-.quran-hafs :lang(ar) strong,
-.quran-hafs b,
-.quran-hafs strong {
-	font-family: QuranV1, Serif;
+body :is(.quran-hafs, .quran-tafsir-ayah, .quran-ayah-hero-text, .quran-ayah-body,
+	.quran-share-text, .quran-similar-ayah-arabic, .quran-mutashabihat-phrase-text,
+	.quran-mutashabihat-match-arabic, .sample-uthmani) :is(b, strong) {
+	font-family: inherit;
+	font-weight: 700;
 }
 
 a._click {
@@ -480,7 +444,8 @@ a._click {
 
 :lang(ar) b,
 :lang(ar) strong {
-	font-family: KitabBold, Serif;
+	font-family: inherit;
+	font-weight: 700;
 }
 
 sup {
@@ -599,7 +564,7 @@ main.book-catalog-page {
 
 main.quran-review-top-offset,
 main.quran-mushaf-reader,
-body:has(.site-navbar .chapter-toc) main:not(.search-results-layout > main) {
+body:has(.site-navbar .chapter-toc) main:not(.search-results-layout > main):not(:where(.book-catalog-page.ux-system, .settings-beta, .ux-book-toc)) {
 	margin-top: max(9rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)) !important;
 }
 
@@ -811,89 +776,25 @@ body:has(.search-results-layout) {
 }
 
 @media (min-width: 992px) {
-	.quran-heading-layout {
+	.quran-heading-layout,
+	.hadith-heading-layout {
+		--reader-column-width: 640px;
+		--reader-rail-gap: 1.5rem;
 		align-items: start;
 		display: grid;
-		gap: 2rem;
-		grid-template-columns: minmax(0, 880px) var(--heading-rail-width);
-		justify-content: center;
+		grid-template-columns: minmax(0, 1fr) minmax(0, var(--reader-column-width)) var(--reader-rail-gap) var(--heading-rail-width) minmax(0, 1fr);
 	}
 
-	.quran-heading-layout-mushaf {
-		grid-template-columns: minmax(0, 856px) var(--heading-rail-width);
-	}
-
-	.quran-heading-layout .quran-mushaf-reader,
-	.quran-heading-content-study,
-	.quran-heading-content-tafsir {
-		margin-left: auto !important;
-		margin-right: auto !important;
-		width: 100%;
-	}
-}
-
-@media (min-width: 992px) and (max-width: 1279.98px) {
-	.quran-heading-layout {
-		gap: 1.5rem;
-		grid-template-columns: minmax(0, 1fr) var(--heading-rail-width);
-	}
-
-	.quran-heading-layout-mushaf {
-		gap: 0;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 696px) 1.5rem var(--heading-rail-width) minmax(0, 1fr);
-	}
-
+	.quran-heading-content,
+	.hadith-heading-content,
 	.quran-heading-layout-mushaf .quran-mushaf-reader {
 		grid-column: 2;
-	}
-
-	.quran-heading-layout-mushaf .quran-heading-toc {
-		grid-column: 4 / 6;
-	}
-}
-
-@media (min-width: 1280px) {
-	.quran-heading-layout {
-		gap: 0;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 880px) 2rem var(--heading-rail-width) minmax(0, 1fr);
-		justify-content: stretch;
-	}
-
-	.quran-heading-layout-mushaf {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 856px) 2rem var(--heading-rail-width) minmax(0, 1fr);
-	}
-
-	.quran-heading-content-study,
-	.quran-heading-content-tafsir,
-	.quran-heading-layout .quran-mushaf-reader {
-		grid-column: 2;
-	}
-
-	.quran-heading-layout .quran-heading-toc {
-		grid-column: 4 / 6;
-	}
-
-	.quran-heading-layout-tafsir {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 760px) 2rem var(--heading-rail-width) minmax(0, 1fr);
-	}
-}
-
-@media (min-width: 992px) {
-	.hadith-heading-layout {
-		align-items: start;
-		display: grid;
-		gap: 0;
-		grid-template-columns: minmax(0, 1fr) minmax(0, 640px) 1.5rem var(--heading-rail-width) minmax(0, 1fr);
-	}
-
-	.hadith-heading-content {
-		grid-column: 2;
-		margin-left: auto !important;
-		margin-right: auto !important;
+		margin-inline: auto;
 		max-width: none;
 		width: 100% !important;
 	}
 
+	.quran-heading-layout .quran-heading-toc,
 	.hadith-heading-layout .hadith-heading-toc {
 		grid-column: 4 / 6;
 	}
@@ -904,17 +805,24 @@ body:has(.search-results-layout) {
 	.hadith-heading-layout,
 	.toc-heading-layout {
 		--heading-rail-width: clamp(339px, calc(339px + (100vw - 1400px) / 2), 440px);
-	}
-
-	.hadith-heading-layout {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 760px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+		--reader-column-width: 760px;
+		--reader-rail-gap: 2rem;
 	}
 }
 
 @media (min-width: 1400px) {
+	.quran-heading-layout,
 	.hadith-heading-layout {
-		grid-template-columns: minmax(0, 1fr) minmax(0, 880px) 2rem var(--heading-rail-width) minmax(0, 1fr);
+		--reader-column-width: 880px;
 	}
+}
+
+/* The typeset Mushaf keeps its page proportions. */
+@media (min-width: 992px) and (max-width: 1279.98px) {
+	.quran-heading-layout-mushaf { --reader-column-width: 696px; --reader-rail-gap: 1.5rem; }
+}
+@media (min-width: 1280px) {
+	.quran-heading-layout-mushaf { --reader-column-width: 856px; --reader-rail-gap: 2rem; }
 }
 
 @media (max-width: var(--bs-breakpoint-sm)) {
@@ -1477,15 +1385,6 @@ nav .nav-link[aria-current="page"] {
 	margin-bottom: 1rem;
 }
 
-.command-search-kicker {
-	color: var(--c-accent);
-	display: block;
-	font-size: 0.72rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	margin-bottom: 0.15rem;
-	text-transform: uppercase;
-}
 
 .command-search-title {
 	font-size: 1.25rem;
@@ -1493,82 +1392,64 @@ nav .nav-link[aria-current="page"] {
 	margin: 0;
 }
 
-.command-search-close {
-	flex: 0 0 auto;
-	margin-top: 0.15rem;
+/* Bootstrap dismiss buttons and custom dialog buttons share one overlay control. */
+button:is(.ux-overlay-close, .btn-close[data-bs-dismiss="modal"], .btn-close[data-bs-dismiss="offcanvas"], dialog .btn-close[aria-label^="Close"]) {
+  appearance: none;
+  box-sizing: border-box;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bs-tertiary-bg, #f1efe8);
+  color: var(--bs-emphasis-color, #292a31);
+  opacity: 1;
+  filter: none;
+  box-shadow: none;
+  cursor: pointer;
+  &::before {
+    content: "";
+    grid-area: 1 / 1;
+    width: 18px;
+    height: 18px;
+    background: currentColor;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 18'%3E%3Cpath d='m4 4 10 10M14 4 4 14' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  }
+  &:enabled:hover { background-color: var(--bs-secondary-bg, #e5e3de); }
+  &:focus-visible { outline: 2px solid var(--ivory-accent, var(--bs-primary)); outline-offset: 2px; }
+  &:disabled { opacity: .45; cursor: default; }
 }
 
-.command-search-mode-switch {
-	align-items: stretch;
-	flex-wrap: nowrap;
-	margin-bottom: 1rem;
-	overflow-x: auto;
-}
+/* Header layouts align the shared target to the trailing edge. */
+:is(.modal-header, .offcanvas-header) > .btn-close { margin: 0; margin-inline-start: auto; }
 
-.command-search-mode-switch .nav-item {
-	flex: 1 1 0;
-	min-width: 0;
+.command-book-scope { display: none; }
+.command-search-scope {
+	flex: 0 1 auto;
+	max-width: 38%;
+	font: var(--ux-emphasis-weight) .875rem/1.4 var(--ux-font-ui);
+	color: var(--ux-secondary-ink);
+	background-color: var(--ux-secondary-fill);
+	border: 0;
+	border-radius: .45rem;
+	padding: .45rem;
 }
-
-.command-search-dialog .command-search-mode-switch .command-search-mode {
-	align-items: center;
-	display: flex;
-	font-size: 1rem;
-	font-weight: 400;
-	gap: 0.45rem;
-	justify-content: center;
-	padding: 0.5rem 1rem;
-	width: 100%;
-}
-
-.command-search-dialog .command-search-mode-switch .nav-link:not(.active) {
-	color: var(--bs-secondary-color);
-}
-
-.command-search-dialog .command-search-mode-switch .nav-link:not(.active):hover,
-.command-search-dialog .command-search-mode-switch .nav-link:not(.active):focus-visible {
-	color: var(--c-accent);
-}
-
-.command-search-mode-icon {
-	align-items: center;
-	color: inherit;
+.command-search-book-shortcut {
 	display: inline-flex;
-	flex: 0 0 1.25em;
-	height: 1.25em;
-	justify-content: center;
-	line-height: 1;
-	width: 1.25em;
+	align-items: center;
+	gap: .45rem;
+	max-width: 100%;
+	min-height: 36px;
+	margin-top: .5rem;
+	text-align: start;
+	overflow-wrap: anywhere;
 }
+.command-search-book-shortcut[hidden] { display: none; }
 
-.command-search-mode-icon .app-menu-icon {
-	color: inherit !important;
-	font-size: 1.2em;
-	height: 1em;
-	line-height: 1;
-	margin: 0;
-	vertical-align: 0;
-	width: 1em;
-}
-
-.command-search-mode-icon-quran .app-menu-icon-img {
-	display: none;
-}
-
-.command-search-mode-icon-quran::before {
-	-webkit-mask: url('/static/img/quran-icon.svg') center / contain no-repeat;
-	background-color: currentColor;
-	content: '';
-	display: block;
-	height: 1.1em;
-	mask: url('/static/img/quran-icon.svg') center / contain no-repeat;
-	width: 1.1em;
-}
-
-.command-search-mode-label {
-	line-height: 1.2;
-}
-
+.command-search-input-wrap > input { flex: 1 1 0; }
 .command-search-input-wrap {
 	align-items: center;
 	background: var(--bs-body-bg);
@@ -1583,6 +1464,8 @@ nav .nav-link[aria-current="page"] {
 .command-search-input-wrap:focus-within {
 	box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.12);
 }
+
+.command-search-input-wrap > .command-search-input:focus { outline: none; }
 
 .command-search-input-wrap > .bi-search {
 	color: var(--c-accent);
@@ -1664,18 +1547,8 @@ nav .nav-link[aria-current="page"] {
 	gap: 0.4rem;
 }
 
-.command-search-filter-count {
-	background: var(--c-accent);
-	color: var(--c-white);
-	font-size: 0.65rem;
-	margin-left: auto;
-	min-width: 1.5rem;
-}
+.command-search-filter-count { margin-inline-start: auto; }
 
-.command-search-filter-count.is-empty {
-	background: var(--bs-secondary-bg);
-	color: var(--bs-secondary-color);
-}
 
 .command-search-filter-popover {
 	background: var(--bs-body-bg);
@@ -1780,8 +1653,9 @@ nav .nav-link[aria-current="page"] {
 }
 
 .command-search-selected {
-	align-items: flex-start;
+	align-items: baseline;
 	display: flex;
+	flex-wrap: wrap;
 	gap: 0.55rem;
 	margin-top: 0.8rem;
 }
@@ -1799,42 +1673,20 @@ nav .nav-link[aria-current="page"] {
 }
 
 .command-search-pills {
+	align-items: center;
 	display: flex;
 	flex-wrap: wrap;
 	gap: 0.35rem;
 }
 
-.command-search-pill {
-	align-items: center;
-	background: rgba(var(--bs-primary-rgb), 0.1);
-	border: 1px solid rgba(var(--bs-primary-rgb), 0.25);
-	color: var(--c-accent);
-	display: inline-flex;
-	font-size: 0.7rem;
-	font-weight: 600;
-	gap: 0.35rem;
-	padding: 0.35rem 0.5rem 0.35rem 0.65rem;
-}
 
-.command-search-pill .btn-close {
-	font-size: 0.45rem;
-	margin: 0;
-	padding: 0.35rem;
-}
 
-.command-search-clear-all {
-	background: transparent;
-	border-color: var(--bs-secondary-color);
-	color: var(--bs-secondary-color);
-	cursor: pointer;
-	padding: 0.35rem 0.65rem;
-}
 
-.command-search-clear-all:hover,
-.command-search-clear-all:focus-visible {
-	background: rgba(var(--bs-secondary-rgb), 0.1);
-	color: var(--bs-body-color);
-}
+
+.recent-searches ul { margin-top: .25rem; }
+.recent-searches li { min-width: 0; max-width: 100%; }
+.recent-search-link { display: block; max-inline-size: min(26ch, 100%); }
+.recent-search-link:is(:hover, :focus-visible) { text-decoration: underline; }
 
 .search-results-summary {
 	align-items: flex-start;
@@ -1867,21 +1719,13 @@ nav .nav-link[aria-current="page"] {
 	gap: 0.75rem;
 }
 
-.search-results-sort .btn {
-	font-size: 0.72rem;
-	line-height: 1.2;
-	padding: 0.2rem 0.45rem;
-	white-space: nowrap;
-}
+.search-results-sort a { text-decoration: none; }
 
 @media (max-width: 575.98px) {
 	.search-results-summary {
 		flex-wrap: wrap;
 	}
 
-	.search-results-filter-pills {
-		flex-basis: 100%;
-	}
 
 	.search-results-count {
 		margin-left: auto;
@@ -1941,11 +1785,6 @@ nav .nav-link[aria-current="page"] {
 		font-size: 1.1rem;
 	}
 
-	.command-search-mode {
-		font-size: 0.82rem;
-		padding-left: 0.45rem;
-		padding-right: 0.45rem;
-	}
 
 	.command-search-book-list {
 		grid-template-columns: minmax(0, 1fr);
@@ -2046,7 +1885,7 @@ nav .nav-link[aria-current="page"] {
 }
 
 #toc-manzils td:first-child {
-	width: 4em;
+	width: 5em;
 }
 
 #toc-juz td:nth-child(3),
@@ -2614,6 +2453,28 @@ html:has(meta[name="admin-only-book-downloads"]):not(.book-download-admin) :is(.
 	font-size: calc(25px * var(--share-scale) * var(--share-translation-tune)) !important;
 }
 
+.quran-share-surah-header {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16320 / 2000;
+	flex: none;
+}
+
+.quran-share-surah-frame {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.quran-share-surah-name {
+	position: absolute;
+	top: 24%;
+	left: 50%;
+	transform: translateX(-50%);
+	width: auto;
+	height: 52%;
+}
+
 .hadith-share-section+.hadith-share-section {
 	margin-top: calc(15px * var(--share-scale));
 	padding-top: calc(15px * var(--share-scale));
@@ -2713,7 +2574,7 @@ html:has(meta[name="admin-only-book-downloads"]):not(.book-download-admin) :is(.
 .quran-share-card .hadith-share-text:lang(ar),
 .quran-share-card .quran-share-text:lang(ar),
 .quran-share-card .quran-share-text:lang(ar) span {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .quran-share-arabic-only .hadith-share-title {
@@ -3024,116 +2885,6 @@ html:has(meta[name="admin-only-book-downloads"]):not(.book-download-admin) :is(.
 	min-width: 12rem;
 }
 
-.home-quran-announcement {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 1rem;
-	margin: 1.5rem 0 1rem;
-	padding: 1rem;
-	border: 1px solid var(--c-gray-dark-16);
-	border-radius: .75rem;
-	background: var(--c-white);
-	box-shadow: 0 .25rem .75rem var(--c-black-12);
-	color: var(--c-black-soft);
-}
-
-.home-quran-announcement[hidden] {
-	display: none;
-}
-
-.home-quran-announcement-text {
-	margin-bottom: 0.35rem;
-	font-size: var(--content-size-lead);
-	font-weight: 600;
-	line-height: 1.8;
-}
-
-.home-quran-announcement-blurb {
-	font-size: var(--content-size-body);
-	line-height: 1.6;
-	color: var(--c-gray-very-dark);
-}
-
-.home-quran-announcement-actions {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 0.85rem;
-	flex-shrink: 0;
-	padding-right: 1.5rem;
-}
-
-.home-quran-announcement-logo-link {
-	display: block;
-	border-radius: 22.5%;
-	line-height: 0;
-	transition: box-shadow .15s ease, transform .15s ease;
-}
-
-.home-quran-announcement-logo {
-	display: block;
-	width: clamp(5.5rem, 9vw, 7rem);
-	height: auto;
-	border-radius: 22.5%;
-	clip-path: inset(0 round 22.5%);
-	object-fit: contain;
-}
-
-.home-quran-announcement-logo-link:hover,
-.home-quran-announcement-logo-link:focus-visible {
-	box-shadow: 0 .25rem .75rem var(--c-black-18);
-	transform: translateY(-1px);
-}
-
-.home-quran-announcement-close {
-	position: absolute;
-	top: .35rem;
-	right: .35rem;
-	z-index: 1;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 1.75rem;
-	height: 1.75rem;
-	padding: 0;
-	border: 0;
-	color: var(--c-gray-very-dark);
-	font-size: 1.5rem;
-	line-height: 1;
-	background: var(--c-transparent);
-}
-
-.home-quran-announcement-close:hover,
-.home-quran-announcement-close:focus {
-	color: var(--c-note);
-	background: var(--c-transparent);
-}
-
-@media (max-width: 575.98px) {
-	.home-quran-announcement {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 0.65rem;
-		margin: 1rem 0 0.75rem;
-		padding-right: 2.75rem;
-	}
-
-	.home-quran-announcement-actions {
-		width: 100%;
-		justify-content: flex-start;
-		gap: 0.75rem;
-		padding-right: 0;
-	}
-}
-
-.home-about-copy { min-width: 0; }
-main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(--content-size-lead) !important; }
-.home-about-links { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin-top: .5rem; font-size: .8rem; }
-.home-about-links a { text-decoration: none; }
-.home-about-links a:hover { text-decoration: underline; }
-.home-about .home-quran-announcement-close { width: 2rem; height: 2rem; font-size: 1.25rem; }
 .about-page-logos { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.5rem 0; }
 .about-page-logos img { width: 80px; height: 80px; border-radius: 22.5%; }
 
@@ -3267,7 +3018,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 
 .blog-post s {
 	direction: rtl;
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	text-decoration: none !important;
 	font-size: 1.42em;
 }
@@ -3275,7 +3026,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post s b,
 .blog-post s strong {
 	color: var(--c-blue);
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 }
 
 .blog-post h1:has(s),
@@ -3291,18 +3042,8 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 	text-align: right;
 }
 
-.blog-post .footnote-item {
-	direction: ltr;
-	text-align: left;
-}
-
-.blog-post .footnotes li+p {
-	direction: ltr;
-	text-align: left;
-}
-
 .blog-post :lang(ar) {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 }
 
 .blog-post h1 {
@@ -3312,7 +3053,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post h1 s,
 .blog-post h1:lang(ar),
 .blog-post :lang(ar) h1 {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.22em;
 }
 
@@ -3323,7 +3064,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post h2 s,
 .blog-post h2:lang(ar),
 .blog-post :lang(ar) h2 {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.22em;
 }
 
@@ -3334,7 +3075,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post h3 s,
 .blog-post h3:lang(ar),
 .blog-post :lang(ar) h3 {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.22em;
 }
 
@@ -3345,7 +3086,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post h4 s,
 .blog-post h4:lang(ar),
 .blog-post :lang(ar) h4 {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.22em;
 }
 
@@ -3356,7 +3097,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post h5 s,
 .blog-post h5:lang(ar),
 .blog-post :lang(ar) h5 {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.22em;
 }
 
@@ -3367,7 +3108,7 @@ main .home-about .home-quran-announcement-text { margin-top: 0; font-size: var(-
 .blog-post h6 s,
 .blog-post h6:lang(ar),
 .blog-post :lang(ar) h6 {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.22em;
 }
 
@@ -3408,17 +3149,6 @@ del em strong {
 	font-weight: bold;
 }
 
-.blog-post .footnotes,
-.blog-post .footnotes p {
-	font-size: var(--content-size-sm);
-	color: var(--c-gray-very-dark);
-	text-indent: unset;
-}
-
-.blog-post .footnotes s {
-	font-size: 1.22em;
-}
-
 @media (max-width: 576px) {
 	.blog-post blockquote {
 		padding-left: 1rem;
@@ -3427,7 +3157,7 @@ del em strong {
 
 .quran-reader-modes .btn,
 .community-tabs .btn,
-.book-catalog-navigation .book-catalog-tabs .nav-link {
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link {
 	align-items: center;
 	display: inline-flex;
 	font-size: 0.68rem;
@@ -3439,7 +3169,7 @@ del em strong {
 
 .quran-reader-modes .btn.active,
 .community-tabs .btn.active,
-.book-catalog-navigation .book-catalog-tabs .nav-link.active {
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link.active {
 	background-color: var(--c-accent);
 	border-color: var(--c-accent);
 	color: white;
@@ -3483,7 +3213,7 @@ del em strong {
 }
 
 .quran-reader-modes .quran-script-switcher .dropdown-item {
-	font-family: "Gentium Plus", serif;
+	font-family: var(--content-language-latin-font);
 	padding: 0.3rem 0.65rem;
 }
 
@@ -3511,7 +3241,7 @@ del em strong {
 .quran-mushaf-page-heading {
 	align-items: center;
 	display: grid;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-size: var(--quran-mushaf-page-header-font-size);
 	grid-template-columns: 1fr auto 1fr;
 	line-height: 1.2;
@@ -3592,7 +3322,7 @@ del em strong {
 	border-bottom: 1px dotted transparent;
 	display: inline-block;
 	font-family: Kitab, Serif !important;
-	font-size: var(--quran-mushaf-page-header-font-size) !important;
+	font-size: calc(var(--quran-mushaf-page-header-font-size) * 1.15) !important;
 	font-weight: normal !important;
 	line-height: 1.2 !important;
 }
@@ -3640,7 +3370,7 @@ del em strong {
 
 .quran-mushaf-surah-option-number {
 	direction: ltr;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	text-align: left;
 }
 
@@ -3685,7 +3415,7 @@ del em strong {
 
 .quran-mushaf-page-toolbar {
 	direction: ltr;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-size: var(--quran-mushaf-page-toolbar-font-size);
 	grid-column: 1;
 	grid-row: 1;
@@ -3708,7 +3438,7 @@ del em strong {
 	border: 1px solid var(--bs-border-color);
 	border-radius: 0.35rem;
 	box-shadow: 0 0 var(--quran-mushaf-page-shadow-blur) rgba(0, 0, 0, .3);
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: var(--quran-mushaf-page-font-size);
 	line-height: var(--quran-mushaf-line-height);
 	margin-left: auto;
@@ -4377,7 +4107,7 @@ del em strong {
 
 .page-loading-transition.quran-review-loading-transition {
 	background: var(--bs-body-bg);
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	gap: 1rem;
 }
 
@@ -4409,7 +4139,7 @@ del em strong {
 
 .quran-mushaf-page-footer {
 	border-top: 1px solid var(--bs-border-color);
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-size: 0.8rem;
 	line-height: 1.35;
 	margin-top: 0.65rem;
@@ -4549,151 +4279,6 @@ del em strong {
 	text-decoration: underline;
 }
 
-.quran-help-tips-click-shield {
-	background: transparent;
-	inset: 0;
-	position: fixed;
-	z-index: 2050;
-}
-
-.quran-help-tips-spotlight {
-	border: 3px solid color-mix(in srgb, var(--bs-primary) 78%, white 22%);
-	border-radius: .65rem;
-	box-shadow: 0 0 0 9999px rgba(8, 15, 25, .68), 0 0 0 .3rem rgba(var(--bs-primary-rgb), .22);
-	pointer-events: none;
-	position: fixed;
-	transition: left .16s ease, top .16s ease, width .16s ease, height .16s ease;
-	z-index: 2051;
-}
-
-.quran-help-tips-spotlight.is-centered {
-	background: rgba(8, 15, 25, .68);
-	border: 0;
-	inset: 0;
-	box-shadow: none;
-	width: auto;
-	height: auto;
-}
-
-.quran-help-tips-card {
-	background: var(--bs-body-bg);
-	border: 1px solid color-mix(in srgb, var(--bs-border-color) 65%, var(--bs-primary) 35%);
-	border-radius: .8rem;
-	box-sizing: border-box;
-	box-shadow: 0 .8rem 2.5rem rgba(0, 0, 0, .28);
-	color: var(--bs-body-color);
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	max-width: calc(100vw - 1.5rem);
-	padding: 1rem 1.1rem;
-	position: fixed;
-	width: 22rem;
-	z-index: 2052;
-}
-
-.quran-help-tips-close {
-	align-items: center;
-	appearance: none;
-	background: transparent;
-	border: 0;
-	color: var(--bs-secondary-color);
-	display: inline-flex;
-	height: 2rem;
-	justify-content: center;
-	padding: 0;
-	position: absolute;
-	right: .6rem;
-	top: .55rem;
-	width: 2rem;
-}
-
-.quran-help-tips-close:hover,
-.quran-help-tips-close:focus-visible {
-	color: var(--bs-body-color);
-}
-
-.quran-help-tips-kicker {
-	color: var(--bs-primary);
-	display: block;
-	font-size: .68rem;
-	font-weight: 750;
-	letter-spacing: .05em;
-	margin-bottom: .3rem;
-	padding-right: 2rem;
-	text-transform: uppercase;
-}
-
-.quran-help-tips[data-quran-help-tips="review"] .quran-help-tips-kicker {
-	color: var(--bs-success);
-}
-
-.quran-help-tips-card h2 {
-	font-size: 1.05rem !important;
-	font-weight: 750;
-	line-height: 1.25;
-	margin: 0 2rem .45rem 0;
-}
-
-.quran-help-tips-card p {
-	font-size: .86rem;
-	line-height: 1.48;
-	margin: 0;
-}
-
-.quran-help-tips-footer {
-	align-items: center;
-	color: var(--bs-secondary-color);
-	display: grid;
-	font-size: .7rem;
-	gap: .35rem .65rem;
-	grid-template-areas:
-		"progress navigation"
-		"dismiss dismiss";
-	grid-template-columns: 1fr auto;
-	margin-top: .9rem;
-}
-
-.quran-help-tips-progress {
-	grid-area: progress;
-	white-space: nowrap;
-}
-
-.quran-help-tips-nav-actions,
-.quran-help-tips-dismiss-actions {
-	align-items: center;
-	display: flex;
-	gap: .35rem;
-	justify-content: flex-end;
-}
-
-.quran-help-tips-nav-actions {
-	grid-area: navigation;
-}
-
-.quran-help-tips-dismiss-actions {
-	grid-area: dismiss;
-}
-
-.quran-help-tips-dismiss-actions .btn-link {
-	font-size: .7rem;
-	padding: .1rem .2rem;
-}
-
-@media (max-width: 575.98px) {
-	.quran-help-tips-card {
-		bottom: calc(.75rem + env(safe-area-inset-bottom));
-		left: .75rem !important;
-		top: auto !important;
-		width: calc(100vw - 1.5rem);
-	}
-
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.quran-help-tips-spotlight {
-		transition: none;
-	}
-}
-
 .quran-memorization-state-legend h2 [data-quran-page-state-total] {
 	color: var(--bs-secondary-color);
 	font-size: .88em;
@@ -4712,39 +4297,7 @@ del em strong {
 	padding: 0;
 }
 
-.quran-memorization-state-pill {
-	align-items: center;
-	background: color-mix(in srgb, var(--bs-body-bg) 88%, var(--quran-state-legend-color, var(--bs-secondary)) 12%);
-	border: 1px solid color-mix(in srgb, var(--bs-border-color) 48%, var(--quran-state-legend-color, var(--bs-secondary)) 52%);
-	border-radius: 999px;
-	color: color-mix(in srgb, var(--bs-body-color) 78%, var(--quran-state-legend-color, var(--bs-secondary)) 22%);
-	display: inline-flex;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	font-size: .62rem;
-	gap: .25rem;
-	line-height: 1;
-	min-width: 0;
-	padding: .22rem .32rem;
-	white-space: nowrap;
-}
-
-.quran-memorization-state-pill strong {
-	color: inherit;
-}
-
-.quran-page-state-count {
-	background: color-mix(in srgb, var(--quran-state-legend-color, var(--bs-secondary)) 16%, transparent);
-	border-radius: 999px;
-	color: color-mix(in srgb, var(--bs-body-color) 72%, var(--quran-state-legend-color, var(--bs-secondary)) 28%);
-	flex: 0 0 auto;
-	font-size: .58rem;
-	font-variant-numeric: tabular-nums;
-	font-weight: 700;
-	line-height: 1.25;
-	min-width: 1.1rem;
-	padding: .05rem .22rem;
-	text-align: center;
-}
+.quran-page-state-count { font-variant-numeric: tabular-nums; }
 
 .quran-memorization-state-legend-swatch {
 	background: var(--quran-state-legend-color, var(--bs-secondary));
@@ -4758,14 +4311,7 @@ del em strong {
 @media (min-width: 992px) {
 	.quran-memorization-state-legend ul {
 		display: grid;
-		grid-template-columns: repeat(6, minmax(0, 1fr));
-	}
-
-	.quran-memorization-state-pill {
-		font-size: .5rem;
-		gap: .18rem;
-		justify-content: center;
-		padding: .18rem .22rem;
+		grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
 	}
 
 	.quran-memorization-state-legend-swatch {
@@ -4773,11 +4319,6 @@ del em strong {
 		width: .34rem;
 	}
 
-	.quran-memorization-state-pill .quran-page-state-count {
-		font-size: .48rem;
-		min-width: .95rem;
-		padding: .04rem .16rem;
-	}
 }
 
 .quran-memorization-state-pill.is-later {
@@ -4820,12 +4361,6 @@ del em strong {
 	font-variant-numeric: tabular-nums;
 	justify-content: center;
 	min-width: 7rem;
-	padding-inline: .55rem;
-}
-
-[data-quran-review-session-progress] .quran-memorization-state-pill strong {
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	font-size: .64rem;
 }
 
 .quran-memorization-state-legend ul[data-quran-review-session-progress] {
@@ -4845,7 +4380,6 @@ del em strong {
 
 	[data-quran-review-session-progress] .quran-memorization-state-pill {
 		min-width: 0;
-		padding-inline: .4rem;
 	}
 }
 
@@ -5084,16 +4618,12 @@ del em strong {
 }
 
 .quran-memorize-rating-buttons .btn {
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-size: .72rem;
 	line-height: 1.2;
 	padding: .18rem .38rem;
 }
 
-.quran-memorize-reader .quran-memorization-state-legend .quran-memorization-state-pill,
-.quran-memorize-reader .quran-memorization-state-legend .quran-memorization-state-pill strong {
-	font-family: var(--bs-font-sans-serif) !important;
-}
 
 .quran-memorize-rating-buttons .quran-memorize-core-memory {
 	min-width: 1.85rem;
@@ -5119,7 +4649,7 @@ del em strong {
 }
 
 .quran-memorize-launch-actions .btn {
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-size: .72rem;
 	line-height: 1.2;
 	padding: .25rem .55rem;
@@ -5545,27 +5075,13 @@ del em strong {
 	min-width: 10rem;
 }
 
-.memorization-progress-group-state {
-	appearance: none;
-	color: inherit;
-	cursor: pointer;
-	font-size: .7rem;
-	gap: .22rem;
-	margin: 0;
-	max-width: max-content;
-	padding: .24rem .36rem;
-}
+.memorization-progress-group-state { max-width: 100%; }
 
 .memorization-progress-group-state .quran-memorization-state-legend-swatch {
 	height: .42rem;
 	width: .42rem;
 }
 
-.memorization-progress-group-state .quran-page-state-count {
-	font-size: .62rem;
-	min-width: 1.15rem;
-	padding: .06rem .22rem;
-}
 
 .memorization-progress-group-state .bi-chevron-down {
 	font-size: .58rem;
@@ -5974,9 +5490,6 @@ del em strong {
 		grid-template-columns: repeat(3, minmax(0, 1fr));
 	}
 
-	.quran-memorization-state-pill {
-		justify-content: space-between;
-	}
 }
 
 .quran-mushaf-page-passage-ref,
@@ -6730,7 +6243,7 @@ del em strong {
 
 	.quran-reader-modes .btn,
 	.community-tabs .btn,
-	.book-catalog-navigation .book-catalog-tabs .nav-link {
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link {
 		font-size: 0.62rem;
 		padding: 0.18rem 0.3rem;
 	}
@@ -7075,10 +6588,6 @@ del em strong {
 	will-change: transform;
 }
 
-body:has(.quran-help-tips) #bmc-wbtn {
-	display: none !important;
-}
-
 #bmc-wbtn .hadith-bmc-remove {
 	align-items: center;
 	background: rgba(0, 0, 0, .72);
@@ -7277,10 +6786,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	padding: 0.2rem 0.45rem calc(0.2rem + env(safe-area-inset-bottom));
 }
 
-.mobile-bottom-nav.mobile-bottom-nav-has-tour {
-	grid-template-columns: repeat(11, minmax(0, 1fr));
-}
-
 .mobile-bottom-nav > [data-mobile-bottom-nav-back] {
 	grid-column: 1;
 }
@@ -7304,22 +6809,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 }
 
 .mobile-bottom-nav > [data-mobile-bottom-nav-next] {
-	grid-column: 11;
-}
-
-.mobile-bottom-nav.mobile-bottom-nav-has-tour > [data-page-help-tour-trigger] {
-	grid-column: 4;
-}
-
-.mobile-bottom-nav.mobile-bottom-nav-has-tour > .mobile-bottom-nav-font-controls {
-	grid-column: 5 / 8;
-}
-
-.mobile-bottom-nav.mobile-bottom-nav-has-tour > [data-mobile-bottom-nav-prev] {
-	grid-column: 9;
-}
-
-.mobile-bottom-nav.mobile-bottom-nav-has-tour > [data-mobile-bottom-nav-next] {
 	grid-column: 11;
 }
 
@@ -7376,14 +6865,8 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	padding: .42rem .55rem calc(.42rem + env(safe-area-inset-bottom));
 }
 
-.mobile-bottom-nav.mobile-bottom-nav-review-controls > :not(.quran-memorize-rating-buttons):not([data-page-help-tour-trigger]) {
+.mobile-bottom-nav.mobile-bottom-nav-review-controls > :not(.quran-memorize-rating-buttons) {
 	display: none !important;
-}
-
-.mobile-bottom-nav.mobile-bottom-nav-review-controls [data-page-help-tour-trigger] {
-	flex: 0 0 2.5rem;
-	min-height: 2.15rem;
-	padding-inline: .2rem;
 }
 
 .mobile-bottom-nav.mobile-bottom-nav-review-controls.mobile-bottom-nav-audio-controls > .mobile-bottom-nav-audio-item {
@@ -7891,13 +7374,8 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	display: block;
 	min-height: 3rem;
 	padding: .5rem .65rem;
-	border: 1px dashed var(--bs-border-color);
 	border-radius: .375rem;
 	cursor: text;
-}
-.h .hadith-content-editor._e:focus {
-	border-style: solid;
-	border-color: var(--bs-primary);
 }
 .hadith-language-item ._e[data-placeholder]:empty::before { color: var(--bs-secondary-color); content: attr(data-placeholder); }
 .hadith-language-item ._e[data-markdown-source=""]:not(.markdown-editing) { color: var(--bs-secondary-color); }
@@ -7908,18 +7386,8 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 /* Keep public item actions out of the metadata admin button treatment. */
 .hadith-admin-action,
 .hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn) {
-	--bs-btn-active-bg: var(--c-ghostwhite);
-	--bs-btn-active-border-color: var(--bs-secondary-color);
-	--bs-btn-active-color: var(--bs-body-color);
-	--bs-btn-hover-bg: var(--c-ghostwhite);
-	--bs-btn-hover-border-color: var(--bs-secondary-color);
-	--bs-btn-hover-color: var(--bs-body-color);
 	align-items: center;
-	background: transparent !important;
-	border-color: var(--bs-border-color) !important;
 	border-radius: .35rem;
-	box-shadow: none !important;
-	color: var(--bs-secondary-color) !important;
 	display: inline-flex;
 	font-size: .72rem !important;
 	font-weight: 500;
@@ -7928,16 +7396,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	line-height: 1.15;
 	min-height: 1.7rem;
 	padding: .2rem .45rem;
-}
-.hadith-admin-action:hover,
-.hadith-admin-action:focus-visible,
-.hadith-admin-action:active,
-.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):hover,
-.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):focus-visible,
-.hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn):active {
-	background: var(--c-ghostwhite) !important;
-	border-color: var(--bs-secondary-color) !important;
-	color: var(--bs-body-color) !important;
 }
 .hadith-admin-action .bi,
 .hadith-metadata-panel .btn:not(.personal-note-btn, .hadith-share-action-link, .content-item-actions .btn) .bi,
@@ -7951,12 +7409,6 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	padding: 0;
 	width: 1.5rem;
 }
-.hadith-grade-delete:hover,
-.hadith-grade-delete:focus-visible,
-.hadith-narrator-delete:hover,
-.hadith-narrator-delete:focus-visible,
-.hadith-sharh-delete:hover,
-.hadith-sharh-delete:focus-visible { color: var(--bs-body-color) !important; }
 .hadith-pair-manager-modal .modal-dialog { max-width: min(56rem, calc(100vw - 2rem)); }
 .hadith-pair-manager-filter { align-items: center; display: flex; position: relative; }
 .hadith-pair-manager-filter > .bi { color: var(--bs-secondary-color); font-size: .72rem; inset-inline-start: .65rem; pointer-events: none; position: absolute; z-index: 2; }
@@ -8000,7 +7452,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 .quran-passage-section .h:lang(ar) .chain,
 .quran-passage-section .h:lang(ar) .chain p,
 .quran-passage-section .h:lang(ar) .chain .quran-corpus-word {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .h .body {
@@ -8056,8 +7508,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 }
 
 .quran-infinite-page,
-.reader-infinite-page,
-.search-infinite-page {
+.reader-infinite-page {
 	border-top: 1px solid var(--bs-border-color);
 	margin-top: 2rem;
 	padding-top: 1rem;
@@ -8092,7 +7543,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 }
 
 .quran-passage-section.quran-hide-translation .h:lang(en),
-.quran-passage-section.quran-hide-translation .quran-preferred-translation-footnotes,
+.quran-study-passage:has(.quran-hide-translation) > .quran-study-notes,
 .quran-passage-section.quran-hide-arabic .h:lang(ar) {
 	display: none;
 }
@@ -8143,9 +7594,6 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 		order: 1;
 	}
 
-	.quran-passage-section .quran-preferred-translation-footnotes {
-		order: 2;
-	}
 
 	.quran-passage-section .quran-mobile-audio-toolbar {
 		order: 3;
@@ -8237,7 +7685,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 .quran-passage-section [lang="ar"] .ayah,
 .quran-passage-section [lang="ar"] .ayah .quran-corpus-word,
 .body.passage:lang(ar) .ayah sup {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .body.passage:lang(ar),
@@ -8269,7 +7717,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-body,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-body p,
 .body.passage:lang(ar) .ayah-selected sup {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .quran-range-admin,
@@ -8383,22 +7831,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	margin-right: .75rem;
 }
 
-.quran-tafsir-filter-pill {
-	align-items: center;
-	color: var(--c-accent);
-	display: inline-flex;
-	gap: .35rem;
-	margin-top: .3rem;
-	max-width: 100%;
-	white-space: normal;
-}
 
-.quran-tafsir-filter-pill .btn-close {
-	font-size: .65rem;
-	height: .65rem;
-	padding: .25rem;
-	width: .65rem;
-}
 
 .quran-passage-navigator .form-control {
 	border-color: var(--c-accent);
@@ -8479,22 +7912,6 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 
 .toc-book-description-summary a {
 	color: var(--c-accent);
-}
-
-.toc ._e[data-placeholder]:empty::before,
-.book-catalog-page ._e[data-placeholder]:empty::before {
-	color: var(--bs-secondary-color);
-	content: attr(data-placeholder);
-	font-style: italic;
-	opacity: .75;
-}
-
-.toc ._e[data-placeholder]:hover,
-.toc ._e[data-placeholder]:focus,
-.book-catalog-page ._e[data-placeholder]:hover,
-.book-catalog-page ._e[data-placeholder]:focus {
-	outline: 1px dashed var(--bs-border-color);
-	outline-offset: .15rem;
 }
 
 .toc-book-inline-size-editor {
@@ -8583,17 +8000,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	overflow-wrap: anywhere;
 }
 
-.book-language-badge {
-	display: inline-block;
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
-	font-size: .53rem !important;
-	font-weight: 600;
-	letter-spacing: .02em;
-	line-height: 1;
-	padding: .11rem .26rem !important;
-	border-radius: .38rem !important;
-	vertical-align: .2em;
-}
+.book-language-badge { vertical-align: .2em; }
 
 .tafsir-book-meta {
 	font-size: var(--content-size-meta);
@@ -8757,6 +8164,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	gap: .35em;
 }
 
+.quran-mushaf-page-heading .mushaf-book-opener,
 .quran-mushaf-page-toolbar .quran-ayah-select-btn {
 	font-size: .9em;
 	padding: .17em .39em;
@@ -8800,9 +8208,6 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	font-size: 1rem;
 }
 
-#quran-audio-range-modal .btn-close {
-	font-size: .7rem;
-}
 
 .quran-audio-range-grid {
 	display: grid;
@@ -9121,7 +8526,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 .body.passage .quran-ayah-end-marker,
 .body.passage .quran-ayah-end-marker sup {
 	color: var(--c-accent);
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-weight: 400;
 	transition: color .15s ease;
 }
@@ -9145,7 +8550,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 }
 
 .quran-ayah-end-marker {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: 1em;
 	font-weight: 400;
 	line-height: inherit;
@@ -9172,10 +8577,7 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	line-height: 0.75;
 }
 
-main[data-page-help-tour="study"] heading.major h2:lang(ar) .quran-surah-name-font,
-main[data-page-help-tour="study"] heading.major h2:lang(ar) .quran-surah-name,
-main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name-font,
-main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
+main.chapter heading.major h2:lang(ar) :is(.quran-surah-name-font, .quran-surah-name) {
 	font-weight: 400;
 }
 
@@ -9185,7 +8587,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 .quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .ayah,
 .quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .ayah-selected,
 .quran-search-item .h:lang(ar) .body .hadith-body-content.quran-hafs .quran-ayah-end-marker {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .quran-search-item .h:lang(ar) .quran-search-title,
@@ -9234,32 +8636,6 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	color: var(--c-black-soft);
 }
 
-.quran-ayah-modal-toolbar .btn-close {
-	flex: 0 0 auto;
-	margin: 0;
-}
-
-.quran-ayah-modal-mode-toggle {
-	flex: 0 0 auto;
-}
-
-.quran-ayah-modal-mode-toggle .btn {
-	align-items: center;
-	display: inline-flex;
-	gap: .25rem;
-}
-
-.quran-ayah-modal-mode-toggle .btn.active {
-	background: var(--c-accent);
-	border-color: var(--c-accent);
-	color: var(--c-white);
-}
-
-@media (max-width: 575.98px) {
-	.quran-ayah-modal-mode-toggle .btn span:not(.bi) {
-		display: none;
-	}
-}
 
 .quran-ayah-modal-nav {
 	display: flex;
@@ -9309,28 +8685,18 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	}
 }
 
-.quran-ayah-modal-full-page {
-	align-items: center;
-	display: inline-flex;
-	font-weight: 600;
-	gap: .4rem;
-	white-space: nowrap;
-}
-
 .quran-ayah-modal-pane .quran-tafsirs {
 	margin-top: 1rem !important;
 }
 
 .quran-ayah-modal .quran-tafsir-language-toggle .btn,
 .quran-ayah-modal .quran-tafsir-text,
-.quran-ayah-modal .quran-translation-text,
-.quran-ayah-modal .quran-tafsir-footnotes {
+.quran-ayah-modal .quran-translation-text {
 	font-size: var(--content-size-body);
 }
 
-.quran-ayah-modal .quran-tafsir-text :not(.content-item-footer, .content-item-footer *),
-.quran-ayah-modal .quran-translation-text *,
-.quran-ayah-modal .quran-tafsir-footnotes * {
+.quran-ayah-modal .quran-tafsir-text :not(.content-item-footer, .content-item-footer *, .footnotes, .footnotes *, .footnote-ref, .footnote-ref *),
+.quran-ayah-modal .quran-translation-text :not(.footnotes, .footnotes *, .footnote-ref, .footnote-ref *) {
 	font-size: inherit;
 }
 
@@ -9394,7 +8760,8 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 
 .quran-subheading:lang(ar) {
 	direction: rtl;
-	font-family: KitabBold, Serif;
+	font-family: Kitab, Serif;
+	font-weight: 700;
 	font-size: calc(var(--f-size-ar) * 1.18);
 }
 
@@ -9420,12 +8787,6 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	margin-top: 0.75rem;
 }
 
-.quran-footnotes .footnote,
-.quran-footnotes .footnote p {
-	color: var(--c-footnote-muted);
-	text-indent: 0;
-}
-
 .quran-footnotes [lang="ar"] sup {
 	font-size: 0.65em;
 }
@@ -9435,26 +8796,16 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-footnotes [lang="ar"] .quran-footnote-selected {
-	font-family: KitabBold, Serif;
+	font-family: Kitab, Serif;
+	font-weight: 700;
 }
 
 .quran-tafsir-tabs {
 	margin-bottom: 0;
 }
 
-.tafsir-only-page > .quran-commentary-passage-carousel {
-	background: var(--bs-body-bg, var(--c-white));
-	box-shadow: 0 1px 0 var(--bs-border-color);
-	padding: .35rem 0 .5rem;
-	position: sticky;
-	top: var(--site-fixed-header-height, 4.25rem);
-	transition: opacity .22s ease, transform .22s ease;
-	z-index: 900;
-}
-
+.reader-source-picker,
 .quran-tafsirs>.h-menu-wrap {
-	background: var(--bs-body-bg, var(--c-white));
-	box-shadow: 0 1px 0 var(--bs-border-color);
 	padding: .35rem 0 .5rem;
 	position: sticky;
 	top: var(--site-fixed-header-height, 4.25rem);
@@ -9463,14 +8814,12 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-ayah-modal .quran-tafsirs>.h-menu-wrap {
-	background: var(--bs-modal-bg, var(--c-white));
-	box-shadow: 0 1px 0 var(--bs-border-color);
 	top: 0;
 	z-index: 5;
 }
 
 @media (max-width: 768px) {
-	.tafsir-only-page > .quran-commentary-passage-carousel {
+	.reader-source-picker {
 		top: var(--site-fixed-header-height, 2.625rem);
 	}
 
@@ -9824,7 +9173,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 [data-content-language="ar"] .quran-hafs *,
 [data-content-language="ar"] .quran-corpus-word,
 [data-content-language="ar"] .quran-surah-name {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .content-translation-language-switcher {
@@ -10471,7 +9820,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-translation-text {
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	line-height: 1.45;
 	margin-left: 1.15rem;
 }
@@ -10482,7 +9831,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 
 .quran-tafsir-text,
 .quran-translation-text {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: var(--content-size-sm);
 	line-height: 1.55;
 	text-align: justify;
@@ -10498,7 +9847,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 
 .quran-tafsir-text:lang(en),
 .quran-translation-text:lang(en) {
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	line-height: 1.45;
 }
 
@@ -10513,7 +9862,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-tafsir-local-pair [lang="en"] {
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	line-height: 1.55;
 }
 
@@ -10580,7 +9929,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 .quran-tafsir-text:lang(en) h5,
 .quran-tafsir-text:lang(en) h6 {
 	color: inherit;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-weight: 700;
 	line-height: var(--content-line-height-heading);
 	margin: 1.15em 0 .45em;
@@ -10623,7 +9972,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 .quran-tafsir-text:lang(en) .quran-tafsir-arabic-only,
 .quran-tafsir-text:lang(en) .quran-tafsir-arabic-only * {
 	direction: rtl;
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	text-align: right;
 }
 
@@ -10636,7 +9985,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	color: inherit;
 	direction: rtl;
 	display: inline;
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	font-size: 1.12em;
 	padding: 0;
 	text-align: inherit;
@@ -10650,168 +9999,9 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 .quran-tafsir-text:lang(en) h4.quran-tafsir-arabic-only,
 .quran-tafsir-text:lang(en) h5.quran-tafsir-arabic-only,
 .quran-tafsir-text:lang(en) h6.quran-tafsir-arabic-only {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	line-height: 1.5;
 	text-align: right;
-}
-
-.quran-tafsir-text .footnote-ref,
-.quran-translation-text .footnote-ref,
-[data-quran-translation-display="passage"] .footnote-ref {
-	font-size: .62em;
-	line-height: 0;
-	vertical-align: super;
-}
-
-.quran-tafsir-text .footnote-ref a,
-.quran-translation-text .footnote-ref a {
-	font-size: inherit;
-}
-
-.quran-tafsir-text .footnote-ref,
-.quran-tafsir-text .footnote-ref a,
-.quran-tafsir-text .footnote-backref,
-.quran-tafsir-text .footnotes,
-.quran-tafsir-text .footnotes a,
-.quran-translation-text .footnote-ref,
-.quran-translation-text .footnote-ref a,
-.quran-translation-text .footnote-backref,
-.quran-translation-text .footnotes,
-.quran-translation-text .footnotes a,
-[data-quran-translation-display="passage"] .footnote-ref,
-[data-quran-translation-display="passage"] .footnote-ref a,
-.quran-tafsir-footnotes,
-.quran-tafsir-footnotes a,
-.quran-preferred-translation-footnotes,
-.quran-preferred-translation-footnotes a {
-	color: var(--c-footnote-muted);
-}
-
-.quran-tafsir-text .footnote-backref,
-.quran-translation-text .footnote-backref {
-	font-size: .7em;
-}
-
-.quran-tafsir-text .footnotes,
-.quran-tafsir-text .footnotes p,
-.quran-translation-text .footnotes,
-.quran-translation-text .footnotes p {
-	font-size: .78rem !important;
-	line-height: 1.35 !important;
-}
-
-.quran-tafsir-text .footnotes li,
-.quran-translation-text .footnotes li {
-	margin-bottom: .45rem;
-}
-
-.quran-tafsir-text .footnotes li:last-child,
-.quran-translation-text .footnotes li:last-child {
-	margin-bottom: 0;
-}
-
-.quran-tafsir-text .footnotes li::marker,
-.quran-translation-text .footnotes li::marker {
-	font-size: .78rem !important;
-	line-height: 1.35 !important;
-}
-
-.quran-tafsir-text .footnotes p:lang(ar),
-.quran-tafsir-text .footnotes li:lang(ar)::marker {
-	font-size: calc(1rem * var(--content-font-scale)) !important;
-	line-height: 1.45 !important;
-}
-
-.quran-translation-text:lang(ar) .footnotes,
-.quran-translation-text:lang(ar) .footnotes p {
-	font-size: .95rem !important;
-	line-height: 1.45 !important;
-}
-
-.quran-translation-text:lang(ar) .footnotes li::marker {
-	font-size: .95rem !important;
-	line-height: 1.45 !important;
-}
-
-:is(.intro, .h .body) .footnote-ref {
-	font-size: .62em;
-	line-height: 0;
-	vertical-align: super;
-}
-
-:is(.intro, .h .body) .footnote-ref,
-:is(.intro, .h .body) .footnote-ref a,
-:is(.intro, .h .body) .footnote-backref,
-:is(.intro, .h .body) .footnotes,
-:is(.intro, .h .body) .footnotes a,
-:is(.intro, .h .body) .footnotes li,
-:is(.intro, .h .body) .footnotes li::marker {
-	color: var(--c-footnote-muted);
-}
-
-:is(.intro, .h .body) .footnote-backref {
-	font-size: .7em;
-}
-
-:is(.intro, .h .body) .footnotes,
-:is(.intro, .h .body) .footnotes p,
-:is(.intro, .h .body) .footnotes li::marker {
-	font-size: .78rem !important;
-	line-height: 1.35 !important;
-}
-
-:is(.intro, .h .body) .footnotes li {
-	margin-bottom: .45rem;
-}
-
-:is(.intro, .h .body) .footnotes li:last-child {
-	margin-bottom: 0;
-}
-
-:is(.intro, .h .body):lang(ar) .footnotes,
-:is(.intro, .h .body):lang(ar) .footnotes p,
-:is(.intro, .h .body):lang(ar) .footnotes li::marker,
-.h:lang(ar) .body .footnotes,
-.h:lang(ar) .body .footnotes p,
-.h:lang(ar) .body .footnotes li::marker {
-	font-size: .95rem !important;
-	line-height: 1.45 !important;
-}
-
-.quran-tafsir-text.quran-footnotes-size-md .footnotes,
-.quran-translation-text.quran-footnotes-size-md .footnotes {
-	font-size: .9em !important;
-	line-height: inherit !important;
-}
-
-.quran-tafsir-text.quran-footnotes-size-md .footnotes p,
-.quran-tafsir-text.quran-footnotes-size-md .footnotes li::marker,
-.quran-translation-text.quran-footnotes-size-md .footnotes p,
-.quran-translation-text.quran-footnotes-size-md .footnotes li::marker,
-.quran-tafsir-text.quran-footnotes-size-lg .footnotes p,
-.quran-tafsir-text.quran-footnotes-size-lg .footnotes li::marker,
-.quran-translation-text.quran-footnotes-size-lg .footnotes p,
-.quran-translation-text.quran-footnotes-size-lg .footnotes li::marker {
-	font-size: inherit !important;
-	line-height: inherit !important;
-}
-
-.quran-tafsir-text.quran-footnotes-size-lg .footnotes,
-.quran-translation-text.quran-footnotes-size-lg .footnotes {
-	font-size: 1em !important;
-	line-height: inherit !important;
-}
-
-.quran-tafsir-text.quran-footnotes-size-md .footnotes p:lang(ar),
-.quran-tafsir-text.quran-footnotes-size-md .footnotes li:lang(ar)::marker {
-	font-size: calc(var(--f-size-ar) * .94) !important;
-	line-height: 1.45 !important;
-}
-
-.quran-tafsir-text.quran-footnotes-size-lg .footnotes p:lang(ar),
-.quran-tafsir-text.quran-footnotes-size-lg .footnotes li:lang(ar)::marker {
-	font-size: var(--f-size-ar) !important;
-	line-height: 1.45 !important;
 }
 
 .quran-tafsir-footnote-popup {
@@ -10820,10 +10010,7 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	border-radius: 4px;
 	box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
 	color: white;
-	font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	font-size: var(--content-size-xs);
-	line-height: 1.25;
-	max-height: calc(.72rem * 1.25 * 7 + .9rem);
+	max-height: calc(7lh + .9rem);
 	max-width: min(22rem, calc(100vw - 1rem));
 	overflow-y: auto;
 	padding: .38rem .5rem;
@@ -10833,13 +10020,6 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	white-space: normal;
 	overflow-wrap: anywhere;
 	z-index: 1085;
-}
-
-.quran-tafsir-footnote-popup:lang(ar) {
-	font-family: Hafs, Serif;
-	font-size: var(--content-size-sm);
-	line-height: 1.45;
-	max-height: calc(.84rem * 1.45 * 7 + .9rem);
 }
 
 .quran-tafsir-footnote-popup p {
@@ -10852,48 +10032,14 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 	margin-top: .3rem;
 }
 
-.quran-preferred-translation-footnotes {
-	color: var(--c-footnote-muted);
-	font-family: "Gentium Plus", Serif;
-	font-size: var(--content-size-sm);
-	line-height: 1.3;
+.quran-study-notes:has(> :not(.d-none)) {
 	margin-top: .75rem;
 	padding-top: .6rem;
-	text-indent: 0;
-}
-
-.quran-preferred-translation-footnotes.quran-footnotes-size-md {
-	font-size: var(--content-size-meta);
-}
-
-.quran-preferred-translation-footnotes.quran-footnotes-size-lg {
-	font-size: var(--content-size-body);
+	border-top: 1px solid var(--bs-border-color);
 }
 
 .quran-preferred-translation-footnotes .footnotes-sep {
 	display: none;
-}
-
-.quran-preferred-translation-footnotes .footnotes {
-	margin: 0;
-}
-
-.quran-preferred-translation-footnotes .footnotes-list {
-	margin: 0;
-	padding-left: 1.35rem;
-}
-
-.quran-preferred-translation-footnotes .footnote-item {
-	padding-left: .15rem;
-}
-
-.quran-preferred-translation-footnotes .footnote-item + .footnote-item {
-	margin-top: .35rem;
-}
-
-.quran-preferred-translation-footnotes .footnote-item p {
-	margin: 0;
-	text-indent: 0;
 }
 
 .quran-preferred-translation-footnotes .footnote-backref {
@@ -10902,14 +10048,13 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 
 .quran-tafsir-footnotes {
 	border-top: 1px solid var(--bs-border-color);
-	font-size: .9em;
 	margin-top: .75rem;
 	padding-top: .5rem;
 }
 
 .quran-tafsir-local-pair [lang="ar"] {
 	color: inherit;
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	line-height: 1.75;
 	text-align: justify;
 }
@@ -10930,13 +10075,13 @@ main.tafsir-only-page heading.major h2:lang(ar) .quran-surah-name {
 }
 
 .quran-tafsir-arabic-only {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	line-height: 1.75;
 	text-align: right;
 }
 
 [data-prop="toc.intro_en"] .quran-tafsir-arabic-only {
-	font-family: Hafs, Serif;
+	font-family: Kitab, Serif;
 	text-indent: 0;
 }
 
@@ -11048,7 +10193,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .quran-tafsir-ayah:lang(ar),
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) {
 	color: var(--c-black);
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: calc(1.665rem * var(--content-font-scale)) !important;
 	font-weight: 400;
 	line-height: 1.65;
@@ -11070,6 +10215,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .quran-tafsir-ayah:lang(ar) a,
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) a {
 	color: inherit;
+	font-family: inherit;
 	font-size: inherit !important;
 	line-height: inherit !important;
 	text-decoration: none;
@@ -11085,8 +10231,8 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .quran-tafsir-ayah:lang(ar) span,
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) span {
-	font-family: QuranV1, Serif;
-	font-weight: 400;
+	font-family: inherit;
+	font-weight: inherit;
 }
 
 .quran-tafsir-ayah:lang(ar) .quran-ayah-end-marker,
@@ -11127,7 +10273,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref,
 .quran-tafsir-text:lang(en) .quran-tafsir-ayah:lang(ar) .quran-tafsir-ayah-ref {
 	color: var(--c-black);
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--content-language-latin-font);
 	font-size: .58em;
 	font-weight: 400;
 	line-height: 1;
@@ -11235,7 +10381,7 @@ details.quran-tafsir-entry:not([open]) .quran-tafsir-ayah-inline:lang(ar) {
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-body p {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: calc(1.85rem * var(--content-font-scale));
 	line-height: 1.85;
 }
@@ -11297,7 +10443,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-hero-text {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: inherit;
 }
 
@@ -11313,7 +10459,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: calc(1.85rem * var(--content-font-scale));
 	font-weight: 400;
 	line-height: 1.85;
@@ -11343,7 +10489,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 
 .body .ayah-selected:lang(ar),
 :lang(ar) .body .ayah-selected {
-	font-family: KitabBold, Serif;
+	font-family: Kitab, Serif;
+	font-weight: 700;
 }
 
 .quran-passage-section [lang="ar"] .body .ayah-selected,
@@ -11356,20 +10503,29 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	box-decoration-break: clone;
 	-webkit-box-decoration-break: clone;
 	color: var(--c-link-dark);
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-weight: 400;
+}
+
+.quran-passage-section [lang="ar"] .body .ayah-selected .quran-corpus-word,
+.quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-corpus-word,
+.body.passage:lang(ar) .ayah-selected .quran-corpus-word {
+	font-weight: inherit;
 }
 
 .quran-passage-section [lang="ar"] .body .ayah-selected a,
 .quran-passage-section [lang="ar"] .body .ayah-selected .quran-ayah-body,
-.quran-passage-section [lang="ar"] .body .ayah-selected strong,
-.quran-passage-section [lang="ar"] .body .ayah-selected b,
 .body.passage:lang(ar) .ayah-selected a,
-.body.passage:lang(ar) .ayah-selected .quran-ayah-body,
-.body.passage:lang(ar) .ayah-selected strong,
-.body.passage:lang(ar) .ayah-selected b {
+.body.passage:lang(ar) .ayah-selected .quran-ayah-body {
 	color: inherit;
 	font-weight: inherit;
+}
+
+.quran-passage-section [lang="ar"] .body .ayah-selected :is(b, strong),
+.body.passage:lang(ar) .ayah-selected :is(b, strong) {
+	color: inherit;
+	font-family: inherit;
+	font-weight: 700;
 }
 
 .quran-passage-section [lang="en"] .body .ayah-selected,
@@ -11396,7 +10552,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .quran-passage-section [lang="ar"] .body .ayah-selected .quran-ayah-end-marker,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-ayah-end-marker,
 .body.passage:lang(ar) .ayah-selected .quran-ayah-end-marker {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-weight: 400;
 }
 
@@ -11427,12 +10583,12 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah a,
 .quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah .quran-ayah-body,
 .quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah .quran-corpus-word {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 }
 
 .body.passage:lang(ar) .ayah.quran-prefatory-ayah .quran-ayah-end-marker,
 .quran-passage-section [lang="ar"] .body.passage .ayah.quran-prefatory-ayah .quran-ayah-end-marker {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-weight: 400;
 }
 
@@ -11452,11 +10608,6 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .translation-only-page em {
 	color: inherit;
 	font-style: italic;
-}
-
-.h .footnote {
-	color: var(--c-footnote-muted);
-	text-indent: 2em;
 }
 
 .h .note,
@@ -11582,17 +10733,6 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	transform: rotate(180deg);
 }
 
-.quran-similar-ayahs-count {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 1.4rem;
-	height: 1.4rem;
-	padding: 0 .35rem;
-	border-radius: 999px;
-	background: var(--c-gray-dark-16);
-	font-size: .8em;
-}
 
 .quran-similar-ayahs-list {
 	display: grid;
@@ -11615,7 +10755,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-similar-ayah-arabic {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: calc(1.55rem * var(--content-font-scale));
 	line-height: 1.8;
 	text-align: right;
@@ -11684,17 +10824,6 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-mutashabihat-count,
-.quran-mutashabihat-matches > summary span {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 1.4rem;
-	height: 1.4rem;
-	padding: 0 .35rem;
-	border-radius: 999px;
-	background: var(--c-gray-dark-16);
-	font-size: .8em;
-}
 
 .quran-mutashabihat-list {
 	display: grid;
@@ -11710,7 +10839,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-mutashabihat-phrase-text {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: calc(1.4rem * var(--content-font-scale));
 	line-height: 1.75;
 	text-align: right;
@@ -11748,7 +10877,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-mutashabihat-match-arabic {
-	font-family: QuranV1, Serif;
+	font-family: Hafs, Serif;
 	font-size: calc(1.45rem * var(--content-font-scale));
 	line-height: 1.8;
 	text-align: right;
@@ -11993,18 +11122,6 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	font-size: var(--content-size-sm);
 }
 
-.comment-provider-chip,
-.comment-provider {
-	display: inline-flex;
-	align-items: center;
-	padding: 0.1rem 0.45rem;
-	border-radius: 999px;
-	background: var(--c-white-72);
-	color: var(--c-comment-meta);
-	font-size: 0.65rem;
-	font-weight: 700;
-	letter-spacing: 0.01em;
-}
 
 .comment-input {
 	min-height: 2.85rem;
@@ -12087,15 +11204,6 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .comment-submit-btn:disabled {
 	background: var(--c-gray-dark-16);
 	color: var(--c-gray-very-dark-75);
-}
-
-.comment-form-link,
-.comment-form-link:hover,
-.comment-form-link:focus {
-	color: var(--c-comment-meta);
-	text-decoration: none;
-	font-weight: 700;
-	font-size: 0.72rem;
 }
 
 .comment-thread {
@@ -12604,7 +11712,7 @@ a.cmd-btn:hover {
 
 .search-autocomplete-match {
 	color: var(--bs-body-color);
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.98rem;
 	font-weight: normal;
 }
@@ -12622,7 +11730,7 @@ a.cmd-btn:hover {
 
 .search-autocomplete-source {
 	color: var(--c-gray-dark);
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.64rem;
 	line-height: 1.15;
 	margin-top: 0.25rem;
@@ -12632,7 +11740,7 @@ a.cmd-btn:hover {
 	color: var(--c-gray-mid);
 	direction: ltr;
 	display: block;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.72rem;
 	line-height: 1.2;
 	margin-top: 0.18rem;
@@ -12643,7 +11751,7 @@ a.cmd-btn:hover {
 .search-autocomplete-menu .search-autocomplete-meta-en {
 	direction: ltr;
 	display: block;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.76rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -12691,14 +11799,14 @@ a.cmd-btn:hover {
 
 .search-autocomplete-ar .search-autocomplete-source {
 	direction: rtl;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.64rem;
 	line-height: 1.2;
 }
 
 .search-autocomplete-ar .search-autocomplete-meta {
 	direction: ltr;
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.72rem;
 	text-align: left;
 }
@@ -12715,7 +11823,7 @@ a.cmd-btn:hover {
 
 .commentary-search-fragment {
 	color: var(--c-brown);
-	font-family: "Gentium Plus", Serif;
+	font-family: var(--ux-font-ui);
 	font-size: 0.9rem;
 	line-height: 1.35;
 }
@@ -12734,7 +11842,7 @@ a.cmd-btn:hover {
 /*
 @media only screen and (max-width: 420px) {
 
-	nav.navbar, aside.tags, a.icon, footer, #bmc-wbtn {
+	.site-navbar, nav.navbar, aside.tags, a.icon, footer, #bmc-wbtn {
 		display: none !important;
 	}
 
@@ -12763,25 +11871,22 @@ a.cmd-btn:hover {
 .command-search-dialog .command-search-combined-filters > summary { display: none; }
 .command-search-dialog .command-search-combined-filters > .command-search-filter-popover { border: 0; padding: 0; }
 :root { --site-compact-rail-width: 18rem; }
-.search-results-layout { max-width: 90rem; padding-inline: 1.5rem; margin-top: max(5rem, calc(var(--site-fixed-header-height, 0px) + 0.75rem)); }
-.search-results-layout > main { min-width: 0; margin-top: 0; }
-.search-filter-rail { min-width: 0; }
-.search-filter-controls [data-search-filter-rail-options] > .command-search-filter-popover { border: 0; padding: 0; }
+.search-results-layout > main { margin-top: var(--ux-page-start); min-width: 0; }
+.search-results-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; }
+.search-results-heading h1 { min-width: 0; overflow-wrap: anywhere; }
+.search-results-heading button { flex-shrink: 0; }
+.search-filter-rail > .hadith-heading-toc-sticky { padding: 0 0 .75rem; }
+.search-filter-controls { padding-inline: .7rem; }
+.search-filter-controls .ux-rail-search { margin-bottom: .5rem; }
+.search-filter-controls .command-search-filter-group > summary { font: var(--ux-emphasis-weight) var(--ux-secondary-size)/1.4 var(--ux-font-ui); letter-spacing: normal; text-transform: none; }
+.search-filter-controls .form-check-input:checked { background-color: var(--ux-midnight-deep); border-color: var(--ux-midnight-deep); }
+.search-filter-controls [data-search-filter-rail-options] > .command-search-filter-popover { border: 0; padding: 0; background: transparent; }
 .search-filter-controls .command-search-source-options,
 .search-filter-controls .command-search-book-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .search-filter-controls .command-search-book-list { max-height: 16rem; }
-.search-filter-controls .command-search-filter-find input { font-size: 0.75rem; }
 .search-filter-controls .command-search-filter-panel { margin: 0 0 1rem; }
-@media (min-width: 992px) {
-	.search-results-layout { display: grid; grid-template-columns: minmax(0, 1fr) var(--site-compact-rail-width); gap: 2rem; }
-	.search-filter-rail { position: fixed; z-index: 20; top: calc(var(--site-fixed-header-height, 5rem) + 0.75rem); right: max(1.5rem, calc((100vw - 90rem) / 2 + 1.5rem)); width: var(--site-compact-rail-width); min-height: 0; }
-	.search-filter-rail > [data-search-filter-rail-container] { max-height: calc(100dvh - var(--site-fixed-header-height, 5rem) - 1.5rem); overflow-y: auto; padding-inline: 1rem; border-left: 1px solid var(--bs-border-color); }
-}
-@media (max-width: 991.98px) {
-	.search-results-layout { display: flex; flex-direction: column; max-width: 60rem; padding-inline: 0.75rem; }
-	.search-filter-rail { display: none; }
-}
 
+.search-filter-top-menu [aria-expanded="true"] .chapter-toc-chevron { transform: rotate(180deg); }
 .search-filter-top-menu .search-filter-controls { padding: 0.25rem 0.5rem 0.75rem; }
 @media (min-width: 992px) {
 	.search-filter-top-menu { display: none; }
@@ -12799,8 +11904,8 @@ a.cmd-btn:hover {
 
 /* Hadith Unlocked MCP marketing page */
 .mcp-marketing-page {
-	--mcp-ink: color-mix(in srgb, var(--bs-body-color) 91%, #091c2b 9%);
-	--mcp-muted: color-mix(in srgb, var(--bs-body-color) 67%, var(--bs-body-bg) 33%);
+	--mcp-ink: var(--ivory-heading, var(--bs-body-color));
+	--mcp-muted: var(--bs-secondary-color);
 	--mcp-line: color-mix(in srgb, var(--bs-body-color) 13%, transparent);
 	--mcp-surface: color-mix(in srgb, var(--bs-body-bg) 95%, var(--c-accent) 5%);
 	--mcp-surface-strong: color-mix(in srgb, var(--bs-body-bg) 88%, var(--c-accent) 12%);
@@ -12808,7 +11913,7 @@ a.cmd-btn:hover {
 
 .mcp-marketing-main {
 	color: var(--mcp-ink);
-	font-family: var(--bs-body-font-family);
+	font-family: var(--ux-font-ui);
 	line-height: 1.55;
 	margin-top: max(4.25rem, var(--site-fixed-header-height, 0px));
 }
@@ -12817,12 +11922,12 @@ a.cmd-btn:hover {
 .mcp-marketing-main h2,
 .mcp-marketing-main h3,
 .mcp-marketing-main p {
-	font-family: var(--bs-body-font-family);
+	font-family: var(--ux-font-ui);
 }
 
 .mcp-marketing-main h1 {
 	font-size: clamp(2.45rem, 5.6vw, 4.65rem) !important;
-	font-weight: 750;
+	font-weight: var(--ux-heading-weight);
 	letter-spacing: -.055em;
 	line-height: .99;
 	max-width: 12ch;
@@ -12830,34 +11935,21 @@ a.cmd-btn:hover {
 
 .mcp-marketing-main h2 {
 	font-size: clamp(1.9rem, 3.7vw, 3rem) !important;
-	font-weight: 720;
+	font-weight: var(--ux-heading-weight);
 	letter-spacing: -.04em;
 	line-height: 1.08;
 }
 
 .mcp-marketing-main h3 {
 	font-size: 1.08rem !important;
-	font-weight: 700;
+	font-weight: var(--ux-emphasis-weight);
 }
 
 .mcp-hero {
-	background:
-		radial-gradient(circle at 88% 9%, var(--c-accent-22), transparent 32rem),
-		linear-gradient(135deg, color-mix(in srgb, var(--bs-body-bg) 92%, #effaff 8%), var(--bs-body-bg));
+	background: var(--ivory-canvas, var(--bs-body-bg));
 	border-bottom: 1px solid var(--mcp-line);
 	padding: clamp(4.5rem, 8vw, 8rem) 0 clamp(4rem, 7vw, 7rem);
 	position: relative;
-}
-
-.mcp-hero::before {
-	background-image: linear-gradient(var(--mcp-line) 1px, transparent 1px), linear-gradient(90deg, var(--mcp-line) 1px, transparent 1px);
-	background-size: 42px 42px;
-	content: '';
-	inset: 0;
-	mask-image: linear-gradient(to bottom, rgba(0,0,0,.32), transparent 78%);
-	opacity: .3;
-	pointer-events: none;
-	position: absolute;
 }
 
 .mcp-hero .container {
@@ -12960,13 +12052,6 @@ a.cmd-btn:hover {
 	gap: .42rem;
 }
 
-.mcp-live-label {
-	background: rgba(55, 211, 151, .14);
-	border: 1px solid rgba(55, 211, 151, .35);
-	border-radius: 999px;
-	color: #7eebc1;
-	padding: .16rem .55rem;
-}
 
 .mcp-endpoint-label {
 	color: rgba(255,255,255,.58);
@@ -13243,15 +12328,6 @@ a.cmd-btn:hover {
 	margin-top: .85rem;
 }
 
-.mcp-tool-pills span {
-	background: var(--bs-body-bg);
-	border: 1px solid var(--mcp-line);
-	border-radius: .45rem;
-	color: var(--mcp-muted);
-	font-family: var(--bs-font-monospace);
-	font-size: .61rem;
-	padding: .32rem .48rem;
-}
 
 .mcp-capability-list {
 	border-top: 1px solid var(--mcp-line);
@@ -13683,79 +12759,57 @@ main.book-catalog-page {
 	font-size: 1rem;
 	line-height: 1.5;
 }
-.book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
-.book-catalog-navigation .book-catalog-tabs {
+:where(body:not(.books-beta)) .book-catalog-navigation .chapter-toc-toolbar { justify-content: center; min-width: 0; }
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs {
 	flex-wrap: nowrap; justify-content: safe center; max-width: 100%; overflow-x: auto;
 	gap: 0; margin: 0; padding: 0; border: 0; background: transparent;
 }
-.book-catalog-navigation .book-catalog-tabs .nav-item { flex: 0 0 auto; }
-.book-catalog-navigation .book-catalog-tabs .nav-item + .nav-item { margin-left: -1px; }
-.book-catalog-navigation .book-catalog-tabs .nav-link {
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-item { flex: 0 0 auto; }
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-item + .nav-item { margin-left: -1px; }
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link {
 	border: 1px solid var(--bs-secondary-color); border-radius: 0;
 	margin-bottom: 0; background: transparent; color: var(--bs-secondary-color);
 	text-decoration: none;
 }
-.book-catalog-navigation .book-catalog-tabs .nav-item:first-child .nav-link { border-radius: .25rem 0 0 .25rem; }
-.book-catalog-navigation .book-catalog-tabs .nav-item:last-child .nav-link { border-radius: 0 .25rem .25rem 0; }
-.book-catalog-navigation .book-catalog-tabs .nav-link:not(.active):hover,
-.book-catalog-navigation .book-catalog-tabs .nav-link:not(.active):focus-visible {
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-item:first-child .nav-link { border-radius: .25rem 0 0 .25rem; }
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-item:last-child .nav-link { border-radius: 0 .25rem .25rem 0; }
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link:not(.active):hover,
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link:not(.active):focus-visible {
 	background: var(--bs-secondary-color); color: var(--bs-body-bg);
 }
-.book-catalog-navigation .book-catalog-tabs .nav-link.active { position: relative; z-index: 1; }
-main.book-catalog-page .tafsir-book-title-line {
+:where(body:not(.books-beta)) .book-catalog-navigation .book-catalog-tabs .nav-link.active { position: relative; z-index: 1; }
+main.book-catalog-page:not(.ux-system) .tafsir-book-title-line {
 	font-size: 1rem !important;
 	line-height: 1.5;
 }
-main.book-catalog-page .tafsir-book-title-line:lang(ar),
-main.book-catalog-page .tafsir-book-title-line :lang(ar) {
+main.book-catalog-page:not(.ux-system) .tafsir-book-title-line:lang(ar),
+main.book-catalog-page:not(.ux-system) .tafsir-book-title-line :lang(ar) {
 	font-size: 1.15rem !important;
 	line-height: 1.7;
 }
 .book-catalog-compact .tafsir-book-list { gap: 1.5rem; }
 .book-catalog-category[hidden], .book-catalog-compact [hidden], .book-catalog-dialog [hidden] { display: none !important; }
-.book-catalog-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: .85rem; }
+.book-catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: 0 1.3rem; }
 .book-catalog-category-title {
 	display: flex; justify-content: space-between; gap: 1rem;
-	font-size: 1rem !important; font-weight: 600; margin: 0; padding-bottom: .5rem;
+	font-size: var(--ux-section-size, 1rem) !important; font-weight: var(--ux-heading-weight, 600); margin: 0; padding-bottom: .5rem;
 	border-bottom: 1px solid var(--bs-border-color);
 }
-.book-catalog-compact .tafsir-book-row {
-	min-width: 0; padding: .9rem;
-	border: 1px solid var(--bs-border-color); border-radius: .6rem;
-	background: var(--bs-tertiary-bg, var(--bs-body-bg));
-	box-shadow: 0 2px 5px rgb(0 0 0 / .035);
+.book-catalog-compact .catalog-volume {
+	min-width: 0; padding: 0; border: 0;
 }
-.book-catalog-compact .tafsir-book-list .tafsir-book-row:first-child { border-top: 1px solid var(--bs-border-color); }
+.book-catalog-compact .tafsir-book-list .catalog-volume:first-child { border-top: 0; }
 .book-catalog-category-title + .book-catalog-grid { margin-top: .75rem; }
 .book-catalog-compact .tafsir-book-row:focus-within {
 	border-color: var(--c-accent);
 }
-.book-catalog-summary { display: flex; flex-direction: column; gap: .35rem; height: 100%; }
-.book-catalog-death { margin-top: auto; padding-top: .35rem; font-size: .75rem; line-height: 1.4; color: var(--bs-secondary-color); text-align: right; direction: ltr; }
-.book-catalog-dates { display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; margin-top: auto; padding-top: .35rem; font-size: .75rem; line-height: 1.4; direction: ltr; }
-.book-catalog-dates .book-catalog-publication,
-.book-catalog-dates .book-catalog-death { font-size: .75rem; line-height: 1.4; }
-.book-catalog-dates .book-catalog-publication { flex-shrink: 0; }
-.book-catalog-dates .book-catalog-death { margin-top: 0; padding-top: 0; }
+.book-catalog-classifications { margin-top: auto; }
 
 .book-catalog-classifications { display: flex; flex-wrap: wrap; gap: .25rem; }
 .book-catalog-size-filters { display: inline-flex; align-items: center; gap: .25rem; }
 .book-catalog-page [data-book-catalog-group-filter=""],
 .book-catalog-page [data-tafsir-group-filter=""] { flex: 0 0 auto; }
 .book-catalog-size-filters .btn { font-size: .75rem; border-radius: .25rem; }
-.book-catalog-pill {
-	display: inline-block; max-width: 100%; padding: .1rem .4rem;
-	border: 1px solid var(--bs-border-color); border-radius: 1rem;
-	font-size: .65rem; line-height: 1.4; color: var(--bs-secondary-color); overflow-wrap: anywhere;
-}
-.book-catalog-type-pill { color: var(--c-accent); background: var(--c-primary-soft-08); }
-.book-catalog-summary .tafsir-book-title-pair,
-.book-catalog-summary .tafsir-book-meta { grid-template-columns: minmax(0, 1fr); gap: .15rem; }
-.book-catalog-summary .tafsir-book-title-pair { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; }
-.book-catalog-summary .tafsir-book-title-pair > [lang="ar"] { grid-column: 1 / -1; }
-.book-catalog-summary .tafsir-book-title-line a { text-decoration: none; }
-.book-catalog-summary .tafsir-book-title-line a:hover { text-decoration: underline; }
-.book-catalog-summary .tafsir-book-meta { font-size: .85rem; line-height: 1.5; }
 .book-catalog-details-button {
 	align-self: baseline; padding: 0 .1rem; line-height: 1.5;
 	border: 0; background: transparent; color: var(--c-accent); font-size: .85rem;
@@ -13763,36 +12817,54 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 .book-catalog-details-button:hover { text-decoration: underline; }
 .book-catalog-details-button:focus-visible { outline: 2px solid var(--c-accent); outline-offset: 3px; }
 .book-catalog-dialog {
+	--dialog-gutter: clamp(1rem, 3vw, 1.5rem);
 	width: min(44rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 0;
-	border: 1px solid var(--bs-border-color); border-radius: .6rem;
-	background: var(--bs-body-bg); color: var(--bs-body-color); font-size: 1rem;
+	border: 1px solid var(--ux-border); border-radius: var(--ux-card-radius);
+	background: var(--ux-surface); box-shadow: 0 1rem 4rem rgb(16 23 45 / .2);
 }
-.book-catalog-dialog::backdrop { background: rgb(0 0 0 / .5); }
+.book-catalog-dialog::backdrop { background: rgb(16 23 45 / .55); }
 .book-catalog-dialog[open] { display: flex; flex-direction: column; }
-.book-catalog-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; border-bottom: 1px solid var(--bs-border-color); }
-.book-catalog-dialog-header h2 { margin: 0; font-size: 1rem; }
-.book-catalog-dialog-header .btn-close { flex-shrink: 0; }
-.book-catalog-dialog-body { padding: 1rem; overflow-y: auto; overscroll-behavior: contain; }
-.book-catalog-dialog .tafsir-book-row-main { gap: .8rem; }
-.book-catalog-dialog .tafsir-book-title-line { font-size: 1.1rem !important; line-height: 1.6; }
-.book-catalog-dialog .tafsir-book-title-line:lang(ar),
-.book-catalog-dialog .tafsir-book-title-line :lang(ar) { font-size: 1.25rem !important; }
+.book-catalog-dialog-header {
+	display: grid; grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center; gap: .4rem 1rem; padding: .8rem var(--dialog-gutter);
+	border-bottom: 1px solid var(--ux-border); overflow-wrap: anywhere;
+}
+.book-catalog-dialog-header h2 {
+	margin: 0; color: var(--ivory-heading, var(--ux-text));
+	font: var(--ux-heading-weight) var(--ux-section-size)/1.3 var(--ux-font-ui);
+}
+.book-catalog-dialog-header [lang="ar"] {
+	max-width: 17rem; font-size: calc(var(--ux-section-size) * 1.1); line-height: 1.4;
+}
+.book-catalog-dialog-header .btn-close { grid-column: 3; grid-row: 1; }
+.book-catalog-dialog-body {
+	padding: var(--dialog-gutter); overflow-y: auto; overscroll-behavior: contain;
+}
+.book-catalog-dialog .tafsir-book-row-main { gap: .75rem; }
+.book-catalog-dialog .tafsir-book-title-pair { display: none; }
 .book-catalog-dialog .tafsir-book-full-name,
 .book-catalog-dialog .tafsir-book-meta,
-.book-catalog-dialog .tafsir-book-description-full,
-.book-catalog-dialog .tafsir-book-publication,
-.book-catalog-dialog .book-download-links { font-size: .95rem; line-height: 1.6; }
+.book-catalog-dialog .tafsir-book-publication { font-size: var(--ux-secondary-size); line-height: 1.55; }
+.book-catalog-dialog .tafsir-book-description-full {
+	border-top: 1px solid var(--ux-border); padding-top: 1rem; font-size: 1rem; line-height: 1.65;
+}
+.book-catalog-dialog-actions {
+	padding: .65rem var(--dialog-gutter); text-align: end;
+	border-top: 1px solid var(--ux-border); background: var(--ux-inset);
+}
+.book-catalog-dialog-actions a { text-decoration: none; }
 .book-catalog-dialog-open { overflow: hidden; }
-@media (min-width: 768px) { .book-catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (min-width: 1400px) { .book-catalog-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 575.98px) {
-	.book-catalog-dialog .tafsir-book-title-pair { grid-template-columns: minmax(0, 1fr); }
+	.book-catalog-dialog-header { grid-template-columns: minmax(0, 1fr) auto; }
+	.book-catalog-dialog-header .btn-close { grid-column: 2; }
+	.book-catalog-dialog-header [lang="ar"] { grid-row: 2; grid-column: 1 / -1; justify-self: end; }
+	.book-catalog-dialog-header [lang="ar"]:empty { display: none; }
 }
 
 .tafsir-rail-group {
 	padding: .5rem .7rem;
 }
-.tafsir-rail-group h2 {
+.tafsir-rail-group :is(h2, .catalog-rail-group-title) {
 	font-size: .8rem;
 	font-weight: 600;
 	margin: 0 0 .25rem;
@@ -13808,7 +12880,7 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 	display: inline;
 }
 .tafsir-rail-group li + li::before {
-	content: " • ";
+	content: " · ";
 	color: var(--bs-secondary-color);
 }
 .tafsir-rail-group a {
@@ -13841,7 +12913,6 @@ main.book-catalog-page .tafsir-book-title-line :lang(ar) {
 .content-share-pane::backdrop { background: #0006; }
 .content-share-pane header { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .content-share-pane h2 { margin: 0; font: inherit; font-size: 1.2rem; font-weight: 600; }
-.content-share-close { border: 0; background: transparent; color: inherit; width: 36px; height: 36px; border-radius: 50%; }
 .content-share-source { margin: 4px 0 24px; font-size: .88rem; opacity: .65; overflow-wrap: anywhere; }
 .content-share-options { display: grid; grid-template-columns: repeat(var(--share-option-count, 5), minmax(0, 1fr)); gap: 8px; }
 .content-share-options button { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; font-size: .8rem; }
@@ -13928,7 +12999,8 @@ center [dir] { text-align: center !important; }
 /* One result rhythm across library texts, commentary, and articles.
    Keep the existing language columns and reader controls inside each item. */
 .search-results-page > article {
-  --bs-gutter-x: 1.5rem;
+  --bs-gutter-x: 0;
+  column-gap: 0;
   margin: 0 !important;
   padding: 1.25rem 0;
   border: 0;
@@ -13948,15 +13020,13 @@ center [dir] { text-align: center !important; }
   gap: .25rem .75rem;
   margin-bottom: .35rem;
   color: var(--bs-secondary-color);
-  font-family: "Gentium Plus", Serif;
-  font-size: .75rem;
+  font-family: var(--ux-font-ui);
+  font-size: var(--ux-caption-size);
   line-height: 1.5;
   text-align: left;
 }
-.search-result-kind {
-  color: var(--c-accent);
-  font-weight: 600;
-}
+.search-results-page { --content-language-latin-font: var(--ux-font-ui); --c-accent: var(--ux-accent); --c-highlight: var(--ux-secondary-fill); --c-highlight-soft: var(--ux-secondary-fill); }
+.search-results-page :is(mark, .highlight) { background: var(--ux-secondary-fill); color: var(--ux-secondary-ink); }
 .search-result-author {
   overflow-wrap: anywhere;
 }
@@ -13965,7 +13035,7 @@ center [dir] { text-align: center !important; }
   margin: .25rem 0 .5rem;
   font-size: 1.05rem !important;
   line-height: 1.45;
-  font-weight: 600;
+  font-weight: var(--ux-emphasis-weight);
 }
 .search-results-page .search-result-title a {
   color: inherit;
@@ -13981,7 +13051,7 @@ center [dir] { text-align: center !important; }
 }
 .search-results-page > article > .h:not(:lang(ar)),
 .search-results-page .commentary-search-fragment:not(:lang(ar)) {
-  font-family: "Gentium Plus", Serif;
+  font-family: var(--content-language-latin-font);
   font-size: calc(.95rem * var(--content-font-scale));
   line-height: var(--content-line-height);
   color: var(--bs-body-color);
@@ -13995,7 +13065,7 @@ center [dir] { text-align: center !important; }
 }
 @media (max-width: 767.98px) {
   .search-results-page > article {
-    --bs-gutter-x: .75rem;
+    --bs-gutter-x: 0;
     padding-block: 1rem;
   }
   .search-results-page > article > [data-reader-language-column="arabic"] {
@@ -14005,7 +13075,7 @@ center [dir] { text-align: center !important; }
 
 .search-results-page .search-result-reference {
   margin-bottom: .5rem;
-  font-weight: 600;
+  font-weight: var(--ux-emphasis-weight);
 }
 .search-results-page .search-result-reference a {
   color: var(--bs-link-color);
@@ -14014,7 +13084,10 @@ center [dir] { text-align: center !important; }
   font-size: var(--f-size-ar) !important;
 }
 
-.home-article-category { display: inline-block; width: fit-content; border-radius: 999px; padding: .02rem .35rem; border: 1px solid var(--bs-border-color); font-size: .6rem; line-height: 1.35; font-weight: 600; background: var(--bs-tertiary-bg); color: var(--bs-body-color); }
+
+@media (min-width: 768px) {
+  .search-results-page > article > .col-md-6[lang="en"] { padding-inline-end: .75rem; }
+}
 
 [data-reader-print-context] { display: none; }
 
@@ -14227,4 +13300,14 @@ center [dir] { text-align: center !important; }
     background: transparent !important;
     text-decoration: none;
   }
+}
+
+.hadith-metadata-page-layout article[data-toc-heading-key="hadith"] header h2.fs-5,
+heading.hadith-chapter-title h2.title.fs-4 {
+  font-size: clamp(1.2rem, 1rem + .65vw, 1.55rem) !important;
+  font-weight: 500;
+}
+heading.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
+  font-size: inherit;
+  font-weight: inherit;
 }

@@ -94,24 +94,21 @@
 					</a>
 				<% } %>
 				<% if (showAyahModalModeToggle) { %>
-					<span class="btn-group btn-group-sm quran-ayah-modal-mode-toggle" role="group" aria-label="Quran modal view">
-						<button type="button" class="btn btn-outline-secondary active" aria-pressed="true"><span class="bi bi-book-half" aria-hidden="true"></span><span>Tafsir</span></button>
-						<button type="button" class="btn btn-outline-secondary quran-ayah-modal-switch" data-quran-ayah-modal-switch="translations"><span class="bi bi-translate" aria-hidden="true"></span><span>Translations</span></button>
-					</span>
+					<%- include('quran_ayah_view_switch', { activeView: 'tafsirs' }) %>
 				<% } %>
 			</span>
 		</h2>
 	</heading>
 	<div class="h-menu-wrap mb-3<%= dedicatedTafsirPage ? ' d-none' : '' %>"<% if (dedicatedTafsirPage) { %> aria-hidden="true"<% } %>>
-		<div class="h-menu-hint d-md-none">
-			<i class="bi bi-arrow-left-right"></i> Swipe to browse tafsirs
-		</div>
-		<div class="h-menu-scroller">
+		<details class="book-switch-picker">
+      <%- include('bookSwitchSummary', { switchLabel: 'Switch tafsir', currentLabel: '' }) %>
+      <div class="h-menu-scroller">
 			<div class="btn-group h-menu quran-tafsir-tabs text-nowrap" role="tablist">
 				<%- include('tafsirCarouselLanguageSwitch') %>
 				<%- include('bookCarouselFilter') %>
 			</div>
 		</div>
+    </details>
 	</div>
 	<div class="tab-content quran-tafsir-content">
 	</div>

@@ -36,17 +36,14 @@ describe('commentary footnote rendering properties', () => {
 
 	test('applies the size class to Tafsir, translation, and selected passage footnotes', () => {
 		const client = source('public/static/js/script.js');
-		const css = source('public/static/css/style.css');
+		const css = source('public/static/css/ux-foundations.css');
 
 		expect(client).toContain('function quranCommentaryFootnoteSize(book)');
 		expect(client).toContain('applyQuranCommentaryFootnoteSize(tafsirText, book);');
 		expect(client).toContain('applyQuranCommentaryFootnoteSize(translationText, book);');
 		expect(client).toContain('applyQuranCommentaryFootnoteSize(quranSelectedTranslationFootnoteHolder(target), book);');
-		expect(css).toContain('.quran-tafsir-text.quran-footnotes-size-lg .footnotes');
-		expect(css).toContain('.quran-translation-text.quran-footnotes-size-lg .footnotes');
-		expect(css).toContain('.quran-preferred-translation-footnotes.quran-footnotes-size-lg');
-		expect(css).toMatch(/\.quran-tafsir-text \.footnotes p:lang\(ar\),[\s\S]*?font-size: calc\(1rem \* var\(--content-font-scale\)\) !important;/);
-		expect(css).toMatch(/\.quran-tafsir-text\.quran-footnotes-size-lg \.footnotes,[\s\S]*?font-size: 1em !important;/);
-		expect(css).toMatch(/\.quran-tafsir-text\.quran-footnotes-size-md \.footnotes p,[\s\S]*?font-size: inherit !important;/);
+		expect(css).toMatch(/\.quran-footnotes-size-lg\s*\{[^}]*--reader-note-size: 1rem/);
+		expect(css).toMatch(/\.quran-footnotes-size-md\s*\{[^}]*--reader-note-size: \.92rem/);
+		expect(css).toContain('var(--reader-note-arabic-size)');
 	});
 });

@@ -906,7 +906,7 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       await context.route('**/*', route=> {
         const request=route.request(), url=request.url();
         if (url.includes('/static/js/script.js')) return route.fulfill({contentType:'application/javascript',body:headerOffsetHelper+';new ResizeObserver(()=>updateFixedHeaderOffset()).observe(document.querySelector(".site-navbar"));updateFixedHeaderOffset();'});
-        if (request.resourceType()==='script' && !url.includes('/static/js/community.js') && !url.includes('/static/js/community-media.js') && !url.includes('/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js')) return route.abort();
+        if (request.resourceType()==='script' && !url.includes('/static/js/community.js') && !url.includes('/static/js/community-media.js') && !url.includes('/bootstrap@5.3.9/dist/js/bootstrap.bundle.min.js')) return route.abort();
         if (url.includes('avatar.test/missing')) return route.fulfill({status:404,body:''});
         if (url.includes('avatar.test/') || url.includes('gravatar.com/avatar/')) return route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48"><circle cx="24" cy="24" r="24" fill="#2c9be5"/></svg>'});
         if (request.resourceType()==='image' && !url.includes('/static/') && !url.includes('/community/media/')) return route.abort();
@@ -1062,12 +1062,12 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
 
       await page.evaluate(()=>scrollTo(0,0));
       await page.screenshot({path:'/tmp/community-my-wall-mobile.png',fullPage:true});
-      expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toContain('Me');
+      expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toContain('My Profile');
       await page.screenshot({path:'/tmp/community-section-menu-mobile.png',fullPage:true});
-      await page.locator('.community-tabs a[href="/notebook"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'My Notebook'});
       expect(await page.locator('#personal-notebook > nav').count()).toBe(0);
       expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toContain('My Notebook');
-      await page.locator('.community-tabs a[href="/community"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'Everyone'});
       await page.waitForFunction(()=>document.getElementById('community-feed').textContent.includes('A quick reflection'));
       await page.waitForLoadState('load');
       await page.screenshot({path:'/tmp/community-feed-mobile.png',fullPage:true});
@@ -1075,12 +1075,12 @@ suite('Community publication, privacy, subscriptions, discussion and moderation'
       if(overflow.width>overflow.viewport) console.log('Mobile overflow',overflow);
       expect(overflow.width).toBeLessThanOrEqual(overflow.viewport);
 
-      await page.locator('.community-tabs a[href="/blog"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'Blog'});
       expect(await page.locator('.community-tabs [aria-current=page]').textContent()).toBe('Blog');
       expect(await page.locator('.site-navbar .nav-link.active[href="/community"]').count()).toBeGreaterThan(0);
       await page.waitForLoadState('load');
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
-      await page.locator('.community-tabs a[href="/community"]').click();
+      await page.getByRole('combobox', {name: 'Community section'}).selectOption({label: 'Everyone'});
       await page.waitForFunction(()=>document.getElementById('community-feed').textContent.includes('A quick reflection'));
       await page.addInitScript(() => { window.hadithAuth = {getUser: async () => null, getToken: async () => { throw new Error('Session unavailable'); }}; });
       await page.goto(base+'/community/@amina/'+savedId);

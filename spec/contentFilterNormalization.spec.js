@@ -28,8 +28,6 @@ describe('shared content-filter normalization', () => {
 		expect(client).toContain('return normalizeContentFilterText(value);');
 		for (const file of [
 			'views/books.ejs',
-			'views/tafsir_books.ejs',
-			'views/translation_books.ejs',
 			'views/quran_memorization_pages.ejs',
 			'views/sub-views/quran_get_started_modal.ejs'
 		]) expect(read(file)).toContain('normalizeContentFilterText');

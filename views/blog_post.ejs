@@ -34,17 +34,17 @@
 
   <div class="container-fluid community-article-layout">
     <main class="community-article community" id="community" data-view="blog-article" data-post="<%= attr.postId || '' %>" data-author="<%= attr.authorHandle || '' %>">
-      <p id="community-status" class="small text-muted" role="status" aria-live="polite"></p>
       <div class="community-columns community-article-columns">
         <%- include('sub-views/community_author_rail.ejs', { railAuthor: { name: attr.authorName || attr.author, handle: attr.authorHandle, photo: attr.authorPhoto, avatarFallback: attr.authorAvatarFallback } }); %>
         <div class="community-wall">
+          <%- include('sub-views/community_status.ejs'); %>
           <article>
             <%- include('sub-views/blog_cover.ejs', { entry: attr, detail: true }); %>
             <%- include('sub-views/page_updated.ejs', { page }); %>
             <section class="notebook-markdown community-reflection-body" dir="auto" data-article-body>
-             <%- body %>
+             <%- utils.articleBodyHtml(body) %>
             </section>
-            <% if (attr.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of String(attr.tags).split(',').map(tag => tag.trim()).filter(Boolean)) { %><a href="/community?filter=article<%= attr.category ? '&category=' + encodeURIComponent(attr.category) : '' %>&tag=<%= encodeURIComponent(tag.toLowerCase()) %>"><%= tag.toLowerCase() %></a><% } %></div><% } %>
+            <% if (attr.tags) { %><div class="community-entry-tags mt-4" dir="auto"><% for (const tag of String(attr.tags).split(',').map(tag => tag.trim()).filter(Boolean)) { %><a class="ux-pill" href="/community?filter=article<%= attr.category ? '&category=' + encodeURIComponent(attr.category) : '' %>&tag=<%= encodeURIComponent(tag.toLowerCase()) %>"><%= tag.toLowerCase() %></a><% } %></div><% } %>
             <% if (attr.postId) { %><%- include('sub-views/community_post_actions.ejs', { post: {
               id: attr.postId, kind: 'article', isBlog: true, title: attr.title,
               url: attr.shareUrl || ('/blog/' + slugVal), coverUrl: attr.cover,
@@ -68,13 +68,12 @@
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 
 <script src="<%= utils.staticAssetUrl('/static/js/community-article-toc.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community-bio.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community.js') %>?v=<%= utils.scriptAssetVersion() %>"></script>
 <script src="<%= utils.staticAssetUrl('/static/js/community-social-share.js') %>?v=<%= utils.scriptAssetVersion() %>" defer></script>
-<script src="<%= utils.staticAssetUrl('/static/js/community-image-viewer.js') %>" defer></script>
+<script src="<%= utils.staticAssetUrl('/static/js/community-image-viewer.js') %>?v=<%= utils.scriptAssetVersion() %>" defer></script>
 </body>
 </html>

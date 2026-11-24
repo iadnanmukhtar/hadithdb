@@ -66,10 +66,10 @@ test.each(['en', 'ar'])('renders both virtual and source references in %s', lang
   const ejs = require('ejs');
   const template = fs.readFileSync('views/sub-views/hadith_item.ejs', 'utf8');
   const start = template.indexOf('<%# Virtual Num %>');
-  const end = template.indexOf('</a></b>', start) + '</a></b>'.length;
+  const end = template.indexOf('<% if (displayedChain', start);
   const item = new Item({ ...row, single: true, book_shortName: 'رياض', book_shortName_ref: 'مسلم' });
   const html = ejs.render(template.slice(start, end), {
-    i: item, lang, langData: item[lang], langActual: item[lang].actual,
+    i: item, lang, langData: item[lang], langActual: item[lang].actual, searchResult: false,
     site: { editMode: false }, itemHref: '/muslim:2664',
     itemBookShortName: item[lang].actual.book_shortName,
     itemLinkTitleSource: '', linkTitle: value => value

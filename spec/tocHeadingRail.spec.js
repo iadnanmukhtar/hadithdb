@@ -9,14 +9,12 @@ const tocTemplate = path.join(__dirname, '..', 'views', 'toc.ejs');
 
 function render(items) {
 	return ejs.renderFile(partial, {
-		tocHeadingRailItems: items,
-		tocHeadingRailTitle: 'Riyad al-Salihin',
-		tocHeadingRailBookHref: '/riyad'
+		mode: 'chapters', groups: [{ mode: 'chapters', items }]
 	});
 }
 
 describe('TOC heading rail', () => {
-	test('lists H1 chapters under the fixed book name', async () => {
+	test('lists H1 chapters beneath the shared contents title', async () => {
 		const html = await render([{
 			key: 'toc-heading-0',
 			number: '0.07',
@@ -32,17 +30,18 @@ describe('TOC heading rail', () => {
 		}]);
 
 		expect(html).toContain('data-toc-heading-rail');
-		expect(html).toContain('class="heading-toc-book-name" href="/riyad">RIYAD AL-SALIHIN</a>');
+		expect(html).toContain('class="ux-rail-title d-none d-lg-block">Book contents</h2>');
+		expect(html).toContain('aria-controls="toc"');
 		expect(html).toContain('href="/riyad/0.07"');
 		expect(html).toContain('>0.07 Certainty and Trust in Allah</a>');
 		expect(html).toMatch(/data-toc-heading-key="toc-heading-1"[^>]*lang="ar" dir="rtl"[^>]*>0\.08 باب عربي<\/a>/);
 	});
 
-	test('omits an empty rail and connects the TOC page to H1 targets', async () => {
-		expect(await render([])).not.toContain('data-toc-heading-rail');
+	test('keeps search available and connects the TOC page to H1 targets', async () => {
+		expect(await render([])).toContain('aria-controls="toc"');
 		const template = fs.readFileSync(tocTemplate, 'utf8');
 		expect(template).toContain("include('sub-views/toc_heading_rail.ejs'");
-		expect((template.match(/data-toc-heading-target/g) || [])).toHaveLength(2);
+		expect((template.match(/data-toc-heading-target/g) || [])).toHaveLength(4);
 	});
 
 	test('places untracked authored-introduction articles before Surah 1', async () => {
@@ -64,7 +63,7 @@ describe('TOC heading rail', () => {
 		expect(html.indexOf('Foreword')).toBeLessThan(html.indexOf('1 al-Fatihah'));
 		expect(html).toContain('href="/quran/tafsir/rida/introduction#article-1"');
 		expect(html).not.toMatch(/href="\/quran\/tafsir\/rida\/introduction#article-1"[^>]*data-toc-heading-key/);
-		expect(html).toMatch(/class="[^"]*active[^"]*" href="\/quran\/tafsir\/rida\/1"[^>]*data-toc-heading-key="toc-heading-0"/);
+		expect(html).toMatch(/href="\/quran\/tafsir\/rida\/1"[^>]*data-toc-heading-key="toc-heading-0"/);
 	});
 
 	test('uses a linked introduction row instead of an introduction body on commentary TOCs', () => {

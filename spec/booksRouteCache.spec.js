@@ -52,7 +52,7 @@ describe('books catalog performance path', () => {
   test('serves a disk cache hit before Elasticsearch, SQL, or Tafsir lookups', async () => {
     const req = request();
     const res = response();
-    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books-types-v2.html`;
+    const cachedFile = `${require('os').homedir()}/.hadithdb/cache/hadith${Utils.cacheSuffix()}/books/_books-makeover-v14.html`;
     jest.spyOn(Utils, 'shouldFlushCache').mockReturnValue(false);
     jest.spyOn(Utils, 'cachedTextPathForRead').mockReturnValue(`${cachedFile}.gz`);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
@@ -70,7 +70,7 @@ describe('books catalog performance path', () => {
   test('uses the same versioned cache path for rendering and metadata invalidation', () => {
     const route = fs.readFileSync(path.join(__dirname, '..', 'routes', 'books.js'), 'utf8');
     const updates = fs.readFileSync(path.join(__dirname, '..', 'routes', 'update.js'), 'utf8');
-    expect(route).toContain("Utils.cacheFileFromFilename('_books-types-v2', 'html', 'books', 'hadith')");
+    expect(route).toContain("Utils.cacheFileFromFilename('_books-makeover-v14', 'html', 'books', 'hadith')");
     expect(updates).toContain("Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'))");
   });
 
@@ -85,7 +85,7 @@ describe('books catalog performance path', () => {
     jest.spyOn(Utils, 'indexCachedItem').mockResolvedValue(undefined);
     jest.spyOn(Utils, 'sendCachedHtml').mockReturnValue(true);
     jest.spyOn(ejs, 'renderFile').mockImplementation(async (_path, locals) => {
-      expect(locals.books[0].catalog_language_badge).toBe('EN-AR');
+      expect(locals.books[0].catalog_language_badge).toBe('en-ar');
       return '<html>books</html>';
     });
     jest.spyOn(Index, 'distinctTermsFromQuery').mockResolvedValue(['bukhari']);
@@ -106,6 +106,22 @@ describe('books catalog performance path', () => {
     expect(Utils.indexCachedItem).toHaveBeenCalledWith(expect.arrayContaining(['books', 'bukhari']), '/cache/_books.html');
   });
 
+  test('uses resolved virtual content even when the physical alias lookup succeeds', async () => {
+    global.books.push(
+      { id: 2, alias: 'riyad', hidden: 0, virtual: 1, lang: 'ar' },
+      { id: 3, alias: 'arabic-only', hidden: 0, virtual: 1, lang: 'ar' }
+    );
+    jest.spyOn(Index, 'distinctTermsFromQuery').mockResolvedValue(['bukhari']);
+    global.query.mockResolvedValue([{ book_id: 2 }]);
+    jest.spyOn(Tafsir, 'visibleTafsirs').mockResolvedValue([]);
+    jest.spyOn(Tafsir, 'withFirstPassages').mockResolvedValue([]);
+    jest.spyOn(Tafsir, 'visibleTranslations').mockResolvedValue([]);
+    const res = response();
+    await routeHandler()(request({ hadith: '' }), res);
+    expect(global.query).toHaveBeenCalledWith(expect.stringContaining('FROM v_hadiths_virtual_snapshot'));
+    expect(res.render.mock.calls[0][1].books.map(book => book.catalog_language_badge)).toEqual(['en-ar', 'en-ar', 'ar']);
+  });
+
   test('falls back to SQL when the search backend is unavailable', async () => {
     const req = request({ tab: 'history' });
     const res = response();
@@ -121,7 +137,7 @@ describe('books catalog performance path', () => {
     await routeHandler()(req, res, jest.fn());
 
     expect(global.query).toHaveBeenCalledTimes(1);
-    expect(res.render.mock.calls[0][1].books[0].catalog_language_badge).toBe('EN-AR');
+    expect(res.render.mock.calls[0][1].books[0].catalog_language_badge).toBe('en-ar');
     expect(Utils.cachedTextPathForRead).not.toHaveBeenCalled();
   });
   test.each(['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'])('type URL ?%s never reuses the default catalog cache', async type => {

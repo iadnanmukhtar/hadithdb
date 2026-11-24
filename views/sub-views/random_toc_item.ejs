@@ -1,6 +1,6 @@
 <% if (book.type === 'sirah') { %>
   <header class="row">
-    <h3 class="col-12 fs-4">Random heading in <%= book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another random heading" aria-label="Load another random heading"><i class="bi bi-arrow-clockwise"></i></button></h3>
+    <h3 class="col-12 fs-4">History topic Reminder <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another history topic reminder" aria-label="Load another history topic reminder"><i class="bi bi-arrow-clockwise"></i></button></h3>
   </header>
   <% const headingNumber = [random.h1, random.h2, random.h3].filter(value => value !== null && value !== undefined && value !== '').join('.'); %>
   <% const summaryEn = utils.trimToEmpty(random.intro_en); %>
@@ -56,7 +56,7 @@
   <%- include('random_quran_ayah.ejs', { site: site, page: page, book: book, random: random }); %>
 <% } else { %>
   <header class="row">
-    <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : (book.type === 'sirah' ? 'history passage' : 'ḥadīth') %> in <%- book.shortName_en %> <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another random item" aria-label="Load another random item"><i class="bi bi-arrow-clockwise"></i></button></h3>
+    <h3 class="col-12 fs-4"><%= random.remark == 2 ? 'Ayah' : 'Hadith' %> Reminder <button type="button" class="btn btn-link text-muted p-0 align-baseline" data-random-toc-refresh title="Load another reminder" aria-label="Load another reminder"><i class="bi bi-arrow-clockwise"></i></button></h3>
   </header>
   <%- include('hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: true }); %>
 <% } %>

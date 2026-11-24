@@ -1,6 +1,4 @@
 <%
-  var quranPassageTranslationBook = page && page.context ? page.context.quranCommentaryBook : null;
-  var quranPassageTranslationLabel = utils.quranTranslationBookLabel(quranPassageTranslationBook || utils.defaultQuranTranslationBook());
   var quranSubsections = (locals.quranSubsections || []).map(function (heading) {
     var startAyah = parseInt(arabic.toLatinDigits((heading.start || '').toString().split(/:/).pop()), 10);
     var count = parseInt(heading.count, 10);
@@ -97,16 +95,6 @@
   <button type="button" class="btn btn-outline-secondary quran-ayah-select-btn quran-passage-display-btn quran-passage-view-btn quran-passage-view-btn-translation is-active" data-quran-passage-display-toggle="translation" aria-pressed="true" title="Hide translation" aria-label="Hide translation">
     <span class="bi bi-eye" aria-hidden="true"></span>
   </button>
-  <span class="dropdown quran-passage-translation-control quran-dynamic-translation-control">
-    <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn dropdown-toggle quran-dynamic-translation-toggle" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose translation" title="Choose translation">
-      <span class="bi bi-translate" aria-hidden="true"></span>
-      <span data-quran-dynamic-translation-label><%= quranPassageTranslationLabel %></span>
-    </button>
-    <select class="visually-hidden" data-quran-passage-translation-select="1" aria-label="Translation" tabindex="-1">
-      <option value="<%= quranPassageTranslationBook ? quranPassageTranslationBook.alias : '' %>"><%= quranPassageTranslationLabel %></option>
-    </select>
-    <ul class="dropdown-menu quran-passage-reciter-menu" data-quran-audio-translation-menu="1"></ul>
-  </span>
   <% if (passage.length > 1) { %>
   <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-select-btn quran-ayah-select-toggle"<% if (quranHasSelectedAyahHero) { %> hidden<% } %>>
     <span class="bi bi-check2-square"></span> Select ayat
@@ -136,6 +124,7 @@
 </aside>
 <% } %>
 
+<div class="quran-study-passage">
 <% quranGroups.forEach(function (group, groupIndex) {
   if (!group.passage || group.passage.length < 1)
     return;
@@ -215,7 +204,6 @@
 
 <%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
 
-<section class="col-12 quran-preferred-translation-footnotes order-2 order-md-last d-none" lang="en" data-quran-selected-translation-footnotes="1"></section>
 
 <% if (group._hasHeadingAudio) { %>
 <aside class="col-12 quran-mobile-audio-toolbar d-md-none">
@@ -230,6 +218,12 @@
 <hr class="quran-passage-separator">
 <% } %>
 <% }); %>
+<div class="quran-study-notes" lang="en">
+  <% quranGroups.forEach(function (group) { group.passage.forEach(function (item) { %>
+    <div class="quran-preferred-translation-footnotes d-none" data-quran-selected-translation-footnotes="1" data-notes-ayah="<%= ayahNumber(item) %>"></div>
+  <% }); }); %>
+</div>
+</div>
 
 <% if (locals.quranShareId && (!locals.selectedAyahs || locals.selectedAyahs.length <= 1)) { %>
 <%- include('quran_modal.ejs', { site: site, page: page, selectedAyahs: locals.selectedAyahs, quranShareId: locals.quranShareId }); %>

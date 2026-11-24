@@ -93,7 +93,7 @@
       }
       for(const match of matches){
         const row=element('div',null,'community-attachment-row'),label=element('span',match.image?'Attached image':match.raw),remove=element('button',match.image?'Remove image':'Remove preview (keep link)');
-        remove.type='button';remove.className='btn btn-sm btn-link text-muted';
+        remove.type='button';remove.className='ux-text-action';
         remove.addEventListener('click',()=>{if(editor.disabled||window.communityMediaPending)return;editor.setRangeText(match.image?'':'Link: '+match.raw,match.index,match.index+match.raw.length,'preserve');editor.dispatchEvent(new Event('input',{bubbles:true}));});
         row.append(label,remove);list.append(row);
         if(editorId==='quick-text'&&!match.image){

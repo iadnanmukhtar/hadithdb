@@ -58,20 +58,20 @@
   }
 %>
 <% if (commentaryNavBook && commentaryNavBooks.length > 0) { %>
-<div class="h-menu-wrap mb-3 quran-commentary-book-carousel<%= commentaryNavIsPassage ? ' quran-commentary-passage-carousel' : '' %>" data-quran-commentary-carousel<% if (commentaryNavIsPassage) { %> data-commentary-passage-carousel="1" data-commentary-quran-ref="<%= commentaryNavPassageSurah %>:<%= commentaryNavPassageAyah %>"<% } %> data-commentary-kind="<%= commentaryNavKind %>" data-current-commentary-alias="<%= commentaryNavBook.alias %>" data-current-commentary-lang="<%= commentaryNavBook.lang || '' %>"<% if (commentaryNavKind === 'tafsir') { %> data-current-commentary-carousel-language="<%= Tafsir.carouselLanguage(commentaryNavBook) %>"<% } %>>
-  <div class="h-menu-hint d-md-none">
-    <i class="bi bi-arrow-left-right"></i> Swipe to browse <%= commentaryNavKind === 'trans' ? 'translations' : 'tafsīr books' %>
-  </div>
-  <div class="h-menu-scroller">
+<div class="h-menu-wrap mb-3 quran-commentary-book-carousel<%= commentaryNavIsPassage ? ' quran-commentary-passage-carousel reader-source-picker' : '' %>" data-quran-commentary-carousel<% if (commentaryNavIsPassage) { %> data-commentary-passage-carousel="1" data-commentary-quran-ref="<%= commentaryNavPassageSurah %>:<%= commentaryNavPassageAyah %>"<% } %> data-commentary-kind="<%= commentaryNavKind %>" data-current-commentary-alias="<%= commentaryNavBook.alias %>" data-current-commentary-lang="<%= commentaryNavBook.lang || '' %>"<% if (commentaryNavKind === 'tafsir') { %> data-current-commentary-carousel-language="<%= Tafsir.carouselLanguage(commentaryNavBook) %>"<% } %>>
+  <details class="book-switch-picker">
+      <%- include('bookSwitchSummary', { switchLabel: commentaryNavKind === 'trans' ? 'Switch translation' : 'Switch tafsir', currentLabel: commentaryNavLabel(commentaryNavBook) }) %>
+      <div class="h-menu-scroller">
     <div class="btn-group h-menu text-nowrap" role="group">
       <% if (commentaryNavKind === 'tafsir') { %><%- include('tafsirCarouselLanguageSwitch') %><% } %>
       <%- include('bookCarouselFilter') %>
       <% commentaryNavBooks.forEach(function (book, index) {
         const isCurrent = commentaryNavBook && book.alias === commentaryNavBook.alias;
       %>
-      <a class="btn btn-outline-primary text-nowrap quran-commentary-book-nav-item<%= isCurrent ? ' active' : '' %>" href="<%= commentaryNavHref(book) %>"<% if (isCurrent) { %> aria-current="page" data-current-book="true"<% } %> data-book-carousel-item data-book-carousel-search="<%= [book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author, book.alias].filter(Boolean).join(' ') %>" data-quran-commentary-book-nav-item data-commentary-kind="<%= commentaryNavKind %>" data-commentary-alias="<%= book.alias %>" data-commentary-slug="<%= commentaryNavSlug(book) %>" data-commentary-lang="<%= book.lang || '' %>" data-commentary-ordinal="<%= book.ordinal || 0 %>" data-commentary-source="<%= book.source || '' %>" data-commentary-label="<%= commentaryNavLabel(book) %>" data-commentary-href="<%= commentaryNavHref(book) %>" data-commentary-death="<%= book.death || '' %>" data-commentary-original-index="<%= index %>"<% if (commentaryNavKind === 'tafsir') { %> data-tafsir-book-nav-item data-tafsir-alias="<%= book.alias %>" data-tafsir-lang="<%= book.lang || '' %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(book) %>" data-tafsir-death="<%= book.death || '' %>" data-tafsir-ordinal="<%= book.ordinal || 0 %>"<% } %>><%- commentaryNavLabel(book) %><%- commentaryNavSizeIndicator(book) %></a>
+      <a class="btn book-switch-item text-nowrap quran-commentary-book-nav-item<%= isCurrent ? ' active' : '' %>" href="<%= commentaryNavHref(book) %>"<% if (isCurrent) { %> aria-current="page" data-current-book="true"<% } %> data-book-carousel-item data-book-carousel-search="<%= [book.name_en, book.shortName_en, book.title, book.shortName, book.author_en, book.author, book.alias].filter(Boolean).join(' ') %>" data-quran-commentary-book-nav-item data-commentary-kind="<%= commentaryNavKind %>" data-commentary-alias="<%= book.alias %>" data-commentary-slug="<%= commentaryNavSlug(book) %>" data-commentary-lang="<%= book.lang || '' %>" data-commentary-ordinal="<%= book.ordinal || 0 %>" data-commentary-source="<%= book.source || '' %>" data-commentary-label="<%= commentaryNavLabel(book) %>" data-commentary-href="<%= commentaryNavHref(book) %>" data-commentary-death="<%= book.death || '' %>" data-commentary-original-index="<%= index %>"<% if (commentaryNavKind === 'tafsir') { %> data-tafsir-book-nav-item data-tafsir-alias="<%= book.alias %>" data-tafsir-lang="<%= book.lang || '' %>" data-tafsir-carousel-language="<%= Tafsir.carouselLanguage(book) %>" data-tafsir-death="<%= book.death || '' %>" data-tafsir-ordinal="<%= book.ordinal || 0 %>"<% } %>><%- commentaryNavLabel(book) %><%- commentaryNavSizeIndicator(book) %></a>
       <% }); %>
     </div>
   </div>
+    </details>
 </div>
 <% } %>

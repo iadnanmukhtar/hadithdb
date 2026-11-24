@@ -10,6 +10,7 @@
 	const surahTitle = page.context.chapter?.title_en || firstAyah.h1_title_en || firstAyah.en?.h1_title || 'Qurʾān';
 	const shareTitleRef = utils.socialMetadata().range(firstRef, lastRef);
 	const shareTitle = utils.socialMetadata().label(surahTitle, shareTitleRef);
+	const surahHeader = utils.quranSurahHeaderSvgPath(firstRef.split(':')[0]);
 	const shareTranslationBook = page.context.quranCommentaryBook;
 	const defaultTranslationShortName = shareTranslationBook ? utils.quranTranslationBookLabel(shareTranslationBook) : utils.defaultQuranTranslationLabel();
 %>
@@ -36,11 +37,11 @@
 				<div class="hadith-share-size-controls" aria-label="Share image font sizes">
 					<label title="English text size">
 						<span>English</span>
-						<input class="form-range hadith-share-size" type="range" min="70" max="130" step="5" value="100" data-share-size-var="--share-english-tune">
+						<input class="form-range hadith-share-size" type="range" min="0" max="130" step="5" value="100" data-share-size-var="--share-english-tune" data-share-size-disable-target="english">
 					</label>
 					<label title="Arabic text size">
 						<span>Arabic</span>
-						<input class="form-range hadith-share-size" type="range" min="70" max="130" step="5" value="100" data-share-size-var="--share-arabic-tune">
+						<input class="form-range hadith-share-size" type="range" min="0" max="130" step="5" value="100" data-share-size-var="--share-arabic-tune" data-share-size-disable-target="arabic">
 					</label>
 				</div>
 			</div>
@@ -57,12 +58,16 @@
 				</button>
 			</div>
 		</div>
-		<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+		<%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
 	  </header>
       <section class="modal-body hadith-share-body">
 		<article class="hadith-share-card quran-share-card" data-share-card data-share-url="<%= utils.quranUrl(req, '/' + shareRef.replace(/^quran:/, '')) %>" data-share-ref="<%= shareRef %>">
 			<div class="hadith-share-card-inner">
-				<h2 class="hadith-share-title share-editable" contenteditable="false"><%= shareTitle %></h2>
+				<% if (surahHeader) { %>
+					<%- include('quran_share_header.ejs', { shareTitle, surahHeader }) %>
+				<% } else { %>
+					<h2 class="hadith-share-title share-editable" contenteditable="false"><%= shareTitle %></h2>
+				<% } %>
 				<section class="hadith-share-section hadith-share-arabic-section" lang="ar">
 					<div class="body hadith-share-text quran-share-text share-editable" lang="ar" contenteditable="false">
 							<p>

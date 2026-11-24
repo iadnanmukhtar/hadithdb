@@ -151,7 +151,7 @@
       <div class="bookmarks-page-header">
         <div class="d-flex align-items-start justify-content-between gap-3 flex-wrap">
           <div>
-            <h1 class="fs-3 mb-1">Bookmarks</h1>
+            <h1 class="ux-page-title mb-1">Bookmarks</h1>
             <p class="text-muted mb-0">Saved Quran pages and passages, tafsir passages, hadith chapters, and hadiths.</p>
           </div>
           <button type="button" class="btn btn-outline-primary btn-sm" id="clear-bookmarks-btn">
@@ -222,8 +222,7 @@
   </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 
 <script>
   (function () {

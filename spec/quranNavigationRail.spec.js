@@ -12,7 +12,7 @@ jest.mock('../lib/QuranHeadings', () => ({ sectionForAyah: jest.fn() }));
 const Headings = require('../lib/QuranHeadings');
 const Rail = require('../lib/QuranNavigationRail');
 const surahs = [{num:1,name_en:'Al-Fatihah',name_ar:'الفاتحة',ayahs:7,aliases:['Umm al-Kitāb','أُمّ الْكِتَاب']}, {num:2,name_en:'Al-Baqarah',name_ar:'البقرة',ayahs:286}];
-const data = {surahs:surahs.map(s => ({num:s.num,name:s.name_en,arabic:s.name_ar,ayahs:s.ayahs})),manzil:[{num:1,title:'الأول',ref:'1:1'},{num:2,title:'الثاني',ref:'2:142'}],juz:[{num:1,title:'الم',ref:'1:1'},{num:2,title:'سيقول',ref:'2:142'}],pages:604};
+const data = {surahs:surahs.map(s => ({num:s.num,name:s.name_en,arabic:s.name_ar,ayahs:s.ayahs})),manzil:[{num:1,title:'الأول',ref:'1:1'},{num:2,title:'الثاني',ref:'2:142'}],juz:[{num:1,title:'الم',ref:'1:1',startPage:1},{num:2,title:'سيقول',ref:'2:142',startPage:22}],pages:604};
 function response() { const res = {json:jest.fn(),redirect:jest.fn(),send:jest.fn(),status:jest.fn()}; res.status.mockReturnValue(res); return res; }
 beforeEach(() => { jest.clearAllMocks(); global.surahs = surahs; Juz.manzilRows.mockResolvedValue([{num:1,start:'1:1',title:'الأول'},{num:2,start:'2:142',title:'الثاني'}]); Mushaf.info.mockResolvedValue({number_of_pages:604}); });
 
@@ -41,15 +41,11 @@ test('metadata exposes canonical surah counts and Juz references', async () => {
   await Rail.data({},res,jest.fn()); expect(res.json.mock.calls[0][0].manzil.map(m=>m.title)).toEqual(['الفاتحة','البقرة']);
   expect(res.json.mock.calls[0][0]).toMatchObject({pages:604,surahs:[{num:1,ayahs:7,aliases:surahs[0].aliases},{num:2,ayahs:286,aliases:[]}],juz:[{ref:'2:142'}]});
 });
-async function browser(fetcher, cachedMarkup = false) {
+async function browser(fetcher) {
   const html = await ejs.renderFile(path.join(__dirname,'../views/sub-views/quran_navigation_rail.ejs'), {navigationMode:'mushaf',navigationBook:null,utils:{quranUrl:(_req,url)=>url},req:{}});
   const dom = new JSDOM(html,{url:'http://localhost/quran/page/42?memorize',runScripts:'outside-only'});
   dom.window.fetch = fetcher || jest.fn().mockResolvedValue({ok:true,json:async()=>data});
   dom.window.quranReaderModeFirstRef = () => '2:255';
-  if (cachedMarkup) {
-    dom.window.document.querySelector('.quran-navigation-tabs').className = 'quran-navigation-tabs';
-    dom.window.document.querySelectorAll('[data-navigation-tab]').forEach(button => button.removeAttribute('class'));
-  }
   dom.window.eval(fs.readFileSync(path.join(__dirname,'../public/static/js/quran-navigation.js'),'utf8'));
   const rail=dom.window.document.querySelector('aside');
   rail.dispatchEvent(new dom.window.Event('show.bs.offcanvas'));
@@ -158,10 +154,10 @@ test('only broad navigation tabs request a passage destination', async () => {
   dom.window.close();
 });
 
-test('cached tab markup gains Quran bar styling and tracks the active tab', async () => {
-  const {doc,dom} = await browser(undefined, true);
-  expect(doc.querySelector('.quran-navigation-tabs').classList.contains('btn-group')).toBe(true);
-  expect(doc.querySelectorAll('.quran-navigation-tabs .btn.btn-outline-secondary')).toHaveLength(5);
+test('shared tab selector tracks the active tab', async () => {
+  const {doc,dom} = await browser();
+  expect(doc.querySelector('.quran-navigation-tabs').classList.contains('ux-view-selector')).toBe(true);
+  expect(doc.querySelectorAll('.quran-navigation-tabs .ux-view-option')).toHaveLength(5);
   expect(doc.querySelector('.quran-navigation-tabs .active').dataset.navigationTab).toBe('surah');
   doc.querySelector('[data-navigation-tab="surah"]').click();
   expect(doc.querySelectorAll('.quran-navigation-tabs .active')).toHaveLength(1);
@@ -176,5 +172,29 @@ test.each(['ayah', 'manzil', 'juz', 'page'])('generic reopening defaults to Sura
   expect(doc.querySelector('.quran-navigation-tabs .active').dataset.navigationTab).toBe('surah');
   expect(doc.querySelector('.quran-navigation-content').getAttribute('aria-labelledby')).toBe('quran-navigation-tab-surah');
   expect(doc.querySelector('.quran-navigation-ayahs')).toBeNull();
+  dom.window.close();
+});
+
+test('catalog navigation links keep the configured reader origin', async () => {
+  const { doc, dom, rail } = await browser();
+  rail.dataset.navigationJump = 'https://reader.example/navigate';
+  doc.querySelector('[data-navigation-tab="page"]').click();
+  expect(doc.querySelector('.quran-navigation-item').origin).toBe('https://reader.example');
+  dom.window.close();
+});
+
+test('page groups follow juz boundaries and filter by page or Arabic juz name', async () => {
+  const {doc, dom} = await browser();
+  doc.querySelector('[data-navigation-tab="page"]').click();
+  const groups = [...doc.querySelectorAll('.quran-navigation-list section')];
+  expect(groups.map(g => g.querySelector('a').textContent)).toEqual(['Page 1', 'Page 22']);
+  expect(groups[0].querySelector('a:last-child').textContent).toBe('Page 21');
+  const input = doc.querySelector('.quran-navigation-filter input');
+  for (const [term, count] of [['سيقول', 583], ['٦٠٤', 1], ['none', 0], ['', 604]]) {
+    input.value = term;
+    input.dispatchEvent(new dom.window.Event('input'));
+    expect(doc.querySelectorAll('.quran-navigation-list a:not([hidden])')).toHaveLength(count);
+    expect(groups[0].hidden).toBe(Boolean(term));
+  }
   dom.window.close();
 });

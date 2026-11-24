@@ -131,7 +131,7 @@ test('public outline handles nested and duplicate headings with sticky desktop/m
     const ids = await links.evaluateAll(items => items.map(item => item.hash));
     expect(new Set(ids).size).toBe(8);
     expect(await links.first().textContent()).toBe('Section العربية');
-    expect(await page.locator('.notebook-outline-arabic').first().evaluate(el => getComputedStyle(el).fontFamily)).toContain('NotebookKitab');
+    expect(await page.locator('.notebook-outline-arabic').first().evaluate(el => getComputedStyle(el).fontFamily)).toContain('Kitab');
     await links.nth(4).click();
     await page.waitForFunction(() => document.querySelector('.shared-note-outline a[aria-current="location"]').hash === '#shared-note-heading-5');
     expect(new URL(page.url()).hash).toBe('#shared-note-heading-5');

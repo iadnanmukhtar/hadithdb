@@ -137,6 +137,8 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       status.value = translationResult.value;
 
     } else if (type == 'hadith') {
+      if (col?.toLowerCase() === 'requested')
+        return res.status(410).json({ code: 410, message: 'Translation requests have been retired.' });
       const contributionAction = ['title','title_en'].includes(col) ? 'title' : col === 'revise' ? 'revise' : null;
       const contributionBefore = contributionAction ? await HadithTranslationIndexView.byId(require('../lib/Community').id(ids[0])) : null;
       var result = "";
@@ -1349,7 +1351,7 @@ async function flushBookCaches(bookAliases) {
   for (const bookAlias of aliases)
     await Utils.flushCacheContaining(bookAlias);
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
-  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-types-v2', 'html', 'books', 'hadith'));
+  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-makeover-v14', 'html', 'books', 'hadith'));
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
   if (!fs.existsSync(cacheDir))
@@ -1383,7 +1385,7 @@ async function flushQuranCatalogBookCaches(bookAliases) {
   await Utils.flushCacheContaining('tafsirs');
   await Utils.flushCacheContaining('tafsir:books');
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books', 'html', 'books', 'hadith'));
-  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-types-v2', 'html', 'books', 'hadith'));
+  await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books-makeover-v14', 'html', 'books', 'hadith'));
   await Utils.flushCachedFile(Utils.cacheFileFromFilename('_books'));
   await Utils.flushCachedFile(`${cacheDir}/_books.html`);
   await Utils.flushCachedFile(`${cacheDir}/_books`);

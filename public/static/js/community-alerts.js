@@ -9,8 +9,11 @@
   const status = panel?.querySelector('[data-community-alert-status]');
   let generation = 0, controller = null, loading = false, shown = 20, items = [], timer;
   const labels = new Map(badges.map(badge => [badge, badge.closest('a').textContent.trim()]));
+  const followingOption = document.querySelector('[data-following-option]');
+  const followingLabel = followingOption?.textContent;
   function badgeCount(value) {
     const count = Math.max(0, Number(value) || 0);
+    if (followingOption) followingOption.textContent = count ? followingLabel + ' (' + (count > 99 ? '99+' : count) + ')' : followingLabel;
     for (const badge of badges) {
       badge.hidden = count === 0;
       badge.textContent = count > 99 ? '99+' : String(count || '');

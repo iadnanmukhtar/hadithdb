@@ -3,7 +3,7 @@
     <form class="modal-content" data-quran-memorize-review-form>
       <header class="modal-header">
         <h2 class="modal-title fs-5" id="quran-memorize-review-title">Start Review</h2>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
       </header>
       <div class="modal-body">
         <div data-quran-review-start-context>

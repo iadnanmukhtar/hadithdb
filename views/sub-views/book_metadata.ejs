@@ -36,16 +36,23 @@
           var tocHeadingArabicProp = 'name';
           var tocHeadingArabicRaw = tocDisplayBook[tocHeadingArabicProp] || '';
         %>
-        <heading class="mb-2">
-          <div class="row text-center justify-content-center">
-            <h2 class="fs-3<%= quranCommentaryBook && quranCommentaryBook.type === 'trans' ? ' quran-translation-toc-title text-truncate w-100' : '' %>" title="<%- tocHeadingNameRaw || tocDisplayBookNameEn || '' %>"><span<% if (editableBook) { %> class="_e" data-id="<%= editableBookId %>" data-prop="book.<%= tocHeadingNameProp %>" data-placeholder="English name"<% } %>><%- editableBook ? tocHeadingNameRaw : (tocHeadingNameRaw || tocDisplayBookNameEn) %></span><% if (tocSizeType && (editableBook || tocBookSizeLabel)) { %><span class="toc-book-inline-size-editor"><span class="<%= tocSizeType %>-size-indicator tafsir-size-tooltip<%= tocBookSize ? ` ${tocSizeType}-size-indicator-${tocBookSize}` : ' toc-book-size-unset' %>" title="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" data-tafsir-size-tooltip="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" aria-label="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" role="img"></span><% if (editableBook) { %><select class="_e" data-id="<%= editableBookId %>" data-prop="book.size" aria-label="<%= tocSizeType === 'tafsir' ? 'Tafsir' : 'Hadith' %> content size"><option value="" <%= !tocDisplayBook.size ? 'selected' : '' %>>Not set</option><option value="sm" <%= tocDisplayBook.size === 'sm' ? 'selected' : '' %>>Small</option><option value="md" <%= tocDisplayBook.size === 'md' ? 'selected' : '' %>>Medium</option><option value="lg" <%= tocDisplayBook.size === 'lg' ? 'selected' : '' %>>Large</option></select><% } %></span><% } %></h2>
+        <header class="ux-page-heading ux-book-heading">
+            <h1 class="ux-page-title" title="<%- tocHeadingNameRaw || tocDisplayBookNameEn || '' %>"><span<% if (editableBook) { %> class="_e" data-id="<%= editableBookId %>" data-prop="book.<%= tocHeadingNameProp %>" data-placeholder="English name"<% } %>><%- editableBook ? tocHeadingNameRaw : (tocHeadingNameRaw || tocDisplayBookNameEn) %></span><% if (tocSizeType && (editableBook || tocBookSizeLabel)) { %><span class="toc-book-inline-size-editor"><span class="<%= tocSizeType %>-size-indicator tafsir-size-tooltip<%= tocBookSize ? ` ${tocSizeType}-size-indicator-${tocBookSize}` : ' toc-book-size-unset' %>" title="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" data-tafsir-size-tooltip="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" aria-label="<%= tocBookSizeLabel || `Set ${tocSizeType} size` %>" role="img"></span><% if (editableBook) { %><select class="_e" data-id="<%= editableBookId %>" data-prop="book.size" aria-label="<%= tocSizeType === 'tafsir' ? 'Tafsir' : 'Hadith' %> content size"><option value="" <%= !tocDisplayBook.size ? 'selected' : '' %>>Not set</option><option value="sm" <%= tocDisplayBook.size === 'sm' ? 'selected' : '' %>>Small</option><option value="md" <%= tocDisplayBook.size === 'md' ? 'selected' : '' %>>Medium</option><option value="lg" <%= tocDisplayBook.size === 'lg' ? 'selected' : '' %>>Large</option></select><% } %></span><% } %></h1>
             <% if (!isEnglishQuranTranslation && (editableBook || tocDisplayBookTitle)) { %>
-            <h2 class="fs-3 fw-bold text-center" lang="ar" dir="rtl" title="<%- tocHeadingArabicRaw || '' %>"><span<% if (editableBook) { %> class="_e" data-id="<%= editableBookId %>" data-prop="book.<%= tocHeadingArabicProp %>" data-placeholder="الاسم العربي"<% } %>><%- editableBook ? tocHeadingArabicRaw : (tocHeadingArabicRaw || tocDisplayBookTitle) %></span></h2>
+            <p class="toc-arabic-title" lang="ar" dir="rtl" title="<%- tocHeadingArabicRaw || '' %>"><span<% if (editableBook) { %> class="_e" data-id="<%= editableBookId %>" data-prop="book.<%= tocHeadingArabicProp %>" data-placeholder="الاسم العربي"<% } %>><%- editableBook ? tocHeadingArabicRaw : (tocHeadingArabicRaw || tocDisplayBookTitle) %></span></p>
             <% } %>
-          </div>
-        </heading>
+        </header>
+        <% if (locals.actions) { %>
+          <div data-toc-mobile-tools></div>
         <% } %>
 
+        <section class="toc-details" aria-labelledby="toc-details-toggle">
+          <div class="toc-details-toolbar">
+            <button id="toc-details-toggle" type="button" class="ux-text-action" data-bs-toggle="collapse" data-bs-target="#toc-details-content" aria-controls="toc-details-content" aria-expanded="<%= !!site.editMode %>"><i class="bi bi-info-circle" aria-hidden="true"></i><span>Book details</span><i class="bi bi-chevron-down" aria-hidden="true"></i></button>
+            <% if (locals.actions) { %><%- include('toc_actions.ejs', actions) %><% } %>
+          </div>
+          <div id="toc-details-content" class="collapse<%= site.editMode ? ' show' : '' %>">
+            <div class="toc-details-body">
         <% if (showBookMetadata) {
           var tocBookNameEn = displayName(tocDisplayBook.title_en || '');
           var tocBookNameAr = isEnglishQuranTranslation ? '' : displayName(tocDisplayBook.title || '');
@@ -84,35 +91,11 @@
         </div>
         <% } %>
 
-        <% if (showBookLayout) { %>
-        <section>
-          <%
-          const bookDescriptionMarkdown = utils.emptyIfNull(tocDisplayBook.description);
-          const bookDescription = utils.markdownToHtml(bookDescriptionMarkdown) || '';
-          const bookDescriptionPreview = bookDescriptionMarkdown
-            .split(/\r?\n/)
-            .map(function (line) { return line.trim(); })
-	            .find(Boolean) || '';
-          const bookDescriptionPreviewText = bookDescriptionPreview
-	            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
-	            .replace(/[*_`#>]+/g, '')
-	            .replace(/\s+/g, ' ')
-	            .trim();
-          const quranCommentaryDescriptionSummary = bookDescriptionPreviewText;
-          %>
-          <% if (site.editMode) { %>
-          <div class="_e mb-1 content-markdown" data-id="<%= editableBookId || book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= bookDescriptionMarkdown %>" data-placeholder="Description"><%- bookDescription %></div>
-          <% } else if (quranCommentaryDescriptionSummary || bookDescription) { %>
-          <p class="toc-book-description-summary text-muted" data-toc-description-summary="book-description">
-            <span class="toc-book-description-preview"><%= quranCommentaryDescriptionSummary %></span>
-            <a href="#toc-book-description" data-toc-description-expand="book-description" role="button" aria-expanded="false" aria-controls="toc-book-description">More...</a>
-          </p>
-          <div id="toc-book-description" class="toc-book-description-full d-none" data-toc-description-full="book-description">
-            <% if (bookDescription) { %>
-            <div class="mb-1 content-markdown"><%- bookDescription %></div>
-            <% } %>
-          </div>
+          <% const description = utils.emptyIfNull(tocDisplayBook.description); %>
+          <% if (site.editMode || description) { %>
+          <div class="content-markdown<%= site.editMode ? ' _e' : '' %>"<% if (site.editMode) { %> data-id="<%= editableBookId || book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= description %>" data-placeholder="Description"<% } %>><%- utils.markdownToHtml(description) %></div>
           <% } %>
+            </div>
+          </div>
         </section>
         <% } %>
-

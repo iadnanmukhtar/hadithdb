@@ -14,7 +14,11 @@
     menuIconSrc = '/static/img/madani.svg';
   else if (menuIconType === 'tafsir')
     menuIconBi = 'book-half';
-  else if (menuIconType === 'hadith')
+  else if (menuIconType === 'translation')
+    menuIconBi = 'translate';
+  else if (menuIconType === 'sharh')
+    menuIconBi = 'journal-text';
+  else if (menuIconType === 'hadith' || menuIconType === 'mushaf')
     menuIconBi = 'book';
 %>
 <% if (menuIconSrc) { %><img class="<%= menuIconBaseClass %> app-menu-icon-img" src="<%= menuIconSrc %>" alt="" aria-hidden="true"><% } else if (menuIconBi) { %><i class="<%= menuIconBaseClass %> bi bi-<%= menuIconBi %>" aria-hidden="true"></i><% } %>

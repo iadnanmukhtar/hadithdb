@@ -9,7 +9,6 @@ const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const QuranMushaf = require('../lib/QuranMushaf');
 const Tafsir = require('../lib/Tafsir');
 const Utils = require('../lib/Utils');
-const BookDownloads = require('../lib/BookDownloads');
 const HttpRange = require('../lib/HttpRange');
 const QuranAyahNavigation = require('../lib/QuranAyahNavigation');
 const { invalidateQuranMemoryCaches } = require('../lib/QuranCacheInvalidation');

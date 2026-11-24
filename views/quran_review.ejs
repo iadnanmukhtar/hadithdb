@@ -7,7 +7,7 @@
 <body>
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
   <main class="container col-lg-7 mx-auto mt-10 quran-review-top-offset<%= req.query.complete === undefined ? ' page-loading-page' : '' %>">
-    <h1 class="fs-4">Mudhakkir</h1>
+    <h1 class="ux-page-title">Mudhakkir</h1>
     <% if (req.query.complete === undefined) { %>
     <div class="page-loading" id="quran-review-loading" role="status" aria-live="polite">
       <span class="spinner-border text-primary" aria-hidden="true"></span>
@@ -20,8 +20,7 @@
       <a class="btn btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/review') %>">Memorization Progress</a></p>
   </main>
   <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/page_end.ejs', { site, page }); %>
   <% if (req.query.complete === undefined) { %>
   <script>
     (async function () {

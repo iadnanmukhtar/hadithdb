@@ -78,12 +78,17 @@ describe('static assets', () => {
   test('provides a local SVG title for every Surah header', () => {
     const titleDir = path.join(__dirname, '..', 'public', 'static', 'img', 'quran', 'surah-header', 'names');
 
-    expect(fs.existsSync(path.join(titleDir, '..', 'border.svg'))).toBe(true);
+    const checkDimensions = file => {
+      const svg = fs.readFileSync(file, 'utf8').split('>')[0];
+      expect(svg).toMatch(/\bwidth=["']\d+/);
+      expect(svg).toMatch(/\bheight=["']\d+/);
+    };
+    checkDimensions(path.join(titleDir, '..', 'border.svg'));
     expect(fs.existsSync(path.join(titleDir, '..', 'basmala.svg'))).toBe(true);
     for (let surahNumber = 1; surahNumber <= 114; surahNumber++) {
       expect(Utils.quranSurahHeaderSvgPath(surahNumber))
         .toBe(`/static/img/quran/surah-header/names/${surahNumber}.svg`);
-      expect(fs.existsSync(path.join(titleDir, `${surahNumber}.svg`))).toBe(true);
+      checkDimensions(path.join(titleDir, `${surahNumber}.svg`));
     }
     expect(Utils.quranSurahHeaderSvgPath(0)).toBe('');
     expect(Utils.quranSurahHeaderSvgPath(115)).toBe('');
@@ -101,24 +106,22 @@ describe('static assets', () => {
   });
 
   test('publishes a complete Terms of Service page for the public service and MCP integration', () => {
-    const termsPath = path.join(__dirname, '..', 'public', 'html', 'terms.html');
+    const termsPath = path.join(__dirname, '..', 'views', 'sub-views', 'legal_terms.ejs');
     const termsHtml = fs.readFileSync(termsPath, 'utf8');
 
-    expect(termsHtml).toContain('<link rel="canonical" href="https://hadithunlocked.com/terms">');
+    const legal = fs.readFileSync(path.join(__dirname, '../views/legal.ejs'), 'utf8');
+    expect(legal).toContain("include('sub-views/header.ejs'");
+    expect(legal).toContain("include('sub-views/page_end.ejs'");
+    expect(fs.readFileSync(path.join(__dirname, '../views/sub-views/page_end.ejs'), 'utf8')).toContain("include('footer.ejs'");
     expect(termsHtml).toContain('Model Context Protocol (“MCP”) server');
     expect(termsHtml).toContain('href="/html/privacy.html"');
     expect(termsHtml).toContain('mailto:adnanmukhtar@gmail.com');
   });
 
   test('publishes the branded privacy policy with Google data and deletion disclosures', () => {
-    const privacyPath = path.join(__dirname, '..', 'public', 'html', 'privacy.html');
+    const privacyPath = path.join(__dirname, '..', 'views', 'sub-views', 'legal_privacy.ejs');
     const privacyHtml = fs.readFileSync(privacyPath, 'utf8');
 
-    expect(privacyHtml).toContain('<!doctype html>');
-    expect(privacyHtml).toContain('<title>Privacy Policy | Hadith Unlocked</title>');
-    expect(privacyHtml).toContain('class="brand"');
-    expect(privacyHtml).toContain('width: min(860px, calc(100% - 32px))');
-    expect(privacyHtml).toContain('/static/img/logo2.svg');
     expect(privacyHtml).toContain('https://www.googleapis.com/auth/drive.file');
     expect(privacyHtml).toContain('Google API Services User Data Policy');
     expect(privacyHtml).toContain('Storage, security, and retention');

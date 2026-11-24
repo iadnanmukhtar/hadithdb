@@ -14,12 +14,14 @@ test.each([false, true])('shared metadata renders with admin editing=%s', async 
   utils: { sharhDisplayName: require('../lib/SharhDisplayName').displayName, sharhAuthorSuffix: require('../lib/SharhDisplayName').authorSuffix, emptyIfNull: value => value || '', markdownToHtml: value => `<p>${value}</p>` }
  });
  const $ = cheerio.load(html);
- expect($('heading').text()).toContain(book.name_en);
+ expect($('header h1.ux-page-title').text()).toContain(book.name_en);
  expect($('.tafsir-book-meta').text()).toContain('463 AH');
  expect($('[data-prop="book.name_en"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-prop="book.author"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-edit-format="md"]')).toHaveLength(editMode ? 1 : 0);
- expect($('[data-toc-description-expand]')).toHaveLength(editMode ? 0 : 1);
+ expect($('#toc-details-content').text()).toContain(book.description);
+ expect($('#toc-details-content').hasClass('show')).toBe(editMode);
+ expect($('#toc-details-toggle').attr('aria-expanded')).toBe(String(editMode));
 });
 
 test('book route supplies coverage and does not load a passage TOC', async () => {
@@ -52,7 +54,7 @@ test.each([false, true])('catalog rows share tafsir styling and inline editors (
  const $ = cheerio.load(html);
  expect($('.tafsir-book-row')).toHaveLength(1);
  expect($('.tafsir-book-title-pair a').first().attr('href')).toBe('/sharh/malik-istidhkar');
- expect($('.book-language-badge').text()).toBe('EN-AR');
+ expect($('.book-language-badge').text()).toBe('en-ar');
  expect($('.book-catalog-card').attr('data-book-catalog-filter')).toContain('Ibn Abd al-Barr');
  expect($('[data-prop="book.name_en"]')).toHaveLength(editMode ? 1 : 0);
  expect($('[data-prop="book.description"]')).toHaveLength(editMode ? 1 : 0);

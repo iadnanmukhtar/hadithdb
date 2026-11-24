@@ -1,0 +1,5 @@
+<span class="ux-view-selector" role="group" aria-label="Ayah view">
+  <% for (const [mode, label] of [['tafsirs', 'Tafsir'], ['translations', 'Translations']]) { %>
+    <button type="button" aria-pressed="<%= activeView === mode %>" class="ux-view-option<%= activeView === mode ? '' : ' quran-ayah-modal-switch' %>"<% if (activeView !== mode) { %> data-quran-ayah-modal-switch="<%= mode %>"<% } %>><%= label %></button>
+  <% } %>
+</span>

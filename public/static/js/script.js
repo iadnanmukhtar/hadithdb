@@ -69,11 +69,11 @@ $(function () {
 	setDirection($('#search-bar'));
 
 	$(window).scroll(function() {
-		$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
+		$('.site-navbar:not(.ux-masthead)').toggleClass('shrink', $(document).scrollTop() > 50);
 		updateFixedHeaderOffset();
 	});
 
-	$('.site-navbar').toggleClass('shrink', $(document).scrollTop() > 50);
+	$('.site-navbar:not(.ux-masthead)').toggleClass('shrink', $(document).scrollTop() > 50);
 	updateFixedHeaderOffset();
 	initFixedHeaderOffsetObserver();
 	$(window).on('resize', updateFixedHeaderOffset);
@@ -116,7 +116,6 @@ $(function () {
 
 	initSearchAutocomplete();
 	initTafsirSearchFilterPills(document);
-	initHomeIntros(document);
 	initRandomTocItemLoader(document);
 	initQuranPassageNavigator();
 	initBookNavScroller();
@@ -151,6 +150,7 @@ $(function () {
 	initQuranAyahHoverPairs(document);
 	initQuranAyahSelector(document);
 	initStickyFooterScrollFade(document);
+	initRecentSearches();
 	initSearchInfiniteScroll(document);
 	initBlogInfiniteScroll(document);
 	initQuranInfinitePassageNavigation(document);
@@ -172,7 +172,6 @@ $(function () {
 	initQuranMushafAyahMarkerActions(document);
 	initQuranAyahMemorization(document);
 	initQuranMemorizeReviewLauncher(document);
-	initPageHelpTips(document);
 	initQuranSelectionTranslationMarquee(document);
 	initQuranMenuRows(document);
 	initQuranDynamicPassageHero(document);
@@ -215,6 +214,63 @@ function searchInfiniteApiUrl(targetUrl) {
 	}
 }
 
+function initRecentSearches() {
+	const nav = document.querySelector('[data-recent-searches]');
+	if (!nav) return;
+
+	const key = 'hadithdb.recentSearches.v1';
+	function searchLink(value) {
+		if (typeof value !== 'string') return null;
+		let url;
+		try { url = new URL(value, location.origin); } catch (_) { return null; }
+		if (url.origin !== location.origin || !['/', '/quran', '/quran/'].includes(url.pathname)) return null;
+		const query = url.searchParams.get('q');
+		if (!query?.trim()) return null;
+		const params = new URLSearchParams({ q: query });
+		for (const name of ['b', 'tafsir', 'translation', 'mode', 'tafsirMode', 'sort', 'grade']) {
+			for (const filter of url.searchParams.getAll(name).sort()) params.append(name, filter);
+		}
+		return (url.pathname.startsWith('/quran') ? '/quran' : '/') + '?' + params;
+	}
+
+	const current = searchLink(location.href);
+	if (!current) return;
+	let stored;
+	try { stored = JSON.parse(localStorage.getItem(key)); } catch (_) { stored = []; }
+	const history = [];
+	const seenQueries = new Set();
+	for (const href of [current, ...(Array.isArray(stored) ? stored : [])]) {
+		const link = searchLink(href);
+		if (!link) continue;
+		const query = new URL(link, location.origin).searchParams.get('q');
+		const identity = query.normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+		if (seenQueries.has(identity)) continue;
+		seenQueries.add(identity);
+		history.push(link);
+		if (history.length === 6) break;
+	}
+	try { localStorage.setItem(key, JSON.stringify(history)); } catch (_) {}
+	const list = nav.querySelector('ul');
+	list.replaceChildren();
+	for (const href of history.slice(1)) {
+		const url = new URL(href, location.origin);
+		const label = url.searchParams.get('q');
+		const link = document.createElement('a');
+		link.className = 'ux-pill recent-search-link text-truncate';
+		link.href = href;
+		link.dir = 'auto';
+		link.textContent = label;
+		const scope = [...url.searchParams.getAll('b'), ...url.searchParams.getAll('tafsir')];
+		if (url.pathname === '/quran') scope.unshift('Quran');
+		link.title = scope.length ? label + ' · ' + scope.join(', ') : label;
+		link.setAttribute('aria-label', link.title);
+		const item = document.createElement('li');
+		item.append(link);
+		list.append(item);
+	}
+	nav.hidden = history.length <= 1;
+}
+
 function initSearchInfiniteScroll(root) {
 	var scope = root || document;
 	$(scope).find('[data-search-infinite]').addBack('[data-search-infinite]').each(function () {
@@ -252,8 +308,6 @@ function initSearchInfiniteScroll(root) {
 		};
 
 		var reinitializeChunk = function (chunk) {
-			if (mode === 'hadith-sirah-item')
-				chunk.querySelectorAll('.reflection-section[data-reflection-section]').forEach(executeInlineScripts);
 			initReadOnlyInlineEditorGuards(chunk);
 			initMarkdownEditablePreviews(chunk);
 			initHadithSharhLinks(chunk);
@@ -283,7 +337,7 @@ function initSearchInfiniteScroll(root) {
 				throw new Error('Next search results page was not found.');
 
 			var remoteUrl = remoteMain.getAttribute('data-search-current-url') || targetUrl;
-			var chunk = $('<section class="search-infinite-page" data-search-infinite-page="1" aria-label="More search results"></section>').attr({
+			var chunk = $('<section class="search-infinite-page search-results-page" data-search-infinite-page="1" aria-label="More search results"></section>').attr({
 				'data-search-url': remoteUrl,
 				'data-page-title': parsed.title || ''
 			});
@@ -668,21 +722,6 @@ function initContentFontSizeControls(scope) {
 	});
 }
 
-function initHomeIntros(scope) {
-	(scope || document).querySelectorAll('[data-home-intro]').forEach(function (intro) {
-		if (intro.dataset.introBound === 'true') return;
-		intro.dataset.introBound = 'true';
-		var storageKey = 'hadithdb_home_intro_dismissed_' + intro.dataset.homeIntro;
-		try { intro.hidden = localStorage.getItem(storageKey) === 'true'; } catch (_err) {}
-		var closeButton = intro.querySelector('[data-home-intro-close]');
-		if (!closeButton) return;
-		closeButton.addEventListener('click', function () {
-			try { localStorage.setItem(storageKey, 'true'); } catch (_err) {}
-			intro.hidden = true;
-		});
-	});
-}
-
 function initRandomTocItemLoader(scope) {
 	var root = scope || document;
 	root.querySelectorAll('[data-random-toc-item]').forEach(function (container) {
@@ -1048,6 +1087,14 @@ function initHadithAdminGear() {
 	syncHadithAdminForCachedPage();
 }
 
+function setTocExpanded(button, expanded) {
+	button.setAttribute('aria-expanded', String(expanded));
+	button.title = expanded ? 'Hide sections' : 'Show sections';
+	const icon = button.querySelector('.toc-expand-icon');
+	icon.classList.toggle('bi-chevron-right', !expanded);
+	icon.classList.toggle('bi-chevron-down', expanded);
+}
+
 function initTocExpandCollapse(root) {
 	var scope = root || document;
 	$(scope).find('[data-toc-toggle]').each(function () {
@@ -1060,11 +1107,7 @@ function initTocExpandCollapse(root) {
 			var rows = $('[data-toc-parent="' + targetId + '"]');
 			var expanded = button.attr('aria-expanded') === 'true';
 			rows.toggleClass('d-none', expanded);
-			button.attr('aria-expanded', expanded ? 'false' : 'true');
-			button.attr('title', expanded ? 'Show sections' : 'Hide sections');
-			button.find('.toc-expand-icon')
-				.toggleClass('bi-chevron-right', expanded)
-				.toggleClass('bi-chevron-down', !expanded);
+			setTocExpanded(button.get(0), !expanded);
 			scheduleTocHeadingRailUpdate();
 		});
 	});
@@ -1091,53 +1134,88 @@ function normalizeTocFilterText(value) {
 }
 
 function initTocContentFilters(root) {
-	var scope = root || document;
-	$(scope).find('[data-toc-content-filter]').each(function () {
-		var input = $(this);
-		if (input.data('tocContentFilterBound'))
-			return;
-		input.data('tocContentFilterBound', true);
+	const scope = root || document;
+	const picker = scope.querySelector('.toc-collection-picker');
+	if (picker && picker.hidden) {
+		picker.hidden = false;
+		picker.querySelector('select').addEventListener('change', event => location.assign(event.target.value));
+	}
+	const input = scope.querySelector('[data-toc-content-filter]');
+	if (!input || input.dataset.tocBound) return;
+	input.dataset.tocBound = 'true';
+	const tools = input.closest('[data-toc-tools]');
+	const desktop = window.matchMedia('(min-width: 992px)');
+	const desktopSlot = scope.querySelector('[data-toc-desktop-tools]');
+	const mobileSlot = scope.querySelector('[data-toc-mobile-tools]');
+	function placeTools() {
+		if (tools && desktopSlot && mobileSlot) (desktop.matches ? desktopSlot : mobileSlot).append(tools);
+	}
+	placeTools();
+	desktop.addEventListener('change', placeTools);
 
-		var table = $(input.attr('data-toc-content-filter'));
-		if (!table.length)
-			return;
-
-		var update = function () {
-			var query = normalizeTocFilterText(input.val());
-			var filtering = query.length > 0;
-			table.toggleClass('toc-filtering', filtering);
-
-			table.find('[data-toc-chapter]').each(function () {
-				var chapter = $(this);
-				var chapterId = chapter.attr('data-toc-chapter');
-				var sections = table.find('[data-toc-parent="' + chapterId + '"]');
-				var chapterMatches = normalizeTocFilterText(chapter.text()).indexOf(query) !== -1;
-				var matchingSections = sections.filter(function () {
-					return normalizeTocFilterText($(this).text()).indexOf(query) !== -1;
-				});
-				var showChapter = !filtering || chapterMatches || matchingSections.length > 0;
-
-				chapter.prop('hidden', !showChapter);
-				sections.each(function () {
-					var section = $(this);
-					if (!filtering) {
-						section.prop('hidden', false);
-						section.toggleClass('d-none', table.find('[data-toc-toggle="' + chapterId + '"]').attr('aria-expanded') !== 'true');
-						return;
-					}
-					var showSection = chapterMatches || matchingSections.filter(this).length > 0;
-					section.prop('hidden', !showSection);
-					section.toggleClass('d-none', !showSection);
-				});
-			});
-			scheduleTocHeadingRailUpdate();
-		};
-
-		input.on('input', update);
-		if (input.is('[autofocus]'))
-			input.get(0).focus({ preventScroll: true });
-		update();
+	function filterRows() {
+		const table = document.querySelector(input.dataset.tocContentFilter);
+		if (!table) return;
+		const query = normalizeTocFilterText(input.value);
+		const indexKeys = new Set();
+		const destinations = new Set();
+		const sections = new Map();
+		for (const row of table.querySelectorAll('[data-toc-parent]')) {
+			const key = row.dataset.tocParent;
+			if (!sections.has(key)) sections.set(key, []);
+			sections.get(key).push(row);
+		}
+		let count = 0;
+		table.classList.toggle('toc-filtering', !!query);
+		for (const row of table.querySelectorAll('tbody tr:not([data-toc-parent])')) {
+			const chapterMatches = !query || normalizeTocFilterText(row.textContent).includes(query);
+			const children = sections.get(row.dataset.tocChapter) || [];
+			const toggle = row.querySelector('[data-toc-toggle]');
+			if (toggle && query && toggle.dataset.beforeFilter === undefined) toggle.dataset.beforeFilter = toggle.getAttribute('aria-expanded');
+			const expanded = (toggle?.dataset.beforeFilter ?? toggle?.getAttribute('aria-expanded')) === 'true';
+			let visible = chapterMatches;
+			for (const child of children) {
+				const matches = chapterMatches || normalizeTocFilterText(child.textContent).includes(query);
+				child.hidden = !matches;
+				child.classList.toggle('d-none', query ? !matches : !expanded);
+				visible ||= matches;
+			}
+			if (toggle && (query || toggle.dataset.beforeFilter !== undefined)) {
+				setTocExpanded(toggle, query ? children.some(child => !child.hidden) : expanded);
+				if (!query) delete toggle.dataset.beforeFilter;
+			}
+			row.hidden = !visible;
+			if (visible) {
+				count++;
+				indexKeys.add(row.dataset.tocHeadingKey);
+				destinations.add(row.querySelector('a')?.getAttribute('href'));
+			}
+		}
+		for (const link of scope.querySelectorAll('[data-toc-mode]:not([hidden]) [data-toc-index-key]')) {
+			link.hidden = !!query && !indexKeys.has(link.dataset.tocIndexKey) && !destinations.has(link.getAttribute('href'));
+		}
+		const status = tools?.querySelector('[data-toc-empty]');
+		if (status) status.textContent = query && !count ? 'No matching entries.' : '';
+		scheduleTocHeadingRailUpdate();
+	}
+	input.addEventListener('input', filterRows);
+	scope.addEventListener('shown.bs.tab', event => {
+		const panel = document.querySelector(event.target.dataset.bsTarget || '#toc-view-surahs');
+		const table = panel?.querySelector('.ux-toc-table');
+		if (!table) return;
+		for (const group of scope.querySelectorAll('[data-toc-mode]')) {
+			group.hidden = table.id !== 'toc-' + group.dataset.tocMode;
+			if (!group.hidden) {
+				input.placeholder = group.dataset.searchLabel;
+				input.setAttribute('aria-label', input.placeholder);
+				input.closest('[role="search"]').setAttribute('aria-label', input.placeholder);
+			}
+		}
+		input.dataset.tocContentFilter = '#' + table.id;
+		input.setAttribute('aria-controls', table.id);
+		filterRows();
 	});
+	filterRows();
 }
 
 function initTocInlineDescriptionExpanders(root) {
@@ -1301,9 +1379,15 @@ function initCommandSearch() {
 	dialog.dataset.commandSearchBound = '1';
 	var form = dialog.querySelector('[data-command-search-form]');
 	var input = dialog.querySelector('.command-search-input');
+	const scopePicker = form.querySelector('[data-command-scope]');
+	const withinBook = form.querySelector('[data-command-within-book]');
+	const sourceFields = Array.from(form.querySelectorAll('[data-command-global-source-options] input'));
+	const filterFields = Array.from(form.querySelectorAll('[data-command-filter]'));
+	const contextField = filterFields.find(field => field.value === dialog.dataset.contextBookAlias);
 	var initialMode = dialog.dataset.initialSearchMode === 'quran' ? 'quran' : 'hadith';
 	var mode = initialMode;
 	var lastTrigger = null;
+	var previousBookSearchTerm;
 	var filterOptions = dialog.querySelector('[data-command-search-combined-filters]');
 	var filterToggle = dialog.querySelector('[data-command-filter-toggle]');
 	filterToggle.addEventListener('click', function () {
@@ -1470,32 +1554,18 @@ function initCommandSearch() {
 			tafsirs.concat(translations).forEach(function (checkbox) { checkbox.checked = false; });
 	}
 
-	function applyContextualQuranFilters() {
-		var context = dialog.dataset.quranSearchContext || 'quran';
-		var alias = (dialog.dataset.quranCommentaryAlias || '').toString().trim();
-		if (!alias && context === 'study')
-			alias = quranSelectedTranslationAliasFromLocation() || storedQuranSelectedTranslationAlias();
-		if (!alias)
-			return;
-		var checkbox = Array.from(dialog.querySelectorAll('[data-command-search-panel="quran"] input[name="tafsir"]')).find(function (candidate) {
-			return candidate.value === alias;
-		});
-		if (!checkbox)
-			return;
-		checkbox.checked = true;
-		dialog.querySelectorAll('[data-command-all-tafsir], [data-command-all-translations]').forEach(function (allCommentary) {
-			allCommentary.checked = false;
-		});
-	}
-
 	function renderSelectedFilters() {
 		var selectedBooks = Array.from(dialog.querySelectorAll('[data-command-filter]:checked')).filter(function (field) { return !field.disabled; });
+		const broad = selectedBooks.filter(field => sourceFields.includes(field));
+		const quranPair = broad.length === 2 && broad.some(f => f.value === 'quran') && broad.some(f => f.value === 'translations');
+		scopePicker.value = !selectedBooks.length ? 'all'
+			: quranPair && selectedBooks.length === 2 ? 'quran'
+			: broad.length === 1 && selectedBooks.length === 1 ? broad[0].value : 'custom';
+		if (withinBook) withinBook.hidden = !contextField || selectedBooks.includes(contextField);
 		var contextual = selectedBooks.length === 1 && selectedBooks[0].value === dialog.dataset.contextBookAlias;
 		var placeholder = contextual && dialog.dataset.contextBookName ? 'Search within ' + dialog.dataset.contextBookName : 'Search the library';
 		input.placeholder = placeholder;
 		input.setAttribute('aria-label', placeholder);
-		var kicker = dialog.querySelector('[data-command-search-kicker]');
-		if (kicker) kicker.textContent = placeholder;
 		document.querySelectorAll('[data-command-search-trigger-label]').forEach(function (label) { label.dataset.emptyLabel = placeholder; });
 		updateCommandSearchPresentation();
 		var panel = activePanel();
@@ -1508,37 +1578,35 @@ function initCommandSearch() {
 		var hasSpecificTafsir = checked.some(function (checkbox) { return checkbox.dataset.commandCommentaryKind === 'tafsir'; });
 		var hasSpecificTranslation = checked.some(function (checkbox) { return checkbox.dataset.commandCommentaryKind === 'translation'; });
 		checked.forEach(function (checkbox) {
+			if (scopePicker.value !== 'custom' && sourceFields.includes(checkbox)) return;
 			if (checkbox.hasAttribute('data-command-all-tafsir') && hasSpecificTafsir && dialog.dataset.commandSearchResultsContext !== '1')
 				return;
 			if (checkbox.hasAttribute('data-command-all-translations') && hasSpecificTranslation && dialog.dataset.commandSearchResultsContext !== '1')
 				return;
-			var pill = document.createElement('span');
-			pill.className = 'command-search-pill badge rounded-pill';
-			var label = document.createElement('span');
-			label.textContent = checkbox.dataset.commandFilterLabel || checkbox.value;
 			var remove = document.createElement('button');
 			remove.type = 'button';
-			remove.className = 'btn-close';
+			remove.className = 'ux-pill ux-pill-removable';
+			var label = document.createElement('span');
+			label.textContent = checkbox.dataset.commandFilterLabel || checkbox.value;
+			remove.append(label);
 			remove.setAttribute('aria-label', `Remove ${label.textContent} filter`);
 			remove.addEventListener('click', function () {
 				checkbox.checked = false;
 				checkbox.dispatchEvent(new Event('change', { bubbles: true }));
 			});
-			pill.append(label, remove);
-			pills.appendChild(pill);
+			pills.appendChild(remove);
 		});
-		if (checked.length > 0) {
+		if (pills.childElementCount > 0) {
 			var clearAll = document.createElement('button');
 			clearAll.type = 'button';
-			clearAll.className = 'command-search-pill command-search-clear-all badge rounded-pill';
+			clearAll.className = 'ux-text-action';
 			clearAll.textContent = 'Clear all';
 			clearAll.setAttribute('aria-label', `Clear all ${mode === 'quran' ? 'Quran, Tafsir, and Translation' : 'General search'} filters`);
 			clearAll.addEventListener('click', function () {
 				activePanel().querySelectorAll('[data-command-filter]:checked:not(:disabled)').forEach(function (checkbox) {
 					checkbox.checked = false;
 				});
-				renderSelectedFilters();
-				refreshAutocomplete();
+				setMode('hadith');
 			});
 			pills.appendChild(clearAll);
 		}
@@ -1554,51 +1622,12 @@ function initCommandSearch() {
 	}
 
 	function setMode(nextMode, options) {
-		var previousMode = mode;
-		var resolvedMode = nextMode === 'quran' ? 'quran' : 'hadith';
-		if (resolvedMode !== previousMode) {
-			storeSearchTerm(previousMode);
-			dialog.querySelectorAll('[data-command-filter]').forEach(function (checkbox) {
-				checkbox.checked = false;
-			});
-		}
-		mode = resolvedMode;
-		// Tab activation supplies Quran by default; initialization preserves URL filters.
-		if (mode === 'quran' && (!options || options.refresh !== false)) {
-			var quranFilter = form.querySelector('[data-command-filter][name="b"][value="quran"]');
-			if (quranFilter) quranFilter.checked = true;
-		}
-		if (mode === 'quran') normalizeQuranFilters();
-		if (resolvedMode !== previousMode)
-			restoreSearchTerm(mode);
-		dialog.querySelectorAll('[data-command-search-mode]').forEach(function (button) {
-			var active = button.dataset.commandSearchMode === mode;
-			button.classList.toggle('active', active);
-			button.setAttribute('aria-selected', active ? 'true' : 'false');
-			button.tabIndex = active ? 0 : -1;
-		});
-		dialog.querySelectorAll('[data-command-search-panel]').forEach(function (panel) {
-			var active = mode === 'hadith' || panel.dataset.commandSearchPanel === mode;
-			panel.hidden = !active;
-			panel.querySelectorAll('input').forEach(function (field) {
-				field.disabled = !active;
-			});
-			if (!active) {
-				var details = panel.querySelector('details');
-				if (details) details.open = false;
-			}
-		});
-		dialog.querySelectorAll('[data-command-general-only-filter]').forEach(function (option) {
-			var available = mode !== 'quran';
-			option.hidden = !available;
-			option.querySelector('input').disabled = !available;
-		});
+		mode = nextMode === 'quran' ? 'quran' : 'hadith';
+		form.dataset.searchCollection = mode;
 		dialog.querySelectorAll('[data-command-quran-state]').forEach(function (field) {
 			field.disabled = mode !== 'quran';
 		});
 		form.action = mode === 'quran' ? form.dataset.quranSearchAction : form.dataset.hadithSearchAction;
-		input.placeholder = mode === 'quran' ? 'Search the Quran, translations, or tafsir...' : 'Search Quran, Tafsir, Translation, Hadith, Sharh, and History...';
-		input.setAttribute('aria-label', mode === 'quran' ? 'Search the Quran, translations, or tafsir' : 'General library search');
 		renderSelectedFilters();
 		if (!options || options.refresh !== false)
 			refreshAutocomplete();
@@ -1606,7 +1635,24 @@ function initCommandSearch() {
 
 	function openDialog(trigger) {
 		lastTrigger = trigger || document.activeElement;
-		restoreSearchTerm(mode);
+		if (document.querySelector('#mushaf-book[open]')) {
+			if (!dialog.hasAttribute('data-book-search')) previousBookSearchTerm = input.value;
+			dialog.setAttribute('data-book-search', '');
+			dialog.querySelector('.command-search-title').textContent = 'Search Quran';
+			input.placeholder = 'Search Quran';
+			input.setAttribute('aria-label', 'Search Quran');
+			filterOptions.open = false;
+		} else if (trigger?.dataset.commandInitialScope) {
+			selectScope(trigger.dataset.commandInitialScope);
+			restoreSearchTerm(mode);
+		} else if (trigger?.hasAttribute('data-edit-search-query')) {
+			filterFields.forEach(field => { field.checked = field.defaultChecked; });
+			setMode(trigger.dataset.editSearchMode, { refresh: false });
+			input.value = trigger.dataset.editSearchQuery;
+			updateCommandSearchPresentation();
+		} else {
+			restoreSearchTerm(mode);
+		}
 		if (!dialog.open)
 			dialog.showModal();
 		window.setTimeout(function () {
@@ -1616,9 +1662,17 @@ function initCommandSearch() {
 		}, 0);
 	}
 
-	document.querySelectorAll('[data-command-search-open]').forEach(function (trigger) {
-		trigger.addEventListener('click', function () { openDialog(trigger); });
+	document.addEventListener('click', function (event) {
+		var trigger = event.target.closest('[data-command-search-open]');
+		if (trigger) openDialog(trigger);
 	});
+	dialog.addEventListener('keydown', function (event) {
+		if (event.key === 'Escape' && dialog.hasAttribute('data-book-search')) {
+			event.preventDefault();
+			event.stopPropagation();
+			dialog.close();
+		}
+	}, true);
 	dialog.querySelector('[data-command-search-close]').addEventListener('click', function () {
 		dialog.close();
 	});
@@ -1627,36 +1681,56 @@ function initCommandSearch() {
 			dialog.close();
 	});
 	dialog.addEventListener('close', function () {
+		if (dialog.hasAttribute('data-book-search')) {
+			dialog.removeAttribute('data-book-search');
+			dialog.querySelector('.command-search-title').textContent = 'Search the library';
+			dialog.querySelector('[data-book-search-feedback]').hidden = true;
+			input.value = previousBookSearchTerm;
+			renderSelectedFilters();
+		}
 		if (lastTrigger && document.contains(lastTrigger))
 			lastTrigger.focus();
 	});
-	dialog.querySelectorAll('[data-command-search-mode]').forEach(function (button) {
-		button.addEventListener('click', function () {
-			setMode(button.dataset.commandSearchMode);
+	function applyPickerMode(nextMode) {
+		setMode(nextMode, { refresh: false });
+		storeSearchTerm(mode);
+		// The picker restores focus as it closes. Search after that restoration
+		// so autocomplete's blur handler cannot discard the new response.
+		requestAnimationFrame(function () {
+			if (!dialog.open) return;
 			input.focus();
+			refreshAutocomplete();
 		});
-		button.addEventListener('keydown', function (event) {
-			if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')
-				return;
-			event.preventDefault();
-			var nextMode = mode === 'hadith' ? 'quran' : 'hadith';
-			setMode(nextMode);
-			dialog.querySelector(`[data-command-search-mode="${nextMode}"]`).focus();
-		});
+	}
+	function selectScope(scope) {
+		const values = scope === 'quran' ? ['quran', 'translations'] : [scope];
+		filterFields.forEach(field => { field.checked = sourceFields.includes(field) && values.includes(field.value); });
+		applyPickerMode(['quran', 'translations', 'tafsir'].includes(scope) ? 'quran' : 'hadith');
+	}
+	scopePicker.addEventListener('change', () => selectScope(scopePicker.value));
+	withinBook?.addEventListener('click', function () {
+		filterFields.forEach(field => { field.checked = field === contextField; });
+		applyPickerMode(initialMode);
 	});
 	dialog.addEventListener('change', function (event) {
 		if (!event.target.matches('[data-command-filter]'))
 			return;
 		normalizeQuranFilters(event.target);
-		if (mode !== 'quran') normalizeHadithFilters(event.target);
-		renderSelectedFilters();
-		refreshAutocomplete();
+		normalizeHadithFilters(event.target);
+		const fields = filterFields.filter(field => field.checked && !field.disabled);
+		setMode(fields.length && fields.every(field => field.name === 'tafsir' ||
+			['quran', 'translations', 'tafsir'].includes(field.value)) ? 'quran' : 'hadith');
 	});
 	input.addEventListener('input', function () {
-		storeSearchTerm(mode);
+		if (!dialog.hasAttribute('data-book-search')) storeSearchTerm(mode);
 		updateCommandSearchPresentation();
 	});
-	form.addEventListener('submit', function () {
+	form.addEventListener('submit', function (event) {
+		if (dialog.hasAttribute('data-book-search')) {
+			event.preventDefault();
+			input.dispatchEvent(new Event('booksearchsubmit'));
+			return;
+		}
 		storeSearchTerm(mode);
 	});
 	dialog.querySelectorAll('[data-command-search-filter-search]').forEach(function (filterInput) {
@@ -1682,20 +1756,16 @@ function initCommandSearch() {
 		}
 	});
 
-	applyContextualQuranFilters();
-	normalizeQuranFilters();
-	setMode(initialMode, { refresh: false });
+	if (dialog.dataset.commandSearchResultsContext === '1') {
+		setMode(initialMode, { refresh: false });
+	} else {
+		filterFields.forEach(field => { field.checked = false; });
+		setMode('hadith', { refresh: false });
+	}
 	if (railOptions) {
 		var clone = filterOptions.querySelector(':scope > .command-search-filter-popover').cloneNode(true);
 		clone.querySelectorAll('[id]').forEach(function (element) { element.removeAttribute('id'); });
-		var railFinder = clone.querySelector('.command-search-filter-find');
 		clone.querySelectorAll('.command-search-filter-find').forEach(function (finder) { finder.remove(); });
-		var railField = railFinder.querySelector('input');
-		railField.disabled = false;
-		railField.value = '';
-		railField.placeholder = 'Filter books and sources';
-		railField.setAttribute('aria-label', 'Filter books and sources');
-		clone.prepend(railFinder);
 		railOptions.appendChild(clone);
 		railSources = Array.from(filterOptions.querySelectorAll('[data-command-filter]'));
 		railChecks = Array.from(railOptions.querySelectorAll('[data-command-filter]'));
@@ -1712,17 +1782,15 @@ function initCommandSearch() {
 				checkbox.form.requestSubmit();
 			});
 		});
-		railOptions.querySelectorAll('[data-command-search-filter-search]').forEach(function (field) {
-			field.addEventListener('input', function () {
-				var query = normalizeDropdownFilterText(field.value);
-				var list = railOptions;
-				list.querySelectorAll('[data-command-search-book-option]').forEach(function (option) {
-					option.hidden = query !== '' && !normalizeDropdownFilterText(option.textContent + ' ' + option.querySelector('input').value).includes(query);
-				});
-				list.querySelectorAll('[data-command-filter-group]').forEach(function (group) {
-					var hasSelectedFilter = !!group.querySelector('[data-command-filter]:checked:not(:disabled)');
-					group.open = hasSelectedFilter || (query !== '' && !!group.querySelector('[data-command-search-book-option]:not([hidden])'));
-				});
+		document.getElementById('search-filter-source').addEventListener('input', function () {
+			var query = normalizeDropdownFilterText(this.value);
+			var list = railOptions;
+			list.querySelectorAll('[data-command-search-book-option]').forEach(function (option) {
+				option.hidden = query !== '' && !normalizeDropdownFilterText(option.textContent + ' ' + option.querySelector('input').value).includes(query);
+			});
+			list.querySelectorAll('[data-command-filter-group]').forEach(function (group) {
+				var hasSelectedFilter = !!group.querySelector('[data-command-filter]:checked:not(:disabled)');
+				group.open = hasSelectedFilter || (query !== '' && !!group.querySelector('[data-command-search-book-option]:not([hidden])'));
 			});
 		});
 		var railContainer = document.querySelector('[data-search-filter-rail-container]');
@@ -2537,6 +2605,8 @@ function initQuranTafsirTabs(root) {
 				bindTafsirEnableToggle(toggleLabel, book);
 			};
 			var appendSourceHeader = function (panel, book) {
+				if (isTafsirModal || container.hasClass('quran-tafsirs-dedicated'))
+					return;
 				var header = $('<header>').addClass('quran-tafsir-source row').attr({
 					'data-tafsir-src': book.alias,
 					'data-tafsir-lang': book.lang || '',
@@ -2582,7 +2652,7 @@ function initQuranTafsirTabs(root) {
 				if (container.find(`#${cssEscape(tabId)}`).length)
 					return;
 				var dedicatedHref = dedicatedTafsirPassageUrl(book.alias, book.lang);
-				var tab = $(dedicatedHref ? '<a>' : '<button>').addClass('btn btn-outline-primary text-nowrap').attr({
+				var tab = $(dedicatedHref ? '<a>' : '<button>').addClass('btn book-switch-item text-nowrap').attr({
 					id: tabId,
 					'data-bs-target': `#${targetId}`,
 					'data-tafsir-hash': book.alias,
@@ -2933,6 +3003,10 @@ function initQuranTafsirTabs(root) {
 				panel.data('tafsirLoading', false);
 			}
 		};
+		var updatePickerLabel = function (tab) {
+			var label = tab.text().trim();
+			container.find('.book-switch-summary strong').text(label).prop('hidden', !label);
+		};
 		var showLocalTafsirsOnly = function (language) {
 			remoteTafsirsUnavailable = true;
 			container.find('.quran-tafsir-panel').filter(function () {
@@ -2953,6 +3027,7 @@ function initQuranTafsirTabs(root) {
 				window.bootstrap.Tab.getOrCreateInstance(localTab[0]).show();
 				return;
 			}
+			updatePickerLabel(container.find('.quran-tafsir-tabs .book-switch-item.active').first());
 			container.find('.quran-tafsir-status').removeClass('d-none').text('Remote tafsirs are unavailable. No local tafsir is available for this language.');
 		};
 		var isRemoteTafsirTab = function (tab) {
@@ -2998,7 +3073,15 @@ function initQuranTafsirTabs(root) {
 				window.bootstrap.Tab.getOrCreateInstance(target[0]).show();
 		};
 
+			container.on('click', '.book-switch-item[data-bs-toggle="tab"]', function () {
+				var picker = this.closest('.book-switch-picker');
+				if (picker && picker.open) {
+					picker.open = false;
+					picker.querySelector('summary').focus();
+				}
+			});
 			container.on('shown.bs.tab', '[data-bs-toggle="tab"]', function (event) {
+				updatePickerLabel($(event.target));
 				var hash = $(event.target).attr('data-tafsir-hash');
 				var language = $(event.target).attr('data-tafsir-lang');
 				if (hash) {
@@ -3743,7 +3826,10 @@ function applyQuranCommentaryFootnoteSize(element, book) {
 function quranSelectedTranslationFootnoteHolder(target) {
 	if (!target)
 		return null;
-	var scope = target.closest('.quran-passage-section, .quran-ayah-hero');
+	var passage = target.closest('.quran-study-passage');
+	if (passage)
+		return passage.querySelector('[data-notes-ayah="' + Number(target.dataset.quranAyah) + '"]');
+	var scope = target.closest('.quran-ayah-hero');
 	return scope ? scope.querySelector('[data-quran-selected-translation-footnotes="1"]') : null;
 }
 
@@ -3754,13 +3840,20 @@ function clearQuranSelectedTranslationFootnotes(root) {
 	});
 }
 
+var quranTranslationFootnoteInstance = 0;
+
 function namespaceQuranTranslationFootnotes(wrapper, target, alias) {
+	if (!wrapper.querySelector('[id]'))
+		return;
+	if (!target.dataset.footnoteInstance)
+		target.dataset.footnoteInstance = String(++quranTranslationFootnoteInstance);
 	var ref = quranTranslationTargetRef(target);
 	var namespace = [
 		'quran-translation',
 		quranTranslationFootnoteIdPart(alias || 'default'),
 		quranTranslationFootnoteIdPart(ref.surah),
-		quranTranslationFootnoteIdPart(ref.ayah)
+		quranTranslationFootnoteIdPart(ref.ayah),
+		target.dataset.footnoteInstance
 	].join('-');
 	wrapper.querySelectorAll('[id]').forEach(function (node) {
 		var id = node.getAttribute('id') || '';
@@ -3778,9 +3871,9 @@ function namespaceQuranTranslationFootnotes(wrapper, target, alias) {
 function normalizeQuranSelectedTranslationFootnotes(holder) {
 	if (!holder)
 		return;
-	var scope = holder.closest('.quran-passage-section, .quran-ayah-hero') || holder.parentElement;
+	var scope = holder.closest('.quran-study-passage, .quran-ayah-hero') || holder.parentElement;
 	var nextNumber = 1;
-	Array.from(holder.querySelectorAll('.footnotes-list')).forEach(function (list) {
+	Array.from(scope.querySelectorAll('[data-quran-selected-translation-footnotes] .footnotes-list')).forEach(function (list) {
 		var items = Array.from(list.querySelectorAll(':scope > .footnote-item'));
 		if (items.length < 1)
 			return;
@@ -3788,6 +3881,7 @@ function normalizeQuranSelectedTranslationFootnotes(holder) {
 		items.forEach(function (item, index) {
 			var id = item.getAttribute('id') || '';
 			var number = nextNumber + index;
+			item.value = number;
 			if (!id || !scope)
 				return;
 			Array.from(scope.querySelectorAll('.footnote-ref a[href^="#"]')).forEach(function (link) {
@@ -3816,10 +3910,8 @@ function quranPassageTranslationHtml(html, target, alias) {
 		else
 			node.remove();
 	});
-	if (holder && holder.childNodes.length > 0) {
-		normalizeQuranSelectedTranslationFootnotes(holder);
+	if (holder && holder.childNodes.length > 0)
 		holder.classList.remove('d-none');
-	}
 	return wrapper.innerHTML;
 }
 
@@ -4073,7 +4165,7 @@ function applyQuranTranslationEntryToTarget(target, book, entry) {
 function applySavedQuranStudyCommentary(editor, entry) {
 	if (!editor || !entry || !entry.edit)
 		return false;
-	var scope = editor.closest('.quran-passage-section, .quran-ayah-hero');
+	var scope = editor.closest('.quran-study-passage, .quran-ayah-hero');
 	if (!scope)
 		return false;
 	var id = String(entry.edit.id || editor.getAttribute('data-id') || '');
@@ -4311,8 +4403,7 @@ function quranSelectedTranslationAliasFromLocation() {
 	}
 }
 
-function quranCurrentPassagePartsFromLocation() {
-	var path = window.location.pathname || '';
+function quranCurrentPassagePartsFromLocation(path = window.location.pathname) {
 	var scopedRefMatch = path.match(/^\/quran\/[^/]+\/quran:(\d+):(\d+(?:-\d+)?)(?:\/|$)/);
 	var plainRefMatch = path.match(/^\/quran:(\d+):(\d+(?:-\d+)?)(?:\/|$)/);
 	var refMatch = scopedRefMatch || plainRefMatch;
@@ -4324,9 +4415,9 @@ function quranCurrentPassagePartsFromLocation() {
 	return match ? { surah: match[1], passage: match[2] } : null;
 }
 
-function quranTranslationPassageUrl(alias) {
+function quranTranslationPassageUrl(alias, passagePath) {
 	alias = validQuranTranslationAlias(alias);
-	var parts = quranCurrentPassagePartsFromLocation();
+	var parts = quranCurrentPassagePartsFromLocation(passagePath);
 	if (!parts)
 		return '';
 	var path = parts.ref
@@ -4695,6 +4786,8 @@ function ensureReaderLanguageColumnToolbar(root) {
 	}
 	if (toolbar)
 		return;
+	const searchResults = root.hasAttribute('data-search-infinite');
+	if (searchResults && !root.querySelector('[data-reader-language-column]')) return;
 	toolbar = readerLanguageColumnToolbar();
 	toolbar.setAttribute('data-reader-language-toolbar', '1');
 	root._readerLanguageColumnToolbar = toolbar;
@@ -4796,22 +4889,43 @@ function initQuranPassageTranslationSelects(root) {
 				var option = document.createElement('option');
 				option.value = book.source === 'default' ? '' : book.alias;
 				option.textContent = quranTranslationBookLabel(book);
+				option.dataset.search = [option.textContent, book.name_en, book.author_en, book.alias].filter(Boolean).join(' ');
 				selector.appendChild(option);
 			});
 			var preferredSelectValue = quranTranslationSelectValue(preferredAlias || '', choices);
 			if (!selectedTranslationAlias && preferredSelectValue) {
-				var preferredUrl = quranTranslationPassageUrl(preferredSelectValue);
+				var preferredUrl = quranTranslationPassageUrl(preferredSelectValue, selector.dataset.passagePath);
 				if (preferredUrl) {
 					window.location.replace(preferredUrl);
 					return;
 				}
 			}
 			selector.value = quranTranslationSelectValue(selectedTranslationAlias || '', choices);
-			syncQuranAudioTranslationMenu(selector);
-			bindQuranDynamicTranslationMenu(selector);
+			var picker = selector.closest('.book-switch-picker');
+			var menu = picker.querySelector('.h-menu');
+			initBookCarouselFilters(picker);
+			Array.from(selector.options).forEach(function (option) {
+				var button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'btn book-switch-item';
+				button.dataset.bookCarouselItem = '';
+				button.dataset.bookCarouselSearch = option.dataset.search;
+				button.textContent = option.textContent;
+				if (option.selected) {
+					button.classList.add('active');
+					button.setAttribute('aria-current', 'true');
+					picker.querySelector('summary strong').textContent = option.textContent;
+				}
+				button.addEventListener('click', function () {
+					selector.value = option.value;
+					selector.dispatchEvent(new Event('change', { bubbles: true }));
+				});
+				menu.appendChild(button);
+			});
+			applyBookCarouselFilter($(menu).children('[data-book-carousel-filter]'));
 			selector.addEventListener('change', function () {
 				var alias = validQuranTranslationAlias(selector.value || '');
-				var targetUrl = quranTranslationPassageUrl(alias);
+				var targetUrl = quranTranslationPassageUrl(alias, selector.dataset.passagePath);
 				if (!targetUrl) {
 					if (window.toastr)
 						toastr.error('Unable to build the selected translation URL.', 'Settings');
@@ -6019,6 +6133,8 @@ function initMobileFooterAudioControls() {
 }
 
 function quranPassageAudioHighlightScopes(control) {
+	var bookPage = control && control.closest('[data-book-page]');
+	if (bookPage) return [bookPage.closest('.mushaf-book-spread') || bookPage];
 	var mushafPage = control && control.closest('[data-quran-mushaf-page]');
 	if (mushafPage)
 		return [mushafPage.closest('[data-quran-mushaf-reader]') || mushafPage];
@@ -6068,12 +6184,12 @@ function refreshQuranMushafAyahBackgrounds(scopes) {
 		roots.forEach(function (root) {
 			if (!root)
 				return;
-			if (root.matches && root.matches('[data-quran-mushaf-page]'))
+			if (root.matches && root.matches('[data-quran-mushaf-page], [data-book-page]'))
 				pages.add(root);
-			root.querySelectorAll && root.querySelectorAll('[data-quran-mushaf-page]').forEach(function (page) {
+			root.querySelectorAll && root.querySelectorAll('[data-quran-mushaf-page], [data-book-page]').forEach(function (page) {
 				pages.add(page);
 			});
-			var containingPage = root.closest && root.closest('[data-quran-mushaf-page]');
+			var containingPage = root.closest && root.closest('[data-quran-mushaf-page], [data-book-page]');
 			if (containingPage)
 				pages.add(containingPage);
 		});
@@ -6115,7 +6231,7 @@ function setQuranPassageAudioHighlight(control, item) {
 		return;
 	var scopes = quranPassageAudioHighlightScopes(control);
 	scopes.forEach(function (scope) {
-		scope.querySelectorAll('.quran-passage-section .body.passage .ayah[data-quran-ref], .quran-mushaf-page [data-quran-ref]').forEach(function (ayah) {
+		scope.querySelectorAll('.quran-passage-section .body.passage .ayah[data-quran-ref], .quran-mushaf-page [data-quran-ref], [data-book-page] [data-quran-ref]').forEach(function (ayah) {
 			var ayahRef = quranAudioRefKey(quranAudioRefParts(ayah.getAttribute('data-quran-ref') || ''));
 			ayah.classList.toggle('quran-audio-active-ayah', ayahRef === ref);
 		});
@@ -6133,6 +6249,18 @@ function setQuranPassageAudioHighlight(control, item) {
 				}
 			}).finally(function () { reader.quranAudioPageLoading = false; });
 		}
+	}
+	var book = document.querySelector('#mushaf-book[open]');
+	if (book && book.contains(control)) {
+		var leaf = book.querySelector('.quran-mushaf-line [data-quran-ref="' + ref + '"]')?.closest('[data-book-page]');
+		if (leaf) book.dispatchEvent(new CustomEvent('mushaf-playing-page', {detail: {page: Number(leaf.dataset.bookPage), ref: ref}}));
+	}
+	if (book && !book.contains(control)) {
+		var page = scopes.map(function (scope) {
+			return scope.querySelector('.quran-mushaf-line [data-quran-ref="' + ref + '"]')?.closest('[data-quran-mushaf-page]');
+		}).find(Boolean);
+		if (page) book.dispatchEvent(new CustomEvent('mushaf-playing-page', {detail: {page: Number(page.dataset.quranMushafPage), ref: ref}}));
+		return;
 	}
 	scrollQuranPassageAudioAyahIntoView(scopes, ref);
 }
@@ -6155,7 +6283,7 @@ function quranPassageAudioFixedBottomOffset() {
 function quranPassageAudioAyahTarget(scopes, ref) {
 	var fallback = null;
 	for (var i = 0; i < scopes.length; i += 1) {
-		var ayahs = Array.from(scopes[i].querySelectorAll('.quran-passage-section .body.passage .ayah[data-quran-ref], .quran-mushaf-page [data-quran-ref]')).filter(function (ayah) {
+		var ayahs = Array.from(scopes[i].querySelectorAll('.quran-passage-section .body.passage .ayah[data-quran-ref], .quran-mushaf-page [data-quran-ref], [data-book-page] [data-quran-ref]')).filter(function (ayah) {
 			return (ayah.getAttribute('data-quran-ref') || '') === ref && ayah.getClientRects().length > 0;
 		});
 		var arabicAyah = ayahs.find(function (ayah) {
@@ -6175,6 +6303,10 @@ function scrollQuranPassageAudioAyahIntoView(scopes, ref) {
 		return;
 	window.requestAnimationFrame(function () {
 		var rect = target.getBoundingClientRect();
+		if (target.closest('#mushaf-book')) {
+			if (rect.top < 50 || rect.bottom > window.innerHeight - 45) target.scrollIntoView({block: 'center'});
+			return;
+		}
 		var topOffset = quranPassageAudioFixedTopOffset();
 		var bottomLimit = window.innerHeight - quranPassageAudioFixedBottomOffset();
 		if (rect.top >= topOffset && rect.top <= bottomLimit)
@@ -6187,7 +6319,7 @@ function scrollQuranPassageAudioAyahIntoView(scopes, ref) {
 }
 
 function quranPassageAudioControlIsVisible(control) {
-	return !!(control && control.getClientRects && control.getClientRects().length > 0);
+	return !!(control && !control.closest('#mushaf-book') && control.getClientRects && control.getClientRects().length > 0);
 }
 
 function nextQuranPassageAudioControl(control) {
@@ -6212,6 +6344,10 @@ function continueQuranPassageAudio(control) {
 	var activeControl = control || quranPassageAudioState.control;
 	if (!activeControl)
 		return;
+	if (activeControl.closest('[data-book-page]')) {
+		activeControl.dispatchEvent(new CustomEvent('mushaf-page-ended', { bubbles: true }));
+		return;
+	}
 	var currentControl = matchingQuranPassageAudioControl(quranPassageAudioCurrentRef());
 	if (currentControl)
 		activeControl = currentControl;
@@ -6254,6 +6390,7 @@ function continueQuranPassageAudio(control) {
 function extendQuranPassageAudioAcrossBoundary() {
 	if (!quranPassageAudioState.control || quranPassageAudioState.repeat || quranPassageAudioState.ranges)
 		return Promise.resolve(false);
+	if (quranPassageAudioState.control.closest('[data-book-page]')) return Promise.resolve(false);
 	if (quranPassageAudioState.extending)
 		return quranPassageAudioState.extending;
 	var activeControl = quranPassageAudioState.control;
@@ -7024,18 +7161,25 @@ function initQuranPassageAudioControls(root) {
 		}
 		if (controlParts.play) {
 			controlParts.play.addEventListener('click', function () {
+				var page = control.closest('[data-quran-mushaf-page], [data-book-page]');
+				var spread = control.closest('.mushaf-book-spread');
+				if (spread) page = spread.querySelector('[data-book-page][data-quran-mushaf-selected-ref]:not([data-quran-mushaf-selected-ref=""])') || page;
+				var selected = page && page.dataset.quranMushafSelectedRef;
+				if (selected) {
+					var ref = quranAudioRefParts(selected);
+					page.dataset.quranMushafSelectedRef = '';
+					page.querySelectorAll('.quran-mushaf-ayah-selected').forEach(el => el.classList.remove('quran-mushaf-ayah-selected'));
+					refreshQuranMushafAyahBackgrounds([page]);
+					startQuranPassageAudio(control, { startSurah: ref.surah, startAyah: ref.ayah, restart: true });
+					return;
+				}
 				if (quranPassageAudioState.control === control && quranPassageAudioState.paused)
 					resumeQuranPassageAudio(control);
 				else if (quranPassageAudioState.control === control && control.classList.contains('is-playing'))
 					pauseQuranPassageAudio(control);
 				else {
-					var mushafPage = control.closest('[data-quran-mushaf-page]');
-					if (mushafPage) { openQuranAudioRangeModal(control); return; }
-					var selectedRef = quranAudioRefParts(mushafPage && mushafPage.dataset.quranMushafSelectedRef || '');
-					startQuranPassageAudio(control, Number.isInteger(selectedRef.ayah) ? {
-						startSurah: selectedRef.surah,
-						startAyah: selectedRef.ayah
-					} : {});
+					if (page && page.hasAttribute('data-quran-mushaf-page')) openQuranAudioRangeModal(control);
+					else startQuranPassageAudio(control);
 				}
 			});
 		}
@@ -7274,15 +7418,22 @@ function initQuranPreferredTranslationDisplays(root) {
 		return selectedTranslationAlias && target.dataset.quranDefaultTranslationEditableClass === '1';
 	});
 	if (hasServerRenderedTranslation) {
+		targets.forEach(function (target) {
+			setQuranTranslationTargetEditable(target, !selectedTranslationAlias);
+			target.innerHTML = quranPassageTranslationHtml(target.innerHTML, target, selectedTranslationAlias);
+			if (!selectedTranslationAlias)
+				appendDefaultQuranTranslationFootnoteEditor(target);
+		});
+		new Set(targets.map(function (target) {
+			return target.closest('.quran-study-passage, .quran-ayah-hero');
+		})).forEach(function (passage) {
+			if (passage)
+				normalizeQuranSelectedTranslationFootnotes(passage.querySelector('[data-quran-selected-translation-footnotes]'));
+		});
 		var syncServerRenderedTranslation = function (book) {
 			var label = selectedTranslationAlias ? quranTranslationBookLabel(book) : defaultQuranTranslationShortName();
-			clearQuranSelectedTranslationFootnotes(scope);
 			targets.forEach(function (target) {
 				applyQuranCommentaryFootnoteSize(quranSelectedTranslationFootnoteHolder(target), book);
-				setQuranTranslationTargetEditable(target, !selectedTranslationAlias);
-				target.innerHTML = quranPassageTranslationHtml(target.innerHTML || '', target, selectedTranslationAlias);
-				if (!selectedTranslationAlias)
-					appendDefaultQuranTranslationFootnoteEditor(target);
 				setQuranTranslationAttribution(target, label, selectedTranslationAlias);
 			});
 			updateQuranTranslationPreferenceHearts(document, selectedTranslationAlias);
@@ -8233,8 +8384,8 @@ function quranShareModalHtml(ayah, shareId) {
 		.append($('<select>').addClass('form-select form-select-sm quran-share-translation-select').attr({ 'data-quran-share-translation-select': '1', 'aria-label': 'Share image translator' }))
 		.appendTo($controlGroup);
 	var $sizes = $('<div>').addClass('hadith-share-size-controls').attr('aria-label', 'Share image font sizes').appendTo($controlGroup);
-	$('<label>').attr('title', 'English text size').append($('<span>').text('English')).append($('<input>').attr({ type: 'range', min: '70', max: '130', step: '5', value: '100', 'data-share-size-var': '--share-english-tune' }).addClass('form-range hadith-share-size')).appendTo($sizes);
-	$('<label>').attr('title', 'Arabic text size').append($('<span>').text('Arabic')).append($('<input>').attr({ type: 'range', min: '70', max: '130', step: '5', value: '100', 'data-share-size-var': '--share-arabic-tune' }).addClass('form-range hadith-share-size')).appendTo($sizes);
+	$('<label>').attr('title', 'English text size').append($('<span>').text('English')).append($('<input>').attr({ type: 'range', min: '0', max: '130', step: '5', value: '100', 'data-share-size-var': '--share-english-tune', 'data-share-size-disable-target': 'english' }).addClass('form-range hadith-share-size')).appendTo($sizes);
+	$('<label>').attr('title', 'Arabic text size').append($('<span>').text('Arabic')).append($('<input>').attr({ type: 'range', min: '0', max: '130', step: '5', value: '100', 'data-share-size-var': '--share-arabic-tune', 'data-share-size-disable-target': 'arabic' }).addClass('form-range hadith-share-size')).appendTo($sizes);
 	$('<div>').addClass('hadith-share-tool-group')
 		.append($('<button>').attr({ type: 'button', title: 'Copy text', 'aria-label': 'Copy text' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy-text').append($('<span>').addClass('bi bi-card-text')))
 		.append($('<button>').attr({ type: 'button', title: 'Copy image', 'aria-label': 'Copy image' }).addClass('btn btn-sm btn-outline-secondary hadith-share-copy').append($('<span>').addClass('bi bi-clipboard')))
@@ -8246,7 +8397,16 @@ function quranShareModalHtml(ayah, shareId) {
 	var $body = $('<section>').addClass('modal-body hadith-share-body').appendTo($content);
 	var $card = $('<article>').addClass('hadith-share-card quran-share-card').attr({ 'data-share-card': '', 'data-share-ref': `quran:${ref}` }).appendTo($body);
 	var $inner = $('<div>').addClass('hadith-share-card-inner').appendTo($card);
-	$('<h2>').addClass('hadith-share-title share-editable').attr('contenteditable', 'false').text(shareTitle).appendTo($inner);
+	var surahNumber = Number(ref.split(':')[0]);
+	if (Number.isInteger(surahNumber) && surahNumber >= 1 && surahNumber <= 114) {
+		$('<h2>').addClass('hadith-share-title quran-share-surah-header')
+			.append($('<span>').addClass('visually-hidden').attr('data-html2canvas-ignore', '').text(shareTitle))
+			.append($('<img>').addClass('quran-share-surah-frame').attr({ src: '/static/img/quran/surah-header/border.svg?v=2', alt: '' }))
+			.append($('<img>').addClass('quran-share-surah-name').attr({ src: `/static/img/quran/surah-header/names/${surahNumber}.svg?v=2`, alt: '' }))
+			.appendTo($inner);
+	} else {
+		$('<h2>').addClass('hadith-share-title share-editable').attr('contenteditable', 'false').text(shareTitle).appendTo($inner);
+	}
 	// Dynamic ayahs come from ?json=1, which puts normal Arabic in ar.body
 	// and the original display script in ar.body_alt (the reverse of HTML locals).
 	var $arText = $('<div>').addClass('body hadith-share-text quran-share-text share-editable').attr({ lang: 'ar', contenteditable: 'false' });
@@ -8497,7 +8657,7 @@ function initQuranMushafAyahSelection(root) {
 			refreshQuranMushafAyahBackgrounds([document]);
 		}, { passive: true });
 		document.addEventListener('click', function (event) {
-			if (event.target.closest('[data-quran-bar], #quran-navigation-rail')) return;
+			if (event.target.closest('[data-quran-bar], #quran-navigation-rail, .quran-mushaf-page-toolbar')) return;
 			var searchAyah = event.target.closest('[data-quran-ref].quran-mushaf-search-ayah');
 			if (!searchAyah) {
 				document.querySelectorAll('.quran-mushaf-search-ayah').forEach(function (element) {
@@ -8511,12 +8671,12 @@ function initQuranMushafAyahSelection(root) {
 				refreshQuranMushafAyahBackgrounds([document]);
 			}
 			if (event.target.closest(
-				'.quran-mushaf-page [data-quran-ref], '
+				'.quran-mushaf-page [data-quran-ref], [data-book-page] [data-quran-ref], '
 				+ '.quran-passage-section .ayah[data-quran-ref], '
 				+ '[data-quran-ayah-actions="1"][data-quran-ref]'
 			))
 				return;
-			document.querySelectorAll('[data-quran-mushaf-page]').forEach(function (page) {
+			document.querySelectorAll('[data-quran-mushaf-page], [data-book-page]').forEach(function (page) {
 				page.dataset.quranMushafSelectedRef = '';
 				page.querySelectorAll('.quran-mushaf-ayah-selected').forEach(function (element) {
 					element.classList.remove('quran-mushaf-ayah-selected');
@@ -8526,9 +8686,9 @@ function initQuranMushafAyahSelection(root) {
 			hideQuranSelectionTranslationMarquee();
 		});
 	}
-	var pages = scope.matches && scope.matches('[data-quran-mushaf-page]')
+	var pages = scope.matches && scope.matches('[data-quran-mushaf-page], [data-book-page]')
 		? [scope]
-		: Array.from(scope.querySelectorAll('[data-quran-mushaf-page]'));
+		: Array.from(scope.querySelectorAll('[data-quran-mushaf-page], [data-book-page]'));
 	pages.forEach(function (page) {
 		if (page.dataset.quranMushafAyahSelectionBound === '1')
 			return;
@@ -8545,7 +8705,7 @@ function initQuranMushafAyahSelection(root) {
 				element.classList.toggle('quran-mushaf-ayah-selected', !!ref && element.getAttribute('data-quran-ref') === ref);
 			});
 			refreshQuranMushafAyahBackgrounds([page]);
-			updateQuranReaderModeHrefs(page, ref);
+			if (!page.hasAttribute('data-book-page')) updateQuranReaderModeHrefs(page, ref);
 		};
 		page.addEventListener('pointerover', function (event) {
 			var target = event.target.closest('.quran-corpus-word[data-quran-ref], .quran-mushaf-ayah-marker[data-quran-ref]');
@@ -8570,11 +8730,11 @@ function initQuranMushafAyahSelection(root) {
 		page.addEventListener('click', function (event) {
 			if (page.hasAttribute('data-quran-memorize-page'))
 				return;
-			var target = event.target.closest('.quran-corpus-word[data-quran-ref]');
+			var target = event.target.closest('.quran-corpus-word[data-quran-ref], [data-book-page] .quran-mushaf-ayah-marker[data-quran-ref]');
 			if (!target || !page.contains(target) || target.closest('.quran-mushaf-line-basmallah'))
 				return;
 			var ref = target.getAttribute('data-quran-ref') || '';
-			document.querySelectorAll('[data-quran-mushaf-page]').forEach(function (otherPage) {
+			document.querySelectorAll('[data-quran-mushaf-page], [data-book-page]').forEach(function (otherPage) {
 				if (otherPage === page)
 					return;
 				otherPage.dataset.quranMushafSelectedRef = '';
@@ -8585,6 +8745,8 @@ function initQuranMushafAyahSelection(root) {
 			refreshQuranMushafAyahBackgrounds([document]);
 			var selectedRef = page.dataset.quranMushafSelectedRef === ref ? '' : ref;
 			setSelectedRef(selectedRef);
+			if (selectedRef && page.hasAttribute('data-book-page'))
+				showQuranSelectionTranslationMarquee(selectedRef);
 			if (!selectedRef)
 				hideQuranSelectionTranslationMarquee();
 		});
@@ -10684,571 +10846,6 @@ function initQuranAyahReview(root) {
 	});
 }
 
-function initPageHelpTips(root) {
-	var scope = root || document;
-	var owner = scope.matches && scope.matches('[data-page-help-tour]')
-		? scope
-		: scope.querySelector('[data-page-help-tour]');
-	if (!owner || owner.dataset.pageHelpTipsBound === '1') return;
-	owner.dataset.pageHelpTipsBound = '1';
-	var mode = owner.getAttribute('data-page-help-tour') || '';
-	var labels = { memorize: 'Practice', review: 'Mudhakkir', progress: 'Review summary' };
-	if (!labels[mode]) return;
-	var sessionStorageKey = `hadithdb.pageHelpTour.session.${mode}`;
-	var permanentStorageKey = `hadithdb.pageHelpTour.permanent.${mode}`;
-	var stepsByMode = {
-		review: [
-		{
-			title: 'Recite before looking in Mudhakkir',
-			copy: 'Mudhakkir hides the current āyah. Recite it from memory before revealing the answer.',
-			selector: '.quran-mushaf-sheet'
-		},
-		{
-			title: 'Reveal, then grade your recall',
-			copy: 'Select **Reveal** only after your attempt. Choose **Again** if you needed help, **Hard** for significant hesitation, **Good** for ordinary effort, or **Easy** for fluent recall. **Skip** changes neither the learning stage nor the schedule.',
-			selector: '.quran-ayah-review-buttons'
-		},
-		{
-			title: 'Let grades manage the stage',
-			copy: 'Your initial self-assessment was the only manual stage choice. In Mudhakkir, one **Easy** or two consecutive **Good** reviews move Learning or Hard to Good. **Again** on a Good āyah begins Hard recovery until you recall it successfully.',
-			selector: '.mobile-bottom-nav-review-controls .quran-memorize-rating-buttons, .quran-ayah-review-buttons'
-		},
-		{
-			title: 'Follow the adaptive schedule',
-			copy: 'Each grade updates the āyah\'s next review from its recall history and loads the next Learning or due āyah. **Undo** restores the most recent grade, learning stage, and review date if you tapped the wrong one.',
-			selector: '.mobile-bottom-nav-review-controls .quran-memorize-rating-buttons, .quran-ayah-review-buttons'
-		},
-		{
-			title: 'Pause or end when you need to',
-			copy: '**Pause** keeps the remaining āyāt ready for you to resume later. **End** closes the session and removes its remaining queue; every completed review stays saved.',
-			selector: '.quran-review-session-actions'
-		}
-	],
-	progress: [
-		{
-			title: 'See your review activity',
-			copy: 'Your activity history shows how consistently you are reviewing and how your practice is building over time.',
-			selector: '.quran-review-activity'
-		},
-		{
-			title: 'Understand what needs attention',
-			copy: 'Use the summary cards to see what is due now and how many āyāt are Learning, Hard, Good, Easy, Paused, or Later.',
-			selector: '.quran-memorization-summary'
-		},
-		{
-			title: 'Find your memorization progress',
-			copy: 'Filter by page, Juz, surah, state, or Arabic text to quickly find the āyāt you want to check.',
-			selector: '.memorization-progress-filter'
-		},
-		{
-			title: 'Begin your hifz journey',
-			copy: 'Select **Get Started** to choose the surah you want to memorize.',
-			selector: '#quran-memorization-progress [data-bs-target="#quran-get-started-modal"]',
-			action: 'click-target',
-			actionLabel: 'Get started'
-		}
-	],
-	memorize: [
-		{
-			title: 'Practice with hidden text',
-			copy: 'Select a hidden word to reveal it. Use the **eye** to show the whole page, the **clock** to hide clicked words again, and minus or plus to hide or reveal one complete āyah at a time.',
-			selector: '.quran-mushaf-page-toolbar .quran-memorize-controls'
-		},
-		{
-			title: 'Begin your hifz journey',
-			copy: 'For an āyah you have not started, open its chevron and honestly assess your current recall: **Learn**, **Hard**, **Good**, or **Easy**. This one-time self-assessment tells the app where your hifz journey should begin. The same menu can **Play**, **Reveal**, or **Hide** the āyah while you practice.',
-			selector: '[data-quran-ayah-state-menu]',
-			requiresMemorizationMenu: 'ayah',
-			requiresMemorizationState: 'later'
-		},
-		{
-			title: 'Assess a complete surah',
-			copy: 'When you have not started any āyah in a surah, use the surah dropdown to give the complete surah one starting assessment. Choose **Learn**, **Hard**, **Good**, or **Easy**, then work through its āyāt.',
-			selector: '[data-quran-surah-state-menu]',
-			requiresMemorizationMenu: 'surah',
-			requiresMemorizationState: 'later'
-		},
-		{
-			title: 'Let Mudhakkir manage progress',
-			copy: 'Your self-assessment is the only time you choose a starting stage. After enrollment, Mudhakkir updates Learning, Hard, and Good from your grades. You can still choose **Easy**, **Pause learning**, or **Learn later** when needed.',
-			selector: '[data-quran-ayah-state-menu]',
-			requiresMemorizationMenu: 'ayah',
-			requiresMemorizationState: 'enrolled'
-		},
-		{
-			title: 'Pause learning or learn later',
-			copy: 'After enrollment, choose **Pause learning** to stop reviews temporarily without losing history, or **Learn later** to remove the āyah from the current plan. Choose **Easy** when it no longer needs a scheduled Review.',
-			selector: '[data-quran-ayah-state-menu]',
-			requiresMemorizationMenu: 'ayah',
-			requiresMemorizationState: 'enrolled'
-		},
-		{
-			title: 'Build recall one word at a time',
-			copy: 'Try to recite first, then select only the word you need. Repeat until you can reveal less and recite the complete āyah without help.',
-			selector: '.quran-mushaf-line:not(.quran-mushaf-line-basmallah) .quran-corpus-word'
-		},
-		{
-			title: 'Test your learning in Mudhakkir',
-			copy: 'When you are ready to test yourself, select the green **Mudhakkir** button in the reading-mode bar to open your dashboard and start or continue a review session. Use the page review button for a custom review of this page.',
-			selector: '.quran-reader-modes [data-quran-reader-mode-link="review"]'
-		}
-	],
-
-	};
-	var steps = stepsByMode[mode];
-	var tour = null;
-	var currentStep = 0;
-	var previousFocus = null;
-	var activeTarget = null;
-	var resizeFrame = 0;
-	var sessionStorage = function () {
-		try { return window.sessionStorage || null; }
-		catch (_err) { return null; }
-	};
-	var permanentStorage = function () {
-		try { return window.localStorage || null; }
-		catch (_err) { return null; }
-	};
-	var wasDismissedLocally = function () {
-		var session = sessionStorage();
-		var permanent = permanentStorage();
-		try { return Boolean(session && session.getItem(sessionStorageKey) || permanent && permanent.getItem(permanentStorageKey)); }
-		catch (_err) { return false; }
-	};
-	var wasPermanentlyDismissedLocally = function () {
-		var permanent = permanentStorage();
-		try { return Boolean(permanent && permanent.getItem(permanentStorageKey)); }
-		catch (_err) { return false; }
-	};
-	var waitForAuth = function () {
-		return new Promise(function (resolve) {
-			if (window.hadithAuth && window.hadithAuth.getUser) {
-				resolve(window.hadithAuth);
-				return;
-			}
-			var attempts = 0;
-			var timer = window.setInterval(function () {
-				attempts += 1;
-				if (window.hadithAuth && window.hadithAuth.getUser) {
-					window.clearInterval(timer);
-					resolve(window.hadithAuth);
-				} else if (attempts >= 50) {
-					window.clearInterval(timer);
-					resolve(null);
-				}
-			}, 100);
-		});
-	};
-	var loadUserSettings = function (fresh) {
-		return waitForAuth().then(function (auth) {
-			return Promise.resolve(auth && auth.getUser ? auth.getUser() : null).then(function (user) {
-				if (!user) return { auth: auth, user: null, settings: null };
-				var cached = !fresh && window.hadithUserSettingsCache && window.hadithUserSettingsCache.read
-					? window.hadithUserSettingsCache.read(user)
-					: null;
-				if (cached) return { auth: auth, user: user, settings: cached };
-				return Promise.resolve(auth.getToken ? auth.getToken() : null).then(function (token) {
-					return fetch(quranApiPath('/user-settings?optional=1'), {
-						credentials: 'same-origin',
-						cache: 'no-store',
-						headers: token ? { 'Authorization': `Bearer ${token}` } : {}
-					}).then(function (response) {
-						if (!response.ok) throw new Error('Unable to load tour preferences.');
-						return response.json();
-					}).then(function (data) {
-						var settings = data && data.settings || {};
-						updateCachedQuranUserSettings(user, settings);
-						return { auth: auth, user: user, token: token, settings: settings };
-					});
-				});
-			});
-		});
-	};
-	var wasDismissedForUser = function () {
-		return loadUserSettings(true).then(function (context) {
-			var quran = context.settings && context.settings.quran;
-			return Boolean(quran && Array.isArray(quran.dismissedHelpTours) && quran.dismissedHelpTours.indexOf(mode) >= 0);
-		}).catch(function () { return false; });
-	};
-	var savePermanentDismissal = function () {
-		return loadUserSettings(true).then(function (context) {
-			if (!context.user || !context.settings) return;
-			var quran = context.settings.quran && typeof context.settings.quran === 'object'
-				? context.settings.quran
-				: {};
-			var existingDismissed = Array.isArray(quran.dismissedHelpTours) ? quran.dismissedHelpTours : [];
-			if (existingDismissed.indexOf(mode) >= 0) return;
-			var dismissed = Array.from(new Set(existingDismissed.concat(mode)));
-			var nextSettings = Object.assign({}, context.settings, {
-				quran: Object.assign({}, quran, { dismissedHelpTours: dismissed })
-			});
-			return Promise.resolve(context.token || (context.auth && context.auth.getToken ? context.auth.getToken() : null)).then(function (token) {
-				return fetch(quranApiPath('/user-settings'), {
-					method: 'PUT',
-					credentials: 'same-origin',
-					headers: Object.assign({ 'Content-Type': 'application/json' }, token ? { 'Authorization': `Bearer ${token}` } : {}),
-					body: JSON.stringify({ settings: nextSettings })
-				}).then(function (response) {
-					if (!response.ok) throw new Error('Unable to save tour preference.');
-					return response.json();
-				}).then(function (data) {
-					updateCachedQuranUserSettings(context.user, data.settings || nextSettings);
-				});
-			});
-		});
-	};
-	var rememberDismissal = function (dismissal) {
-		var storage = dismissal === 'permanent' ? permanentStorage() : sessionStorage();
-		var key = dismissal === 'permanent' ? permanentStorageKey : sessionStorageKey;
-		try { if (storage) storage.setItem(key, '1'); }
-		catch (_err) {}
-		if (dismissal === 'permanent') {
-			savePermanentDismissal().catch(function (err) {
-				if (window.toastr) window.toastr.error(err.message || 'Unable to save tour preference.', 'Preference not saved');
-			});
-		}
-	};
-	var visibleTarget = function (selector) {
-		return Array.from(document.querySelectorAll(selector || '')).find(function (candidate) {
-			var rect = candidate.getBoundingClientRect();
-			var style = window.getComputedStyle(candidate);
-			return !candidate.hidden && style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-		}) || null;
-	};
-	var positionTour = function () {
-		if (!tour) return;
-		var card = tour.querySelector('[data-quran-help-tips-card]');
-		var spotlight = tour.querySelector('[data-quran-help-tips-spotlight]');
-		if (!card || !spotlight) return;
-		activeTarget = visibleTarget(steps[currentStep].selector);
-		spotlight.classList.toggle('is-centered', !activeTarget);
-		if (!activeTarget) {
-			spotlight.removeAttribute('style');
-			card.style.left = `${Math.max(12, Math.round((window.innerWidth - card.offsetWidth) / 2))}px`;
-			card.style.top = `${Math.max(12, Math.round((window.innerHeight - card.offsetHeight) / 2))}px`;
-			return;
-		}
-		var rect = activeTarget.getBoundingClientRect();
-		var padding = 7;
-		spotlight.style.left = `${Math.max(4, Math.round(rect.left - padding))}px`;
-		spotlight.style.top = `${Math.max(4, Math.round(rect.top - padding))}px`;
-		spotlight.style.width = `${Math.min(window.innerWidth - 8, Math.round(rect.width + padding * 2))}px`;
-		spotlight.style.height = `${Math.min(window.innerHeight - 8, Math.round(rect.height + padding * 2))}px`;
-		if (window.matchMedia('(max-width: 575.98px)').matches) {
-			card.removeAttribute('style');
-			return;
-		}
-		var gap = 14;
-		var left = rect.left + (rect.width - card.offsetWidth) / 2;
-		left = Math.max(12, Math.min(left, window.innerWidth - card.offsetWidth - 12));
-		var below = rect.bottom + gap;
-		var top = below + card.offsetHeight <= window.innerHeight - 12
-			? below
-			: Math.max(12, rect.top - card.offsetHeight - gap);
-		card.style.left = `${Math.round(left)}px`;
-		card.style.top = `${Math.round(top)}px`;
-	};
-	var schedulePosition = function () {
-		window.cancelAnimationFrame(resizeFrame);
-		resizeFrame = window.requestAnimationFrame(positionTour);
-	};
-	var renderCopy = function (element, value) {
-		element.replaceChildren();
-		String(value || '').split(/(\*\*[^*]+\*\*)/).forEach(function (part) {
-			if (part.slice(0, 2) === '**' && part.slice(-2) === '**') {
-				var strong = document.createElement('strong');
-				strong.textContent = part.slice(2, -2);
-				element.appendChild(strong);
-			} else if (part) {
-				element.appendChild(document.createTextNode(part));
-			}
-		});
-	};
-	var waitForCondition = function (condition, timeout) {
-		var startedAt = Date.now();
-		return new Promise(function (resolve) {
-			var check = function () {
-				if (condition() || Date.now() - startedAt >= (timeout || 1200)) {
-					resolve();
-					return;
-				}
-				window.setTimeout(check, 40);
-			};
-			check();
-		});
-	};
-	var ensureStudyHero = function () {
-		if (visibleTarget('.quran-selected-ayah-hero .quran-ayah-hero'))
-			return Promise.resolve();
-		var trigger = visibleTarget('.quran-passage-section .h[lang="ar"] .body.passage .quran-ayah-hero-trigger[data-quran-href]:not([data-quran-ref$=":0"])');
-		if (!trigger)
-			return Promise.resolve();
-		var detail = { trigger: trigger, promise: null };
-		document.dispatchEvent(new CustomEvent('quran:help-tour-open-hero', { detail: detail }));
-		return detail.promise || Promise.resolve();
-	};
-	var closeStudyModal = function () {
-		var modal = document.querySelector('.quran-ayah-modal.show');
-		if (!modal)
-			return Promise.resolve();
-		var close = modal.querySelector('[data-bs-dismiss="modal"]');
-		if (close)
-			close.click();
-		return waitForCondition(function () {
-			return !modal.classList.contains('show') && window.getComputedStyle(modal).display === 'none';
-		}, 1800).then(closeStudyModal);
-	};
-	var openStudyModal = function (type, selector) {
-		if (visibleTarget(selector))
-			return Promise.resolve();
-		return ensureStudyHero().then(function () {
-			var openTarget = function () {
-				var trigger = visibleTarget(`.quran-selected-ayah-hero [data-quran-ayah-modal-type="${type}"]`);
-				if (trigger)
-					trigger.click();
-				return waitForCondition(function () { return Boolean(visibleTarget(selector)); });
-			};
-			var shownModal = visibleTarget('.quran-ayah-modal.show');
-			if (!shownModal)
-				return openTarget();
-			if (shownModal.getAttribute('data-quran-ayah-modal-type') === type)
-				return waitForCondition(function () { return Boolean(visibleTarget(selector)); });
-			var switcher = visibleTarget(`.quran-ayah-modal.show [data-quran-ayah-modal-switch="${type}"]`);
-			if (switcher) {
-				switcher.click();
-				return waitForCondition(function () { return Boolean(visibleTarget(selector)); });
-			}
-			return closeStudyModal().then(openTarget);
-		});
-	};
-	var closeMemorizationMenus = function () {
-		document.querySelectorAll('[data-quran-ayah-state-toggle][aria-expanded="true"], [data-quran-surah-state][aria-expanded="true"], [data-quran-page-state][aria-expanded="true"]').forEach(function (trigger) {
-			trigger.click();
-		});
-		document.querySelectorAll('[data-quran-help-tour-assessment-preview]').forEach(function (menu) {
-			menu.removeAttribute('data-quran-help-tour-assessment-preview');
-		});
-		document.querySelectorAll('[data-quran-help-tour-temporary-trigger]').forEach(function (trigger) {
-			if (!trigger.hasAttribute('data-current-state')) trigger.hidden = true;
-			trigger.removeAttribute('data-quran-help-tour-temporary-trigger');
-		});
-	};
-	var openMemorizationMenu = function (type, requiredState) {
-		var menuSelectors = {
-			ayah: '[data-quran-ayah-state-menu]',
-			surah: '[data-quran-surah-state-menu]'
-		};
-		var triggerSelectors = {
-			ayah: '[data-quran-memorize-page] [data-quran-ayah-state-toggle]',
-			surah: '[data-quran-memorize-page] [data-quran-surah-state]'
-		};
-		var menuSelector = menuSelectors[type];
-		var baseTriggerSelector = triggerSelectors[type];
-		var triggerSelector = baseTriggerSelector;
-		if (requiredState === 'later') {
-			triggerSelector = type === 'ayah'
-				? '[data-quran-memorize-page] .quran-ayah-state-control[data-current-state="later"] [data-quran-ayah-state-toggle]'
-				: '[data-quran-memorize-page] [data-quran-surah-state][data-current-state="later"]';
-		} else if (requiredState === 'enrolled') {
-			triggerSelector = type === 'ayah'
-				? '[data-quran-memorize-page] .quran-ayah-state-control:not([data-current-state="later"]):not([data-current-state=""]) [data-quran-ayah-state-toggle]'
-				: '[data-quran-memorize-page] [data-quran-surah-state]:not([data-current-state="later"]):not([data-current-state=""])';
-		}
-		if (!menuSelector || !triggerSelector)
-			return Promise.resolve();
-		return waitForCondition(function () {
-			return Boolean(visibleTarget(triggerSelector) || visibleTarget(baseTriggerSelector)
-				|| type === 'surah' && document.querySelector(baseTriggerSelector));
-		}, 1200).then(function () {
-			closeMemorizationMenus();
-			var trigger = visibleTarget(triggerSelector);
-			var assessmentPreview = requiredState === 'later' && !trigger;
-			if (!trigger && assessmentPreview) trigger = visibleTarget(baseTriggerSelector);
-			if (!trigger && assessmentPreview && type === 'surah') {
-				trigger = document.querySelector(baseTriggerSelector);
-				if (trigger) {
-					trigger.hidden = false;
-					trigger.setAttribute('data-quran-help-tour-temporary-trigger', '1');
-				}
-			}
-			if (!trigger) return;
-			trigger.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
-			return new Promise(function (resolve) {
-				window.setTimeout(function () {
-					trigger.click();
-					waitForCondition(function () { return Boolean(visibleTarget(menuSelector)); }, 1200).then(function () {
-						if (assessmentPreview) {
-							var menu = document.querySelector(menuSelector);
-							var optionSelector = type === 'ayah' ? '[data-quran-ayah-state-option]' : '[data-quran-surah-state-option]';
-							var initialOptions = ['learning', 'weak', 'review', 'core', 'later'];
-							if (menu) {
-								menu.setAttribute('data-quran-help-tour-assessment-preview', '1');
-								menu.setAttribute('aria-label', 'Initial memorization self-assessment example');
-								menu.querySelectorAll(optionSelector).forEach(function (option) {
-									var optionState = option.getAttribute(type === 'ayah' ? 'data-quran-ayah-state-option' : 'data-quran-surah-state-option');
-									option.hidden = initialOptions.indexOf(optionState) === -1;
-									option.classList.remove('is-current');
-									option.setAttribute('aria-checked', 'false');
-								});
-							}
-						}
-						resolve();
-					});
-				}, 50);
-			});
-		});
-	};
-	var prepareStep = function (index) {
-		var step = steps[index];
-		if (mode === 'memorize') {
-			if (step.requiresMemorizationMenu)
-				return openMemorizationMenu(step.requiresMemorizationMenu, step.requiresMemorizationState);
-			closeMemorizationMenus();
-			return Promise.resolve();
-		}
-		if (mode !== 'study')
-			return Promise.resolve();
-		if (step.requiresPassage) {
-			return closeStudyModal().then(function () {
-				var displayedHero = visibleTarget('.quran-selected-ayah-hero .quran-ayah-hero');
-				if (!displayedHero)
-					return;
-				var closeDetail = { hero: displayedHero.closest('[data-quran-selected-ayah-hero]'), promise: null };
-				document.dispatchEvent(new CustomEvent('quran:help-tour-close-hero', { detail: closeDetail }));
-				return closeDetail.promise || Promise.resolve();
-			});
-		}
-		if (step.requiresModal)
-			return openStudyModal(step.requiresModal, step.selector);
-		if (step.requiresHero)
-			return closeStudyModal().then(ensureStudyHero);
-		return closeStudyModal();
-	};
-	var showStep = function (index) {
-		if (!tour) return;
-		var targetStep = Math.max(0, Math.min(index, steps.length - 1));
-		prepareStep(targetStep).catch(function () {}).then(function () {
-			if (!tour) return;
-			currentStep = targetStep;
-			var step = steps[currentStep];
-			var heading = tour.querySelector('[data-quran-help-tips-heading]');
-			var copy = tour.querySelector('[data-quran-help-tips-copy]');
-			var progress = tour.querySelector('[data-quran-help-tips-progress]');
-			var back = tour.querySelector('[data-quran-help-tips-back]');
-			var next = tour.querySelector('[data-quran-help-tips-next]');
-			heading.textContent = step.title;
-			renderCopy(copy, step.copy);
-			progress.textContent = `${currentStep + 1} of ${steps.length}`;
-			back.hidden = currentStep === 0;
-			next.textContent = currentStep === steps.length - 1 ? (step.actionLabel || 'Done') : 'Next';
-			activeTarget = visibleTarget(step.selector);
-			if (activeTarget && activeTarget.scrollIntoView)
-				activeTarget.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
-			window.requestAnimationFrame(function () {
-				positionTour();
-				next.focus();
-			});
-		});
-	};
-	var closeTour = function (dismissal) {
-		if (!tour) return;
-		if (mode === 'memorize') closeMemorizationMenus();
-		if (dismissal) rememberDismissal(dismissal);
-		window.cancelAnimationFrame(resizeFrame);
-		window.removeEventListener('resize', schedulePosition);
-		window.removeEventListener('scroll', schedulePosition, true);
-		document.removeEventListener('keydown', handleKeydown);
-		tour.remove();
-		tour = null;
-		activeTarget = null;
-		if (previousFocus && previousFocus.focus) previousFocus.focus();
-	};
-	var handleKeydown = function (event) {
-		if (!tour) return;
-		if (event.key === 'Escape') {
-			event.preventDefault();
-			closeTour('session');
-			return;
-		}
-		if (event.key !== 'Tab') return;
-		var controls = Array.from(tour.querySelectorAll('button:not([hidden])'));
-		if (!controls.length) return;
-		var first = controls[0];
-		var last = controls[controls.length - 1];
-		if (event.shiftKey && document.activeElement === first) {
-			event.preventDefault();
-			last.focus();
-		} else if (!event.shiftKey && document.activeElement === last) {
-			event.preventDefault();
-			first.focus();
-		}
-	};
-	var startTour = function () {
-		if (tour || document.querySelector('#notebook-modal.show')) return;
-		previousFocus = document.activeElement;
-		tour = document.createElement('div');
-		tour.className = 'quran-help-tips';
-		tour.setAttribute('data-quran-help-tips', mode);
-		tour.innerHTML = '<div class="quran-help-tips-click-shield" aria-hidden="true"></div>'
-			+ '<div class="quran-help-tips-spotlight" data-quran-help-tips-spotlight aria-hidden="true"></div>'
-			+ '<section class="quran-help-tips-card" data-quran-help-tips-card role="dialog" aria-modal="true" aria-labelledby="quran-help-tips-heading" aria-describedby="quran-help-tips-copy">'
-			+ '<button type="button" class="quran-help-tips-close" data-quran-help-tips-close aria-label="Dismiss tips for this session"><span class="bi bi-x-lg" aria-hidden="true"></span></button>'
-			+ `<span class="quran-help-tips-kicker">${labels[mode]} guide</span>`
-			+ '<h2 id="quran-help-tips-heading" data-quran-help-tips-heading></h2>'
-			+ '<p id="quran-help-tips-copy" data-quran-help-tips-copy></p>'
-			+ '<div class="quran-help-tips-footer"><span class="quran-help-tips-progress" data-quran-help-tips-progress></span>'
-			+ '<div class="quran-help-tips-nav-actions">'
-			+ '<button type="button" class="btn btn-sm btn-outline-secondary" data-quran-help-tips-back>Back</button>'
-			+ `<button type="button" class="btn btn-sm ${mode === 'review' ? 'btn-success' : 'btn-primary'}" data-quran-help-tips-next>Next</button>`
-			+ '</div><div class="quran-help-tips-dismiss-actions">'
-			+ '<button type="button" class="btn btn-sm btn-link" data-quran-help-tips-dismiss aria-label="Dismiss this tour for the current browser session">Hide for now</button>'
-			+ '<span aria-hidden="true">·</span>'
-			+ '<button type="button" class="btn btn-sm btn-link" data-quran-help-tips-dismiss-permanent aria-label="Permanently stop showing this tour automatically for your account">Don\'t show again</button>'
-			+ '</div></div></section>';
-		document.body.appendChild(tour);
-		tour.addEventListener('click', function (event) {
-			if (event.target.closest('[data-quran-help-tips-dismiss-permanent]')) {
-				closeTour('permanent');
-				return;
-			}
-			if (event.target.closest('[data-quran-help-tips-close], [data-quran-help-tips-dismiss]')) {
-				closeTour('session');
-				return;
-			}
-			if (event.target.closest('[data-quran-help-tips-back]')) {
-				showStep(currentStep - 1);
-				return;
-			}
-			if (event.target.closest('[data-quran-help-tips-next]')) {
-				if (currentStep === steps.length - 1) {
-					var finalStep = steps[currentStep];
-					var finalTarget = activeTarget;
-					closeTour('session');
-					if (finalStep.action === 'click-target' && finalTarget) finalTarget.click();
-				}
-				else showStep(currentStep + 1);
-			}
-		});
-		window.addEventListener('resize', schedulePosition);
-		window.addEventListener('scroll', schedulePosition, true);
-		document.addEventListener('keydown', handleKeydown);
-		showStep(0);
-	};
-	document.addEventListener('click', function (event) {
-		var trigger = event.target.closest('[data-page-help-tour-trigger]');
-		if (!trigger || trigger.getAttribute('data-page-help-tour-trigger') !== mode) return;
-		event.preventDefault();
-		startTour();
-	});
-	if (wasPermanentlyDismissedLocally()) {
-		savePermanentDismissal().catch(function () {});
-	} else if (!wasDismissedLocally()) {
-		wasDismissedForUser().then(function (dismissed) {
-			if (!dismissed && !wasDismissedLocally()) window.setTimeout(startTour, 450);
-		});
-	}
-}
-
 function initQuranMushafAyahMarkerActions(root) {
 	if (document.documentElement.dataset.quranMushafAyahMarkerActionsBound === '1')
 		return;
@@ -11618,7 +11215,7 @@ function initQuranReaderBar() {
 	if (!bar) return;
 	updateQuranReaderModeHrefs(document.querySelector('main'));
 	bar.addEventListener('click', function (event) {
-		if (event.target.closest('[data-quran-reader-mode-link], [href="#quran-navigation-rail"]'))
+		if (event.target.closest('[data-quran-reader-mode-link], .quran-mode-picker, [aria-controls="quran-navigation-rail"]'))
 			updateQuranReaderModeHrefs(bar.quranReaderMarker || document.querySelector('main'));
 	});
 }
@@ -12437,9 +12034,10 @@ function fitQuranMushafLines(root) {
 			});
 			if (items.length < 1)
 				return;
-			var itemRects = items.map(function (item) { return item.getBoundingClientRect(); });
-			var required = Math.max.apply(null, itemRects.map(function (rect) { return rect.right; }))
-				- Math.min.apply(null, itemRects.map(function (rect) { return rect.left; }));
+			// Use layout coordinates. A page-turn transform changes screen rectangles
+			// while the width available for typesetting stays the same.
+			var required = Math.max(...items.map(item => item.offsetLeft + item.offsetWidth))
+				- Math.min(...items.map(item => item.offsetLeft));
 			var available = line.clientWidth;
 			if (required <= available + .5)
 				return;
@@ -12895,29 +12493,6 @@ function initQuranDynamicPassageHero(root) {
 			pendingRequest = null;
 		});
 	};
-	document.addEventListener('quran:help-tour-open-hero', function (event) {
-		var detail = event.detail || {};
-		var trigger = detail.trigger;
-		if (!trigger || !trigger.matches('.quran-passage-section .body.passage .quran-ayah-hero-trigger[data-quran-href]'))
-			return;
-		var ayah = trigger.closest('.ayah');
-		var href = trigger.getAttribute('data-quran-href') || ayah && ayah.getAttribute('data-quran-href') || '';
-		if (!/\/quran:\d+:\d+$/.test(new URL(href, window.location.origin).pathname))
-			return;
-		detail.promise = loadAyahHero(href, false, heroForTrigger(trigger));
-	});
-	document.addEventListener('quran:help-tour-close-hero', function (event) {
-		var detail = event.detail || {};
-		var hero = detail.hero ? $(detail.hero) : $('[data-quran-selected-ayah-hero]').filter(function () {
-			return quranSelectedAyahHeroIsDisplayed(this);
-		}).first();
-		if (!hero.length)
-			return;
-		var href = hero.attr('data-quran-clear-href') || '';
-		clearSelectedAyahHero(href, false, hero);
-		detail.promise = Promise.resolve();
-	});
-
 	var initialSelectedRef = selectedRefFromPath();
 	setSelectedPassageAyah(initialSelectedRef);
 	setMushafSearchAyahHighlight(initialSelectedRef);
@@ -13023,8 +12598,10 @@ function initQuranInfinitePassageNavigation(root) {
 
 	var status = $('<div class="quran-infinite-status text-muted small" aria-live="polite"></div>').appendTo(main);
 	var sentinel = $('<div class="quran-infinite-sentinel" aria-hidden="true"></div>').appendTo(main);
+	var translationPicker = main[0].querySelector('[data-quran-passage-translation-select]');
 	var initialAnchor = $('<span class="quran-infinite-url-marker" aria-hidden="true" data-quran-infinite-anchor="1"></span>').attr({
 		'data-quran-url': currentUrl,
+		'data-study-path': translationPicker && translationPicker.dataset.passagePath,
 		'data-page-title': document.title,
 		'data-quran-surah': lastSurah,
 		'data-quran-prev-url': main.attr('data-quran-prev-url') || '',
@@ -13102,6 +12679,8 @@ function initQuranInfinitePassageNavigation(root) {
 		var marker = pageMarkers()[currentPageIndex()];
 		var url = marker && marker.getAttribute('data-quran-url');
 		var normalized = normalizeQuranInfiniteUrl(url);
+		if (translationPicker && marker && marker.dataset.studyPath)
+			translationPicker.dataset.passagePath = marker.dataset.studyPath;
 		updateLazyReaderDocumentTitle(marker && marker.getAttribute('data-page-title'));
 		if (!window.history || !window.history.replaceState)
 			return;
@@ -13220,6 +12799,7 @@ function initQuranInfinitePassageNavigation(root) {
 			// The fetched document lives under /quran/api, but browser history must
 			// retain the public passage URL that initiated the request.
 			'data-quran-url': url,
+			'data-study-path': remoteMain.querySelector('[data-quran-passage-translation-select]')?.dataset.passagePath,
 			'data-page-title': parsed.title || '',
 			'data-quran-surah': remoteSurah,
 			'data-quran-prev-url': publicQuranInfiniteUrl(remoteMain.getAttribute('data-quran-prev-url') || ''),
@@ -13268,7 +12848,7 @@ function initQuranInfinitePassageNavigation(root) {
 		remoteChildren.forEach(function (node) {
 			if (!node.matches || nodes.indexOf(node) >= 0)
 				return;
-			if (node.matches('.quran-heading-audio-toolbar') || node.matches('.quran-passage-section') || node.matches('.quran-passage-actions') || node.matches('.quran-share-root') || node.matches('.quran-passage-separator'))
+			if (node.matches('.quran-study-passage') || node.matches('.quran-heading-audio-toolbar') || node.matches('.quran-passage-section') || node.matches('.quran-passage-actions') || node.matches('.quran-share-root') || node.matches('.quran-passage-separator'))
 				nodes.push(node);
 		});
 		if (reflectionSection)
@@ -13294,6 +12874,7 @@ function initQuranInfinitePassageNavigation(root) {
 			chunk[0].appendChild(imported);
 		});
 		chunk.insertBefore(status);
+		initQuranPreferredTranslationDisplays(chunk[0]);
 		initQuranAyahHoverPairs(chunk[0]);
 		initQuranAyahSelector(chunk[0]);
 		initQuranPassageDisplayToggles(chunk[0]);
@@ -13434,6 +13015,7 @@ function initReaderInfiniteNavigation(root) {
 		var currentUrl = main.attr('data-reader-current-url') || `${window.location.pathname}${window.location.search}`;
 		var activeUrl = normalizeReaderInfiniteUrl(currentUrl);
 		var lastContextKey = main.attr('data-reader-context-key') || '';
+		var lastChapterPath = main.find('[data-reader-chapter]').last().attr('data-reader-chapter');
 		loadedUrls.add(activeUrl);
 
 		var status = $('<div class="reader-infinite-status text-muted small" aria-live="polite"></div>').appendTo(main);
@@ -13692,6 +13274,12 @@ function initReaderInfiniteNavigation(root) {
 			});
 			if (!chunk[0].children.length)
 				throw new Error('Next hadith page did not include readable content.');
+			chunk.find('[data-reader-chapter]').each(function () {
+				var path = this.getAttribute('data-reader-chapter');
+				if (path && path === lastChapterPath)
+					this.remove();
+				lastChapterPath = path;
+			});
 		};
 		var reinitializeChunk = function (chunk) {
 			initMarkdownEditablePreviews(chunk);
@@ -13762,6 +13350,8 @@ function initReaderInfiniteNavigation(root) {
 			chunk.insertBefore(status);
 			loadedUrls.add(remoteIdentity);
 			reinitializeChunk(chunk[0]);
+			if (mode === 'hadith-sharh')
+				initBookCarouselFilters(chunk[0]);
 			if (mode.indexOf('hadith-') === 0)
 				scheduleHadithHeadingTocUpdate();
 			window.requestAnimationFrame(scheduleInfiniteWork);
@@ -14390,6 +13980,9 @@ function initQuranCorpusTooltipDelay(root) {
 		var text = tooltipText(word);
 		if (!text)
 			return;
+		if (!word[0].isConnected || word.closest('dialog:not([open])').length) return;
+		var host = word[0].closest('dialog[open]') || document.body;
+		if (tooltip.parent()[0] !== host) tooltip.appendTo(host);
 		var rect = word[0].getBoundingClientRect();
 		tooltip.text(text).removeAttr('hidden').data('quranCorpusTooltipTarget', word[0]);
 		var tooltipRect = tooltip[0].getBoundingClientRect();
@@ -14644,7 +14237,7 @@ function initQuranAyahSelector(root) {
 		$(document).on('keydown.quranPageKeyboardNavigation', function (event) {
 			if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
 				return;
-			if ($('.modal.show').length)
+			if (document.querySelector('dialog[open], .modal.show'))
 				return;
 			var targetInAyahHero = $(event.target).closest('.quran-ayah-hero').length > 0;
 			if (!targetInAyahHero && $(event.target).closest('input, textarea, select, button, [contenteditable="true"], ._e').length)
@@ -14675,7 +14268,7 @@ function initQuranAyahSelector(root) {
 
 	function applyBookCarouselFilter(filter) {
 		var menu = filter.closest('.h-menu');
-		var query = normalizeBookCarouselFilterText(filter.find('.book-carousel-filter-input').val());
+		var query = normalizeBookCarouselFilterText(filter.find('input[type=search]').val());
 		var items = menu.children('[data-book-carousel-item]');
 		items.each(function () {
 			var item = $(this);
@@ -14737,7 +14330,7 @@ function initQuranAyahSelector(root) {
 			if (filter.data('bookCarouselFilterBound'))
 				return;
 			filter.data('bookCarouselFilterBound', true);
-			filter.on('input search', '.book-carousel-filter-input', function () {
+			filter.on('input search', 'input[type=search]', function () {
 				setDirection($(this));
 				applyBookCarouselFilter(filter);
 			});
@@ -15021,11 +14614,52 @@ function initQuranAyahSelector(root) {
 		if ($input.data('autocompleteBound'))
 			return;
 		$input.data('autocompleteBound', true);
+		const bookSearch = () => $commandDialog.is('[open][data-book-search]');
+		const fetchBookMatches = term => $.getJSON('/quran/api/autocomplete', {q: term, b: 'quran', limit: 10}).then(bookMatches);
+		const bookMatches = rows => rows.filter(item => item.is_quran && item.mushaf_page && /^quran:\d+:\d+(?:-\d+)?$/.test(item.ref));
+		function feedback(message) {
+			const hint = $commandDialog.find('[data-book-search-feedback]')[0];
+			hint.textContent = message;
+			hint.hidden = !message;
+		}
+		function openMatch(item) {
+			const book = document.querySelector('#mushaf-book[open]');
+			if (!bookSearch() || !book) return;
+			$input.autocomplete('close');
+			$commandDialog[0].close();
+			book.dispatchEvent(new CustomEvent('mushaf-search-match', {detail: item}));
+		}
+		let submission = 0;
+		input.addEventListener('input', () => {
+			submission++;
+			if (bookSearch()) feedback('');
+		});
+		$commandDialog.on('close', () => { submission++; });
+		input.addEventListener('booksearchsubmit', () => {
+			const term = input.value.trim();
+			if (!bookSearch() || !term) return;
+			const request = ++submission;
+			fetchBookMatches(term).done(rows => {
+				if (!bookSearch() || request !== submission) return;
+				const item = rows[0];
+				if (item) openMatch(item);
+				else feedback('No matching ayah or surah found.');
+			}).fail(() => {
+				if (bookSearch() && request === submission) feedback('Search could not load. Try again.');
+			});
+		});
 		$input.on('keydown', function (event) {
 			if (event.key !== 'Enter')
 				return;
 			var $widget = $input.autocomplete('widget');
 			var activeItem = $widget.is(':visible') ? $widget.find('.ui-state-active').closest('li').data('ui-autocomplete-item') : null;
+			if (bookSearch()) {
+				event.preventDefault();
+				event.stopImmediatePropagation();
+				if (activeItem && $widget.is(':visible') && $input.autocomplete('instance').term === input.value) openMatch(activeItem);
+				else input.dispatchEvent(new Event('booksearchsubmit'));
+				return;
+			}
 			if (activeItem && activeItem.url) {
 				event.preventDefault();
 				var activeLink = $widget.find('.ui-state-active').closest('a[href]').get(0);
@@ -15051,6 +14685,12 @@ function initQuranAyahSelector(root) {
 			delay: 180,
 			minLength: 2,
 			source: function (request, response) {
+				if (bookSearch()) {
+					fetchBookMatches(request.term)
+						.done(rows => response(bookSearch() ? rows : []))
+						.fail(() => response([]));
+					return;
+				}
 				$.getJSON(searchAutocompletePath($input), buildSearchAutocompleteParams($input, request.term))
 					.done(response)
 					.fail(function () {
@@ -15061,6 +14701,7 @@ function initQuranAyahSelector(root) {
 				event.preventDefault();
 			},
 			select: function (event, ui) {
+				if (bookSearch()) { event.preventDefault(); openMatch(ui.item); return; }
 				if (ui.item.url) {
 					var nativeLink = event.originalEvent && event.originalEvent.target && event.originalEvent.target.closest
 						? event.originalEvent.target.closest('a[href]')
@@ -15085,7 +14726,7 @@ function initQuranAyahSelector(root) {
 			}
 		}).autocomplete('instance')._renderItem = function (ul, item) {
 			var $item = $('<li>');
-			var $row = item.url
+			var $row = item.url && !bookSearch()
 				? $('<a>').attr('href', searchAutocompleteDestination($input, item))
 				: $('<div>');
 			$row.addClass('search-autocomplete-item');
@@ -15181,6 +14822,7 @@ function isQuranSearchInput($input) {
 }
 
 function isQuranSearchForm($form) {
+	if ($form.attr('data-search-collection')) return $form.attr('data-search-collection') === 'quran';
 	var action = ($form.attr('action') || '').toString();
 	if (!action)
 		return false;
@@ -17794,6 +17436,12 @@ function initHadithShareModals(root) {
 
 		if (arabicSwitch) {
 			arabicSwitch.addEventListener('change', function () {
+				var slider = modal.querySelector('[data-share-size-disable-target="' + languageToggle + '"]');
+				if (slider) {
+					slider.value = arabicSwitch.checked ? (slider.dataset.lastVisibleSize || slider.defaultValue) : '0';
+					slider.dispatchEvent(new Event('input', { bubbles: true }));
+					return;
+				}
 				updateHadithShareArabicState(modal, card, arabicSwitch, languageToggle);
 				scheduleHadithShareCardFit(card);
 				scheduleHadithShareRender(card);
@@ -17802,6 +17450,7 @@ function initHadithShareModals(root) {
 
 		sizeControls.forEach(function (control) {
 			control.addEventListener('input', function () {
+				invalidateHadithShareRender(card);
 				updateHadithShareSizeState(card, sizeControls);
 				scheduleHadithShareCardFit(card);
 				scheduleHadithShareRender(card);
@@ -17881,6 +17530,7 @@ function invalidateHadithShareRender(card) {
 	if (!card)
 		return;
 	window.clearTimeout(card._shareRenderTimer);
+	card._shareRenderRevision = (card._shareRenderRevision || 0) + 1;
 	card._shareBlob = null;
 	card._shareFile = null;
 	card._shareRendering = false;
@@ -17905,6 +17555,7 @@ async function renderHadithShareImage(card) {
 		return null;
 	if (card._shareRenderPromise)
 		return card._shareRenderPromise;
+	var revision = card._shareRenderRevision;
 	card._shareRendering = true;
 	card._shareRenderPromise = (async function () {
 		var modal = card.closest('.hadith-share-modal');
@@ -17926,17 +17577,21 @@ async function renderHadithShareImage(card) {
 			});
 			var blob = await canvasToBlob(canvas);
 			var filename = getHadithShareFilename(card.dataset.shareRef);
-			card._shareBlob = blob;
-			card._shareFile = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
+			if (revision === card._shareRenderRevision) {
+				card._shareBlob = blob;
+				card._shareFile = window.File ? new File([blob], filename, { type: 'image/png' }) : null;
+			}
 			return blob;
 		} finally {
 			visibleLogoRemoveButtons.forEach(function (button) {
 				button.hidden = false;
 				button.style.display = 'inline-flex';
 			});
-			card.classList.remove('is-exporting');
-			card._shareRendering = false;
-			card._shareRenderPromise = null;
+			if (revision === card._shareRenderRevision || !card._shareRenderPromise) {
+				card.classList.remove('is-exporting');
+				card._shareRendering = false;
+				card._shareRenderPromise = null;
+			}
 		}
 	})();
 	return card._shareRenderPromise;
@@ -17970,28 +17625,20 @@ function updateHadithShareSizeState(card, controls) {
 		var value = Number(control.value);
 		if (!Number.isFinite(value))
 			value = 100;
-		if (control.dataset.shareSizeDisableTarget === 'arabic') {
-			var hideArabic = value <= 0;
-			var modal = card.closest('.hadith-share-modal') || document;
-			modal.querySelectorAll('.hadith-share-arabic-section').forEach(function (section) {
-				section.classList.toggle('d-none', hideArabic);
+		var target = control.dataset.shareSizeDisableTarget;
+		var sectionClass = { arabic: 'hadith-share-arabic-section', english: 'quran-share-english-section', translation: 'hadith-share-translation-section' }[target];
+		if (sectionClass) {
+			var hidden = value <= 0;
+			card.querySelectorAll('.' + sectionClass).forEach(function (section) {
+				section.classList.toggle('d-none', hidden);
 			});
-			card.classList.toggle('hadith-share-english-only', hideArabic);
-			if (hideArabic) {
-				card.style.setProperty(prop, '1.00');
-				return;
-			}
-		}
-		if (control.dataset.shareSizeDisableTarget === 'translation') {
-			var hideTranslations = value <= 0;
-			var translationModal = card.closest('.hadith-share-modal') || document;
-			translationModal.querySelectorAll('.hadith-share-translation-section').forEach(function (section) {
-				section.classList.toggle('d-none', hideTranslations);
-			});
-			card.classList.toggle('hadith-share-arabic-only', hideTranslations);
-			if (hideTranslations) {
-				card.style.setProperty(prop, '1.00');
-				return;
+			var layoutClass = { arabic: 'hadith-share-english-only', english: 'quran-share-arabic-only', translation: 'hadith-share-arabic-only' }[target];
+			card.classList.toggle(layoutClass, hidden);
+			control.setAttribute('aria-valuetext', hidden ? 'Off' : value + '%');
+			if (target === 'english') {
+				var toggle = card.closest('.hadith-share-modal').querySelector('[data-share-language-toggle="english"]');
+				if (toggle) toggle.checked = !hidden;
+				if (!hidden) control.dataset.lastVisibleSize = control.value;
 			}
 		}
 		if (value <= 0)
@@ -18321,7 +17968,7 @@ function openBookPrintRange() {
 	pane.id = 'book-print-range';
 	pane.className = 'content-share-pane';
 	pane.setAttribute('aria-labelledby', 'book-print-heading');
-	pane.innerHTML = '<form><header><h2 id="book-print-heading">Print book</h2><button type="button" data-cancel class="content-share-close" aria-label="Close">×</button></header>'
+	pane.innerHTML = '<form><header><h2 id="book-print-heading">Print book</h2><button type="button" data-cancel class="ux-overlay-close content-share-close" aria-label="Close"></button></header>'
 		+ '<p>Choose an inclusive range to print.</p><label class="d-block mb-3">Print <select name="kind" class="form-select"><option value="sections">Sections in this chapter</option><option value="chapters">Chapters</option></select></label>'
 		+ '<p data-chapter></p><div class="d-flex gap-3 mb-3"><label>Start <input class="form-control" name="start" type="number" min="0" step="any" required></label><label>End <input class="form-control" name="end" type="number" min="0" step="any" required></label></div>'
 		+ '<p role="status" aria-live="polite"></p><div class="d-flex flex-wrap gap-2"><button class="btn btn-primary" type="submit">Print range</button><button class="btn btn-outline-secondary" type="button" data-current>Print current page</button><button class="btn btn-outline-secondary" type="button" data-cancel>Cancel</button></div></form>';
@@ -18430,7 +18077,7 @@ function openContentSharePane(modalRoot, card) {
 		pane.id = 'content-share-pane';
 		pane.className = 'content-share-pane';
 		pane.setAttribute('aria-labelledby', 'content-share-heading');
-		pane.innerHTML = '<header><h2 id="content-share-heading">Share</h2><button type="button" class="content-share-close" aria-label="Close"><i class="bi bi-x-lg" aria-hidden="true"></i></button></header><p class="content-share-source" dir="auto"></p><div class="content-share-options"></div><p class="content-share-status" role="status" aria-live="polite"></p>';
+		pane.innerHTML = '<header><h2 id="content-share-heading">Share</h2><button type="button" class="ux-overlay-close content-share-close" aria-label="Close"></button></header><p class="content-share-source" dir="auto"></p><div class="content-share-options"></div><p class="content-share-status" role="status" aria-live="polite"></p>';
 		document.body.appendChild(pane);
 		pane.querySelector('.content-share-close').addEventListener('click', function () { pane.close(); });
 		pane.addEventListener('click', function (event) { if (event.target === pane) { var rect = pane.getBoundingClientRect(); if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) pane.close(); } });

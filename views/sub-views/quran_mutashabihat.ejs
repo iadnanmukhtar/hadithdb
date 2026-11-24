@@ -33,7 +33,7 @@
 			<footer>Repeated <%= plural(phrase.occurrenceCount, 'time', 'times') %> in <%= plural(phrase.ayahCount, 'ayah', 'ayat') %> across <%= plural(phrase.surahCount, 'surah', 'surahs') %>.</footer>
 			<% if (phrase.matches.length > 0) { %>
 			<details class="quran-mutashabihat-matches">
-				<summary>View matching ayat <span><%= phrase.matches.length %></span></summary>
+				<summary>View matching ayat <span class="ux-pill"><%= phrase.matches.length %></span></summary>
 				<div class="quran-mutashabihat-match-list">
 					<% phrase.matches.forEach(function (match) {
 						var ayah = match.item;

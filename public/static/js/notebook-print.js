@@ -19,13 +19,14 @@
         @page { margin: 18mm; }
         * { box-sizing: border-box; }
         html { font-size: 12pt; }
-        body { margin: 0; color: #111; background: white; font: 1rem/1.8 Georgia, "Times New Roman", serif; }
+        body { margin: 0; color: #111; background: white; font: 1rem/1.8 Georgia, "Times New Roman", Kitab, serif; }
         main { max-width: 48rem; margin: 2rem auto; padding: 0 1rem; overflow-wrap: anywhere; }
         aside { padding: .75rem 1rem; background: #f3f3f3; font: 14px/1.5 system-ui, sans-serif; }
         button { margin-inline-end: 1rem; padding: .4rem .7rem; cursor: pointer; }
         .metadata { font-size: .85rem; color: #444; margin-block: .5rem; }
         header { border-bottom: 1px solid #ccc; padding-bottom: 1rem; margin-bottom: 1.5rem; }
         header h1 { margin: 0; font-size: 1.4rem; }
+        header h1:dir(rtl) { font-family: Kitab, serif; }
         .notebook-markdown { --note-ink: #111; --note-link: #111; --note-edge: #999; }
         .notebook-markdown mark { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
         .notebook-markdown pre { white-space: pre-wrap; overflow-wrap: anywhere; }
@@ -38,17 +39,18 @@
         .notebook-expand-reference, .footnote-backref { display: none; }
         @media print { aside { display: none; } main { max-width: none; margin: 0; padding: 0; } }
       `;
-      const stylesheet = doc.createElement('link');
-      stylesheet.rel = 'stylesheet';
       const version = document.querySelector('link[href*="/static/css/"]')?.href;
-      stylesheet.href = location.origin + '/static/css/markdown-content.css' + (version ? new URL(version).search : '');
-      const stylesReady = new Promise((resolve, reject) => {
-        stylesheet.onload = resolve;
-        stylesheet.onerror = () => reject(new Error('Unable to load print styles. Please try again.'));
-      });
+      const stylesReady = Promise.all(['kitab', 'hafs', 'ux-foundations', 'markdown-content'].map(name => new Promise((resolve, reject) => {
+        const sheet = doc.createElement('link');
+        sheet.rel = 'stylesheet';
+        sheet.href = location.origin + '/static/css/' + name + '.css' + (version ? new URL(version).search : '');
+        sheet.onload = resolve;
+        sheet.onerror = () => reject(new Error('Unable to load print styles. Please try again.'));
+        doc.head.append(sheet);
+      })));
       // Attach the rejection handler before rendering may await authentication.
       stylesReady.catch(() => {});
-      doc.head.append(stylesheet, style);
+      doc.head.append(style);
       try {
         const result = await render();
         if (popup.closed) return;
@@ -80,6 +82,8 @@
         if (appearance) {
           doc.documentElement.style.fontSize = getComputedStyle(document.documentElement).fontSize;
           article.style.fontSize = appearance.fontSize;
+          article.style.setProperty('--reader-note-size', 'calc(.84 * ' + appearance.fontSize + ')');
+          article.style.setProperty('--reader-note-arabic-size', appearance.fontSize);
           article.style.fontFamily = appearance.fontFamily;
           article.style.lineHeight = appearance.lineHeight;
           article.style.setProperty('--note-ink', appearance.color);

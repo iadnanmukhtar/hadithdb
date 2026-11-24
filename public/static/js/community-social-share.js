@@ -12,7 +12,7 @@
       pane.id = 'community-social-share';
       pane.className = 'content-share-pane';
       pane.setAttribute('aria-labelledby', 'community-social-share-heading');
-      pane.innerHTML = '<header><h2 id="community-social-share-heading">Share</h2><button type="button" class="content-share-close" aria-label="Close"><i class="bi bi-x-lg" aria-hidden="true"></i></button></header><p class="content-share-source" dir="auto"></p><div class="content-share-options"></div><p class="content-share-status" role="status" aria-live="polite"></p>';
+      pane.innerHTML = '<header><h2 id="community-social-share-heading">Share</h2><button type="button" class="ux-overlay-close content-share-close" aria-label="Close"></button></header><p class="content-share-source" dir="auto"></p><div class="content-share-options"></div><p class="content-share-status" role="status" aria-live="polite"></p>';
       document.body.append(pane);
       pane.querySelector('.content-share-close').addEventListener('click', () => pane.close());
       pane.addEventListener('click', e => {

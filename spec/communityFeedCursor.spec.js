@@ -4,7 +4,7 @@ const source=fs.readFileSync('public/static/js/community.js','utf8');
 const start=source.indexOf('  async function loadFeed('),end=source.indexOf('\n  }',start)+4;
 function setup(){
  const dom=new JSDOM('<div id="feed"></div><select id="filter"><option value="all">All</option></select><p id="feed-status"></p><button id="more"></button>');
- const ctx=vm.createContext({URLSearchParams,loadingFeed:false,feedEpoch:0,feedObserver:null,offset:0,feedCursor:null,firstBatchMicroOnly:false,view:'everyone',feedKeys:new Set(),reactionRun:null,feedHasMore:false,
+ const ctx=vm.createContext({URLSearchParams,location:dom.window.location,loadingFeed:false,feedEpoch:0,feedObserver:null,offset:0,feedCursor:null,firstBatchMicroOnly:false,view:'everyone',feedKeys:new Set(),reactionRun:null,feedHasMore:false,
   $:id=>dom.window.document.getElementById(id),api:jest.fn(),microType:item=>item.micro,observeFeedEnd:jest.fn(),node:tag=>dom.window.document.createElement(tag),appendFeedCard:item=>{const el=dom.window.document.createElement('article');dom.window.document.getElementById('feed').append(el);return !item.collapsed;}});
  vm.runInContext(source.slice(start,end),ctx);return {dom,ctx};
 }

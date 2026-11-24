@@ -1,0 +1,45 @@
+/* Originals from https://fonts.nuqayah.com/ as served by tafsir.app (?v3).
+   Build Medium with bin/utils/build-kitab-medium.py. Keep each phrase face
+   in the same weight range as its base face for Unicode subset matching. */
+@font-face {
+  font-family: Kitab;
+  src: url("../fonts/kitab-base.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 100 449;
+}
+
+@font-face {
+  font-family: Kitab;
+  src: url("../fonts/kitab-medium.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 450 599;
+}
+
+@font-face {
+  font-family: Kitab;
+  src: url("../fonts/kitab-base-b.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 600 1000;
+}
+
+@font-face {
+  font-family: Kitab;
+  src: url("../fonts/kitab-phrases.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 100 449;
+  unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
+}
+@font-face {
+  font-family: Kitab;
+  src: url("../fonts/kitab-phrases.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 450 599;
+  unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
+}
+@font-face {
+  font-family: Kitab;
+  src: url("../fonts/kitab-phrases.woff2?v=3") format("woff2");
+  font-display: swap;
+  font-weight: 600 1000;
+  unicode-range: U+06DE,U+06E9,U+E100-E103,U+FD40-FD45,U+FD47-FD4F,U+FDFA-FDFB,U+FDFD-FDFF;
+}

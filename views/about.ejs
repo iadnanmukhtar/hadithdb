@@ -21,18 +21,18 @@
       <a href="https://quran.islamunlocked.com/quran" title="Quran Unlocked"><img src="/static/img/quran-logo2.svg" width="80" height="80" alt="Quran Unlocked"></a>
       <a href="<%= utils.quranUrl(req, '/quran/review') %>" title="Mudhakkir"><img src="/static/img/quran/mudhakkir.svg" width="80" height="80" alt="Mudhakkir"></a>
     </div>
-    <h1>About <%= quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked' %></h1>
+    <h1 class="ux-page-title">About <%= quranAbout ? 'Quran Unlocked' : 'Hadith Unlocked' %></h1>
     <p class="lead">Read with context. Follow the sources. Build a lasting connection with what you learn.</p>
     <p>Hadith Unlocked and Quran Unlocked bring Islamic texts and study tools together. Created and maintained by Adnan Mukhtar, the project helps readers explore Arabic texts, translations, and scholarly commentary, with references they can follow and study for themselves.</p>
 
     <section class="mt-4" aria-labelledby="about-hadith">
       <h2 id="about-hadith" class="fs-4">Hadith Unlocked</h2>
-      <p>Search hadith collections in Arabic and English, browse books and chapters, compare related narrations, and explore available narrator information, grades, and explanations. Source references keep the original works within reach.</p>
+      <p>Search hadith collections in Arabic and English, browse books and chapters, compare related narrations, and explore available narrator information, grades, and explanations. Use the references to return to the original works. Sign in to bookmark a narration, highlight a passage, or write a reflection.</p>
       <a href="https://hadithunlocked.com/books">Browse the hadith library →</a>
     </section>
     <section class="mt-4" aria-labelledby="about-quran">
       <h2 id="about-quran" class="fs-4">Quran Unlocked</h2>
-      <p>Read the Qurʾān by surah, connected passage, or Mushaf page. Compare translations, explore classical tafsir in Arabic and English, listen to recitations, and save highlights, bookmarks, and reflections as you study.</p>
+      <p>Read the Qurʾān by surah, connected passage, or Mushaf page. Compare translations, explore classical tafsir in Arabic and English, listen to recitations, and save highlights, bookmarks, and reflections as you study. You can also share an ayah with its reference.</p>
       <a href="https://quran.islamunlocked.com/quran">Open the Qurʾān table of contents →</a>
     </section>
     <section class="mt-4" aria-labelledby="about-mudhakkir">
@@ -51,7 +51,6 @@
       <p>For questions, corrections, or feedback, contact <a href="mailto:adnanmukhtar@gmail.com">adnanmukhtar@gmail.com</a>.</p>
     </section>
   </main>
-  <%- include('sub-views/footer.ejs', { site, page }); %>
-  <%- include('sub-views/scripts.ejs', { site, page }); %>
+  <%- include('sub-views/page_end.ejs', { site, page }); %>
 </body>
 </html>

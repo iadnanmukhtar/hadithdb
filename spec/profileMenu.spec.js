@@ -20,6 +20,7 @@ test('signed-in menus preserve destinations on desktop/mobile and sign-out remov
  w.renderMenu({displayName:'User',photoURL:'https://example.test/photo.png'});
  expect(w.document.querySelectorAll('[data-profile-menu]')).toHaveLength(2);
  for(const menu of w.document.querySelectorAll('[data-profile-menu]')){
+  expect(menu.querySelector('[data-profile-link]').textContent).toBe('Profile');
   expect(menu.querySelector('[data-profile-link]').href).toBe('https://hadith.test/community/mine');
   expect(menu.querySelector('[data-settings-link]').pathname).toBe('/quran/settings');
   expect(menu.querySelector('[data-notebook-link]').pathname).toBe('/notebook');
@@ -63,4 +64,18 @@ test.each(['inline','legacy'])('%s admin rendering only adds verified links insi
 test('a rejected admin session never adds the Admin link',async()=>{
  const dom=setup(),w=dom.window;
  try{w.fetch=jest.fn(async()=>({ok:false}));w.hadithAdmin=true;w.renderMenu({displayName:'User'});await w.ensureAdminPageLinks();expect(w.document.querySelectorAll('.admin-page-link')).toHaveLength(0);}finally{w.close();}
+});
+
+test('makeover profile menus distinguish account identity and the current destination', () => {
+ const dom = setup(), w = dom.window;
+ try {
+  w.document.body.classList.add('ux-masthead');
+  w.history.replaceState(null, '', '/quran/settings');
+  w.renderMenu({ displayName: 'Sample reader' });
+  for (const menu of w.document.querySelectorAll('[data-profile-menu]')) {
+   expect(menu.querySelector('.ux-account-name').textContent).toBe('Sample reader');
+   expect(menu.querySelector('[data-profile-link]').textContent).toBe('Profile');
+   expect(menu.querySelector('[aria-current="page"]')).toBe(menu.querySelector('[data-settings-link]'));
+  }
+ } finally { w.close(); }
 });

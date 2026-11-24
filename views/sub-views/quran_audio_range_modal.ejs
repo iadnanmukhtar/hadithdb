@@ -2,7 +2,7 @@
   <div class="modal-dialog modal-dialog-centered"><form class="modal-content" dir="ltr">
     <div class="modal-header">
       <h2 class="modal-title" id="quran-audio-range-title"><span class="bi bi-headphones me-2" aria-hidden="true"></span>Play Quran</h2>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
     </div>
     <div class="modal-body">
       <div class="quran-audio-range-grid">

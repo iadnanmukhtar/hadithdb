@@ -187,7 +187,7 @@ Open the Mushaf and begin where you left off. Tap a word for its meaning, select
 * All **604 pages** use Digital Khatt Quran text in a page-faithful 15-line layout.
 * Pages load continuously with vertical infinite scroll; after page 604, reading can continue again from page 1.
 * The layout scales for desktop, portrait phones, and landscape phones without changing through the normal text-size controls or bleeding beyond the page.
-* Quranic surah headers use the QCF header font. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
+* Mushaf surah headers use per-surah SVG artwork. A new surah opens with its header and basmalah kept with the beginning of the surah; Surah 9 correctly omits the basmalah.
 * Subtle inner-edge shading distinguishes odd and even pages like an open printed book.
 * Alternating black and saddle-brown text reveals h3 subsection boundaries while preserving the Quranic styling of ayah markers.
 * Each page identifies its page number, juz, surah number, and Arabic surah name. Page, juz, and surah numbers are directly editable, while the custom surah picker opens at the current surah.
@@ -526,9 +526,9 @@ In the table below, **Records** is the number of entries in each work, **English
 | 33 | `tabarani-saghir` | al-Muʿjam al-Ṣaghīr, Ṭabarānī | Source | 0 | 0 | 0 | N/A |
 | 1000 | `suyuti` | Jamʿ al-Jawāmiʿ, Suyūṭī | Source | 45,909 | 1,430 | 45,908 | Albānī, Arnaʾūṭ, Bayhaqī, Bukhārī, Dhahabī, Ḥākim, Haythamī, Ibn al-Jawzī, Ibn Ḥajar, Luʿluʿ wa-al-Marjān, Mudhiri, Muslim, Nawawī, Suyūṭī, Tirmidhī |
 
-### Admin-only book downloads
+### Book downloads
 
-Set `bookDownloads.adminOnly` to `true` in `~/.hadithdb/settings.json` and restart the app to restrict full-book JSON and EPUB downloads to signed-in administrators. The default is `false`.
+Full-book downloads are temporarily disabled, including for administrators.
 
 ### Admin-only content translations
 

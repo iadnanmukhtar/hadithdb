@@ -21,6 +21,7 @@ const outlineContext = Object.keys(outlines)[0] || '';
 const currentHeading = context.subsection || context.section || context.chapter;
 const outlineKey = currentHeading ? `${context.book.alias}:${currentHeading.h1}${Number(currentHeading.level) >= 2 ? `.${currentHeading.h2}` : ''}${Number(currentHeading.level) >= 3 ? `.${currentHeading.h3}` : ''}` : '';
 const showHeadingRail = Boolean(outlines[outlineContext]?.sections?.length);
+const canSwitchExplanation = locals.availableSharhs && availableSharhs.length > 1;
 const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 %>
 <%- include('sub-views/head.ejs', { site, page }); %>
@@ -30,17 +31,19 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 <div class="<%= showHeadingRail ? 'container-fluid hadith-heading-layout' : 'container' %>">
 <div class="<%= showHeadingRail ? 'container col-lg-8 mx-auto hadith-heading-content' : '' %>">
 <main class="chapter mt-10 tafsir-only-page sharh-only-page" data-reader-infinite="hadith-sharh" data-reader-context-key="<%= outlineContext %>" data-reader-current-url="<%= canonical %>" data-reader-sharh-book="<%= book.alias %>" data-reader-prev-url="<%= page.prev || '' %>" data-reader-prev-title="<%= page.prevTitle || '' %>" data-reader-next-url="<%= page.next || '' %>" data-reader-next-title="<%= page.nextTitle || '' %>">
-  <%- include('sub-views/page_updated.ejs', { page }); %>
-  <% if (locals.availableSharhs && availableSharhs.length > 1) { %>
+  <% if (canSwitchExplanation) { %>
   <nav class="h-menu-wrap mb-3" aria-label="Available explanations">
-    <div class="h-menu-hint d-md-none"><i class="bi bi-arrow-left-right" aria-hidden="true"></i> Swipe to browse explanations</div>
-    <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap">
+    <details class="book-switch-picker">
+      <%- include('sub-views/bookSwitchSummary', { switchLabel: 'Switch explanation', currentLabel: utils.sharhDisplayName(book) }) %>
+      <div class="h-menu-scroller"><div class="btn-group h-menu text-nowrap">
+      <%- include('sub-views/bookCarouselFilter') %>
       <% availableSharhs.forEach(function (source) { %>
-      <a class="btn btn-outline-primary text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= utils.sharhDisplayName(source) %></a>
+      <a class="btn book-switch-item text-nowrap<%= source.id === book.id ? ' active' : '' %>" href="<%= source.url %>" data-book-carousel-item data-book-carousel-search="<%= [utils.sharhDisplayName(source), source.title, source.name_en, source.author_en, source.author, source.alias].filter(Boolean).join(' ') %>"<% if (source.id === book.id) { %> aria-current="page" data-current-book="true"<% } %>><%= utils.sharhDisplayName(source) %></a>
       <% }); %>
     </div></div>
+    </details>
   </nav>
-  <% } %>
+  <% } else { %>
 
     <header class="quran-tafsir-source row text-muted">
       <section class="col-6 text-start" lang="en">
@@ -52,6 +55,7 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
         <span><%= [book.author, book.death ? `ت. ${arabic.toArabicDigits(String(book.death))} هـ` : '', [book.published_year, book.publisher].filter(Boolean).join('، ')].filter(Boolean).join('، ') %></span>
       </section>
     </header>
+  <% } %>
   <% if (owner) { %>
     <%- include('sub-views/sharh_context.ejs', { owner, kind, site, page, Tafsir }); %>
     <% if (kind === 'hadith') { %>
@@ -102,7 +106,6 @@ const updateType = kind === 'heading' ? 'hdith_toc_sharh' : 'hdith_sharh';
 </div>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
 <% if (site.editMode) { %><%- include('sub-views/sharh_book_metadata_modal.ejs', { sharhBook: book, modalId: 'sharh-book-metadata' }); %><% } %>
-<%- include('sub-views/footer.ejs', { site, page }); %>
-<%- include('sub-views/scripts.ejs', { site, page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 </body>
 </html>

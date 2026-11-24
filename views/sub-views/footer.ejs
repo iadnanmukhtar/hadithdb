@@ -12,17 +12,23 @@
 			))
 		);
 %>
-<footer class="site-footer col-lg-8 mx-auto p-3 py-md-5 text-center">
-  <nav class="mb-2 d-flex flex-wrap justify-content-center gap-3 small" aria-label="Footer">
-    <a class="text-muted" href="/about">About</a>
-    <a class="text-muted" href="/html/privacy.html">Privacy Policy</a>
-    <a class="text-muted" href="/terms">Terms of Service</a>
-    <a class="text-muted" href="https://linktr.ee/i.adnan.mukhtar"><i class="bi bi-instagram" aria-hidden="true"></i> @i.adnan.mukhtar</a>
-  </nav>
-	<% if (!hideBuyMeCoffeeFooter) { %><aside class="mt-3" data-buy-me-coffee>
-		<a href="https://www.buymeacoffee.com/adnanmukhtar"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=adnanmukhtar&button_colour=FF5F5F&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" width="200" /></a>
-	</aside><% } %>
+<%
+  const quranBrand = req.quranArea || /^\/quran(?:\/|$)/.test(req.originalUrl || '');
+%>
+<footer class="site-footer ux-footer">
+  <div class="ux-footer-inner">
+    <a class="ux-footer-brand" href="<%= quranBrand ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/') %>"><img src="<%= quranBrand ? '/static/img/quran-logo2.svg' : '/static/img/logo2.svg' %>" width="24" height="24" alt=""><%= quranBrand ? 'Quran Unlocked' : site.name %></a>
+    <nav aria-label="Explore">
+      <a href="<%= utils.quranUrl(req, '/quran') %>">Quran</a><a href="<%= utils.urlFor(req, '/books') %>">Books</a><a href="<%= utils.urlFor(req, '/community') %>">Community</a>
+    </nav>
+    <nav aria-label="About and support">
+      <a href="/about">About</a><a href="https://linktr.ee/i.adnan.mukhtar">@i.adnan.mukhtar</a>
+      <% if (!hideBuyMeCoffeeFooter) { %><a href="https://www.buymeacoffee.com/adnanmukhtar" data-buy-me-coffee>Buy me a coffee</a><% } %>
+    </nav>
+    <nav class="ux-footer-legal" aria-label="Legal"><a href="/html/privacy.html">Privacy Policy</a><a href="/terms">Terms of Service</a></nav>
+  </div>
 </footer>
+
 
 <script>
 	(function () {
@@ -451,7 +457,7 @@
 				const page = parseInt(button.dataset.quranMushafBookmarkPage, 10);
 				const bookmarked = page === mushafBookmarkPage;
 				const icon = button.querySelector('.quran-mushaf-bookmark-icon');
-				if (icon) icon.className = bookmarked ? 'quran-mushaf-bookmark-icon bi bi-bookmark-fill text-accent' : 'quran-mushaf-bookmark-icon bi bi-bookmark text-accent';
+				if (icon) icon.className = bookmarked ? 'quran-mushaf-bookmark-icon bi bi-bookmark-fill' : 'quran-mushaf-bookmark-icon bi bi-bookmark';
 				button.setAttribute('aria-pressed', bookmarked ? 'true' : 'false');
 				button.title = `${bookmarked ? 'Remove bookmark from' : 'Bookmark'} Mushaf page ${page}`;
 			});

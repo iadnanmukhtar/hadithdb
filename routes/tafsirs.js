@@ -7,7 +7,7 @@ const BookDownloads = require('../lib/BookDownloads');
 
 const router = express.Router();
 
-router.get('/:tafsirAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.sendTafsirBook);
+router.get('/:tafsirAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.temporarilyUnavailable);
 
 router.get('/', async function (req, res) {
   if (!('json' in req.query) && !('tsv' in req.query))

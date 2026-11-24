@@ -39,7 +39,7 @@
   <%- include('sub-views/header.ejs', { site: site, page: page }); %>
 
   <div class="container-fluid quran-heading-layout quran-heading-layout-tafsir">
-    <div class="quran-heading-content quran-heading-content-tafsir">
+    <div class="container quran-heading-content quran-heading-content-tafsir">
     <main class="chapter mt-10 tafsir-only-page<%= commentaryIsTranslation ? ' translation-only-page' : '' %>"<% if (!commentaryIsTranslation) { %> data-reader-infinite="tafsir" data-reader-context-key="0" data-reader-quran-ref="0:1" data-reader-current-url="<%= utils.quranUrl(req, commentaryIntroductionPath) %>"<% if (commentaryIntroductionPreviousPassage) { %> data-reader-prev-url="<%= utils.quranUrl(req, commentaryIntroductionPreviousPassage.href) %>" data-reader-prev-title="Previous: <%= commentaryIntroductionPreviousPassage.title %>"<% } %><% if (commentaryIntroductionNextUrl) { %> data-reader-next-url="<%= utils.quranUrl(req, commentaryIntroductionNextUrl) %>" data-reader-next-title="Next: §1.0"<% } %><% } %>>
       <%- include('sub-views/quran_commentary_book_nav.ejs', {
         quranCommentaryBook: commentaryBook,
@@ -47,13 +47,10 @@
         Tafsir: Tafsir
       }); %>
 
-      <heading class="row major">
-        <h1 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a></h1>
-        <% if (commentaryNameAr && commentaryNameAr !== commentaryNameEn) { %><h1 class="col-md-6 col-sm-12 fs-4 title" lang="ar" dir="rtl"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameAr %></a></h1><% } %>
-      </heading>
+      <%- include('sub-views/introduction_title.ejs', { bookHref: utils.quranUrl(req, commentaryBookPath), englishTitle: commentaryNameEn, arabicTitle: commentaryNameAr !== commentaryNameEn && commentaryNameAr }); %>
 
       <section class="row breadcrumbs pagination">
-        <div class="col-12" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a> &gt; Introduction</div>
+        <div class="col-12" lang="en"><a href="<%= utils.quranUrl(req, commentaryBookPath) %>"><%= commentaryNameEn %></a> &gt; <a href="<%= utils.quranUrl(req, commentaryIntroductionPath) %>">Introduction</a></div>
       </section>
 
       <% var commentaryIntroductionArticles = locals.commentaryIntroductionArticles || []; %>
@@ -95,8 +92,7 @@
     prevTitle: commentaryIntroductionPreviousPassage ? `Previous: ${commentaryIntroductionPreviousPassage.title}` : 'Previous',
     nextTitle: commentaryIntroductionNextUrl ? 'Next: §1.0' : 'Next'
   }); %>
-  <%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-  <%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+  <%- include('sub-views/page_end.ejs', { site, page }); %>
   <% if (site.editMode) { %>
   <script>
   (function () {

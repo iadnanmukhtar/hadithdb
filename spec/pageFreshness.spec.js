@@ -23,7 +23,7 @@ test('public feed freshness ignores private drafts and owner-only update dates',
   expect(post.updatedAt).toBeUndefined();
 });
 test('visible UTC time and WebPage structured data carry the same revision', () => {
-  const page = { title_en: 'Example', canonical: '/bukhari:1', dateModified: updated };
+  const page = { title_en: 'Example', canonical: '/community', dateModified: updated };
   const locals = { page, utils: Utils, site: { name: 'Hadith Unlocked', url: 'https://example.com' }, req: { originalUrl: page.canonical, query: {} }, arabic: {} };
   const head = ejs.render(fs.readFileSync('views/sub-views/head.ejs', 'utf8'), locals);
   expect(head).toContain('"dateModified": "' + updated + '"');

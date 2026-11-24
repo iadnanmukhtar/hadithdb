@@ -46,6 +46,6 @@ describe('commentary surah introduction editing', () => {
 		expect(editor).toContain("$el.attr('data-prop') === 'toc.intro_en'");
 		expect(editor).toContain("$block.addClass('quran-tafsir-arabic-only').attr({ lang: 'ar', dir: 'rtl' })");
 		expect(editor).toContain('isEnglishTafsirMarkdown($el) || isEnglishCommentaryIntroMarkdown($el)');
-		expect(css).toMatch(/\[data-prop="toc\.intro_en"\] \.quran-tafsir-arabic-only \{[^}]*font-family: Hafs, Serif;[^}]*text-indent: 0;/s);
+		expect(css).toMatch(/\[data-prop="toc\.intro_en"\] \.quran-tafsir-arabic-only \{[^}]*font-family: Kitab, Serif;[^}]*text-indent: 0;/s);
 	});
 });

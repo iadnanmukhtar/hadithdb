@@ -23,21 +23,23 @@ Leave a blank line between paragraphs. Preview to see formatting.`; %>
   <div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
     <div class="modal-header py-2">
       <h2 class="modal-title fs-6" id="notebook-modal-title"><i class="bi bi-sticky me-2" aria-hidden="true"></i><a id="notebook-source" dir="auto">Note</a></h2>
-      <details class="notebook-theme-menu ms-auto">
-        <summary class="notebook-tool" title="Note background" aria-label="Choose note background"><i class="bi bi-palette" aria-hidden="true"></i></summary>
-        <div class="notebook-theme-popover" role="group" aria-label="Note background">
-          <strong>Background</strong>
-          <div class="notebook-theme-options" data-notebook-theme-options></div>
-          <span class="small" data-notebook-theme-status role="status"></span>
-        </div>
-      </details>
-      <button id="notebook-share" type="button" class="notebook-tool" title="Share note" aria-label="Share note" aria-controls="notebook-share-panel" aria-expanded="false"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
-      <button id="notebook-lock" type="button" class="notebook-tool" title="Lock note" aria-label="Lock note" aria-pressed="false"><i class="bi bi-unlock" aria-hidden="true"></i></button>
-      <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
-      <button id="notebook-float" type="button" class="notebook-tool" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
-      <button id="notebook-minimize" type="button" class="notebook-tool" title="Minimize note" aria-label="Minimize note" hidden><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
-      <button id="notebook-fullscreen" type="button" class="notebook-tool me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
-      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="notebook-header-actions">
+        <details class="notebook-theme-menu">
+          <summary class="notebook-tool" title="Note background" aria-label="Choose note background"><i class="bi bi-palette" aria-hidden="true"></i></summary>
+          <div class="notebook-theme-popover" role="group" aria-label="Note background">
+            <strong>Background</strong>
+            <div class="notebook-theme-options" data-notebook-theme-options></div>
+            <span class="small" data-notebook-theme-status role="status"></span>
+          </div>
+        </details>
+        <button id="notebook-share" type="button" class="notebook-tool" title="Share note" aria-label="Share note" aria-controls="notebook-share-panel" aria-expanded="false"><i class="bi bi-box-arrow-up" aria-hidden="true"></i></button>
+        <button id="notebook-lock" type="button" class="notebook-tool" title="Lock note" aria-label="Lock note" aria-pressed="false"><i class="bi bi-unlock" aria-hidden="true"></i></button>
+        <button id="notebook-print" type="button" class="notebook-tool" title="Print / Save as PDF" aria-label="Print / Save as PDF"><i class="bi bi-printer" aria-hidden="true"></i></button>
+        <button id="notebook-float" type="button" class="notebook-tool" title="Float note while browsing" aria-label="Float note while browsing" aria-pressed="false"><i class="bi bi-pin-angle" aria-hidden="true"></i></button>
+        <button id="notebook-minimize" type="button" class="notebook-tool" title="Minimize note" aria-label="Minimize note" hidden><i class="bi bi-dash-lg" aria-hidden="true"></i></button>
+        <button id="notebook-fullscreen" type="button" class="notebook-tool me-2" title="Expand note" aria-label="Expand note" aria-pressed="false"><i class="bi bi-arrows-fullscreen" aria-hidden="true"></i></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
+      </div>
     </div>
     <section id="notebook-share-panel" class="px-3 py-2" aria-label="Share note" hidden>
       <p class="small mb-2">Anyone with the link can see your name, profile image, and this note’s title and latest saved text without signing in. Your other notes and Google Drive remain private.</p>
@@ -201,9 +203,11 @@ body.notebook-page-open > .modal-backdrop { display: none; }
   #notebook-modal #notebook-tag-bar { padding-block: .35rem !important; }
 }
 
-#notebook-modal .modal-header { align-items: center; }
-#notebook-modal .modal-header > button { flex-shrink: 0; box-sizing: border-box; width: 2.25rem; height: 2.25rem; padding: .45rem; line-height: 1; }
-#notebook-modal .modal-header .btn-close { margin: 0; background-size: 1em; }
+#notebook-modal .modal-header { position: relative; align-items: center; }
+#notebook-modal-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.notebook-header-actions { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; margin-left: auto; }
+.notebook-header-actions .btn-close { margin: 0; }
+#notebook-modal .notebook-header-actions > button:not(.btn-close) { flex-shrink: 0; box-sizing: border-box; width: 2.25rem; height: 2.25rem; padding: .45rem; line-height: 1; }
 #notebook-modal .modal-content { height: 100%; }
 #notebook-modal .modal-body { display: flex; min-height: 0; overflow: hidden; }
 #notebook-surface { position: relative; display: flex; flex-direction: column; flex: 1; min-width: 0; min-height: 0; }
@@ -228,7 +232,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-navigator-items button { display: block; width: 100%; border: 0; border-left: 2px solid transparent; border-radius: .2rem; padding: .5rem; background: transparent; color: inherit; font: inherit; font-size: .85rem; text-align: start; overflow-wrap: anywhere; }
 #notebook-navigator-items button:hover, #notebook-navigator-items button[aria-current="page"] { background: rgba(212, 167, 44, .15); border-left-color: var(--note-edge); }
 #notebook-navigator-items button:focus-visible { outline: 2px solid var(--note-edge); outline-offset: -2px; }
-#notebook-navigator-items button { font-family: var(--content-language-latin-font, Georgia), NotebookKitab, Kitab, serif; }
+#notebook-navigator-items button { font-family: var(--content-language-latin-font, Georgia), Kitab, serif; }
 #notebook-navigator-items button { display: flex; align-items: baseline; gap: .45rem; }
 #notebook-navigator-items button > .bi { flex: 0 0 auto; font-size: .8em; color: var(--note-ink); }
 #notebook-navigator-items button > span { min-width: 0; }
@@ -241,7 +245,7 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-outline-items button { display: flex; align-items: baseline; gap: .4rem; }
 #notebook-outline-items .notebook-outline-level { flex: 0 0 auto; font: 600 .6rem/1.5 system-ui, sans-serif; color: var(--note-ink); opacity: .7; }
 #notebook-outline-items .notebook-outline-text { min-width: 0; }
-#notebook-outline-items .notebook-outline-arabic { font-family: NotebookKitab, Kitab, Quran, serif; font-size: 1.2em; line-height: 2; }
+#notebook-outline-items .notebook-outline-arabic { font-family: Kitab, Hafs, serif; font-size: 1.2em; line-height: 2; }
 @media (max-width: 767.98px) {
   #notebook-fullscreen { display: none; }
   #notebook-modal .modal-fullscreen .modal-body { flex-direction: column; }
@@ -284,10 +288,10 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-modal[data-notebook-theme="sage"], #personal-notebook[data-notebook-theme="sage"] { --note-paper: #e8eee5; --note-ink: #263426; --note-edge: #aebca8; }
 #notebook-modal[data-notebook-theme="quiet"], #personal-notebook[data-notebook-theme="quiet"] { --note-paper: #505155; --note-ink: #f1edf0; --note-edge: #8d8f95; --note-link: #a9caff; }
 
-.notebook-theme-menu { position: relative; flex: 0 0 auto; }
+.notebook-theme-menu { flex: 0 0 auto; }
 .notebook-theme-menu > summary { list-style: none; }
 .notebook-theme-menu > summary::-webkit-details-marker { display: none; }
-.notebook-theme-popover { position: absolute; z-index: 1080; top: calc(100% + .5rem); right: 0; width: min(19rem, calc(100vw - 2rem)); padding: .75rem; border: 1px solid var(--note-edge); border-radius: .75rem; color: var(--note-ink); background: var(--note-paper); box-shadow: 0 .6rem 1.8rem #0003; }
+.notebook-theme-popover { position: absolute; z-index: 1080; top: 100%; right: .5rem; width: min(19rem, calc(100% - 1rem)); padding: .75rem; border: 1px solid var(--note-edge); border-radius: .75rem; color: var(--note-ink); background: var(--note-paper); box-shadow: 0 .6rem 1.8rem #0003; }
 .notebook-theme-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; margin-top: .5rem; }
 .notebook-theme-choice { display: inline-flex; align-items: center; justify-content: center; gap: .35rem; min-width: 0; min-height: 2.75rem; padding: .35rem .4rem; border: 2px solid transparent; border-radius: .55rem; background: var(--theme-paper); color: var(--theme-ink); font: 600 .72rem/1.1 system-ui, sans-serif; }
 .notebook-theme-choice::before { content: 'Aa'; flex: 0 0 auto; font: 1.15rem/1 Georgia, serif; }
@@ -329,8 +333,6 @@ body.notebook-page-open > .modal-backdrop { display: none; }
 #notebook-note-tags { cursor: text; min-height: 1.4rem; font-size: .75rem; }
 #notebook-note-tags:focus-visible { outline: 2px solid var(--note-edge); outline-offset: 3px; }
 #notebook-tag-bar { cursor: text; flex-shrink: 0; border-top: 1px solid var(--note-edge); }
-.notebook-tag-chip { color: var(--note-ink); background: rgba(212, 167, 44, .12); border: 0; border-radius: 999px; padding: .15rem .55rem; font-size: .72rem; line-height: 1.4; overflow-wrap: anywhere; }
-#personal-notebook .notebook-tag-rail .notebook-tag-chip { color: var(--bs-body-color); background: var(--bs-secondary-bg); }
 .notebook-layout { display: grid; grid-template-columns: minmax(0, 1fr) 15rem; gap: 2rem; }
 .notebook-main { min-width: 0; }
 .notebook-tag-rail-slot { min-width: 0; }

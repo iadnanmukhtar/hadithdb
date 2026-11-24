@@ -19,7 +19,8 @@
       canonical: `/`,
       context: {},
     };
-    if (random) {
+    const hasRandomReading = Boolean(random && !Array.isArray(random));
+    if (hasRandomReading) {
       page.context.chapter = random.chapter;
       page.context.section = random.section;
       page.context.hadiths = results;
@@ -32,26 +33,30 @@
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
+<link rel="stylesheet" href="/static/css/home-library.css?v=<%= utils.styleAssetVersion() %>">
+<script defer src="/static/js/home-library.js?v=<%= utils.scriptAssetVersion() %>"></script>
 </head>
 
 <body>
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <div class="container-fluid hadith-heading-layout">
-  <div class="container col-lg-8 mx-auto hadith-heading-content">
-    
-    <main class="search-results">
+  <main class="home-library search-results">
+    <header class="home-library-heading ux-system">
+      <h1 id="library-shelf-title" class="ux-page-title">Hadith library</h1>
+      <a class="ux-primary-action" href="<%= utils.urlFor(req, '/books?hadith') %>">Browse full catalog <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+    </header>
 
-      <%- include('sub-views/home_about.ejs', { quranAbout: false }); %>
+    <%- include('sub-views/bookNav.ejs', { inlineHadithBooks: true }) %>
 
-      <%- include('sub-views/bookNav.ejs', { inlineHadithBooks: true }); %>
-      
-      <% if (typeof random !== 'undefined') { %>
-        <header class="row">
-          <h3 class="col-12 fs-4">Random <%= random.remark==2 ? 'āyah' : 'ḥadīth' %> <a class="text-muted" href="/"><i class="bi bi-arrow-clockwise"></i></a></h3>
+    <div class="home-reading-layout">
+      <div class="home-reading-column">
+      <% if (hasRandomReading) { %>
+        <header class="home-reading-heading">
+          <h2><%= random.remark == 2 ? 'Ayah' : 'Hadith' %> Reminder</h2>
+          <a href="/" aria-label="Show another reminder"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Another reminder</a>
         </header>
-        
+
         <% if (random.remark == 2) {
           var randomAyahRef = random.en?.num || random.num || random.ref || '';
           var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
@@ -87,37 +92,18 @@
 
       <% for (var i = 0; i < results.length; i++) { %>
 
-        <% if (i == 2) { %>
-        <%#
-        <div class="col-12 mt-3 mb-3">
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1199080602686133"
-            crossorigin="anonymous"></script>
-            <ins class="adsbygoogle"
-              style="display:block; text-align:center;"
-              data-ad-layout="in-article"
-              data-ad-format="fluid"
-              data-ad-client="ca-pub-1199080602686133"
-              data-ad-slot="7623204143"></ins>
-          <script>
-            (adsbygoogle = window.adsbygoogle || []).push({});
-          </script>
-        </div>
-        %>
-        <% } %>
-
         <%- include('sub-views/hadith.ejs', { site: site, page: page, i: results[i], main: true, title: true, searchResult: false }); %>
 
       <% }
         } %>
 
-    </main>
-  </div>
-  <%- include('sub-views/home_articles_rail.ejs', { latestArticles: locals.latestArticles || [] }); %>
-  </div>
+      </div>
+      <%- include('sub-views/home_articles_rail.ejs', { latestArticles: locals.latestArticles || [] }); %>
+    </div>
+  </main>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 
 </body>
 </html>

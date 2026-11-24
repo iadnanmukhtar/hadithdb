@@ -14,6 +14,7 @@ router.get('/', async function (req, res, next) {
     const isQuranSettings = settingsPath === '/quran/settings' || settingsPath.indexOf('/quran/settings/') === 0;
     res.render('settings', {
       results: [],
+      settingsPath,
       page: {
         menu: 'My Settings',
         title_en: `${isQuranSettings ? 'Quran ' : ''}Settings`,

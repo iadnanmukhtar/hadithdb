@@ -13,8 +13,8 @@ describe('muted content contrast', () => {
 		expect(css).toMatch(/\.text-muted \{\s*color: var\(--c-gray-mid\) !important;/);
 		expect(css).toMatch(/\.h \.chain \{\s*color: var\(--c-gray-mid\) !important;/);
 		expect(css).toMatch(/sup \{\s*color: var\(--c-footnote-muted\);/);
-		expect(css).toMatch(/\.h \.footnote \{\s*color: var\(--c-footnote-muted\);/);
-		expect(css).toMatch(/\.quran-footnotes \.footnote,[\s\S]*?color: var\(--c-footnote-muted\);/);
-		expect(css).toMatch(/\.quran-tafsir-text \.footnote-ref,[\s\S]*?color: var\(--c-footnote-muted\);/);
+		const shared = fs.readFileSync(path.join(__dirname, '../public/static/css/ux-foundations.css'), 'utf8');
+		expect(shared).toMatch(/body :is\(\.footnotes, footer\.footnote,[^)]*\) \{\s*color: var\(--c-footnote-muted,/);
+		expect(shared).toMatch(/body \.footnote-ref a, body \.footnote-backref \{ color: var\(--c-footnote-muted,/);
 	});
 });

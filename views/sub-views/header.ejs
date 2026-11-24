@@ -1,5 +1,4 @@
 <!--hadithdb-cache:header:start-->
-<nav class="navbar site-navbar fixed-top">
   <%
     var navSearchAction = typeof utils.globalSearchBaseUrl === 'function'
       ? utils.globalSearchBaseUrl(req)
@@ -15,9 +14,9 @@
       || requestPath.indexOf('/quran/') === 0
       || (pageBook && pageBook.alias === 'quran')
       || (page.context && page.context.quranSearchProxy);
-    var quranBar = isQuranArea ? utils.quranReaderBar(req, page, locals) : null;
+    var showQuranModes = isQuranArea || !!page.context?.quranCatalog;
+    var quranBar = showQuranModes ? utils.quranReaderBar(req, page, locals) : null;
     var isQuranStudyArea = /^\/quran\/(?:[A-Za-z0-9_-]+\/)?(?:\d+|quran:\d+:\d+)(?:\/|$)/.test(requestPath);
-    var isQuranTranslationsArea = requestPath === '/quran/translations' || requestPath.indexOf('/quran/translations/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'trans');
     var isQuranTafsirArea = requestPath === '/quran/tafsir' || requestPath.indexOf('/quran/tafsir/') === 0 || (!isQuranStudyArea && pageQuranCommentaryBook && pageQuranCommentaryBook.type === 'tafsir');
     var isQuranMushafArea = requestPath === '/quran/page' || requestPath.indexOf('/quran/page/') === 0;
     var isQuranReviewArea = requestPath === '/quran/review' || (isQuranMushafArea && (req.query.review !== undefined || req.query.reviewRef !== undefined));
@@ -53,7 +52,7 @@
     var contextualSearchBook = !isSearchResultsContext ? (quranSearchCommentaryBook || searchContextBook) : null;
     var contextualSearchBookAlias = contextualSearchBook ? contextualSearchBook.alias : '';
     var contextualSearchBookName = contextualSearchBook ? (contextualSearchBook.shortName_en || contextualSearchBook.name_en || contextualSearchBook.shortName || contextualSearchBook.alias) : '';
-    var headerSearchPlaceholder = contextualSearchBookName ? 'Search within ' + contextualSearchBookName : 'Search the library';
+    var headerSearchPlaceholder = 'Search the library';
     var headerSearchTerm = isSearchResultsContext && req && req.query && req.query.q
       ? req.query.q.toString()
       : '';
@@ -72,20 +71,19 @@
       ? searchResultsTafsirFilters
       : (quranSearchCommentaryBook ? [quranSearchCommentaryBook.alias] : []);
         var isHistoryCatalogArea = !isQuranArea && requestPath === '/books' && req && req.query && req.query.tab === 'history';
-        var isBooksArea = !isQuranArea && !isHistoryCatalogArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0);
+        var isBooksArea = !!locals.tocCollection && !isQuranArea || (!isQuranArea && !isHistoryCatalogArea && (requestPath === '/books' || requestPath.indexOf('/books/') === 0));
     var isBlogArea = requestPath === '/blog' || requestPath.indexOf('/blog/') === 0 || pageMenu === 'Blog' || pageMenu === 'Blog Post';
     var isCommunityArea = isBlogArea || pageMenu === 'Community' || pageMenu === 'Notebook' || requestPath === '/community' || requestPath.indexOf('/community/') === 0;
-    var isBookmarksArea = requestPath === '/bookmarks' || requestPath.indexOf('/bookmarks/') === 0;
-    var isMcpServerArea = requestPath === '/mcp-server' || requestPath.indexOf('/mcp-server/') === 0;
     var isSettingsArea = requestPath === '/settings' || requestPath.indexOf('/settings/') === 0
       || requestPath === '/quran/settings' || requestPath.indexOf('/quran/settings/') === 0;
     if (isQuranArea)
       navSearchAction = utils.quranUrl(req, '/quran');
+    var profileHref = utils.urlFor(req, '/community/mine');
     var settingsHref = isQuranArea || requestPath.indexOf('/quran/settings') === 0
       ? utils.quranUrl(req, '/quran/settings')
       : utils.urlFor(req, '/settings');
     var isAboutArea = requestPath === '/about' || requestPath === '/about/';
-    var isMoreArea = ['/about', '/bookmarks', '/mcp-server'].some(function (path) {
+    var isMoreArea = pageMenu === 'Legal' || ['/about', '/bookmarks', '/mcp-server'].some(function (path) {
       return requestPath === path || requestPath.indexOf(`${path}/`) === 0;
     });
         var isSirahArea = !isQuranArea && (isHistoryCatalogArea || (pageBook && pageBook.type === 'sirah') || /^\/(?:ibnhisham|history)(?:[/:]|$)/.test(requestPath));
@@ -94,37 +92,32 @@
     var headerBrandName = isMudhakkirArea ? 'Mudhakkir' : (isQuranArea ? 'Quran Unlocked' : site.name);
     var headerLogoAlt = headerBrandName;
     var headerBrandHref = isQuranArea ? utils.quranUrl(req, '/quran') : utils.urlFor(req, '/');
-    var alternateModeLabel = isQuranArea ? 'Hadith' : 'Quran';
-    var alternateModeHref = isQuranArea ? utils.hadithBaseUrl(req) : utils.quranUrl(req, '/quran');
     var commandHadithSearchAction = typeof utils.globalSearchBaseUrl === 'function' ? utils.globalSearchBaseUrl(req) : navSearchAction;
     var commandQuranSearchAction = utils.quranUrl(req, '/quran');
     function activeNavAttrs(active) {
       return active ? ' active" aria-current="page' : '';
     }
   %>
-  <div class="container-fluid d-block">
+<div class="navbar site-navbar fixed-top ux-masthead"<% if (site.editMode) { %> data-edit-mode<% } %>>
+  <nav class="container-fluid d-block" aria-label="Site navigation">
   <div class="row g-0 site-navbar-main">
     
+    <div class="col-auto d-flex align-items-center site-navbar-menu-toggle">
+      <button type="button" class="btn btn-link p-0 border-0 top-nav-menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav" aria-controls="offcanvas-topnav" aria-label="Open menu">
+        <i id="icon-menu" class="bi bi-list"></i>
+      </button>
+    </div>
     <header class="col col-md-4 d-flex site-header-brand">
       <span class="site-header-logo-wrap">
         <a href="<%= headerBrandHref %>"><img class="logo" src="<%= headerLogo %>" width="56" height="56" alt="<%= headerLogoAlt %>"></a>
-        <a class="site-mode-switch" href="<%= alternateModeHref %>" aria-label="Switch to <%= alternateModeLabel %>" title="Switch to <%= alternateModeLabel %>">
-          <i class="bi bi-arrow-left-right" aria-hidden="true"></i>
-        </a>
       </span>
       <div>
         <h6 class="title fs-4 mb-0">
-          <a href="<%= headerBrandHref %>" class="text-dark text-decoration-none">
+          <a href="<%= headerBrandHref %>" class="text-body-emphasis text-decoration-none">
             <%= headerBrandName %>
           </a>
         </h6>
 <!--hadithdb-cache:header:end-->
-        <% if (page.subtitle_en) { %>
-        <div class="subtitle fs-6 text-muted" data-page-subtitle>
-          <%- page.subtitle_en %>
-          <%- page.subtitle ? `<span lang="ar">${page.subtitle}</span>` : '' %>
-        </div>
-        <% } %>
       </div>
     </header>
 
@@ -132,17 +125,18 @@
     <menu class="col d-md-block d-none">
       
       <ul class="nav container-fluid justify-content-end top-nav-desktop-actions">
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranTafsirArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
-        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, '/books?tafsir') %>">Tafsir</a></li>
+        <li class="nav-item"><a class="nav-link<%- activeNavAttrs(!isBooksArea && isQuranArea && !isAboutArea) %>" href="<%= utils.quranUrl(req, '/quran') %>">Quran</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="bi bi-people-fill top-nav-community-icon" aria-hidden="true"></i> Community</a></li>
         <li class="nav-item command-search-compact-item">
-          <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-compact-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
+          <button type="button" class="btn top-nav-icon-link command-search-compact-trigger" data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search the library">
             <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
+            <span class="command-search-trigger-label" data-command-search-trigger-label data-empty-label="<%= headerSearchPlaceholder %>" dir="auto"><%= headerSearchTerm || headerSearchPlaceholder %></span>
+            <kbd aria-hidden="true"><span data-command-key-modifier>⌘</span>K</kbd>
           </button>
         </li>
-        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></li>
+        <li class="nav-item d-flex align-items-center" id="nav-auth-desktop" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= profileHref %>"></li>
 
       </ul>
       
@@ -152,87 +146,22 @@
     <menu class="col-auto d-md-none d-block">
       <div class="nav container-fluid justify-content-end align-items-center gap-2 top-nav-mobile-actions">
 
-        <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" title="Search" aria-label="Search">
+        <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search the library">
           <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
         </button>
-        <div class="d-flex align-items-center nav-auth-btn" id="nav-auth-mobile" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= utils.urlFor(req, '/community/mine') %>"></div>
+        <div class="d-flex align-items-center nav-auth-btn" id="nav-auth-mobile" data-notebook-href="<%= utils.urlFor(req, '/notebook') %>" data-bookmarks-href="<%= utils.urlFor(req, '/bookmarks') %>" data-settings-href="<%= settingsHref %>" data-profile-href="<%= profileHref %>"></div>
       </div>
     </menu>
 
-    <div class="col-auto d-flex align-items-center site-navbar-menu-toggle">
-      <button type="button" class="btn btn-link p-0 border-0 top-nav-menu-toggle" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-topnav" aria-controls="offcanvas-topnav" aria-label="Open menu">
-        <i id="icon-menu" class="bi bi-list"></i>
-      </button>
-    </div>
 
     <!--hadithdb-cache:left-rail:start-->
-    <nav id="offcanvas-topnav" class="offcanvas offcanvas-start collapse" tabindex="-1" data-bs-static="true" data-bs-backdrop="true">
+    <nav aria-labelledby="offcanvasLabel" id="offcanvas-topnav" class="offcanvas offcanvas-start" tabindex="-1" data-bs-static="true" data-bs-backdrop="true">
       <div class="offcanvas-header">
         <h5 class="offcanvas-title fs-4" id="offcanvasLabel">Menu</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        <button type="button" aria-label="Close menu" class="btn-close" data-bs-dismiss="offcanvas"></button>
       </div>
       <div class="offcanvas-body">
-        <div class="offcanvas-quick-actions" role="navigation" aria-label="Quick links">
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>" title="Books" aria-label="Books"><span class="offcanvas-books-icon" aria-hidden="true"></span></a>
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>" title="Community" aria-label="Community"><i class="bi bi-people" aria-hidden="true"></i></a>
-          <a data-notebook-auth class="offcanvas-quick-action<%- activeNavAttrs(requestPath === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>" title="My Notebook" aria-label="My Notebook">
-            <i class="bi bi-sticky" aria-hidden="true"></i>
-          </a>
-          <a class="offcanvas-quick-action<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>" title="My Bookmarks" aria-label="My Bookmarks">
-            <i class="bi bi-bookmark<%= isBookmarksArea ? '-fill' : '' %>" aria-hidden="true"></i>
-          </a>
-
-        </div>
-        <div class="row">
-          <%- include('offcanvas_primary_nav.ejs', {
-            activeNavAttrs: activeNavAttrs,
-            isQuranArea: isQuranArea,
-            isQuranStudyArea: isQuranStudyArea,
-            isQuranMushafArea: isQuranMushafArea,
-            isQuranMemorizeArea: isQuranMemorizeArea,
-            isQuranReviewArea: isQuranReviewArea,
-            isQuranTranslationsArea: isQuranTranslationsArea,
-            isQuranTafsirArea: isQuranTafsirArea,
-            isHadithArea: isHadithArea,
-            isSirahArea: isSirahArea,
-            isBooksArea: isBooksArea,
-            isBlogArea: isBlogArea,
-            isCommunityArea: isCommunityArea,
-            isSettingsArea: isSettingsArea,
-            isBookmarksArea: isBookmarksArea,
-            isMcpServerArea: isMcpServerArea,
-            isAboutArea: isAboutArea,
-            settingsHref: settingsHref
-          }) %>
-          <ul class="col-5 nav flex-column offcanvas-col2">
-            <% if (isQuranArea) {
-              var railTafsirs = Array.isArray(locals.quranNavTafsirs) ? locals.quranNavTafsirs : [];
-              for (var railTafsir of railTafsirs) {
-                var railTafsirLabel = Tafsir.rawShortName(railTafsir, 'en').replace(/^tafs[īi]r\s+/i, '').trim();
-                var railTafsirSlug = railTafsir.slug || Tafsir.tafsirSlug(railTafsir.alias);
-            %>
-              <li class="nav-item"><a class="nav-link" title="<%= railTafsir.name_en || railTafsirLabel %>" href="<%= utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(railTafsirSlug)}`) %>"><%= railTafsirLabel %></a></li>
-            <% }
-            } else {
-              var railHadithBooks = books.filter(function (book) {
-                return book
-                  && Number(book.hidden) === 0
-                  && book.alias !== 'quran'
-                  && ((book.type || book.book_type || book.book_model || 'hadith') === 'hadith'
-                    || ['ibnhisham', 'history', 'yqsirah'].includes(book.alias));
-              }).slice().sort(function (a, b) {
-                return (a.shortName_en || a.name_en || a.alias || '').localeCompare(
-                  b.shortName_en || b.name_en || b.alias || '',
-                  'en',
-                  { sensitivity: 'base' }
-                );
-              });
-              for (b of railHadithBooks) { %>
-                <li class="nav-item"><a class="nav-link" title="<%= b.shortName %>" href="<%= utils.urlFor(req, `/${b.alias}`) %>"><%= b.shortName_en %></a></li>
-              <% }
-            } %>
-          </ul>
-        </div>
+          <%- include('offcanvas_primary_nav.ejs', { settingsHref, isSettingsArea, profileHref }) %>
       </div>
     </nav>
     <!--hadithdb-cache:left-rail:end-->
@@ -262,11 +191,11 @@
   <% if (isSearchResultsContext) { %>
   <nav class="row g-0 chapter-toc search-filter-top-menu" aria-label="Search filters">
     <div class="col-12 chapter-toc-toolbar">
-      <a class="chapter-toc-toggle" data-bs-toggle="collapse" href="#search-mobile-filter-panel" role="button" aria-expanded="false" aria-controls="search-mobile-filter-panel" title="Show search filters">
+      <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#search-mobile-filter-panel" aria-expanded="false" aria-controls="search-mobile-filter-panel" title="Show search filters">
         <i class="bi bi-funnel" aria-hidden="true"></i>
-        <span>Search Filters</span>
+        <span>Search filters</span>
         <i class="bi bi-chevron-down chapter-toc-chevron" aria-hidden="true"></i>
-      </a>
+      </button>
     </div>
     <div id="search-mobile-filter-panel" class="col-12 collapse chapter-toc-panel" data-search-mobile-filter-panel></div>
   </nav>
@@ -276,27 +205,24 @@
   <%- include('community_navigation.ejs', { page, req }); %>
   <% } %>
 
-  <% if (page.menu === 'Books' && page.context.bookCatalogInitialType) { %>
-  <%- include('book_catalog_navigation.ejs', { page }); %>
-  <% } %>
-
-  <% if (isQuranArea) { %>
-  <%- include('quran_bar.ejs', { quranBar: quranBar }); %>
-  <% } else if (typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
+  <% if (!showQuranModes && typeof hadithDetailSectionItem !== 'undefined' && hadithDetailSectionItem) { %>
   <%- include('hadith_metadata_rail.ejs', { i: hadithDetailSectionItem, topMenu: true }); %>
-  <% } else if (page.menu === 'Chapter' || page.menu === 'Section') { %>
+  <% } else if (!showQuranModes && (page.menu === 'Chapter' || page.menu === 'Section')) { %>
   <%- include('chapter_section_menu.ejs'); %>
   <% } %>
 
-  <div class="col-12 d-none d-md-flex site-navbar-search-row" role="search">
-    <button type="button" class="command-search-trigger" data-command-search-open data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search Hadith, Sharh, Tafsir, and Quran (Command or Control K)">
-      <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
-      <span class="command-search-trigger-label<%= headerSearchIsRtl ? ' command-search-arabic-text' : '' %>" data-command-search-trigger-label data-empty-label="<%= headerSearchPlaceholder %>" dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>"><%= headerSearchTerm || headerSearchPlaceholder %></span>
-      <kbd class="command-search-shortcut" aria-hidden="true"><span data-command-key-modifier>⌘</span><span>K</span></kbd>
-    </button>
-  </div>
+  <% if ((!showQuranModes && locals.tocCollection) || (page.menu === 'Books' && page.context.bookCatalogInitialType)) { %>
+  <%- include('book_catalog_navigation.ejs', { page }); %>
+  <% } %>
 
-  </div>
-</nav>
+  <% if (locals.settingsGroups) { %>
+  <%- include('settings_navigation.ejs'); %>
+  <% } %>
 
-<% if (isQuranArea) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranBar.navigationMode, navigationBook: quranBar.navigationBook }); %><% } %>
+  </nav>
+  <% if (showQuranModes) { %>
+  <%- include('quran_bar.ejs', { quranBar }); %>
+  <% } %>
+</div>
+
+<% if (showQuranModes) { %><%- include('quran_navigation_rail.ejs', { navigationMode: quranBar.navigationMode, navigationBook: quranBar.navigationBook }); %><% } %>

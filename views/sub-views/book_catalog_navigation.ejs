@@ -1,5 +1,5 @@
 <%
-  var catalogNavigationType = page.context.bookCatalogInitialType;
+  var catalogNavigationType = locals.tocCollection || page.context.bookCatalogInitialType;
   var catalogNavigationTabs = [
     { key: 'mushaf', label: 'Mushaf' },
     { key: 'tafsir-all', query: 'tafsir', label: 'Tafsir' },
@@ -9,14 +9,10 @@
     { key: 'sirah', query: 'history', label: 'History & Sirah' }
   ];
 %>
-<nav class="row g-0 chapter-toc book-catalog-navigation" aria-label="Book collections">
-  <div class="col-12 chapter-toc-toolbar">
-    <ul class="nav nav-tabs book-catalog-tabs" role="tablist" aria-label="Book collections">
-      <% catalogNavigationTabs.forEach(function (tab) { var id = `book-catalog-${tab.key}`; var active = tab.key === catalogNavigationType; %>
-      <li class="nav-item" role="presentation">
-        <a href="/books?<%= tab.query || tab.key %>" class="nav-link<%= active ? ' active' : '' %>" id="<%= id %>-tab" data-book-catalog-tab="1" data-bs-target="#<%= id %>" role="tab" aria-controls="<%= id %>" aria-selected="<%= active ? 'true' : 'false' %>"><%= tab.label %></a>
-      </li>
-      <% }); %>
-    </ul>
-  </div>
-</nav>
+<%- include('section_navigation.ejs', {
+  tabs: !locals.tocCollection, routeLinks: !!locals.tocCollection, label: 'Book collections', pickerLabel: 'Collection', pickerName: 'Book collection',
+  items: catalogNavigationTabs.map(tab => ({
+    label: tab.label, href: (locals.tocCollection ? utils.urlFor(req, '/books') : (page.context.catalogPath || '/books')) + '?' + (tab.query || tab.key),
+    id: 'book-catalog-' + tab.key, active: tab.key === catalogNavigationType
+  }))
+}); %>

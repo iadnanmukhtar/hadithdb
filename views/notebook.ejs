@@ -9,7 +9,7 @@
   <section class="notebook-main" aria-label="Private notes">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <div>
-      <h1 class="mb-0">My Notebook</h1>
+      <h1 class="ux-page-title mb-0">My Notebook</h1>
       <p id="notebook-created-count" class="small text-muted mb-0" aria-live="polite" hidden></p>
     </div>
     <div class="d-flex align-items-center gap-2">
@@ -46,6 +46,5 @@
 </main>
 <%- include('sub-views/notebook_help_modal.ejs'); %>
 <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
-<%- include('sub-views/footer.ejs', { site, page }); %>
-<%- include('sub-views/scripts.ejs', { site, page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 </body></html>

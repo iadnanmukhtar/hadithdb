@@ -16,10 +16,10 @@
             <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-prev" title="Previous tafsir" aria-label="Previous tafsir"><span class="bi bi-arrow-up"></span></button>
             <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-next" title="Next tafsir" aria-label="Next tafsir"><span class="bi bi-arrow-down"></span></button>
           <% } %>
-          <a class="btn <%= usePassagePageModalLayout ? 'btn-primary quran-ayah-modal-full-page' : 'btn-sm btn-outline-secondary' %> quran-ayah-modal-tafsir-expand disabled" href="#" title="Open selected tafsir as a full page" aria-label="Open selected tafsir as a full page" aria-disabled="true"><span class="bi bi-arrows-fullscreen" aria-hidden="true"></span><% if (usePassagePageModalLayout) { %><span>Full page</span><% } %></a>
+          <a class="btn btn-sm btn-outline-secondary quran-ayah-modal-tafsir-expand disabled" href="#" title="Open selected tafsir as a full page" aria-label="Open selected tafsir as a full page" aria-disabled="true"><span class="bi bi-arrows-fullscreen" aria-hidden="true"></span></a>
           <a class="btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/settings') %>" title="Quran settings" aria-label="Quran settings"><span class="bi bi-gear"></span></a>
         </nav>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
       </header>
       <div class="modal-body">
         <% modalAyahs.forEach(function (ayah, index) {
@@ -47,10 +47,10 @@
             <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-prev" title="Previous ayah" aria-label="Previous ayah"><span class="bi bi-arrow-left"></span></button>
             <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
           <% } %>
-          <a class="btn <%= usePassagePageModalLayout ? 'btn-primary quran-ayah-modal-full-page' : 'btn-sm btn-outline-secondary' %> quran-ayah-modal-translation-expand disabled" href="#" title="Open translations as a full page" aria-label="Open translations as a full page" aria-disabled="true"><span class="bi bi-arrows-fullscreen" aria-hidden="true"></span><% if (usePassagePageModalLayout) { %><span>Full page</span><% } %></a>
+          <a class="btn btn-sm btn-outline-secondary quran-ayah-modal-translation-expand disabled" href="#" title="Open translations as a full page" aria-label="Open translations as a full page" aria-disabled="true"><span class="bi bi-arrows-fullscreen" aria-hidden="true"></span></a>
           <a class="btn btn-sm btn-outline-secondary" href="<%= utils.quranUrl(req, '/quran/settings') %>" title="Quran settings" aria-label="Quran settings"><span class="bi bi-gear"></span></a>
         </nav>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
       </header>
       <div class="modal-body">
         <% modalAyahs.forEach(function (ayah, index) {
@@ -85,7 +85,7 @@
             <button type="button" class="btn btn-sm btn-outline-secondary quran-ayah-modal-next" title="Next ayah" aria-label="Next ayah"><span class="bi bi-arrow-right"></span></button>
           </nav>
         <% } %>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <%- include('modal_close.ejs', { closeLabel: 'Close' }) %>
       </header>
       <div class="modal-body">
         <% modalAyahs.forEach(function (ayah, index) {

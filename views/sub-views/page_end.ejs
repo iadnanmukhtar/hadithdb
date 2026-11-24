@@ -1,0 +1,4 @@
+<%- include('footer.ejs', { site, page }) %>
+<% if (locals.includePageScripts !== false) { %>
+  <%- include('scripts.ejs', { site, page }) %>
+<% } %>

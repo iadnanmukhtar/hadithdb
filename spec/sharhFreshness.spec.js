@@ -54,7 +54,7 @@ integration('migration preserves unknown history and tracks future SQL inserts a
     expect((await q(`SELECT * FROM ${table} WHERE id=2`))[0].content_updated_at.getTime()).toBeGreaterThan(Date.parse(stamp));
   } finally { await q(`DROP TABLE IF EXISTS ${table}`); await promisify(connection.end).call(connection); }
 },30000);
-test.each(['hadith','heading'])('%s template uses the latest rendered entry revision for both date signals', kind => {
+test.each(['hadith','heading'])('%s template retains the latest entry revision in metadata only', kind => {
   const ejs=require('ejs'), fs=require('fs'), path=require('path');
   const filename=path.join(__dirname,'../views/sharh_passage.ejs');
   const Utils=require('../lib/Utils');
@@ -71,5 +71,5 @@ test.each(['hadith','heading'])('%s template uses the latest rendered entry revi
       return '';
     }
   },{filename});
-  expect(head).toBe(stamp);expect(visible).toBe(stamp);
+  expect(head).toBe(stamp);expect(visible).toBeUndefined();
 });

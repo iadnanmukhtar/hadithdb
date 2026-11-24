@@ -1,18 +1,38 @@
-<ul class="col-7 nav flex-column offcanvas-col1">
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranArea && !isAboutArea && !isQuranStudyArea && !isQuranMushafArea && !isQuranTranslationsArea && !isQuranTafsirArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran') %>"><%- include('menu_icon.ejs', { type: 'quran', label: 'Quran' }) %> Quran</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranTranslationsArea) %>" href="<%= utils.urlFor(req, '/books?translation') %>"><i class="app-menu-icon bi bi-translate" aria-hidden="true"></i> Translations</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranStudyArea) %>" href="<%= utils.quranUrl(req, '/quran/1') %>"><i class="app-menu-icon bi bi-text-paragraph" aria-hidden="true"></i> Study</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranMushafArea && !isQuranMemorizeArea) %>" href="<%= utils.quranUrl(req, '/quran/page') %>"><i class="app-menu-icon bi bi-book" aria-hidden="true"></i> Mushaf</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranMemorizeArea && !isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/page?memorize') %>"><i class="app-menu-icon bi bi-eye-slash" aria-hidden="true"></i> Practice</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isQuranReviewArea) %>" href="<%= utils.quranUrl(req, '/quran/review') %>"><i class="app-menu-icon bi bi-arrow-repeat" aria-hidden="true"></i> Mudhakkir</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isQuranTafsirArea) %>" href="<%= utils.urlFor(req, '/books?tafsir') %>"><%- include('menu_icon.ejs', { type: 'tafsir', label: 'Tafsir' }) %> Tafsir</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>"><%- include('menu_icon.ejs', { type: 'hadith', label: 'Hadith' }) %> Hadith</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(typeof isSirahArea !== 'undefined' && isSirahArea) %>" href="<%= utils.urlFor(req, '/ibnhisham') %>"><%- include('menu_icon.ejs', { type: 'sirah', label: 'Sirah' }) %> Sirah</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>"><%- include('menu_icon.ejs', { type: 'books', label: 'Books' }) %> Books</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="app-menu-icon bi bi-people" aria-hidden="true"></i> Community</a></li>
-  <li data-notebook-auth class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(req.path === '/notebook') %>" href="<%= utils.urlFor(req, '/notebook') %>"><i class="app-menu-icon bi bi-sticky" aria-hidden="true"></i> My Notebook</a></li>
-  <li class="nav-item"><a class="nav-link ps-4<%- activeNavAttrs(isBlogArea) %>" href="<%= utils.urlFor(req, '/blog') %>"><i class="app-menu-icon bi bi-newspaper" aria-hidden="true"></i> Blog</a></li>
-  <li><hr></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBookmarksArea) %>" href="<%= utils.urlFor(req, '/bookmarks') %>"><i class="app-menu-icon bi bi-bookmark" aria-hidden="true"></i> My Bookmarks</a></li>
-  <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isAboutArea) %>" href="/about"><i class="app-menu-icon bi bi-info-circle" aria-hidden="true"></i> About</a></li>
-</ul>
+<%
+  const groups = [
+    ['Read & study', [
+      ['Quran', utils.quranUrl(req, '/quran'), 'quran'],
+      ['Study by ayah', utils.quranUrl(req, '/quran/1'), 'text-paragraph'],
+      ['Mushaf', utils.quranUrl(req, '/quran/page'), 'mushaf'],
+      ['Translations', utils.urlFor(req, '/books?translation'), 'translation'],
+      ['Tafsir', utils.urlFor(req, '/books?tafsir'), 'tafsir'],
+      ['Hadith', utils.hadithBaseUrl(req), 'hadith'],
+      ['Sirah', utils.urlFor(req, '/ibnhisham'), 'sirah']
+    ]],
+    ['Memorize', [
+      ['Practice', utils.quranUrl(req, '/quran/page?memorize'), 'eye-slash'],
+      ['Mudhakkir review', utils.quranUrl(req, '/quran/review'), 'arrow-repeat']
+    ]],
+    ['Community', [
+      ['Community feed', utils.urlFor(req, '/community'), 'people'],
+      ['Blog', utils.urlFor(req, '/blog'), 'newspaper']
+    ]],
+    ['Personal', [
+      ['Profile', profileHref, 'person'],
+      ['My Notebook', utils.urlFor(req, '/notebook'), 'sticky'],
+      ['My Bookmarks', utils.urlFor(req, '/bookmarks'), 'bookmark'],
+      ['Settings', settingsHref, 'gear']
+    ]]
+  ];
+%>
+<% for (const [group, entries] of groups) { %>
+<section class="ux-menu-group ux-menu-list"><h2><%= group %></h2>
+  <ul class="<%= group === 'Personal' ? 'offcanvas-col1' : '' %>">
+    <% for (const [label, href, icon] of entries) { %>
+    <li<% if (label === 'Profile') { %> data-drawer-profile hidden<% } else if (label === 'My Notebook') { %> data-notebook-auth<% } %>><a href="<%= href %>"<% if ((label === 'Settings' && isSettingsArea) || (page.context?.bookCatalogInitialType && ((icon === 'translation' && page.context?.bookCatalogInitialType === 'translations') || (icon === 'tafsir' && page.context?.bookCatalogInitialType === 'tafsir-all')))) { %> aria-current="page"<% } %>>
+      <% if (['quran', 'tafsir', 'hadith', 'sirah', 'mushaf', 'translation'].includes(icon)) { %><%- include('menu_icon.ejs', { type: icon, label }) %><% } else { %><i class="app-menu-icon bi bi-<%= icon %>" aria-hidden="true"></i><% } %><%= label %>
+    </a></li>
+    <% } %>
+  </ul>
+</section>
+<% } %>

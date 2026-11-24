@@ -706,7 +706,7 @@ async function sitemapUrls(req) {
   // Publication/unpublication must not depend on the corpus disk cache lifetime.
   const base = global.settings.site.url.replace(/\/+$/, '');
   const articles = await require('../lib/CommunityBlogImport').publicUrls();
-  const corpus = urls.filter(url => !/^\/(?:blog\/|community\/(?:p\/|@))/.test(new URL(url).pathname));
+  const corpus = urls.filter(url => !/^\/(?:requests(?:\/|$)|blog\/|community\/(?:p\/|@))/.test(new URL(url).pathname));
   return [...new Set(corpus.concat(articles.map(path => base + path)))];
 }
 
@@ -883,7 +883,6 @@ function hadithPublicSitemapUrlList(domain) {
     `${domain}/books`,
     ...['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].map(type => `${domain}/books?${type}`),
     `${domain}/community`,
-    `${domain}/requests`,
     `${domain}/blog`,
     `${domain}/mcp-server`
   ];
@@ -2457,9 +2456,9 @@ async function applyRandomQuranTranslation(random, translationBook) {
 }
 
 // QURAN SEARCH PROXY
-router.get('/:bookAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.sendHadithBook);
+router.get('/:bookAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.temporarilyUnavailable);
 
-router.get('/quran/:translationAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.sendTranslationBook);
+router.get('/quran/:translationAlias.:format(json|epub)', BookDownloads.authorizeDownload, BookDownloads.temporarilyUnavailable);
 
 router.get('/quran', throttleSearchRequest, async function (req, res, next) {
   if (!req.query.q)
@@ -2931,9 +2930,8 @@ router.get('/:bookAlias', async function (req, res, next) {
   });
   var book = visibleBookFromParam(req.params.bookAlias);
   if (book) {
-    if ('json' in req.query || ('download' in req.query && 'epub' in req.query)) {
-      req.params.format = 'download' in req.query && 'epub' in req.query ? 'epub' : 'json';
-      return BookDownloads.authorizeDownload(req, res, () => BookDownloads.sendHadithBook(req, res, next));
+    if ('json' in req.query || ('download' in req.query && ('epub' in req.query || 'tsv' in req.query))) {
+      return BookDownloads.authorizeDownload(req, res, () => BookDownloads.temporarilyUnavailable(req, res));
     }
     var prevBook = null;
     var nextBook = null;
@@ -2951,7 +2949,9 @@ router.get('/:bookAlias', async function (req, res, next) {
     const quranTocDefaultView = req.params.bookAlias === 'quran'
       ? (req.query.toc || req.query.view || req.query.tab || 'juz')
       : 'surahs';
-    var cachedFile = Utils.htmlCacheFile(req);
+    var cachedFile = book.alias === 'quran'
+      ? Utils.cacheFileFromFilename('_quran.library-shelves-' + (['surahs', 'manzils'].includes(quranTocDefaultView) ? quranTocDefaultView : 'juz') + Utils.cacheReqToFilename(req), 'html', 'quran', 'quran')
+      : Utils.htmlCacheFile(req);
     const flushCache = Utils.shouldFlushCache(req);
     if (flushCache && req.params.bookAlias === 'quran')
       invalidateQuranMemoryCaches({ allMushaf: true });
@@ -2980,40 +2980,26 @@ router.get('/:bookAlias', async function (req, res, next) {
     var results;
     var random;
     var tafsirs;
-	var hadithIntroductionArticles = [];
-    if ('download' in req.query && ('json' in req.query || 'epub' in req.query || 'tsv' in req.query)) {
-      debug(`downloading ${req.params.bookAlias}`);
-      if (!book.virtual)
-        results = await global.query(`SELECT * from v_hadiths WHERE book_id=${book.id} ORDER BY ordinal`);
-      else
-        results = await global.query(`SELECT * from v_hadiths_virtual_snapshot WHERE book_id=${book.id} ORDER BY ${require('../lib/VirtualHadithReader').ORDER_BY}`);
-    } else {
-      results = await Library.instance.findBook(book.alias).getChapters();
-      var quranJuzRows = book.alias === 'quran' ? await QuranTocSubdivisions.juzRows() : [];
-      var quranManzilRows = book.alias === 'quran' ? await QuranTocSubdivisions.manzilRows() : [];
-      var quranSectionRangesBySurah = book.alias === 'quran' ? await QuranTocSubdivisions.quranSectionRangesBySurah() : {};
-      if (cacheableHtml) {
-        random = undefined;
-      } else if (!book.virtual)
-        random = await Index.docRandomnly(Item.INDEX, `book_alias:${book.alias}`);
-      else
-        random = await Index.docRandomnly(Item.INDEX, `books:"{${book.alias}}"`);
-      if (random && random.length > 0)
-        random = new Item(random[0]);
-      if (book.alias === 'quran')
-        tafsirs = await Tafsir.visibleTafsirs();
-	  else
-		hadithIntroductionArticles = await CommentaryHeadings.introductionArticles(book.id);
-    }
+    var translations;
+    var hadithIntroductionArticles = [];
+    results = await Library.instance.findBook(book.alias).getChapters();
+    var quranJuzRows = book.alias === 'quran' ? await QuranTocSubdivisions.juzRows() : [];
+    var quranManzilRows = book.alias === 'quran' ? await QuranTocSubdivisions.manzilRows() : [];
+    var quranSectionRangesBySurah = book.alias === 'quran' ? await QuranTocSubdivisions.quranSectionRangesBySurah() : {};
+    if (cacheableHtml) {
+      random = undefined;
+    } else if (!book.virtual)
+      random = await Index.docRandomnly(Item.INDEX, `book_alias:${book.alias}`);
+    else
+      random = await Index.docRandomnly(Item.INDEX, `books:"{${book.alias}}"`);
+    if (random && random.length > 0)
+      random = new Item(random[0]);
+    if (book.alias === 'quran')
+      [tafsirs, translations] = await Promise.all([Tafsir.visibleTafsirs(), Tafsir.visibleTranslations()]);
+    else
+      hadithIntroductionArticles = await CommentaryHeadings.introductionArticles(book.id);
 
-    if ('download' in req.query && 'json' in req.query) {
-      Utils.sendJsonDownload(res, `hadithunlocked_${Utils.safeFilename(book.alias)}.json`, results);
-    } else if ('download' in req.query && 'epub' in req.query) {
-      Utils.sendEpubDownload(res, `hadithunlocked_${Utils.safeFilename(book.alias)}.epub`, book, results);
-    } else if ('json' in req.query) {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(HadithJsonMetadata.publicJson(results)));
-    } else if ('tsv' in req.query) {
+    if ('tsv' in req.query) {
       res.setHeader('Content-Type', 'text/tab-separated-values; charset=utf-8');
       var keyNames = Object.keys(results[0]);
       if ('keys' in req.query)
@@ -3034,13 +3020,12 @@ router.get('/:bookAlias', async function (req, res, next) {
           quranManzilRows: quranManzilRows,
           quranSectionRangesBySurah: quranSectionRangesBySurah,
           quranTocDefaultView: quranTocDefaultView,
-          BookDownloads: BookDownloads,
           prevBook: prevBook,
           nextBook: nextBook,
           toc: results,
           random: random,
           Tafsir: Tafsir,
-          tafsirs: tafsirs,
+          tafsirs, translations,
 		  hadithIntroductionArticles: hadithIntroductionArticles,
           req: req,
           res: res
@@ -3055,13 +3040,12 @@ router.get('/:bookAlias', async function (req, res, next) {
         quranManzilRows: quranManzilRows,
         quranSectionRangesBySurah: quranSectionRangesBySurah,
         quranTocDefaultView: quranTocDefaultView,
-        BookDownloads: BookDownloads,
         prevBook: prevBook,
         nextBook: nextBook,
         toc: results,
         random: random,
         Tafsir: Tafsir,
-        tafsirs: tafsirs,
+        tafsirs, translations,
 		hadithIntroductionArticles: hadithIntroductionArticles
       });
     }
@@ -3186,7 +3170,6 @@ router.get('/quran/:commentaryAlias', async function (req, res, next) {
     quranSectionRangesBySurah: quranSectionRangesBySurah,
     quranCommentaryAvailableSurahs: quranCommentaryAvailableSurahs,
     quranTocDefaultView: quranTocDefaultView,
-    BookDownloads: BookDownloads,
     commentaryIntroductionArticles: commentaryIntroductionArticles,
     prevBook: null,
     nextBook: null,

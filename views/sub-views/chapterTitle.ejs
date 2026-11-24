@@ -11,6 +11,7 @@
       || (heading.path && firstChapterSection.path && heading.path === firstChapterSection.path)
       || Number(heading.h2) === Number(firstChapterSection.h2)
     );
+    var sectionHref = section && (locals.sectionLink ? locals.sectionLink(`/${section.path}`) : utils.urlFor(req, `/${section.path}`));
     var hadithFlatHeadingRail = Boolean(locals.hadithFlatHeadingRail);
     var hadithFlatHeadingContext = locals.hadithFlatHeadingContext || '';
     var hadithFlatHeadingKey = locals.hadithFlatHeadingKey || '';
@@ -55,7 +56,7 @@
 %>
 
 <%# Chapter Title %>
-<heading class="row major"<% if (hadithFlatHeadingRail) { %> data-hadith-heading-target data-hadith-heading-context="<%= hadithFlatHeadingContext %>" data-hadith-heading-key="<%= hadithFlatHeadingKey %>" data-hadith-heading-level="1"<% } %>>
+<heading data-reader-chapter="<%= chapter.path %>" class="row major<%= !isQuranChapter && !sirahArabicChapterOnly ? ' hadith-chapter-title' : '' %>"<% if (hadithFlatHeadingRail) { %> data-hadith-heading-target data-hadith-heading-context="<%= hadithFlatHeadingContext %>" data-hadith-heading-key="<%= hadithFlatHeadingKey %>" data-hadith-heading-level="1"<% } %>>
 
   <% if (!sirahArabicChapterOnly) { %>
   <h2 class="col-md-6 col-sm-12 fs-4 title" lang="en"><a href="<%= utils.urlFor(req, `/${chapter.path}`) %>"<% if (isQuranChapter && !site.editMode) { %> class="quran-surah-navigation-title" data-bs-toggle="offcanvas" data-bs-target="#quran-navigation-rail" data-navigation-open-tab="surah" data-navigation-surah="<%= chapter.h1 %>" aria-controls="quran-navigation-rail" aria-haspopup="dialog" title="Choose a Surah"<% } %>>
@@ -89,40 +90,20 @@
   <div class="col-md-6 col-sm-12" lang="en">
     <a title="<%- breadcrumbBookTitleEn %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelEn %></a>
     &gt;
-    <% if (heading.level == 1) { %>
-	  <% if (isQuranChapter) { %>
-	    <span title="<%- chapter.title %>"><%= quranChapterBreadcrumbLabel %></span>
-	  <% } else { %>
-	    <span title="<%- chapter.title %>"><%- chapterBreadcrumbLabelEn %> <%- chapter.h1 %></span>
-	  <% } %>
-    <% } else if (heading.level == 2) { %>
-	  <a title="<%- chapter.title_en || chapterBreadcrumbLabelEn %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%- isQuranChapter ? quranChapterBreadcrumbLabel : `${chapterBreadcrumbLabelEn} ${chapter.h1}` %></a>
+    <a title="<%= chapter.title_en %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%= isQuranChapter ? quranChapterBreadcrumbLabel : `${chapterBreadcrumbLabelEn} ${chapter.h1}` %></a>
+    <% if (heading.level == 2) { %>
       &gt;
-      <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
-	    <a title="<%- section.title %>" href="<%= utils.urlFor(req, `/${section.path}`) %>">Passage <%- section.h2 %></a>
-      <% } else { %>
-	    <span title="<%- section.title %>"><%= isQuranChapter ? 'Passage' : 'Section' %> <%- section.h2 %></span>
-      <% } %>
+      <a title="<%= section.title %>" href="<%= sectionHref %>"><%= isQuranChapter ? 'Passage' : 'Section' %> <%= section.h2 %></a>
     <% } %>
   </div>
 
   <div class="col-md-6 col-sm-12" lang="ar">
     <a title="<%- breadcrumbBookTitleAr %>" href="<%= utils.urlFor(req, breadcrumbBookHref) %>"><%- breadcrumbBookLabelAr %></a>
     &gt;
-    <% if (heading.level == 1) { %>
-	  <% if (isQuranChapter) { %>
-	    <span title="<%- chapter.title %>"><%= quranChapterBreadcrumbLabelAr %></span>
-	  <% } else { %>
-	    <span title="<%- chapter.title %>"><%- chapterBreadcrumbLabelAr %> <%- arabic.toArabicDigits(chapter.h1) %></span>
-	  <% } %>
-    <% } else if (heading.level == 2) { %>
-	  <a title="<%- chapter.title %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%- isQuranChapter ? quranChapterBreadcrumbLabelAr : `${chapterBreadcrumbLabelAr} ${arabic.toArabicDigits(chapter.h1)}` %></a>
+    <a title="<%= chapter.title %>" href="<%= utils.urlFor(req, `/${chapter.path}`) %>"><%= isQuranChapter ? quranChapterBreadcrumbLabelAr : `${chapterBreadcrumbLabelAr} ${arabic.toArabicDigits(chapter.h1)}` %></a>
+    <% if (heading.level == 2) { %>
       &gt;
-      <% if (page.context.book && page.context.book.alias === 'quran' && page.context.passage) { %>
-	    <a title="<%- section.title %>" href="<%= utils.urlFor(req, `/${section.path}`) %>">مقطع <%- arabic.toArabicDigits(section.h2) %></a>
-      <% } else { %>
-	    <span title="<%- section.title %>"><%= isQuranChapter ? 'مقطع' : 'باب' %> <%- arabic.toArabicDigits(section.h2) %></span>
-      <% } %>
+      <a title="<%= section.title %>" href="<%= sectionHref %>"><%= isQuranChapter ? 'مقطع' : 'باب' %> <%= arabic.toArabicDigits(section.h2) %></a>
     <% } %>
   </div>
 

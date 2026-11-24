@@ -59,7 +59,7 @@ describe('sitemap delivery', () => {
   test('keeps the Hadith sitemap index on its own hostname', async () => {
     const domain = global.settings.site.url;
     jest.spyOn(Utils, 'readCachedTextFile').mockReturnValue([
-      '', '/books', ...['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].map(type => '/books?' + type), '/community', '/requests', '/blog', '/mcp-server'
+      '', '/books', ...['hadith', 'translation', 'tafsir', 'sharh', 'history', 'mushaf'].map(type => '/books?' + type), '/community', '/blog', '/mcp-server'
     ].map(path => domain + path).join('\n'));
     const res = response();
     await handler('/sitemap.xml')({ hostname: 'hadithunlocked.com', query: {} }, res, jest.fn());
@@ -80,6 +80,7 @@ describe('sitemap delivery', () => {
     expect(text).toContain('/history:1');
     expect(text).toContain('/community/p/published');
     expect(text).not.toContain('/removed');
+    expect(text).not.toContain('/requests');
   });
   test('rebuilds stale caches missing untitled core verses, without duplicating translations', async () => {
     global.surahs = [{ num: 1, ayahs: 2 }];

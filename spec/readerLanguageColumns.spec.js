@@ -108,3 +108,23 @@ test('an Arabic-only saved preference cannot hide an English-only Sirah passage'
  expect(root._readerLanguageColumnToolbar.hidden).toBe(true);
  dom.window.close();
 });
+
+test('search results use the Study eye controls for both language columns', () => {
+  const { JSDOM } = require('jsdom');
+  const dom = new JSDOM('<main data-search-infinite><section data-search-results-page><article><div data-reader-language-column="english"></div><div data-reader-language-column="arabic"></div></article></section></main>', { runScripts: 'outside-only' });
+  try {
+    const script = source('public/static/js/script.js');
+    const { window } = dom;
+    window.eval(script.slice(script.indexOf('function readerLanguageColumnRoots('), script.indexOf('function initReaderLanguageColumnToggles(')));
+    const [root] = window.readerLanguageColumnRoots(window.document);
+    window.ensureReaderLanguageColumnToolbar(root);
+    const buttons = [...root.querySelectorAll('.reader-language-toolbar .quran-passage-view-btn')];
+    expect(buttons.map(button => button.getAttribute('aria-label'))).toEqual(['Hide English', 'Hide Arabic']);
+    expect(buttons.every(button => !button.textContent.trim() && button.querySelector('.bi-eye'))).toBe(true);
+    window.applyReaderLanguageColumns({ english: true, arabic: false });
+    expect(buttons[0].disabled).toBe(true);
+    expect(buttons[1].querySelector('.bi-eye-slash')).not.toBeNull();
+  } finally {
+    dom.window.close();
+  }
+});

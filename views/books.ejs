@@ -12,14 +12,14 @@
     var page = {
     menu: 'Books',
     title_en: `Hadith Unlocked | All Books`,
-    description_en: 'Browse hadith collections with Arabic source texts, English translations, chapter navigation, references, and downloadable editions.',
+    description_en: 'Browse hadith collections with Arabic source texts, English translations, chapter navigation, and references.',
     subtitle_en: `Available Books`,
     subtitle: ``,
     canonical: `/books`,
     context: {}
     };
     var catalogTypes = {
-      hadith: { pane: 'hadith', title: 'Hadith Books', description: 'Browse hadith collections with Arabic texts, English translations, references, and downloadable editions.' },
+      hadith: { pane: 'hadith', title: 'Hadith Books', description: 'Browse hadith collections with Arabic texts, English translations, and references.' },
       translation: { pane: 'translations', title: 'Quran Translations', description: 'Browse English Quran translations by century, translator, and publication date.' },
       tafsir: { pane: 'tafsir-all', title: 'Tafsir Books', description: 'Browse Quran tafsir books and explanations in Arabic and English.' },
       sharh: { pane: 'sharh', title: 'Hadith Explanations', description: 'Browse hadith commentary books grouped by the hadith collection they explain.' },
@@ -29,12 +29,16 @@
     var catalogQuery = req.query || {};
     var catalogType = Object.keys(catalogTypes).find(function (key) { return Object.prototype.hasOwnProperty.call(catalogQuery, key); })
       || (catalogTypes[catalogQuery.tab] ? catalogQuery.tab : 'hadith');
+    var catalogPath = '/books';
+    page.context.catalogPath = catalogPath;
+    page.noindex = false;
     var initialBookCatalogType = catalogTypes[catalogType].pane;
     page.title_en = 'Hadith Unlocked | ' + catalogTypes[catalogType].title;
     page.subtitle_en = catalogTypes[catalogType].title;
     page.description_en = catalogTypes[catalogType].description;
     page.canonical = '/books?' + catalogType;
     page.context.bookCatalogInitialType = initialBookCatalogType;
+    page.context.quranCatalog = ['mushaf', 'tafsir', 'translation'].includes(catalogType);
     var tafsirBookUrl = function (tafsir) {
       var slug = tafsir.slug || Tafsir.tafsirSlug(tafsir.alias);
       return utils.quranUrl(req, `/quran/tafsir/${encodeURIComponent(slug)}`);
@@ -42,9 +46,6 @@
     var translationGroups = BookGroups.translationGroups(translations || []);
     var translationBookUrl = function (translation) {
       return utils.quranUrl(req, `/quran/${encodeURIComponent(translation.quranBookSlug || translation.alias)}`);
-    };
-    var downloadLinksFor = function (book) {
-      return BookDownloads.relativeDownloadLinks(book);
     };
     var tafsirDeathLabel = function (tafsir) {
       var death = utils.emptyIfNull(tafsir.death || '').toString().trim();
@@ -61,17 +62,6 @@
       death = death.replace(/\b(?:AH|H)\b/ig, '').replace(/هـ/u, '').trim();
       return `ت. ${death} هـ`;
     };
-    var tafsirDeathYear = function (tafsir) {
-      var match = utils.emptyIfNull(tafsir.death || '').toString().match(/\d+/);
-      return match ? Number(match[0]) : NaN;
-    };
-    var tafsirPublishedYear = function (tafsir) {
-      var match = utils.emptyIfNull(tafsir.published_year || '').toString().match(/\d+/);
-      return match ? Number(match[0]) : NaN;
-    };
-    var tafsirSortName = function (tafsir) {
-      return tafsir.shortName_en || tafsir.name_en || tafsir.shortName || tafsir.title || tafsir.alias || '';
-    };
     var commentaryPublicationLabel = function (book) {
       return [
         book && book.published_year ? `Pub. ${book.published_year}` : '',
@@ -87,34 +77,7 @@
         death = `${death} CE`;
       return /^d\./i.test(death) ? death : `d. ${death}`;
     };
-    var tafsirGroups = [
-      { key: 'all', heading: 'Tafsir', tafsirs: Tafsir.uniqueCarouselTafsirs((tafsirs || []).slice()) }
-    ].map(function (group) {
-      group.tafsirs.sort(function (a, b) {
-        if (Tafsir.isDefaultTafsir(a) !== Tafsir.isDefaultTafsir(b))
-          return Tafsir.isDefaultTafsir(a) ? -1 : 1;
-        var aDeath = tafsirDeathYear(a);
-        var bDeath = tafsirDeathYear(b);
-        var aHasDeath = Number.isFinite(aDeath) && aDeath > 0;
-        var bHasDeath = Number.isFinite(bDeath) && bDeath > 0;
-        if (aHasDeath && bHasDeath && aDeath !== bDeath)
-          return aDeath - bDeath;
-        if (aHasDeath !== bHasDeath)
-          return aHasDeath ? -1 : 1;
-        if (!aHasDeath && !bHasDeath) {
-          var aPublished = tafsirPublishedYear(a);
-          var bPublished = tafsirPublishedYear(b);
-          var aHasPublished = Number.isFinite(aPublished) && aPublished > 0;
-          var bHasPublished = Number.isFinite(bPublished) && bPublished > 0;
-          if (aHasPublished && bHasPublished && aPublished !== bPublished)
-            return bPublished - aPublished;
-          if (aHasPublished !== bHasPublished)
-            return aHasPublished ? -1 : 1;
-        }
-        return tafsirSortName(a).localeCompare(tafsirSortName(b));
-      });
-      return group;
-    });
+    var tafsirGroups = [{ key: 'all', heading: 'Tafsir', tafsirs: Tafsir.catalogOrder(tafsirs) }];
     var catalogBookGroups = {
       hadith: BookGroups.list('hadith'),
       tafsir: BookGroups.list('tafsir'),
@@ -131,10 +94,10 @@
         return book.catalog_language_badge;
       var languages = Tafsir.commentaryLanguages(book);
       if (languages.indexOf('en') >= 0 && languages.indexOf('ar') >= 0)
-        return 'EN-AR';
+        return 'en-ar';
       if (languages.indexOf('en') >= 0)
-        return 'EN';
-      return 'AR';
+        return 'en';
+      return 'ar';
     };
     var catalogLanguageCodes = function (book) {
       return Tafsir.commentaryLanguages(book).join(' ');
@@ -159,23 +122,6 @@
     var bookDescriptionId = function (book) {
       return `book-catalog-book-description-${utils.emptyIfNull(book.alias || '').replace(/[^A-Za-z0-9_-]+/g, '-')}`;
     };
-    var tafsirSizeLabel = function (tafsir) {
-      var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
-      if (size === 'lg')
-        return 'Large tafsir';
-      if (size === 'md')
-        return 'Medium tafsir';
-      if (size === 'sm')
-        return 'Small tafsir';
-      return '';
-    };
-    var tafsirSizeIndicator = function (tafsir) {
-      var size = utils.emptyIfNull(tafsir && tafsir.size || '').toString();
-      var label = tafsirSizeLabel(tafsir);
-      if (!label)
-        return '';
-      return `<span class="tafsir-size-indicator tafsir-size-tooltip tafsir-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
-    };
     var hadithSizeLabel = function (book) {
       var size = utils.emptyIfNull(book && book.size || '').toString();
       if (size === 'lg')
@@ -193,19 +139,44 @@
         return '';
       return `<span class="hadith-size-indicator tafsir-size-tooltip hadith-size-indicator-${size}" title="${label}" data-tafsir-size-tooltip="${label}" aria-label="${label}" role="img"></span>`;
     };
+    const railCollections = [
+      { pane: 'book-catalog-hadith', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-sirah', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-tafsir-all', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
+      { pane: 'book-catalog-translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
+      { pane: 'book-catalog-sharh', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
+      { pane: 'book-catalog-mushaf', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
+    ];
+    const highlightedAliases = {
+      hadith: BookGroups.list('hadith', books, { membershipOrder: true }).find(group => group.id === 'beginner-books')?.aliases || [],
+      sirah: books.filter(book => book.type === 'sirah').map(book => book.alias),
+      mushaf: (locals.mushafs || []).map(book => book.alias),
+      'tafsir-all': Tafsir.englishHighlights(tafsirGroups[0].tafsirs).map(book => book.alias),
+      translations: BookGroups.modernTranslationAliases(translationGroups),
+      sharh: ['bukhari-ibnhajar', 'muslim-nawawi', 'abudawud-shamsalhaqq', 'tirmidhi-mubarakfuri', 'nasai-suyuti', 'ibnmajah-sindi', 'riyad-ibnallan']
+    };
 %>
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
 
+<link rel="stylesheet" href="/static/css/home-library.css?v=<%= utils.styleAssetVersion() %>">
+<script defer src="/static/js/home-library.js?v=<%= utils.scriptAssetVersion() %>"></script>
+<link rel="stylesheet" href="/static/css/books.css?v=<%= utils.styleAssetVersion() %>">
 </head>
-<body>
+<body class="books-beta">
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
   <div class="container-fluid hadith-heading-layout toc-heading-layout">
 <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
 
-    <main class="book-catalog-page">
+    <main class="book-catalog-page ux-system">
+    <% for (const [label, icon] of Object.entries({ Hadith: 'hadith', Mushaf: 'mushaf', Tafsir: 'tafsir', Translation: 'translation', 'Sharḥ': 'sharh', 'History & Sirah': 'sirah' })) { %>
+    <template data-catalog-icon="<%= label %>"><%- include('sub-views/menu_icon.ejs', { type: icon }) %></template>
+    <% } %>
+    <header class="ux-page-heading">
+      <h1 class="ux-page-title" data-catalog-title><%= catalogTypes[catalogType].title %></h1>
+    </header>
 
     <%- utils.jsonLdScript({
       '@context': 'https://schema.org',
@@ -214,33 +185,31 @@
       about: 'Available Books of Ḥadīth, Sharḥ, History, Tafsīr, Mushaf editions, and Quran Translations'
     }) %>
 
-    <nav class="h-menu-wrap home-hadith-book-nav book-catalog-group-filters mb-3" aria-label="Filter books">
-      <div class="h-menu-scroller">
-        <div class="btn-group h-menu text-nowrap" role="group">
-          <label class="book-carousel-filter">
-            <span class="bi bi-search" aria-hidden="true"></span>
-            <input type="search" class="book-carousel-filter-input book-catalog-filter" placeholder="Filter books" aria-label="Filter books in the selected collection" autocomplete="off" autofocus>
-          </label>
-          <button type="button" class="btn btn-outline-primary active" data-book-catalog-group-filter="" aria-pressed="true">All</button>
-          <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="ar" data-book-catalog-group-scope="tafsir" aria-pressed="false">Arabic</button>
-          <button type="button" class="btn btn-outline-primary d-none" data-book-catalog-language-filter="en" data-book-catalog-group-scope="sharh" aria-pressed="false">English</button>
-          <% Object.keys(catalogBookGroups).forEach(function (scope) { catalogBookGroups[scope].forEach(function (group) { %>
-            <button type="button" class="btn btn-outline-primary<%= scope === 'hadith' ? '' : ' d-none' %>" data-book-catalog-group-filter="<%= group.id %>" data-book-catalog-group-scope="<%= scope %>" aria-pressed="false"><%= group.label %></button>
-          <% }); }); %>
-        </div>
-      </div>
-    </nav>
+    <div class="catalog-mobile-tools d-lg-none" data-mobile-catalog-tools></div>
 
-    <section class="book-catalog-tabs-section mb-4">
-      <div class="tab-content">
-        <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-mushaf-tab">
+    <% if (!site.editMode) { for (const collection of railCollections) {
+      const pane = collection.pane.slice('book-catalog-'.length);
+      const byAlias = new Map(collection.railBooks.map(book => [book.alias, book]));
+      const highlights = highlightedAliases[pane].map(alias => byAlias.get(alias)).filter(Boolean);
+      if (!highlights.length) continue;
+      const label = 'Highlighted books';
+      const icon = { hadith: 'book', sirah: 'clock-history', mushaf: 'book', 'tafsir-all': 'book-half', translations: 'translate', sharh: 'journal-text' }[pane];
+    %>
+    <section class="library-shelf" data-library-shelf data-layout="covers" data-highlight-pane="<%= collection.pane %>" aria-labelledby="highlight-<%= pane %>" <%= pane === initialBookCatalogType ? '' : 'hidden' %>>
+      <h2 id="highlight-<%= pane %>" class="ux-section-title"><%= label %></h2>
+      <%- include('sub-views/library_volumes', { shelfId: 'highlight-books-' + pane, shelfLabel: label, shelfBooks: highlights, hadithSizeIndicator: pane === 'tafsir-all' ? Tafsir.sizeIndicator : hadithSizeIndicator, bookHref: collection.railHref, bookIcon: () => 'bi-' + icon }) %>
+    </section>
+    <% } } %>
+
+    <div id="book-catalog-results" class="tab-content mb-4">
+        <div id="book-catalog-mushaf" class="tab-pane fade<%= initialBookCatalogType === 'mushaf' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-mushaf-tab">
           <%- include('sub-views/mushaf_catalog_list.ejs', { mushafs: locals.mushafs || [] }); %>
         </div>
-        <div id="book-catalog-sharh" class="tab-pane fade<%= initialBookCatalogType === 'sharh' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-sharh-tab">
+        <div id="book-catalog-sharh" class="tab-pane fade<%= initialBookCatalogType === 'sharh' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-sharh-tab">
           <%- include('sub-views/sharh_catalog_list.ejs', { site, sharhBooks: locals.sharhBooks || [] }); %>
         </div>
         <% ['hadith', 'sirah'].forEach(function (bookType) { %>
-        <div id="book-catalog-<%= bookType %>" class="tab-pane fade<%= bookType === initialBookCatalogType ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-<%= bookType %>-tab">
+        <div id="book-catalog-<%= bookType %>" class="tab-pane fade<%= bookType === initialBookCatalogType ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-<%= bookType %>-tab">
           <div class="tafsir-book-list" data-book-catalog-type="<%= bookType === 'sirah' ? 'History & Sirah' : 'Hadith' %>">
             <% books.filter(function (book) { return bookType === 'sirah' ? book.type === 'sirah' : book.type !== 'sirah'; }).forEach(function (book) { %>
               <%
@@ -272,15 +241,15 @@
                       <% if (site.editMode) { %>
                         <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><span class="_e" data-id="<%= book.id %>" data-prop="book.name_en" data-placeholder="English name"><%- book.name_en || '' %></span></a>
                       <% } else { %>
-                        <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName_en || book.name_en || book.alias %></a>
-                      <% } %><%- hadithSizeIndicator(book) %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= bookLanguageBadge(book) %></span>
+                        <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.name_en || book.alias %></a>
+                      <% } %><%- hadithSizeIndicator(book) %> <span class="ux-pill book-language-badge"><%= bookLanguageBadge(book) %></span>
                     </h3>
-                    <% if (site.editMode || book.name || book.shortName) { %>
+                    <% if (site.editMode || book.name) { %>
                       <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
                         <% if (site.editMode) { %>
                           <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><span class="_e" data-id="<%= book.id %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- book.name || '' %></span></a>
                         <% } else { %>
-                          <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.shortName || book.name || '' %></a>
+                          <a href="<%= utils.urlFor(req, `/${book.alias}`) %>"><%- book.name || '' %></a>
                         <% } %>
                       </h3>
                     <% } %>
@@ -306,13 +275,6 @@
                     <% if (site.editMode || book.aqidah) { %><div><span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.aqidah" data-placeholder="Aqidah"<% } %>><%- book.aqidah || '' %></span></div><% } %>
                   </div>
                   <% if (site.editMode || book.published_year || book.publisher) { %><small class="tafsir-book-publication text-muted">Pub. <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.published_year" data-placeholder="Year"<% } %>><%- book.published_year || '' %></span><% if (site.editMode || book.publisher) { %>, <span <% if (site.editMode) { %>class="_e" data-id="<%= book.id %>" data-prop="book.publisher" data-placeholder="Publisher"<% } %>><%- book.publisher || '' %></span><% } %></small><% } %>
-                  <%
-                    var hadithDownloadLinks = downloadLinksFor(book);
-                  %>
-                  <div class="book-download-links">
-                    <a href="<%= hadithDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- book.shortName_en || book.name_en || book.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                    <a href="<%= hadithDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- book.shortName_en || book.name_en || book.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
-                  </div>
                   <% if (site.editMode) { %>
                     <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
                       <div class="_e tafsir-book-description-editor" data-id="<%= book.id %>" data-prop="book.description" data-edit-format="md" data-markdown-source="<%= descriptionMarkdown %>" data-markdown-empty-html="&hellip;"><%- descriptionHtml || '&hellip;' %></div>
@@ -336,7 +298,7 @@
 
         <% tafsirGroups.forEach(function (group) { %>
           <% var sectionId = `book-catalog-tafsir-${group.key}`; %>
-          <div id="<%= sectionId %>" class="tab-pane fade<%= initialBookCatalogType === 'tafsir-all' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="<%= sectionId %>-tab">
+          <div id="<%= sectionId %>" class="tab-pane fade<%= initialBookCatalogType === 'tafsir-all' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="<%= sectionId %>-tab">
             <% if (group.tafsirs.length < 1) { %>
               <p class="text-muted">No <%= group.heading.toLowerCase() %> are currently available.</p>
             <% } else { %>
@@ -375,15 +337,15 @@
                           <% if (site.editMode) { %>
                             <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- tafsir.name_en || '' %></span></a>
                           <% } else { %>
-                            <a href="<%= browseUrl %>"><%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %></a>
-                          <% } %><%- tafsirSizeIndicator(tafsir) %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= bookLanguageBadge(tafsir) %></span>
+                            <a href="<%= browseUrl %>"><%- tafsir.name_en || tafsir.alias %></a>
+                          <% } %><%- Tafsir.sizeIndicator(tafsir) %> <span class="ux-pill book-language-badge"><%= bookLanguageBadge(tafsir) %></span>
                         </h3>
-                        <% if (site.editMode || tafsir.name || tafsir.shortName) { %>
+                        <% if (site.editMode || tafsir.name) { %>
                           <h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl">
                             <% if (site.editMode) { %>
                               <a href="<%= browseUrl %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- tafsir.name || '' %></span></a>
                             <% } else { %>
-                              <a href="<%= browseUrl %>"><%- tafsir.shortName || tafsir.name || '' %></a>
+                              <a href="<%= browseUrl %>"><%- tafsir.name || '' %></a>
                             <% } %>
                           </h3>
                         <% } %>
@@ -414,13 +376,6 @@
                           </div>
                         <% } %>
                         <% if (site.editMode || tafsir.aqidah) { %><div><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.aqidah" data-placeholder="Aqidah"<% } %>><%- tafsir.aqidah || '' %></span></div><% } %>
-                      </div>
-                      <%
-                        var tafsirDownloadLinks = downloadLinksFor(tafsir);
-                      %>
-                      <div class="book-download-links">
-                        <a href="<%= tafsirDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                        <a href="<%= tafsirDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- tafsir.shortName_en || tafsir.name_en || tafsir.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
                       </div>
                       <% if (site.editMode) { %>
                         <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
@@ -464,7 +419,7 @@
           </div>
         <% }); %>
 
-        <div id="book-catalog-translations" class="tab-pane fade<%= initialBookCatalogType === 'translations' ? ' show active' : '' %> book-catalog-section-body book-catalog-tab-pane" role="tabpanel" aria-labelledby="book-catalog-translations-tab">
+        <div id="book-catalog-translations" class="tab-pane fade<%= initialBookCatalogType === 'translations' ? ' show active' : '' %> book-catalog-tab-pane" role="tabpanel" tabindex="0" aria-labelledby="book-catalog-translations-tab">
           <% if (!translations || translations.length < 1) { %>
             <p class="text-muted">No English translations are currently available.</p>
           <% } else { %>
@@ -501,10 +456,10 @@
                         <% if (site.editMode) { %>
                           <a href="<%= translationBookUrl(translation) %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name_en" data-placeholder="English name"><%- translation.name_en || '' %></span></a>
                         <% } else { %>
-                          <a href="<%= translationBookUrl(translation) %>"><%- translation.shortName_en || translation.name_en || translation.alias %></a>
-                        <% } %> <span class="badge rounded-pill text-bg-light border book-language-badge"><%= bookLanguageBadge(translation) %></span>
+                          <a href="<%= translationBookUrl(translation) %>"><%- translation.name_en || translation.alias %></a>
+                        <% } %> <span class="ux-pill book-language-badge"><%= bookLanguageBadge(translation) %></span>
                       </h3>
-                      <% if (site.editMode || translation.name) { %><h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl"><% if (site.editMode) { %><a href="<%= translationBookUrl(translation) %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- translation.name || '' %></span></a><% } else { %><a href="<%= translationBookUrl(translation) %>"><%- translation.shortName || translation.name %></a><% } %></h3><% } %>
+                      <% if (site.editMode || translation.name) { %><h3 class="tafsir-book-title-line mb-0" lang="ar" dir="rtl"><% if (site.editMode) { %><a href="<%= translationBookUrl(translation) %>"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.name" data-placeholder="الاسم العربي"><%- translation.name || '' %></span></a><% } else { %><a href="<%= translationBookUrl(translation) %>"><%- translation.name %></a><% } %></h3><% } %>
                     </div>
                     <% if (site.editMode) { %>
                       <div class="tafsir-book-full-name text-muted">
@@ -522,13 +477,6 @@
                         <% } %>
                       </div>
                       <% if (site.editMode || translation.author) { %><div lang="ar" dir="rtl"><span <% if (site.editMode) { %>class="_e" data-id="<%= editableBookId %>" data-prop="book.author" data-placeholder="اسم المؤلف"<% } %>><%- translation.author || '' %></span></div><% } %>
-                    </div>
-                    <%
-                      var translationDownloadLinks = downloadLinksFor(translation);
-                    %>
-                    <div class="book-download-links">
-                      <a href="<%= translationDownloadLinks.json %>" rel="nofollow" title="Download JSON" aria-label="Download JSON for <%- translation.shortName_en || translation.name_en || translation.alias %>"><span class="bi bi-filetype-json"></span><span>JSON</span></a>
-                      <a href="<%= translationDownloadLinks.epub %>" rel="nofollow" title="Download EPUB" aria-label="Download EPUB for <%- translation.shortName_en || translation.name_en || translation.alias %>"><span class="bi bi-book"></span><span>EPUB</span></a>
                     </div>
                     <% if (site.editMode) { %>
                       <div id="<%= descriptionId %>" class="toc-book-description-full tafsir-book-description-full">
@@ -559,120 +507,115 @@
             </div>
           <% } %>
         </div>
-      </div>
-    </section>
-    <p class="text-muted d-none book-catalog-filter-empty">No matching books found.</p>
+    </div>
+    <p class="text-muted d-none book-catalog-filter-empty" role="status">No matching books found.</p>
 
     </main>
   </div>
-<%- include('sub-views/book_group_rail.ejs', { initialBookCatalogType: initialBookCatalogType, railTitle: 'Books', railHomeHref: utils.urlFor(req, '/books'), railCollections: [
-      { pane: 'book-catalog-hadith', railTitle: 'Hadith Books', railBooks: books.filter(function (book) { return book.type !== 'sirah'; }), railScope: 'hadith', railLabel: 'Hadith Books', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-sirah', railTitle: 'History Books', railBooks: books.filter(function (book) { return book.type === 'sirah'; }), railScope: 'hadith', railLabel: 'History & Sirah', railHref: function (book) { return utils.urlFor(req, '/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-tafsir-all', railTitle: 'Tafsir Books', railBooks: tafsirGroups[0].tafsirs, railScope: 'tafsir', railLabel: 'Tafsir Books', railHref: tafsirBookUrl, railName: function (book) { return Tafsir.displayShortName(book, 'en').replace(/^Tafs[īi]r\s+/i, ''); } },
-      { pane: 'book-catalog-translations', railTitle: 'Quran Translations', railBooks: translations || [], railScope: 'trans', railLabel: 'Translations', railHref: translationBookUrl },
-      { pane: 'book-catalog-sharh', railTitle: 'Hadith Explanations', railBooks: locals.sharhBooks || [], railScope: 'sharh', railLabel: 'Sharḥ Books', railHref: function (book) { return utils.urlFor(req, '/sharh/' + encodeURIComponent(book.alias)); } },
-      { pane: 'book-catalog-mushaf', railTitle: 'Quran Mushafs', railBooks: locals.mushafs || [], railScope: '', railLabel: 'Mushaf Editions', railHref: function (book) { return utils.quranUrl(req, book.href); } }
-    ] }); %>
+<%- include('sub-views/book_group_rail.ejs', { catalogBookGroups, showCatalogFilters: true, initialBookCatalogType: initialBookCatalogType, railCollections }); %>
 </div>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
-<%- include('sub-views/footer.ejs', { site: site, page: page }); %>
-<%- include('sub-views/scripts.ejs', { site: site, page: page }); %>
+<%- include('sub-views/page_end.ejs', { site, page }); %>
 <script>
   (function () {
-    var filter = document.querySelector('.book-catalog-filter');
+    var filter = document.getElementById('book-catalog-filter');
     if (!filter)
       return;
-    filter.focus();
-    var normalize = function (value) {
-      return window.normalizeContentFilterText(value);
-    };
+    const tools = filter.closest('.catalog-tools');
+    const railTitle = document.getElementById('books-rail-title');
+    const mobileSlot = document.querySelector('[data-mobile-catalog-tools]');
+    const desktop = window.matchMedia('(min-width: 992px)');
+    function positionTools() {
+      if (desktop.matches) railTitle.after(tools);
+      else mobileSlot.append(tools);
+    }
+    positionTools();
+    desktop.addEventListener('change', positionTools);
+    var tabStrip = document.querySelector('.book-catalog-navigation [role="tablist"]');
+    var currentTab = tabStrip && tabStrip.querySelector('[aria-selected="true"]');
+    if (currentTab && tabStrip.scrollWidth > tabStrip.clientWidth) {
+      tabStrip.scrollLeft += currentTab.getBoundingClientRect().left - tabStrip.getBoundingClientRect().left
+        - (tabStrip.clientWidth - currentTab.offsetWidth) / 2;
+    }
+    var normalize = value => window.normalizeContentFilterText(value);
     var cards = [];
-    var groupButtons = Array.from(document.querySelectorAll('[data-book-catalog-group-filter]'));
-    var languageButtons = Array.from(document.querySelectorAll('[data-book-catalog-language-filter]'));
-    var filterButtons = groupButtons.concat(languageButtons);
+    function badgeOf(card) {
+      return card.dataset.catalogBadge || (card.querySelector('.book-language-badge')?.textContent || '').trim().toLowerCase();
+    }
     var empty = document.querySelector('.book-catalog-filter-empty');
     var activeGroup = '';
-    var activeLanguage = '';
+    var activeBadge = '';
     var activeScope = '<%= initialBookCatalogType %>';
 
     var applyFilters = function () {
       var query = normalize(filter.value);
-      var activeSize = document.querySelector('.book-catalog-page').dataset.bookCatalogActiveSize || '';
+      document.querySelectorAll('[data-highlight-pane]').forEach(function (shelf) {
+        shelf.hidden = shelf.dataset.highlightPane !== 'book-catalog-' + activeScope || Boolean(query || activeGroup || activeBadge);
+      });
       var visibleCount = 0;
       cards.forEach(function (card) {
         var groups = (card.dataset.bookCatalogGroups || '').split(/\s+/).filter(Boolean);
         var match = (!query || normalize(card.dataset.bookCatalogFilter).includes(query))
           && (!activeGroup || groups.indexOf(activeGroup) >= 0)
-          && (!activeLanguage || (card.dataset.bookCatalogLanguage || '').split(/\s+/).indexOf(activeLanguage) >= 0)
-          && (!window.bookCatalogMatchesSize || window.bookCatalogMatchesSize(card));
+          && (!activeBadge || badgeOf(card) === activeBadge);
         card.classList.toggle('d-none', !match);
         if (match)
           visibleCount += 1;
       });
       if (empty)
-        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeLanguage && !activeSize));
+        empty.classList.toggle('d-none', visibleCount > 0 || (!query && !activeGroup && !activeBadge));
     };
 
     var setGroupScope = function (paneId) {
+      activeScope = paneId.slice('book-catalog-'.length);
       cards = Array.from(document.getElementById(paneId).querySelectorAll('.book-catalog-card'));
       document.querySelectorAll('[data-book-rail-pane]').forEach(function (section) {
         section.hidden = section.dataset.bookRailPane !== paneId;
       });
-      var scope = paneId === 'book-catalog-hadith' ? 'hadith' : (paneId.indexOf('book-catalog-tafsir-') === 0 ? 'tafsir' : (paneId === 'book-catalog-sharh' ? 'sharh' : (paneId === 'book-catalog-translations' ? 'trans' : '')));
-      var scopeChanged = scope !== activeScope;
-      activeScope = scope;
-      if (scopeChanged)
-        activeGroup = '';
-      if (scopeChanged)
-        activeLanguage = '';
-      filterButtons.forEach(function (button) {
-        var buttonScope = button.dataset.bookCatalogGroupScope || '';
-        var isAll = button.hasAttribute('data-book-catalog-group-filter') && !button.dataset.bookCatalogGroupFilter;
-        button.classList.toggle('d-none', !isAll && buttonScope !== scope && !(scope === 'sharh' && button.hasAttribute('data-book-catalog-language-filter')));
-        var active = activeLanguage
-          ? button.dataset.bookCatalogLanguageFilter === activeLanguage
-          : (activeGroup ? button.dataset.bookCatalogGroupFilter === activeGroup : isAll);
-        button.classList.toggle('active', active);
-        button.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
+      activeGroup = '';
+      activeBadge = '';
       applyFilters();
     };
-    filter.addEventListener('input', applyFilters);
-    groupButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        activeGroup = button.dataset.bookCatalogGroupFilter || '';
-        activeLanguage = '';
-        filterButtons.forEach(function (candidate) {
-          var active = candidate === button;
-          candidate.classList.toggle('active', active);
-          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-        applyFilters();
-      });
-    });
-    languageButtons.forEach(function (button) {
-      button.addEventListener('click', function () {
-        activeGroup = '';
-        activeLanguage = button.dataset.bookCatalogLanguageFilter || '';
-        filterButtons.forEach(function (candidate) {
-          var active = candidate === button;
-          candidate.classList.toggle('active', active);
-          candidate.setAttribute('aria-pressed', active ? 'true' : 'false');
-        });
-        applyFilters();
-      });
+    document.addEventListener('click', function (event) {
+      const link = event.target.closest('a[data-catalog-facet]');
+      if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      const kind = link.dataset.catalogFacet;
+      event.preventDefault();
+      link.closest('dialog')?.close();
+      if (kind === 'type') filter.value = '';
+      activeGroup = kind === 'group' ? link.dataset.catalogValue : '';
+      activeBadge = kind === 'badge' ? link.dataset.catalogValue : '';
+      applyFilters();
+      rememberFilters();
     });
     setGroupScope('book-catalog-' + activeScope);
+    const saved = history.state?.bookCatalog;
+    const params = new URLSearchParams(location.search);
+    const group = saved ? saved.group : params.get('group');
+    const badge = saved ? saved.badge : params.get('badge');
+    activeGroup = cards.some(card => (card.dataset.bookCatalogGroups || '').split(/\s+/).includes(group)) ? group : '';
+    activeBadge = ['ar', 'en', 'en-ar'].includes(badge) ? badge : '';
+    filter.value = saved?.query || '';
+    applyFilters();
+    function rememberFilters() {
+      history.replaceState(Object.assign({}, history.state, { bookCatalog: {
+        query: filter.value, group: activeGroup, badge: activeBadge
+      } }), '');
+    }
+    filter.addEventListener('input', () => { applyFilters(); rememberFilters(); });
     document.querySelectorAll('.book-catalog-tabs [data-book-catalog-tab]').forEach(function (tab) {
       tab.addEventListener('shown.bs.tab', function () {
         setGroupScope((tab.dataset.bsTarget || '').replace(/^#/, ''));
-        if (tab.getAttribute('href') && window.location.pathname === '/books') {
-          window.history.replaceState(null, '', tab.getAttribute('href'));
+        if (tab.getAttribute('href') && window.location.pathname.replace(/\/$/, '') === '<%= catalogPath %>') {
+          window.history.replaceState(history.state, '', tab.getAttribute('href'));
+          rememberFilters();
           var types = <%- JSON.stringify(catalogTypes) %>;
           var type = types[tab.getAttribute('href').split('?')[1]];
           if (type) {
             document.title = 'Hadith Unlocked | ' + type.title;
+            var title = document.querySelector('[data-catalog-title]');
+            if (title) title.textContent = type.title;
             var description = document.querySelector('meta[name="description"]');
             if (description) description.content = type.description;
             var canonical = document.querySelector('link[rel="canonical"]');

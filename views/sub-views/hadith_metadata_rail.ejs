@@ -57,7 +57,7 @@
 	<div class="hadith-heading-toc-sticky">
 		<% if (railBookName) { %><a class="heading-toc-book-name" href="<%= railBookHref %>"><%= railBookName.toUpperCase() %></a><% } %>
 		<% if (railChapterLabel) { %><a class="hadith-heading-toc-title heading-toc-book-title-link" href="<%= railChapterHref %>"><%= railChapterLabel %></a><% } %>
-		<nav class="nav flex-column hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Hadith and metadata sections">
+		<nav class="ux-menu-list nav flex-column hadith-heading-toc-nav" data-toc-heading-rail-nav aria-label="Hadith and metadata sections">
 			<% if (railSectionLabel) { %><a class="nav-link hadith-heading-toc-link" href="<%= railSectionHref %>"><%= railSectionLabel %></a><% } %>
 			<% railGroups.forEach(function (group) { %><button type="button" class="nav-link hadith-heading-toc-link<%= group.key === railInitialKey ? ' active' : '' %>" data-toc-heading-key="<%= group.key %>"<% if (group.key === 'reflection') { %> data-reflection-disclosure-trigger="comments-disclosure"<% } %><% if (group.key === railInitialKey) { %> aria-current="location"<% } %>><%= group.label %><% if (group.key === 'reflection') { %> <span class="badge text-bg-secondary hadith-comment-count" data-hadith-id="<%= i.actual ? i.actual.id : i.id %>" data-comment-type="hadith" title="0 reflections">0</span><% } else if (group.count !== null) { %> <span class="badge text-bg-secondary"><%= group.count %></span><% } %></button><% }); %>
 		</nav>

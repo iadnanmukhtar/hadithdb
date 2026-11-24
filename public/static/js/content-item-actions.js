@@ -33,7 +33,7 @@
     const heading=document.createElement('h2');heading.className='fs-4';heading.textContent='Commentary and other items';section.append(heading);
     for(const item of items){
       const row=document.createElement('p'),link=document.createElement('a'),remove=document.createElement('button');
-      link.href=item.url.startsWith('/quran')?quranUrl(item.url):hadithUrl(item.url);link.textContent=item.title;link.dir='auto';remove.type='button';remove.className='btn btn-sm btn-link text-accent';remove.textContent='Remove';
+      link.href=item.url.startsWith('/quran')?quranUrl(item.url):hadithUrl(item.url);link.textContent=item.title;link.dir='auto';remove.type='button';remove.className='ux-text-action';remove.textContent='Remove';
       remove.addEventListener('click',async()=>{try{await api('/'+item.id+'/bookmark','PUT',{enabled:false});await loadBookmarks();}catch(err){window.toastr?.error(err.message);}});
       row.append(link,remove);section.append(row);
     }
