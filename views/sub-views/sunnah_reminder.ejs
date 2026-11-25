@@ -1,6 +1,6 @@
 <dialog id="sunnah-dialog" aria-labelledby="sunnah-dialog-title">
   <header class="modal-header">
-    <h2 class="modal-title fs-5" id="sunnah-dialog-title">Sunnah of the Day</h2>
+    <h2 class="modal-title fs-5" id="sunnah-dialog-title"><%- include('sunnah_icon.ejs') %> Sunnah of the Day</h2>
     <button type="button" data-sunnah-close class="btn-close" aria-label="Close" autofocus></button>
   </header>
   <div data-sunnah-modal-slot></div>
@@ -11,7 +11,8 @@
       <section class="col-12" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
         <div class="quran-ayah-hero-body"><div class="quran-ayah-hero-ayah">
           <div class="quran-ayah-hero-text" data-sunnah-text="<%= lang %>"></div>
-          <% if (lang === 'en') { %><a class="quran-translation-attribution" data-sunnah-ref></a><% } %>
+          <a class="sunnah-detail-link" data-sunnah-detail hidden><%= lang === 'ar' ? 'اقرأ الحديث كاملًا' : 'Read full hadith' %></a>
+          <% if (lang === 'en') { %><span class="quran-translation-attribution">— <a data-sunnah-ref></a></span><% } %>
         </div></div>
       </section>
     <% } %>

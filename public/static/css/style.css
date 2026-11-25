@@ -13290,7 +13290,7 @@ header.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
   font-weight: inherit;
 }
 
-[data-sunnah-open][hidden], .sunnah-hero [hidden] { display: none !important; }
+#sunnah-reminder[hidden], [data-sunnah-open][hidden], .sunnah-hero [hidden] { display: none !important; }
 .sunnah-hero.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
 .sunnah-hero.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body * {
   font-family: var(--content-language-arabic-font) !important;
@@ -13306,3 +13306,17 @@ header.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
 }
 #sunnah-dialog::backdrop { background: rgb(0 0 0 / 50%); }
 #sunnah-dialog .sunnah-hero { margin-bottom: 0; }
+
+.sunnah-hero [data-sunnah-text] {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sunnah-hero [data-sunnah-text] > :first-child { margin-block-start: 0; }
+.sunnah-hero [data-sunnah-text] > :last-child { margin-block-end: 0; }
+.sunnah-detail-link { display: inline-block; font: var(--ux-local-nav-font); }
+.sunnah-hero .quran-translation-attribution { display: block; }
+#sunnah-dialog h2 { display: flex; align-items: center; gap: .45em; }
+.sunnah-nav-icon { width: 1.1em; height: 1.1em; vertical-align: -.14em; }
+.sunnah-hero [data-sunnah-text]:has(+ [data-sunnah-detail]:not([hidden])) { cursor: pointer; }

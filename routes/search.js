@@ -1314,7 +1314,7 @@ router.get('/reminders/sunnah', async function (req, res, next) {
   }
 });
 
-// Home library and search
+// HOME (SEARCH OR SHOW RANDOM HADITH)
 router.get('/', throttleSearchRequest, async function (req, res, next) {
   if (Utils.isQuranSubdomainRequest(req))
     return res.redirect(302, `/quran${appendOriginalQuery(req)}`);
@@ -1324,7 +1324,26 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
   // search
   if (req.query.q) {
     return await renderSearchResults(req, res, next);
+
+    // show random and highlighted ahadith
   } else {
+    // results = await Hadith.a_dbGetRecentUpdates(5);
+    // Mishkat is a virtual collection identified by books tags on source hadiths.
+    var random = await Index.docRandomnly(Item.INDEX, `(books:/.+/ AND body_en:/.+/)`);
+    if (random.length > 0) {
+	  random = new Item(random[0]);
+	  random.single = true;
+	  random.primaryNarratorOnly = true;
+	  if (random.remark != 2) {
+		await HdithMetadata.attachClassifications([random]);
+		random.hdithMetadata = await HdithMetadata.forHadith(random.actual ? random.actual.id : random.id) || {};
+		random.hdithMetadata.grades = HdithMetadata.withPrimaryGrade(random.hdithMetadata.grades, random);
+	  }
+	  var admin = (req.admin);
+      var editMode = (admin && req.editMode);
+      if (editMode)
+        await addVirtualReferences([random]);
+    }
     let latestArticles = [];
     try {
       latestArticles = await require('../lib/HomeArticles').latest();
@@ -1333,7 +1352,8 @@ router.get('/', throttleSearchRequest, async function (req, res, next) {
     }
     res.render('index', {
       latestArticles,
-      results: null,
+      random: random,
+      results: null, // results,
       totalResults: 0,
       b: [],
     });

@@ -19,6 +19,16 @@
       canonical: `/`,
       context: {},
     };
+    const hasRandomReading = Boolean(random && !Array.isArray(random));
+    if (hasRandomReading) {
+      page.context.chapter = random.chapter;
+      page.context.section = random.section;
+      page.context.hadiths = results;
+      if (random.prev_ref)
+          page.prev = `/${random.prev_ref}`;
+      if (random.next_ref)
+          page.next = `/${random.next_ref}`;
+    }
 %> 
 
 <%- include('sub-views/head.ejs', { site: site, page: page }); %> 
@@ -31,8 +41,7 @@
 
   <%- include('sub-views/header.ejs', { site: site, page: page }); %> 
 
-  <main class="search-results sunnah-home">
-    <div class="home-library">
+  <main class="home-library search-results">
     <header class="home-library-heading ux-system">
       <h1 id="library-shelf-title" class="ux-page-title">Hadith library</h1>
       <a class="ux-primary-action" href="<%= utils.urlFor(req, '/books?hadith') %>">Browse full catalog <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
@@ -40,13 +49,41 @@
 
     <%- include('sub-views/bookNav.ejs', { inlineHadithBooks: true }) %>
 
-    </div>
-  <div class="container-fluid hadith-heading-layout toc-heading-layout sunnah-reading-layout">
-    <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
-      <section id="sunnah-reminder" tabindex="-1" aria-labelledby="sunnah-heading" hidden>
-        <header class="home-reading-heading ux-system"><h2 id="sunnah-heading" class="ux-section-title">Sunnah of the Day</h2></header>
-        <div data-sunnah-slot></div>
-      </section>
+    <div class="home-reading-layout">
+      <div class="home-reading-column">
+      <% if (hasRandomReading) { %>
+        <header class="home-reading-heading">
+          <h2><%= random.remark == 2 ? 'Ayah' : 'Hadith' %> Reminder</h2>
+          <a href="/" aria-label="Show another reminder"><i class="bi bi-arrow-clockwise" aria-hidden="true"></i> Another reminder</a>
+        </header>
+
+        <% if (random.remark == 2) {
+          var randomAyahRef = random.en?.num || random.num || random.ref || '';
+          var randomAyahHrefRef = arabic.toLatinDigits(randomAyahRef.toString()).replace(/^quran:/, '');
+          var randomAyahHref = utils.quranUrl(req, `/quran:${randomAyahHrefRef}`);
+          var randomQuranShareId = `Q${randomAyahRef.replace(/[^A-Za-z0-9_-]/g, '-')}`;
+        %>
+          <%- include('sub-views/quran_ayah_hero.ejs', {
+            site: site,
+            page: page,
+            selectedAyahs: [random],
+            ayahHref: randomAyahHref,
+            toolbar: {
+              selectedAyahModalIndex: 0,
+              selectedAyahId: random.id,
+              viewHref: randomAyahHref,
+              quranShareId: randomQuranShareId
+            }
+          }); %>
+          <%- include('sub-views/quran_ayah_modal.ejs', { site: site, page: page, passage: [random] }); %>
+          <%- include('sub-views/quran_modal.ejs', { site: site, page: page, selectedAyahs: [random], quranShareId: randomQuranShareId }); %>
+        <% } else { %>
+          <%- include('sub-views/hadith.ejs', { site: site, page: page, i: random, main: true, title: true, searchResult: false, collapsedDetail: true }); %>
+        <% } %>
+
+        <% if (random.remark == 2) { %><hr><% } %>
+      <% } %>
+
       <% if (results) { %>
 
       <header class="row">
@@ -62,8 +99,14 @@
 
       </div>
       <%- include('sub-views/home_articles_rail.ejs', { latestArticles: locals.latestArticles || [] }); %>
-  </div>
+    </div>
   </main>
+  <section id="sunnah-reminder" class="container-fluid hadith-heading-layout toc-heading-layout" tabindex="-1" aria-labelledby="sunnah-heading" hidden>
+    <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
+      <header class="home-reading-heading ux-system"><h2 id="sunnah-heading" class="ux-section-title">Sunnah of the Day</h2></header>
+      <div data-sunnah-slot></div>
+    </div>
+  </section>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/page_end.ejs', { site, page }); %>

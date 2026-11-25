@@ -129,7 +129,7 @@
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isHadithArea) %>" href="<%= utils.hadithBaseUrl(req) %>">Hadith</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isBooksArea) %>" href="<%= utils.urlFor(req, '/books') %>">Books</a></li>
         <li class="nav-item"><a class="nav-link<%- activeNavAttrs(isCommunityArea) %>" href="<%= utils.urlFor(req, '/community') %>"><i class="bi bi-people-fill top-nav-community-icon" aria-hidden="true"></i> Community</a></li>
-        <li class="nav-item"><button type="button" data-sunnah-open hidden class="btn top-nav-icon-link" aria-label="Open Sunnah of the Day" title="Open Sunnah of the Day" aria-haspopup="dialog" aria-controls="sunnah-dialog"><i class="bi bi-sun" aria-hidden="true"></i></button></li>
+        <li class="nav-item"><button type="button" data-sunnah-open hidden class="btn top-nav-icon-link" aria-label="Open Sunnah of the Day" title="Open Sunnah of the Day" aria-haspopup="dialog" aria-controls="sunnah-dialog"><%- include('sunnah_icon.ejs') %></button></li>
         <li class="nav-item command-search-compact-item">
           <button type="button" class="btn top-nav-icon-link command-search-compact-trigger" data-command-search-direction-container dir="<%= headerSearchIsRtl ? 'rtl' : 'ltr' %>" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search the library">
             <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
@@ -147,7 +147,7 @@
     <menu class="col-auto d-md-none d-block">
       <div class="nav container-fluid justify-content-end align-items-center gap-2 top-nav-mobile-actions">
 
-        <button type="button" data-sunnah-open hidden class="btn top-nav-icon-link" aria-label="Open Sunnah of the Day" title="Open Sunnah of the Day" aria-haspopup="dialog" aria-controls="sunnah-dialog"><i class="bi bi-sun" aria-hidden="true"></i></button>
+        <button type="button" data-sunnah-open hidden class="btn top-nav-icon-link" aria-label="Open Sunnah of the Day" title="Open Sunnah of the Day" aria-haspopup="dialog" aria-controls="sunnah-dialog"><%- include('sunnah_icon.ejs') %></button>
         <button type="button" class="btn btn-link nav-link top-nav-icon-link command-search-mobile-trigger" data-command-search-open aria-haspopup="dialog" aria-controls="global-search-dialog" aria-label="Search the library">
           <i class="bi bi-search<%= headerSearchIsRtl ? ' is-rtl-search' : '' %>" data-command-search-icon aria-hidden="true"></i>
         </button>
