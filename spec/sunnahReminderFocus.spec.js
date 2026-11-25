@@ -26,7 +26,7 @@ test('refresh keeps focus on the modal button and updates the inline reference',
     another.focus();
     another.click();
     await new Promise(resolve => setImmediate(resolve));
-    expect(dialog.querySelector('[role=status]').textContent).toBe('— Mujtaba 2');
+    expect(dialog.querySelector('[role=status]').textContent).toBe('Mujtaba 2');
     expect(window.document.activeElement).toBe(another);
   } finally {
     window.close();

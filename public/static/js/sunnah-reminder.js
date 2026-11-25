@@ -13,7 +13,7 @@
 
   dialog.querySelector('[data-sunnah-modal-slot]').append(card);
   const excerpts = [...card.querySelectorAll('[data-sunnah-text]')];
-  const words = new Map();
+  const originals = new Map();
   let current;
   let opener;
   let loading = false;
@@ -26,21 +26,42 @@
   function fitExcerpts() {
     if (!dialog.open || !card.clientWidth) return;
     for (const excerpt of excerpts) {
-      const source = words.get(excerpt);
-      if (!source?.length) continue;
-      // Measure the rendered line including the nonbreaking space and reference.
+      const source = originals.get(excerpt);
+      if (!source) continue;
+      excerpt.replaceChildren(source.cloneNode(true));
       const row = excerpt.parentElement;
-      const maxHeight = parseFloat(getComputedStyle(row).lineHeight) * 3 + 1;
-      excerpt.textContent = source.join(' ');
-      if (row.offsetHeight <= maxHeight) continue;
-      let low = 0, high = source.length;
+      const lines = parseFloat(getComputedStyle(excerpt.querySelector('p') || excerpt).lineHeight);
+      const fits = () => row.offsetHeight <= lines * 3 + 1;
+      if (fits()) continue;
+
+      // Clone a prefix of the formatted narration so Arabic spans, emphasis and
+      // paragraph typography survive truncation. Include the reference in layout.
+      const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
+      const ends = [];
+      for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        for (const word of node.textContent.matchAll(/\S+/gu))
+          ends.push([node, word.index + word[0].length]);
+      }
+      const range = document.createRange();
+      range.setStart(source, 0);
+      function renderPrefix(count) {
+        if (!count) { excerpt.textContent = '…'; return; }
+        range.setEnd(...ends[count - 1]);
+        const fragment = range.cloneContents();
+        const tail = document.createTreeWalker(fragment, NodeFilter.SHOW_TEXT);
+        let last;
+        while (tail.nextNode()) last = tail.currentNode;
+        last.appendData('…');
+        excerpt.replaceChildren(fragment);
+      }
+      let low = 0, high = ends.length;
       while (low < high) {
         const mid = Math.ceil((low + high) / 2);
-        excerpt.textContent = source.slice(0, mid).join(' ') + '…';
-        if (row.offsetHeight <= maxHeight) low = mid;
+        renderPrefix(mid);
+        if (fits()) low = mid;
         else high = mid - 1;
       }
-      excerpt.textContent = source.slice(0, low).join(' ') + '…';
+      renderPrefix(low);
     }
   }
 
@@ -95,15 +116,14 @@
       } else {
         const next = await response.json();
         const ref = card.querySelector('[data-sunnah-ref]');
-        ref.textContent = '— Mujtaba ' + next.num;
+        ref.textContent = 'Mujtaba ' + next.num;
         ref.href = '/mujtaba:' + encodeURIComponent(next.num);
         for (const excerpt of excerpts) {
           const parsed = document.createElement('template');
           parsed.innerHTML = excerpt.dataset.sunnahText === 'ar' ? next.arabic : next.english;
-          for (const block of parsed.content.querySelectorAll('p, div, br, li, section')) block.after(' ');
-          const text = parsed.content.textContent.trim();
-          words.set(excerpt, text.split(/\s+/));
-          excerpt.textContent = text;
+          for (const link of parsed.content.querySelectorAll('a')) link.replaceWith(...link.childNodes);
+          originals.set(excerpt, parsed.content);
+          excerpt.replaceChildren(parsed.content.cloneNode(true));
           excerpt.href = ref.href;
         }
         action('another').hidden = !next.more;
