@@ -1306,8 +1306,8 @@ router.get('/reminders/sunnah', async function (req, res, next) {
     if (!reminder) return res.sendStatus(204);
     return res.json({
       id: reminder.id, day: reminder.day, num: reminder.num, more: reminder.more,
-      arabic: Utils.markdownToHtml(reminder.body),
-      english: Utils.markdownToHtml(reminder.body_en)
+      arabic: Utils.heroReadingText(reminder.body),
+      english: Utils.heroReadingText(reminder.body_en)
     });
   } catch (err) {
     next(err);

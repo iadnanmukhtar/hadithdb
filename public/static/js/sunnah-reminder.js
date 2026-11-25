@@ -34,8 +34,7 @@
       const fits = () => row.offsetHeight <= lines * 3 + 1;
       if (fits()) continue;
 
-      // Clone a prefix of the formatted narration so Arabic spans, emphasis and
-      // paragraph typography survive truncation. Include the reference in layout.
+      // Keep the reading paragraph and inline reference together when truncating.
       const walker = document.createTreeWalker(source, NodeFilter.SHOW_TEXT);
       const ends = [];
       for (let node = walker.nextNode(); node; node = walker.nextNode()) {
@@ -119,11 +118,12 @@
         ref.textContent = 'Mujtaba ' + next.num;
         ref.href = '/mujtaba:' + encodeURIComponent(next.num);
         for (const excerpt of excerpts) {
-          const parsed = document.createElement('template');
-          parsed.innerHTML = excerpt.dataset.sunnahText === 'ar' ? next.arabic : next.english;
-          for (const link of parsed.content.querySelectorAll('a')) link.replaceWith(...link.childNodes);
-          originals.set(excerpt, parsed.content);
-          excerpt.replaceChildren(parsed.content.cloneNode(true));
+          const paragraph = document.createElement('p');
+          paragraph.textContent = excerpt.dataset.sunnahText === 'ar' ? next.arabic : next.english;
+          const source = document.createDocumentFragment();
+          source.append(paragraph);
+          originals.set(excerpt, source);
+          excerpt.replaceChildren(source.cloneNode(true));
           excerpt.href = ref.href;
         }
         action('another').hidden = !next.more;

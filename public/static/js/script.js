@@ -3786,12 +3786,13 @@ function compactQuranTranslationHtml(html) {
 function compactQuranHeroTranslationHtml(html) {
 	var wrapper = document.createElement('div');
 	wrapper.innerHTML = compactQuranTranslationHtml(html);
-	while (wrapper.children.length === 1 && /^(section|div)$/i.test(wrapper.firstElementChild.tagName)) {
-		wrapper.innerHTML = wrapper.firstElementChild.innerHTML;
-	}
-	if (wrapper.children.length === 1 && /^p$/i.test(wrapper.firstElementChild.tagName))
-		return wrapper.firstElementChild.innerHTML;
-	return wrapper.innerHTML;
+	wrapper.querySelectorAll('sup').forEach(node => {
+		if (/^[\s\[\]()\p{Nd}*†‡]+$/u.test(node.textContent)) node.remove();
+	});
+	wrapper.querySelectorAll('br,p,div,li,tr,td,th,pre,blockquote,h1,h2,h3,h4,h5,h6').forEach(node => node.after(' '));
+	var paragraph = document.createElement('p');
+	paragraph.textContent = wrapper.textContent.replace(/\[\p{Nd}+\]|[⁰¹²³⁴⁵⁶⁷⁸⁹]+/gu, '').replace(/\s+/g, ' ').trim();
+	return paragraph.outerHTML;
 }
 
 function quranTranslationFootnoteIdPart(value) {
@@ -4159,7 +4160,7 @@ function applyQuranTranslationEntryToTarget(target, book, entry) {
 	} else {
 		target.innerHTML = target.getAttribute('data-quran-translation-display') === 'passage'
 			? quranPassageTranslationHtml(sourceHtml, target, alias)
-			: compactQuranHeroTranslationHtml(sourceHtml);
+			: compactQuranHeroTranslationHtml(entry.html || renderClientMarkdown(stripQuranDisplayFootnoteMarkdown(entry.data)));
 		target.dataset.markdownSource = entry.data || '';
 	}
 	setQuranTranslationAttribution(target, quranTranslationBookLabel(book), alias);
