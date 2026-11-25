@@ -13289,3 +13289,20 @@ header.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
   font-size: inherit;
   font-weight: inherit;
 }
+
+[data-sunnah-open][hidden], .sunnah-hero [hidden] { display: none !important; }
+.sunnah-hero.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body,
+.sunnah-hero.quran-ayah-hero [lang="ar"] .quran-ayah-hero-body * {
+  font-family: var(--content-language-arabic-font) !important;
+}
+#sunnah-dialog {
+  width: min(48rem, calc(100% - 2rem));
+  max-height: 90dvh;
+  overflow-y: auto;
+  border: 1px solid var(--bs-border-color);
+  border-radius: .75rem;
+  color: var(--bs-body-color);
+  background: var(--bs-body-bg);
+}
+#sunnah-dialog::backdrop { background: rgb(0 0 0 / 50%); }
+#sunnah-dialog .sunnah-hero { margin-bottom: 0; }

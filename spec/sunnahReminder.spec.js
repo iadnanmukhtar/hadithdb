@@ -1,0 +1,45 @@
+const { get } = require('../lib/SunnahReminder');
+
+describe('Mujtaba reminder', () => {
+  const originalQuery = global.query;
+  const midnight = Date.UTC(2026, 10, 25);
+  let ids;
+
+  beforeEach(() => {
+    ids = [21, 44, 62];
+    jest.useFakeTimers().setSystemTime(midnight - 1);
+    global.query = jest.fn(async statement => {
+      expect(statement).toContain('book_id=100429');
+      if (statement.includes('ORDER BY num0, ordinal, hId'))
+        return ids.map(hId => ({ hId }));
+      const id = Number(statement.match(/hId=(\d+) LIMIT 1/)[1]);
+      expect(ids).toContain(id);
+      return [{ num: id + 'a', body: 'عربي', body_en: 'English' }];
+    });
+  });
+
+  afterEach(() => {
+    global.query = originalQuery;
+    jest.useRealTimers();
+  });
+
+  test('daily identity survives reload, a manual choice lasts until UTC rollover', async () => {
+    const daily = await get({});
+    expect(await get({})).toEqual(daily);
+    const another = await get({ id: daily.id, day: String(daily.day), another: true });
+    expect(another.id).not.toEqual(daily.id);
+    const stored = { id: another.id, day: String(another.day) };
+    expect(await get(stored)).toEqual(another);
+    jest.setSystemTime(midnight);
+    const tomorrow = await get({});
+    expect(tomorrow.id).not.toEqual(daily.id);
+    expect(await get(stored)).toEqual(tomorrow);
+  });
+
+  test('one or zero eligible entries', async () => {
+    ids = [44];
+    expect(await get({ another: true })).toMatchObject({ id: '44', more: false, num: '44a' });
+    ids = [];
+    expect(await get({ another: true })).toBeNull();
+  });
+});
