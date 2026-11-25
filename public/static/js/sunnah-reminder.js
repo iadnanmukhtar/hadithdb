@@ -1,5 +1,4 @@
 (() => {
-  const home = document.getElementById('sunnah-reminder');
   const dialog = document.getElementById('sunnah-dialog');
   const triggers = [...document.querySelectorAll('[data-sunnah-open]')];
   const card = document.getElementById('sunnah-card-template').content.firstElementChild.cloneNode(true);
@@ -12,26 +11,36 @@
     try { window[store].setItem(name, value); } catch { /* Private browsing. */ }
   }
 
-  let minimized = !home || read('sessionStorage', key + '-layout') !== 'inline';
+  dialog.querySelector('[data-sunnah-modal-slot]').append(card);
+  const excerpts = [...card.querySelectorAll('[data-sunnah-text]')];
+  const words = new Map();
   let current;
   let opener;
   let loading = false;
 
   function layout() {
-    for (const trigger of triggers) trigger.hidden = !(current && minimized);
-    if (home) home.hidden = !current || minimized;
-    action('minimize').hidden = minimized;
-    action('restore').hidden = !minimized;
-    const slot = minimized ? dialog.querySelector('[data-sunnah-modal-slot]') : home?.querySelector('[data-sunnah-slot]');
-    if (slot && card.parentNode !== slot) slot.append(card);
-    updateDetails();
+    for (const trigger of triggers) trigger.hidden = !current;
+    fitExcerpts();
   }
 
-  function updateDetails() {
-    for (const body of card.querySelectorAll('[data-sunnah-text]')) {
-      if (!body.clientHeight) continue;
-      const link = body.parentElement.querySelector('[data-sunnah-detail]');
-      link.hidden = body.scrollHeight <= body.clientHeight + 1;
+  function fitExcerpts() {
+    if (!dialog.open || !card.clientWidth) return;
+    for (const excerpt of excerpts) {
+      const source = words.get(excerpt);
+      if (!source?.length) continue;
+      // Measure the rendered line including the nonbreaking space and reference.
+      const row = excerpt.parentElement;
+      const maxHeight = parseFloat(getComputedStyle(row).lineHeight) * 3 + 1;
+      excerpt.textContent = source.join(' ');
+      if (row.offsetHeight <= maxHeight) continue;
+      let low = 0, high = source.length;
+      while (low < high) {
+        const mid = Math.ceil((low + high) / 2);
+        excerpt.textContent = source.slice(0, mid).join(' ') + '…';
+        if (row.offsetHeight <= maxHeight) low = mid;
+        else high = mid - 1;
+      }
+      excerpt.textContent = source.slice(0, low).join(' ') + '…';
     }
   }
 
@@ -55,7 +64,7 @@
     if (!current || dialog.open) return;
     opener = visibleTrigger();
     dialog.showModal();
-    updateDetails();
+    fitExcerpts();
     animateDialog(true);
   }
 
@@ -69,7 +78,7 @@
   }
 
   async function load(another = false) {
-    if (loading || (!home && !minimized)) return;
+    if (loading) return;
     loading = true;
     const params = new URLSearchParams(read('sessionStorage', key) || '');
     if (current) {
@@ -85,12 +94,18 @@
         dialog.close();
       } else {
         const next = await response.json();
-        card.querySelector('[data-sunnah-text="ar"]').innerHTML = next.arabic;
-        card.querySelector('[data-sunnah-text="en"]').innerHTML = next.english;
         const ref = card.querySelector('[data-sunnah-ref]');
-        ref.textContent = 'Mujtaba ' + next.num;
+        ref.textContent = '— Mujtaba ' + next.num;
         ref.href = '/mujtaba:' + encodeURIComponent(next.num);
-        for (const link of card.querySelectorAll('[data-sunnah-detail]')) link.href = ref.href;
+        for (const excerpt of excerpts) {
+          const parsed = document.createElement('template');
+          parsed.innerHTML = excerpt.dataset.sunnahText === 'ar' ? next.arabic : next.english;
+          for (const block of parsed.content.querySelectorAll('p, div, br, li, section')) block.after(' ');
+          const text = parsed.content.textContent.trim();
+          words.set(excerpt, text.split(/\s+/));
+          excerpt.textContent = text;
+          excerpt.href = ref.href;
+        }
         action('another').hidden = !next.more;
         current = next;
         write('sessionStorage', key, new URLSearchParams({ day: next.day, id: next.id }).toString());
@@ -111,44 +126,22 @@
   dialog.querySelector('[data-sunnah-close]').addEventListener('click', minimizeDialog);
   dialog.addEventListener('cancel', event => { event.preventDefault(); minimizeDialog(); });
   dialog.addEventListener('close', () => {
-    if (minimized) (opener?.offsetWidth ? opener : triggers.find(el => el.offsetWidth))?.focus();
+    (opener?.offsetWidth ? opener : triggers.find(el => el.offsetWidth))?.focus();
   });
   action('another').addEventListener('click', () => load(true));
-  action('minimize').addEventListener('click', () => {
-    minimized = true;
-    write('sessionStorage', key + '-layout', 'minimized');
-    layout();
-    triggers.find(el => el.offsetWidth)?.focus();
-  });
-  action('restore').addEventListener('click', () => {
-    minimized = false;
-    write('sessionStorage', key + '-layout', 'inline');
-    dialog.close();
-    layout();
-    if (home) home.focus();
-    else location.assign('/#sunnah-reminder');
-  });
   window.addEventListener('pageshow', event => {
     if (event.persisted) {
-      minimized = !home || read('sessionStorage', key + '-layout') !== 'inline';
       current = null;
       dialog.close();
       layout();
       load();
     }
   });
-  for (const body of card.querySelectorAll('[data-sunnah-text]')) {
-    body.addEventListener('click', event => {
-      const link = body.parentElement.querySelector('[data-sunnah-detail]');
-      if (!link.hidden && !event.target.closest('a, button') && !window.getSelection()?.toString()) location.assign(link.href);
-    });
-  }
-  if (window.ResizeObserver) new ResizeObserver(updateDetails).observe(card);
-  document.fonts?.ready.then(updateDetails);
+  window.addEventListener('resize', fitExcerpts);
+  document.fonts?.ready.then(fitExcerpts);
   // A session cookie shares dismissal across tabs and survives same-session reloads.
   function firstVisit() {
     if (!current || document.cookie.split('; ').includes('sunnah_session_seen=1') || read('sessionStorage', key + '-seen')) return;
-    minimized = true;
     layout();
     openReminder();
     if (dialog.open) {
@@ -159,6 +152,5 @@
   load().then(async () => {
     if (navigator.locks) await navigator.locks.request('sunnah-first-visit', firstVisit);
     else firstVisit();
-    if (home && !home.hidden && location.hash === '#sunnah-reminder') home.focus();
   });
 })();

@@ -101,12 +101,6 @@
       <%- include('sub-views/home_articles_rail.ejs', { latestArticles: locals.latestArticles || [] }); %>
     </div>
   </main>
-  <section id="sunnah-reminder" class="container-fluid hadith-heading-layout toc-heading-layout" tabindex="-1" aria-labelledby="sunnah-heading" hidden>
-    <div class="container col-lg-8 mx-auto hadith-heading-content toc-heading-content">
-      <header class="home-reading-heading ux-system"><h2 id="sunnah-heading" class="ux-section-title">Sunnah of the Day</h2></header>
-      <div data-sunnah-slot></div>
-    </div>
-  </section>
 
 <%- include('sub-views/mobile_navigation.ejs', { site: site, page: page }); %>
 <%- include('sub-views/page_end.ejs', { site, page }); %>

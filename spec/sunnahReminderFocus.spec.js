@@ -2,7 +2,7 @@ const fs = require('fs');
 const ejs = require('ejs');
 const { JSDOM } = require('jsdom');
 
-test('restoring via the homepage anchor focuses the hero once and leaves refresh focus on the button', async () => {
+test('refresh keeps focus on the modal button and updates the inline reference', async () => {
   const template = fs.readFileSync(require.resolve('../views/sub-views/sunnah_reminder.ejs'), 'utf8');
   const reminder = ejs.render(template, { utils: { scriptAssetVersion: () => 'test' } }, { filename: require.resolve('../views/sub-views/sunnah_reminder.ejs') });
   const dom = new JSDOM(
@@ -20,13 +20,13 @@ test('restoring via the homepage anchor focuses the hero once and leaves refresh
     });
     window.eval(fs.readFileSync(require.resolve('../public/static/js/sunnah-reminder.js'), 'utf8'));
     await new Promise(resolve => setImmediate(resolve));
-    const home = window.document.getElementById('sunnah-reminder');
-    expect(window.document.activeElement).toBe(home);
-    const another = home.querySelector('[data-sunnah-action="another"]');
+    const dialog = window.document.querySelector('#sunnah-dialog');
+    dialog.setAttribute('open', '');
+    const another = dialog.querySelector('[data-sunnah-action="another"]');
     another.focus();
     another.click();
     await new Promise(resolve => setImmediate(resolve));
-    expect(home.querySelector('[role=status]').textContent).toBe('Mujtaba 2');
+    expect(dialog.querySelector('[role=status]').textContent).toBe('— Mujtaba 2');
     expect(window.document.activeElement).toBe(another);
   } finally {
     window.close();
