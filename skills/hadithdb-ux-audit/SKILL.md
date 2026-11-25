@@ -74,3 +74,5 @@ For Community typography, inspect a published article and a blog article. Check 
 For site-wide font changes, verify the shared asset suffix advances and the rendered stylesheet URL uses it. Search inline templates and print-window styles alongside stylesheets. Check direct text nodes in editor, preview and print, including the first applicable face in mixed-script stacks.
 
 For a new reminder, verify the existing homepage reminder still renders from its original source and its actions remain available. Exercise first visit, dismissal, same-session reload, a second tab, a fresh browser session and reduced motion. Follow the clipped narration to its exact full reference.
+
+For daily reminders, cross midnight UTC with a controlled clock while the dialog is open, dismissed, suspended and awaiting a manual selection. Compare both excerpts and their links with the new day’s expected record, and check focus.

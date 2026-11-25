@@ -16,7 +16,7 @@ test('refresh keeps focus on the modal button and updates the inline reference',
     let num = 0;
     window.fetch = async () => ({
       ok: true,
-      json: async () => ({ id: ++num, num, day: 1, more: true, arabic: 'عربي', english: 'English' })
+      json: async () => ({ id: ++num, num, day: Math.floor(Date.now() / 86400000), more: true, arabic: 'عربي', english: 'English' })
     });
     window.eval(fs.readFileSync(require.resolve('../public/static/js/sunnah-reminder.js'), 'utf8'));
     await new Promise(resolve => setImmediate(resolve));
