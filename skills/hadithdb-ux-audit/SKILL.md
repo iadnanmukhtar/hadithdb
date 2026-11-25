@@ -71,6 +71,6 @@ For language visibility, compare the search results toolbar with Quran Study at 
 Compare local list filters across public, personal, dialog and admin surfaces, including clear, Escape, disabled state and accessible labels. Check empty, populated and failed lists for misplaced bulk actions. Follow a reference from a book listing to an individual hadith. Check that the book picker is absent on the detail page and that the title precedes its controls after client initialization.
 
 For Community typography, inspect a published article and a blog article. Check the rendered English paragraph and nested Arabic span inside the Markdown body as well as the page title. Include the article preview when changing its shared treatment.
-For site-wide font changes, search inline templates and print-window styles alongside stylesheets. Check direct text nodes in editor, preview and print, including the first applicable face in mixed-script stacks.
+For site-wide font changes, verify the shared asset suffix advances and the rendered stylesheet URL uses it. Search inline templates and print-window styles alongside stylesheets. Check direct text nodes in editor, preview and print, including the first applicable face in mixed-script stacks.
 
 For a new reminder, verify the existing homepage reminder still renders from its original source and its actions remain available. Exercise first visit, dismissal, same-session reload, a second tab, a fresh browser session and reduced motion. Follow the clipped narration to its exact full reference.
