@@ -54,7 +54,6 @@
         if (another) card.querySelector('[role=status]').textContent = ref.textContent;
       }
       layout();
-      if (home && !home.hidden && location.hash === '#sunnah-reminder') home.focus();
     } catch {
       card.querySelector('[role=status]').textContent = 'Unable to load the reminder. Please try again.';
     } finally {
@@ -95,5 +94,7 @@
       load();
     }
   });
-  load();
+  load().then(() => {
+    if (home && !home.hidden && location.hash === '#sunnah-reminder') home.focus();
+  });
 })();
