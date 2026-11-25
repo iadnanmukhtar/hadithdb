@@ -75,4 +75,4 @@ For site-wide font changes, verify the shared asset suffix advances and the rend
 
 For a new reminder, verify the existing homepage reminder still renders from its original source and its actions remain available. Exercise first visit, dismissal, same-session reload, a second tab, a fresh browser session and reduced motion. Follow the clipped narration to its exact full reference.
 
-For daily reminders, cross midnight UTC with a controlled clock while the dialog is open, dismissed, suspended and awaiting a manual selection. Compare both excerpts and their links with the new day’s expected record, and check focus.
+For daily reminders, cross midnight UTC with a controlled clock while the dialog is open, dismissed, suspended and awaiting a manual selection. Hold the new day’s request while reopening a dismissed dialog and confirm yesterday’s reading stays out of view. Release it, compare both excerpts and their links with the new day’s expected record, and check focus.

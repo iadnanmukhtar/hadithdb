@@ -94,8 +94,14 @@
     return dialog.animate(opening ? [small, full] : [full, small], { duration: 240, easing: 'ease-in-out' }).finished.catch(() => {});
   }
 
+  let openWhenReady = false;
   function openReminder() {
     if (!current || dialog.open) return;
+    if (current.day !== utcDay()) {
+      openWhenReady = true;
+      load();
+      return;
+    }
     opener = visibleTrigger();
     dialog.showModal();
     fitExcerpts();
@@ -128,6 +134,7 @@
       if (loadingDay !== day || day !== utcDay()) return;
       if (!response.ok) throw new Error();
       if (response.status === 204) {
+        openWhenReady = false;
         current = null;
         if (dialog.open) dialog.close();
       } else {
@@ -151,13 +158,18 @@
         card.querySelector('[role=status]').textContent = another ? ref.textContent : '';
       }
       layout();
+      if (openWhenReady && current?.day === utcDay()) {
+        openWhenReady = false;
+        openReminder();
+      }
     } catch {
       if (loadingDay !== day || day !== utcDay()) return;
+      openWhenReady = false;
       card.querySelector('[role=status]').textContent = 'Unable to load the reminder. Please try again.';
     } finally {
       if (loadingDay === day) {
         loadingDay = undefined;
-        if (day !== utcDay() && (dialog.open || !current)) return load();
+        if (day !== utcDay() && (dialog.open || openWhenReady || !current)) return load();
         scheduleRefresh(current?.day === utcDay() ? undefined : 30000);
       }
     }

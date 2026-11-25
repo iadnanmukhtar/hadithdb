@@ -123,8 +123,17 @@ describe('open homepage Sunnah dialog at the UTC boundary', () => {
     await clock.tickAsync(100);
     expect(dialog.open).toBe(false);
     expect(document.activeElement).toBe(trigger);
-    pool = [{ hId: 77 }];
+    let release;
+    holdNext = new Promise(resolve => { release = resolve; });
     trigger.click();
+    await settle();
+    expect(dialog.open).toBe(false);
+    expect(document.activeElement).toBe(trigger);
+    release();
+    await settle();
+    expectReading(expected());
+    pool = [{ hId: 77 }];
+    await clock.tickAsync(dayLength);
     await settle();
     expectReading(77);
     expect(another.hidden).toBe(true);
