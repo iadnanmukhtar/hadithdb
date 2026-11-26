@@ -125,7 +125,11 @@
     loadingDay = day;
     another = another && current?.day === day;
     const params = new URLSearchParams(read('sessionStorage', key) || '');
-    if (current) {
+    if (params.get('manual') !== '1') {
+      params.delete('id');
+      params.delete('day');
+    }
+    if (another && current) {
       params.set('id', current.id);
       params.set('day', current.day);
     }
@@ -155,7 +159,10 @@
         }
         action('another').hidden = !next.more;
         current = next;
-        write('sessionStorage', key, new URLSearchParams({ day: next.day, id: next.id }).toString());
+        const manual = another || (params.get('manual') === '1' && params.get('day') === String(next.day));
+        const saved = new URLSearchParams({ day: next.day, id: next.id });
+        if (manual) saved.set('manual', '1');
+        write('sessionStorage', key, saved.toString());
         card.querySelector('[role=status]').textContent = another ? ref.textContent : '';
       }
       layout();
