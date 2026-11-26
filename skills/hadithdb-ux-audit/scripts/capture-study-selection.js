@@ -2,7 +2,22 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { chromium } = require('playwright');
+const { chromium, firefox, webkit } = require('playwright');
+
+async function launchCaptureBrowser(phone, fallback) {
+  if (!fallback) return chromium.launch({ channel: 'chrome' });
+  try {
+    return await chromium.launch();
+  } catch (chromiumError) {
+    const alternate = phone ? webkit : firefox;
+    console.warn('Chrome Headless Shell launch failed. Trying ' + alternate.name());
+    try {
+      return await alternate.launch();
+    } catch (alternateError) {
+      throw new AggregateError([chromiumError, alternateError], 'Capture browsers failed to launch');
+    }
+  }
+}
 
 async function capture(browser, origin, output, width, height, stylesheet, overlay) {
   const phone = width === 390;
@@ -106,13 +121,19 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
   await fs.mkdir(output, { recursive: true });
   const overlay = process.argv.includes('--candidate-css');
   const fallback = process.argv.includes('--fallback');
+  const failures = [];
   for (const [width, height] of [[1440, 900], [390, 844]]) {
-    const browser = await chromium.launch(fallback ? {} : { channel: 'chrome' });
+    let browser;
     try {
+      browser = await launchCaptureBrowser(width === 390, fallback);
       await capture(browser, origin, output, width, height, stylesheet, overlay);
-      console.log(fallback ? 'Chrome Headless Shell' : 'Chrome', browser.version(), width, height, '120 → 121 → 120 passed');
+      console.log(browser.browserType().name(), browser.version(), width, height, '120 → 121 → 120 passed');
+    } catch (error) {
+      console.error(width + 'px capture failed', error);
+      failures.push(width);
     } finally {
-      await browser.close();
+      await browser?.close();
     }
   }
+  assert.equal(failures.length, 0, 'Failed viewport widths: ' + failures.join(', '));
 })().catch(error => { console.error(error); process.exitCode = 1; });
