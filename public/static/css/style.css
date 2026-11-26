@@ -10476,11 +10476,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 }
 
 .quran-passage-section [lang="ar"] .body .ayah-selected,
-.quran-passage-section [lang="ar"] .body .ayah-selected .quran-corpus-word,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected,
-.quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-corpus-word,
-.body.passage:lang(ar) .ayah-selected,
-.body.passage:lang(ar) .ayah-selected .quran-corpus-word {
+.body.passage:lang(ar) .ayah-selected {
 	background-color: var(--c-cornsilk);
 	box-decoration-break: clone;
 	-webkit-box-decoration-break: clone;
@@ -10492,6 +10489,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .quran-passage-section [lang="ar"] .body .ayah-selected .quran-corpus-word,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected .quran-corpus-word,
 .body.passage:lang(ar) .ayah-selected .quran-corpus-word {
+	color: var(--c-link-dark);
+	font-family: Hafs, Serif;
 	font-weight: inherit;
 }
 

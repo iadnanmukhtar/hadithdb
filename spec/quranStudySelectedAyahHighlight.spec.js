@@ -6,13 +6,18 @@ const path = require('path');
 describe('Quran Study selected passage ayah highlight', () => {
 	test('matches searched Mushaf ayah colors for Arabic and English without changing the hero', () => {
 		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
-		const selectedPassageRules = css.match(/\.quran-passage-section \[lang="ar"\] \.body \.ayah-selected,[\s\S]*?\.body\.passage:lang\(ar\) \.ayah-selected \.quran-corpus-word \{([^}]+)\}/);
-		const selectedEnglishRules = css.match(/\.quran-passage-section \[lang="en"\] \.body \.ayah-selected,[\s\S]*?\.body\.passage:lang\(en\) \.ayah-selected \{([^}]+)\}/);
+		const selectedPassageRules = css.match(/\.quran-passage-section \[lang="ar"\] \.body \.ayah-selected,[^{]*?\.body\.passage:lang\(ar\) \.ayah-selected \{([^}]+)\}/);
+		const selectedEnglishRules = css.match(/\.quran-passage-section \[lang="en"\] \.body \.ayah-selected,[^{]*?\.body\.passage:lang\(en\) \.ayah-selected \{([^}]+)\}/);
 
 		expect(selectedPassageRules).not.toBeNull();
 		expect(selectedPassageRules[1]).toContain('background-color: var(--c-cornsilk)');
 		expect(selectedPassageRules[1]).toContain('color: var(--c-link-dark)');
 		expect(selectedPassageRules[1]).toContain('font-weight: 400');
+		// A positioned corpus word with an opaque fill can paint over adjacent Arabic marks.
+		const selectedWordRules = [...css.matchAll(/([^{}]*\.ayah-selected[^{}]*\.quran-corpus-word[^{}]*)\{([^}]+)\}/g)];
+		expect(selectedWordRules.length).toBeGreaterThan(0);
+		for (const rule of selectedWordRules)
+			expect(rule[2]).not.toMatch(/background(?:-color)?\s*:/);
 		expect(selectedEnglishRules).not.toBeNull();
 		expect(selectedEnglishRules[1]).toContain('background-color: var(--c-cornsilk)');
 		expect(selectedEnglishRules[1]).toContain('color: var(--c-link-dark)');
