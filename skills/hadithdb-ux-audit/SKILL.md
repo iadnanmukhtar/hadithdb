@@ -63,7 +63,7 @@ For cross-route changes, compare the full Jest run against a pre-edit baseline. 
 
 At the end of each makeover page, and whenever the user identifies a miss, review this skill. If the work exposed a reusable blind spot, add the smallest comparison that would have caught it and how to verify it. Merge overlapping guidance. Keep design values and component specimens in the library, and keep audit methods here. Make warranted updates alongside the page change.
 
-For a wrapped Study selection, open the Khattab link at 9:120 after the Quran font loads. Capture every Arabic line and both neighboring ayahs at 1440 × 900 and 390 × 844. Inspect the selected span and its nested corpus words for competing backgrounds. Select 121 and return to 120, checking both languages each time.
+For a wrapped Study selection, open the Khattab link at 9:120 after the Quran font loads. Capture every Arabic line and both neighboring ayahs at 1440 × 900 and 390 × 844. Inspect the selected span, its .quran-ayah-body wrapper and nested corpus words for competing backgrounds. Repeat while hovering the selected Arabic and its paired English reference, and while the selected ayah plays. Select 121 and return to 120, checking both languages each time.
 
 For Quran Study, check a translation with multiple footnotes on the opening passage and after infinite scroll. At phone and desktop widths, follow a reference, verify its number and font, and ensure all notes follow the last English and Arabic ayah of their own passage.
 Compare the actual note paragraph, inline reference and list marker across Study, commentary, Hadith, Community and notebook content. Include Arabic, a plain source footer, a dialog and a book with a larger configured footnote size.

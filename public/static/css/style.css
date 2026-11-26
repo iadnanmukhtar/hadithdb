@@ -10478,6 +10478,8 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .quran-passage-section [lang="ar"] .body .ayah-selected,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected,
 .body.passage:lang(ar) .ayah-selected {
+	/* The selected fragment already supplies the fill for ayah interactions. */
+	--ayah-interaction-background: transparent;
 	background-color: var(--c-cornsilk);
 	box-decoration-break: clone;
 	-webkit-box-decoration-break: clone;
@@ -10546,7 +10548,7 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 .body .ayah-hover-pair a,
 .body .ayah-hover-pair .quran-ayah-body {
 	color: var(--c-link-dark);
-	background-color: var(--c-cornsilk);
+	background-color: var(--ayah-interaction-background, var(--c-cornsilk));
 }
 
 .body.passage .ayah.quran-prefatory-ayah,

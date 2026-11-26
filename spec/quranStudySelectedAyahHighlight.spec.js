@@ -13,6 +13,9 @@ describe('Quran Study selected passage ayah highlight', () => {
 		expect(selectedPassageRules[1]).toContain('background-color: var(--c-cornsilk)');
 		expect(selectedPassageRules[1]).toContain('color: var(--c-link-dark)');
 		expect(selectedPassageRules[1]).toContain('font-weight: 400');
+		expect(selectedPassageRules[1]).toContain('--ayah-interaction-background: transparent');
+		const interactionRules = css.match(/\.body \.ayah:hover a,[^{]*\.body \.ayah-hover-pair \.quran-ayah-body \{([^}]+)\}/);
+		expect(interactionRules[1]).toContain('background-color: var(--ayah-interaction-background, var(--c-cornsilk))');
 		// A positioned corpus word with an opaque fill can paint over adjacent Arabic marks.
 		const selectedWordRules = [...css.matchAll(/([^{}]*\.ayah-selected[^{}]*\.quran-corpus-word[^{}]*)\{([^}]+)\}/g)];
 		expect(selectedWordRules.length).toBeGreaterThan(0);
