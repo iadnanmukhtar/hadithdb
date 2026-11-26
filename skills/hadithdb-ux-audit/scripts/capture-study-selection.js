@@ -1,5 +1,6 @@
 // Run against a preview serving this checkout. Save passage captures outside the repo.
 const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const { chromium, firefox, webkit } = require('playwright');
@@ -145,7 +146,15 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
   const [, , origin, output] = process.argv;
   assert.ok(origin && output, 'Supply preview origin and capture directory');
   const stylesheet = await fs.readFile(path.resolve(__dirname, '../../../public/static/css/style.css'));
+  const repo = path.resolve(__dirname, '../../..');
+  const git = (...args) => execFileSync('git', args, { cwd: repo });
+  const revision = git('rev-parse', 'HEAD').toString().trim();
+  const cssFile = 'public/static/css/style.css';
+  assert.deepEqual(stylesheet, git('show', revision + ':' + cssFile),
+    'Commit the stylesheet before recording revision-bound captures');
+  const stylesheetBlob = git('rev-parse', revision + ':' + cssFile).toString().trim();
   await fs.mkdir(output, { recursive: true });
+  assert.equal((await fs.readdir(output)).length, 0, 'Use an empty directory for this capture run');
   const overlay = process.argv.includes('--candidate-css');
   const fallback = process.argv.includes('--fallback');
   const failures = [];
@@ -154,6 +163,10 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
     try {
       browser = await launchCaptureBrowser(width === 390, fallback);
       await capture(browser, origin, output, width, height, stylesheet, overlay);
+      const evidence = { revision, stylesheetBlob, url: new URL('/quran/en-khattab/quran:9:120', origin).href,
+        stylesheetSubstituted: overlay, browser: browser.browserType().name(), version: browser.version(),
+        width, height, input: width === 390 ? 'emulated touch' : 'keyboard', selection: [120, 121, 120] };
+      await fs.writeFile(path.join(output, width + '-run.json'), JSON.stringify(evidence, null, 2) + '\n');
       console.log(browser.browserType().name(), browser.version(), width, height, '120 → 121 → 120 passed');
     } catch (error) {
       console.error(width + 'px capture failed', error);
