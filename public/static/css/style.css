@@ -10475,6 +10475,12 @@ body.quran-script-warsh .quran-ayah-hero [lang="ar"] .quran-ayah-end-marker {
 	font-weight: 700;
 }
 
+/* Paint every ayah's ink after the inline selection backgrounds, including
+   neighboring descenders that extend into a selected line fragment. */
+.quran-passage-section [lang="ar"] .body.passage .quran-ayah-body {
+	position: relative;
+}
+
 .quran-passage-section [lang="ar"] .body .ayah-selected,
 .quran-passage-section [lang="ar"] .body.passage .ayah-selected,
 .body.passage:lang(ar) .ayah-selected {

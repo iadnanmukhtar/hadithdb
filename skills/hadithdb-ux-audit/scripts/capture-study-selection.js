@@ -76,6 +76,22 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
             getComputedStyle(el).fontFamily.includes('Hafs')), 'Expected loaded Hafs face');
         }
         await body.screenshot({ path: path.join(output, width + '-' + step + '-' + number + '-' + lang + '.png') });
+        if (number === 121 && lang === 'ar') {
+          const selected = body.locator('.ayah-selected');
+          await selected.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
+          const prefix = path.join(output, width + '-121');
+          await page.screenshot({ path: prefix + '-viewport.png' });
+          const control = await page.addStyleTag({
+            content: '.quran-passage-section [lang="ar"] .body.passage .ayah-selected { background-color: transparent !important; }'
+          });
+          try {
+            await page.screenshot({ path: prefix + '-viewport-transparent.png' });
+            await body.screenshot({ path: prefix + '-ar-transparent.png' });
+          } finally {
+            await control.evaluate(el => el.remove());
+          }
+          await body.screenshot({ path: prefix + '-ar-filled.png' });
+        }
       }
     }
   } finally {
