@@ -2,19 +2,31 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { chromium } = require('playwright');
+const { chromium, firefox, webkit } = require('playwright');
 
-async function capture(browser, origin, output, width, height, stylesheet) {
+async function capture(browser, origin, output, width, height, stylesheet, overlay) {
   const phone = width === 390;
-  const context = await browser.newContext({ viewport: { width, height }, hasTouch: phone, isMobile: phone });
+  const context = await browser.newContext({ viewport: { width, height }, hasTouch: phone, ...(phone ? { isMobile: true } : {}) });
   try {
+    // Keep the third-party sign-in prompt from covering the anonymous reader.
+    await context.route('https://accounts.google.com/gsi/**', route => route.abort());
+    if (overlay) {
+      const cssUrl = new URL('/static/css/style.css', origin);
+      await context.route(url => url.origin === cssUrl.origin && url.pathname === cssUrl.pathname,
+        route => route.fulfill({ contentType: 'text/css', body: stylesheet }));
+    }
     const page = await context.newPage();
+    const reminder = page.locator('#sunnah-dialog[open]');
+    await page.addLocatorHandler(reminder, () => reminder.locator('[data-sunnah-close]').evaluate(el => el.click()));
     const response = page.waitForResponse(r => new URL(r.url()).pathname === '/static/css/style.css');
     const [, css] = await Promise.all([
       page.goto(new URL('/quran/en-khattab/quran:9:120', origin).href),
       response
     ]);
     assert.deepEqual(await css.body(), stylesheet, 'Preview stylesheet differs from checkout');
+    // The reminder opens asynchronously on first visit and can trap keyboard focus.
+    await reminder.waitFor({ timeout: 4000 }).catch(() => {});
+    if (await reminder.count()) await reminder.locator('[data-sunnah-close]').evaluate(el => el.click());
     const passage = lang => page.locator('.quran-passage-section [lang="' + lang + '"] .body.passage')
       .filter({ has: page.locator('.ayah[data-quran-ref="9:120"]') }).first();
     for (const [step, number] of [120, 121, 120].entries()) {
@@ -23,7 +35,7 @@ async function capture(browser, origin, output, width, height, stylesheet) {
         const marker = passage('ar').locator('.quran-ayah-end-marker[data-quran-ref="' + ref + '"]');
         const study = page.locator('[data-quran-mushaf-ayah-view]');
         if (phone) {
-          await marker.tap();
+          await passage('ar').locator('.quran-mushaf-ayah-actions-toggle[data-quran-ref="' + ref + '"]').tap();
           await study.tap();
         } else {
           // Start at the preceding ayah marker and exercise the reader's tab order.
@@ -37,7 +49,12 @@ async function capture(browser, origin, output, width, height, stylesheet) {
           assert.ok(await marker.evaluate(el => el.matches(':focus-visible')), 'Marker unreachable by Tab');
           await page.screenshot({ path: path.join(output, width + '-' + step + '-marker-focus.png') });
           await page.keyboard.press('Enter');
-          await page.keyboard.press('Tab');
+          await study.waitFor({ state: 'visible' });
+          const menuTabLimit = await page.locator('#quran-mushaf-ayah-actions :is(a,button,[tabindex])').count() + 1;
+          for (let i = 0; i < menuTabLimit; i++) {
+            if (await study.evaluate(el => el === document.activeElement)) break;
+            await page.keyboard.press('Tab');
+          }
           assert.ok(await study.evaluate(el => el.matches(':focus-visible')), 'Expected keyboard focus on Study');
           await page.keyboard.press('Enter');
         }
@@ -71,11 +88,16 @@ async function capture(browser, origin, output, width, height, stylesheet) {
   assert.ok(origin && output, 'Supply preview origin and capture directory');
   const stylesheet = await fs.readFile(path.resolve(__dirname, '../../../public/static/css/style.css'));
   await fs.mkdir(output, { recursive: true });
-  const browser = await chromium.launch({ channel: 'chrome' });
-  try {
-    await capture(browser, origin, output, 1440, 900, stylesheet);
-    await capture(browser, origin, output, 390, 844, stylesheet);
-  } finally {
-    await browser.close();
+  const overlay = process.argv.includes('--candidate-css');
+  const fallback = process.argv.includes('--fallback');
+  for (const [width, height] of [[1440, 900], [390, 844]]) {
+    const engine = fallback ? (width === 390 ? webkit : firefox) : chromium;
+    const browser = await engine.launch(engine === chromium ? { channel: 'chrome' } : {});
+    try {
+      await capture(browser, origin, output, width, height, stylesheet, overlay);
+      console.log(engine.name(), browser.version(), width, height, '120 → 121 → 120 passed');
+    } finally {
+      await browser.close();
+    }
   }
 })().catch(error => { console.error(error); process.exitCode = 1; });
