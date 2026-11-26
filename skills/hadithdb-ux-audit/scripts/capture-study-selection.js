@@ -26,8 +26,20 @@ async function capture(browser, origin, output, width, height, stylesheet) {
           await marker.tap();
           await study.tap();
         } else {
-          await marker.press('Enter');
-          await study.press('Enter');
+          // Start at the preceding ayah marker and exercise the reader's tab order.
+          const previous = passage('ar').locator('.quran-ayah-end-marker[data-quran-ref="9:' + (number - 1) + '"]');
+          await previous.focus();
+          const tabLimit = await passage('ar').locator('a, button, [tabindex]').count() + 1;
+          for (let i = 0; i < tabLimit; i++) {
+            await page.keyboard.press('Tab');
+            if (await marker.evaluate(el => el === document.activeElement)) break;
+          }
+          assert.ok(await marker.evaluate(el => el.matches(':focus-visible')), 'Marker unreachable by Tab');
+          await page.screenshot({ path: path.join(output, width + '-' + step + '-marker-focus.png') });
+          await page.keyboard.press('Enter');
+          await page.keyboard.press('Tab');
+          assert.ok(await study.evaluate(el => el.matches(':focus-visible')), 'Expected keyboard focus on Study');
+          await page.keyboard.press('Enter');
         }
       }
       for (const lang of ['ar', 'en']) {
