@@ -112,6 +112,19 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
           });
           const before = await geometry();
           assert.ok(before.words.length, 'Expected Arabic word rectangles');
+          // A stable crop can still omit a wrap or the adjoining ayah boundary.
+          for (const number of [120, 121, 122]) {
+            const words = body.locator('.ayah[data-quran-ref="9:' + number + '"] .quran-corpus-word');
+            const boundary = number === 120 ? words.last() : number === 122 ? words.first() : words;
+            const visibleInCrop = await boundary.evaluateAll((nodes, clip) =>
+              nodes.length > 0 && nodes.every(node => {
+                const rect = node.getBoundingClientRect();
+                return rect.width > 0 && rect.height > 0 && rect.left >= clip.x &&
+                  rect.top >= clip.y && rect.right <= clip.x + clip.width &&
+                  rect.bottom <= clip.y + clip.height;
+              }), before.clip);
+            assert.ok(visibleInCrop, 'Comparison crop omits Arabic text at 9:' + number);
+          }
           const images = {};
           const takePair = async suffix => {
             images['-viewport' + suffix] = await page.screenshot();
