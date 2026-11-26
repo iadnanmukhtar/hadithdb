@@ -21,6 +21,30 @@ describe('hadith bilingual pair library', () => {
 		delete global.query;
 	});
 
+	test('shares concurrent label reads and reloads after another worker hides a label', async () => {
+		let otherWorker;
+		jest.isolateModules(() => { otherWorker = require('../lib/HadithBilingualPairs'); });
+		let reads = 0;
+		let hidden = false;
+		global.query = jest.fn(async sql => {
+			if (sql.startsWith('UPDATE hdith_bilingual_pairs SET hidden')) hidden = true;
+			if (sql.startsWith('SELECT pair_type')) {
+				reads++;
+				return hidden ? [] : [{ pair_type: 'grade', pair_key: 'test' }];
+			}
+			return [];
+		});
+		const results = await Promise.all([
+			HadithBilingualPairs.managed(['narrator', 'grade']),
+			HadithBilingualPairs.managed(['grade', 'narrator'])
+		]);
+		expect(results[0]).toEqual(results[1]);
+		expect(reads).toBe(1);
+		await otherWorker.hide('grade', 'test');
+		await expect(HadithBilingualPairs.managed(['grade', 'narrator'])).resolves.toEqual([]);
+		expect(reads).toBe(2);
+	});
+
 	test('managed pairs override discovered pairs and hidden pairs disappear', async () => {
 		global.query = jest.fn(async sql => {
 			if (sql.includes('narrator_pairs')) return [

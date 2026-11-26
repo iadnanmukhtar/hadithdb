@@ -46,3 +46,19 @@ The exact expensive `SELECT * FROM v_hadiths WHERE hId=... LIMIT 1` pattern had 
 Commentary action-bar/source identity requests call `ContentItems.source` → `Sharh.entryById`. They now ask only for the owner's identity, bypassing Elasticsearch/full reader-view hydration entirely. Full Sharh reading still validates current structural identity and retains the scoped SQL fallback. Other corpus-wide `v_hadiths` consumers (indexing/downloads and legacy admin queries without this exact pattern) are outside this narrow change.
 
 Focused checks include `mysqlLoadReduction`, `sharhPassage`, `mcpQuranNavigation`, `quranCacheInvalidation`, `hadithMetadataBatch`, `contentItems`, and `communityActivitySource` Jest suites. Two existing `hdithMetadataDisplay` static assertions about CSS/markup fail against unchanged template/stylesheet files; they are unrelated to this SQL change. Existing unrelated worktree edits must not be included inadvertently in a deployment. Do not clear all caches as part of rollout; compare MySQL statement counts/rows examined and worker CPU after the approved migration and application deployment.
+
+### Grader display dictionary
+
+Apply `grader-dictionary.sql` to the HadithDB MySQL database before enabling
+`HADITHDB_GRADER_DICTIONARY=1` on the application workers. The migration uses
+MySQL 8.0.29+ trigger syntax. Grade opinions remain in SQL. A revision counter
+tracks committed grader changes, including direct imports. Workers check it
+every ten seconds. One worker rebuilds the small Elasticsearch
+`grader_dictionary` index under a database advisory lock. Each worker checks
+the revision and document count before installing its in-memory lookup. Set
+the flag to 0 and restart workers to return to the existing SQL lookup.
+
+Before production activation, verify the index using a separate MySQL and
+Elasticsearch environment. Exercise an English-name edit, an add and a delete,
+and a full uncached Ahmad export with concurrent reader traffic. Check translated
+names, peak worker heap, response errors and the grade-query statement digest.

@@ -735,6 +735,7 @@ const startupPromise = (async () => {
 
   await require('./lib/HadithHeadingSharh').ensureSchema();
   await require('./lib/SharhBooks').ensureEntryBooks();
+  require('./lib/GraderDictionary').start();
   await RuntimeRefresh.markCurrent();
   await Hadith.a_reinit();
   app.locals.startupReady = true;
