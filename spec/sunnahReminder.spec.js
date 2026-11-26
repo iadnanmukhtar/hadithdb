@@ -10,7 +10,7 @@ describe('Mujtaba reminder', () => {
     jest.useFakeTimers().setSystemTime(midnight - 1);
     global.query = jest.fn(async statement => {
       expect(statement).toContain('book_id=100429');
-      if (statement.includes('ORDER BY num0, ordinal, hId'))
+      if (statement.includes("ORDER BY SHA2(CONCAT('mujtaba-daily:', hId), 256), hId"))
         return ids.map(hId => ({ hId }));
       const id = Number(statement.match(/hId=(\d+) LIMIT 1/)[1]);
       expect(ids).toContain(id);
