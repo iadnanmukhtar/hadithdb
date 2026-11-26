@@ -15,6 +15,8 @@ async function renderPassage() {
     en: { body: '<section class="content-markdown"><p>Translation <sup class="footnote-ref"><a id="fnref1" href="#fn1">[1]</a></sup></p><section class="footnotes"><ol class="footnotes-list"><li class="footnote-item" id="fn1">Note ' + ayah + '<a class="footnote-backref" href="#fnref1">↩</a></li></ol></section></section>' },
     ar: { body: 'نص' }
   }));
+  // The shared footnote handler also accepts the marker class on the anchor itself.
+  passage[2].en.body = passage[2].en.body.replace('<sup class="footnote-ref"><a', '<sup><a class="footnote-ref"');
   return ejs.renderFile(path.join(__dirname, '../views/sub-views/quran.ejs'), {
     passage, utils, arabic, site: {}, page: { context: {} }, req: { quranServerRenderedTranslationAlias: 'en-khattab' },
     selectedAyahs: [passage[2]], main: false, title: false, searchResult: false
@@ -29,9 +31,9 @@ test('the initial Study passage keeps inline references and collects the notes a
   expect(flow.find('.ayah-selected').attr('data-quran-ref')).toBe('9:121');
   const notes = $('.quran-passage-group, article').last().nextAll('.quran-study-notes');
   for (const ayah of [119, 120, 121, 122]) {
-    const href = flow.find('[data-quran-ayah="' + ayah + '"] .footnote-ref a').attr('href');
+    const href = flow.find('[data-quran-ayah="' + ayah + '"] sup a').attr('href');
     const number = ayah - 118;
-    expect(flow.find('[data-quran-ayah="' + ayah + '"] .footnote-ref a').text()).toBe('[' + number + ']');
+    expect(flow.find('[data-quran-ayah="' + ayah + '"] sup a').text()).toBe('[' + number + ']');
     const note = $(href);
     expect(note.attr('value')).toBe(String(number));
     expect(note).toHaveLength(1);
@@ -69,7 +71,7 @@ test('switching translations on a newly rendered passage retains its original no
   await context.applyQuranHeroTranslationAlias(book.alias);
   expect(document.querySelectorAll('.footnote-item')).toHaveLength(0);
   await context.applyQuranHeroTranslationAlias('');
-  const marker = document.querySelector('[data-quran-ref="9:121"] .footnote-ref a');
+  const marker = document.querySelector('[data-quran-ref="9:121"] sup a');
   const note = document.getElementById(marker.hash.slice(1));
   expect(note?.textContent).toBe('Note 121↩');
   expect(note.closest('.quran-study-notes')).toBeTruthy();

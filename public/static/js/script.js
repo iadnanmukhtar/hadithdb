@@ -3889,7 +3889,7 @@ function normalizeQuranSelectedTranslationFootnotes(holder) {
 			item.value = number;
 			if (!id || !scope)
 				return;
-			Array.from(scope.querySelectorAll('.footnote-ref a[href^="#"]')).forEach(function (link) {
+			Array.from(scope.querySelectorAll('.footnote-ref a[href^="#"], a.footnote-ref[href^="#"]')).forEach(function (link) {
 				if (link.getAttribute('href') !== `#${id}`)
 					return;
 				link.textContent = `[${number}]`;
