@@ -52,6 +52,8 @@
 					var ayahHref = utils.quranUrl(req, `/${passage[i].ref}`);
 					var ayahBodyMarkdown = utils.emptyIfNull(ayahBody);
 					var ayahBodyHtml = lang === 'en' && passage[i].quranTranslationAlias ? ayahBodyMarkdown : utils.markdownToHtml(ayahBodyMarkdown);
+					if (lang === 'en' && locals.translationParts?.has(passage[i]))
+						ayahBodyHtml = locals.translationParts.get(passage[i]).body;
 					var ayahBodyProp = (lang === 'en') ? 'hadith.body_en' : 'hadith.body';
 					var ayahMarkerAttrs = ` data-quran-ayah-actions="1" data-quran-ref="${ayahRefLatin}" data-quran-href="${ayahHref}" aria-haspopup="menu" aria-expanded="false"`;
 					var ayahActionsChevron = `<button type="button" class="quran-ayah-state-toggle quran-mushaf-ayah-actions-toggle" data-quran-ayah-actions="1" data-quran-ref="${ayahRefLatin}" data-quran-href="${ayahHref}" aria-haspopup="menu" aria-expanded="false" aria-controls="quran-mushaf-ayah-actions" aria-label="Play or study Quran ${ayahRefLatin}"><span class="bi bi-caret-down-square-fill" aria-hidden="true"></span></button>`;

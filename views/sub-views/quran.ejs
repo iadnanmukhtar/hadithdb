@@ -27,6 +27,11 @@
 
   var passageEndAyah = passage.length > 0 ? ayahNumber(passage[passage.length - 1]) : NaN;
   var quranGroups = [];
+  var translationParts = new Map();
+  passage.forEach(function (item) {
+    if (item.quranTranslationAlias && item.en && item.en.body)
+      translationParts.set(item, utils.quranPassageTranslationParts(item.en.body));
+  });
   if (quranSubsections.length > 0) {
     var cursor = 0;
     for (var s = 0; s < quranSubsections.length; s++) {
@@ -202,7 +207,7 @@
 </aside>
 <% } %>
 
-<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
+<%- include('quran_item.ejs', { site: site, page: page, passage: group.passage, selectedAyah: locals.selectedAyah, selectedAyahs: locals.selectedAyahs, quranSubsections: group.quranSubsections, quranAyahModalItems: quranAyahModalItems, quranShareId: locals.quranShareId, translationParts: translationParts, lang: 'en', main: main, title: title, searchResult: searchResult }); %>
 
 
 <% if (group._hasHeadingAudio) { %>
@@ -220,7 +225,8 @@
 <% }); %>
 <div class="quran-study-notes" lang="en">
   <% quranGroups.forEach(function (group) { group.passage.forEach(function (item) { %>
-    <div class="quran-preferred-translation-footnotes d-none" data-quran-selected-translation-footnotes="1" data-notes-ayah="<%= ayahNumber(item) %>"></div>
+    <% var notes = translationParts.get(item)?.notes || ''; %>
+    <div class="quran-preferred-translation-footnotes<%= notes ? '' : ' d-none' %>" data-quran-selected-translation-footnotes="1" data-notes-ayah="<%= ayahNumber(item) %>"><%- notes %></div>
   <% }); }); %>
 </div>
 </div>
