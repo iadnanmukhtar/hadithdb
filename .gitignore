@@ -29,6 +29,7 @@ var
 docs
 !docs/
 docs/*
+!docs/context/
 !docs/TAFSIR_CATEGORIES.md
 *test*
 ecosystem.config.cjs
