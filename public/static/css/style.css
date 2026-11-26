@@ -7073,7 +7073,7 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	margin-bottom: 0.25rem;
 }
 
-.h i {
+.h i:where(:not(.bi)) {
 	background-color: var(--c-highlight);
 	font-style: inherit;
 }
