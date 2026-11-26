@@ -76,3 +76,5 @@ For Community typography, inspect a published article and a blog article. Check 
 For site-wide font changes, verify the shared asset suffix advances and the rendered stylesheet URL uses it. Search inline templates and print-window styles alongside stylesheets. Check direct text nodes in editor, preview and print, including the first applicable face in mixed-script stacks.
 
 For a new reminder, verify the existing homepage reminder still renders from its original source and its actions remain available. Exercise first visit, dismissal, same-session reload, a second tab, a fresh browser session and reduced motion. Follow the clipped narration to its exact full reference.
+
+For HDB-005, run `node skills/hadithdb-ux-audit/scripts/capture-study-selection.js <preview-origin> <capture-directory>` against the candidate. It compares the served stylesheet with the checkout and saves the Arabic and English passage at each width on entry, after choosing Study from 121’s marker menu, and after returning to 120. Inspect the Arabic PNGs at native size for obscured ink at every wrap and both boundaries.
