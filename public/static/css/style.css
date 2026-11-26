@@ -2451,7 +2451,7 @@ html:has(meta[name="admin-only-book-downloads"]):not(.book-download-admin) :is(.
 .quran-share-surah-header {
 	position: relative;
 	width: 100%;
-	aspect-ratio: 16320 / 2000;
+	aspect-ratio: 1120 / 110.25;
 	flex: none;
 }
 
@@ -5524,7 +5524,7 @@ del em strong {
 
 .quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name,
 .quran-mushaf-sheet.quran-hafs .quran-mushaf-surah-name:lang(ar) {
-	aspect-ratio: 512 / 63;
+	aspect-ratio: 1120 / 110.25;
 	display: block;
 	line-height: 1;
 	position: relative;
@@ -5533,7 +5533,6 @@ del em strong {
 
 .quran-mushaf-surah-cartouche,
 .quran-mushaf-surah-title {
-	background-color: currentColor;
 	display: block;
 	pointer-events: none;
 }
@@ -5541,14 +5540,14 @@ del em strong {
 .quran-mushaf-surah-cartouche {
 	bottom: 0;
 	left: 0;
-	-webkit-mask: url('/static/img/quran/surah-header/border.svg') center / 100% 100% no-repeat;
-	mask: url('/static/img/quran/surah-header/border.svg') center / 100% 100% no-repeat;
+	background: url('/static/img/quran/surah-header/border.svg?v=4') center / 100% 100% no-repeat;
 	position: absolute;
 	right: 0;
 	top: 0;
 }
 
 .quran-mushaf-surah-title {
+	background-color: currentColor;
 	height: 52%;
 	left: 50%;
 	-webkit-mask-image: var(--quran-mushaf-surah-title-svg);
@@ -5568,12 +5567,8 @@ del em strong {
 .quran-mushaf-line-surah_name {
 	line-height: 1;
 	min-height: 0;
-	padding-top: calc(var(--quran-mushaf-page-font-size) * var(--quran-mushaf-line-height));
+	padding-block-start: clamp(6px, calc(var(--quran-mushaf-page-font-size) * .3), 12px);
 	width: 100%;
-}
-
-.quran-mushaf-line-surah_name.is-page-opening {
-	padding-top: clamp(6px, calc(var(--quran-mushaf-page-font-size) * .35), 12px);
 }
 
 .quran-mushaf-basmallah-svg {

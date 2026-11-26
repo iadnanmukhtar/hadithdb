@@ -122,7 +122,7 @@ body:has(#mushaf-book[open]) { overflow: hidden; }
 }
 #mushaf-book .quran-mushaf-sheet > * { grid-column: 1; }
 #mushaf-book .quran-mushaf-line { min-height: 0; margin-block: 0; padding-block: 0; }
-#mushaf-book .quran-mushaf-surah-name { width: min(100%, calc(var(--mushaf-book-row) * .9 * 512 / 63)); }
+#mushaf-book .quran-mushaf-surah-name { width: min(100%, calc(var(--mushaf-book-row) * .9 * 1120 / 110.25)); }
 #mushaf-book .quran-mushaf-page-number { grid-row: -2; }
 .mushaf-book-leaf nav {
   display: grid; align-content: start; gap: .65em; padding: 1rem;

@@ -1,8 +1,9 @@
+  <% const deckCount = locals.visibleCount ?? shelfBooks.length; %>
   <nav id="<%= shelfId %>" class="library-volumes" aria-label="<%= shelfLabel %>">
-    <% for (const book of shelfBooks) {
+    <% for (const [index, book] of shelfBooks.entries()) {
       const arabicTitle = book.name;
     %>
-      <a class="library-volume" href="<%= bookHref(book) %>" data-alias="<%= book.alias %>" data-search="<%= [book.alias, book.name_en, book.shortName_en, book.name, book.title, book.shortName, book.authorShortName_en, book.authorShortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
+      <a class="library-volume" <%= index >= deckCount ? 'hidden' : '' %> <% if (locals.initialDeck && index < deckCount) { %>data-position="<%= index ? 'after' : 'center' %>" tabindex="<%= index ? -1 : 0 %>"<% } %> href="<%= bookHref(book) %>" data-alias="<%= book.alias %>" data-search="<%= [book.alias, book.name_en, book.shortName_en, book.name, book.title, book.shortName, book.authorShortName_en, book.authorShortName, book.author_en, book.author].filter(Boolean).join(' ') %>">
         <span class="volume-content">
           <span class="volume-face" aria-hidden="true"><i class="bi <%= bookIcon(book) %>"></i></span>
           <span class="volume-name"><%= book.name_en || book.alias %><%- hadithSizeIndicator(book) %></span>
@@ -13,9 +14,9 @@
     <% } %>
   </nav>
   <% if (!locals.directoryOnly) { %>
-  <div class="library-deck-controls" hidden>
-    <button type="button" aria-label="Previous book" aria-controls="<%= shelfId %>"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
-    <span role="status" aria-atomic="true"></span>
-    <button type="button" aria-label="Next book" aria-controls="<%= shelfId %>"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
+  <div class="library-deck-controls" <%= locals.initialDeck ? '' : 'hidden' %>>
+    <button type="button" disabled aria-label="Previous book" aria-controls="<%= shelfId %>"><i class="bi bi-chevron-left" aria-hidden="true"></i></button>
+    <span role="status" aria-atomic="true"><%= locals.initialDeck && deckCount ? '1 / ' + deckCount : '' %></span>
+    <button type="button" <%= deckCount <= 1 ? 'disabled' : '' %> aria-label="Next book" aria-controls="<%= shelfId %>"><i class="bi bi-chevron-right" aria-hidden="true"></i></button>
   </div>
   <% } %>

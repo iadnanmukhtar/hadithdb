@@ -98,7 +98,7 @@
       deck[current].focus({ preventScroll: true });
     });
 
-    if (shelf.dataset.layout === 'covers') {
+    if (!shelf.querySelector('.library-shelf-tabs')) {
       configureDeck(directory.querySelectorAll('.library-volume'));
       return;
     }
@@ -112,6 +112,7 @@
       button.dataset.shelfView, new Set(button.dataset.titles.split(' ').map(alias => byAlias.get(alias)))
     ]));
     const searchable = books.map(book => normalize(book.dataset.search));
+    const alphabetical = shelf.dataset.directoryOrder?.split(' ').map(alias => byAlias.get(alias)) || books;
     let selected = buttons[0]?.dataset.shelfView || 'all';
 
     function render() {
@@ -121,7 +122,7 @@
       const changed = shelf.dataset.view !== view;
       if (changed) {
         if (volumes) directory.prepend(...volumes);
-        else directory.append(...books);
+        else directory.append(...alphabetical);
         shelf.dataset.layout = ['beginner', 'twelve'].includes(view) ? 'covers' : 'directory';
         shelf.dataset.view = view;
       }
@@ -140,6 +141,7 @@
       field.value = '';
       render();
     });
+    if (shelf.dataset.layout === 'covers') configureDeck(collections.get(selected));
     field.addEventListener('input', render);
     render();
     tabs.hidden = false;

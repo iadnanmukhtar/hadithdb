@@ -187,9 +187,9 @@
       const label = 'Highlighted books';
       const icon = { hadith: 'book', sirah: 'clock-history', mushaf: 'book', 'tafsir-all': 'book-half', translations: 'translate', sharh: 'journal-text' }[pane];
     %>
-    <section class="library-shelf" data-library-shelf data-layout="covers" data-highlight-pane="<%= collection.pane %>" aria-labelledby="highlight-<%= pane %>" <%= pane === initialBookCatalogType ? '' : 'hidden' %>>
+    <section class="library-shelf" data-library-shelf data-deck data-layout="covers" data-highlight-pane="<%= collection.pane %>" aria-labelledby="highlight-<%= pane %>" <%= pane === initialBookCatalogType ? '' : 'hidden' %>>
       <h2 id="highlight-<%= pane %>" class="ux-section-title"><%= label %></h2>
-      <%- include('sub-views/library_volumes', { shelfId: 'highlight-books-' + pane, shelfLabel: label, shelfBooks: highlights, hadithSizeIndicator: pane === 'tafsir-all' ? Tafsir.sizeIndicator : hadithSizeIndicator, bookHref: collection.railHref, bookIcon: () => 'bi-' + icon }) %>
+      <%- include('sub-views/library_volumes', { shelfId: 'highlight-books-' + pane, shelfLabel: label, shelfBooks: highlights, initialDeck: true, hadithSizeIndicator: pane === 'tafsir-all' ? Tafsir.sizeIndicator : hadithSizeIndicator, bookHref: collection.railHref, bookIcon: () => 'bi-' + icon }) %>
     </section>
     <% } } %>
 

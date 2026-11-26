@@ -583,8 +583,8 @@
           </div>
           <div class="tab-content" id="quran-library-panels">
             <% homeShelves.forEach((shelf, index) => { %>
-              <section class="tab-pane library-shelf <%= index === 0 ? 'active' : '' %>" id="home-panel-<%= shelf.id %>" role="tabpanel" aria-labelledby="home-tab-<%= shelf.id %>" <% if (shelf.id !== 'other') { %>data-library-shelf data-layout="covers"<% } %>>
-                <%- include('sub-views/library_volumes', { shelfId: 'quran-home-' + shelf.id, shelfLabel: shelf.label, shelfBooks: shelf.books, bookHref: quranCommentaryPaginationHref, bookIcon: () => shelf.icon, hadithSizeIndicator: shelf.id === 'translations' ? () => '' : Tafsir.sizeIndicator }) %>
+              <section class="tab-pane library-shelf <%= index === 0 ? 'active' : '' %>" id="home-panel-<%= shelf.id %>" role="tabpanel" aria-labelledby="home-tab-<%= shelf.id %>" <% if (shelf.id !== 'other') { %>data-library-shelf data-deck data-layout="covers"<% } %>>
+                <%- include('sub-views/library_volumes', { shelfId: 'quran-home-' + shelf.id, shelfLabel: shelf.label, shelfBooks: shelf.books, initialDeck: shelf.id !== 'other', bookHref: quranCommentaryPaginationHref, bookIcon: () => shelf.icon, hadithSizeIndicator: shelf.id === 'translations' ? () => '' : Tafsir.sizeIndicator }) %>
               </section>
             <% }); %>
           </div>

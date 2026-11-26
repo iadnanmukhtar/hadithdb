@@ -8427,7 +8427,7 @@ function quranShareModalHtml(ayah, shareId) {
 	if (Number.isInteger(surahNumber) && surahNumber >= 1 && surahNumber <= 114) {
 		$('<h2>').addClass('hadith-share-title quran-share-surah-header')
 			.append($('<span>').addClass('visually-hidden').attr('data-html2canvas-ignore', '').text(shareTitle))
-			.append($('<img>').addClass('quran-share-surah-frame').attr({ src: '/static/img/quran/surah-header/border.svg?v=2', alt: '' }))
+			.append($('<img>').addClass('quran-share-surah-frame').attr({ src: '/static/img/quran/surah-header/border.svg?v=4', alt: '' }))
 			.append($('<img>').addClass('quran-share-surah-name').attr({ src: `/static/img/quran/surah-header/names/${surahNumber}.svg?v=2`, alt: '' }))
 			.appendTo($inner);
 	} else {

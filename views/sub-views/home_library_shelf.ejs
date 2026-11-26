@@ -13,19 +13,25 @@
     ['twelve', 'Twelve Books', twelve.filter(alias => aliases.includes(alias))],
     ['other', 'Other', aliases.filter(alias => !assigned.has(alias))]
   ];
+  const [initialView, , initialAliases] = collections.find(([, , titles]) => titles.length) || ['all', '', aliases];
+  const initialDeck = ['beginner', 'twelve'].includes(initialView);
+  const byAlias = new Map(shelfBooks.map(book => [book.alias, book]));
+  const firstBooks = initialAliases.map(alias => byAlias.get(alias)).filter(Boolean);
+  const selectedBooks = new Set(firstBooks);
+  const orderedBooks = [...firstBooks, ...shelfBooks.filter(book => !selectedBooks.has(book))];
 %>
-<section class="library-shelf ux-system" aria-labelledby="library-shelf-title" data-library-shelf>
+<section class="library-shelf ux-system" aria-labelledby="library-shelf-title" data-library-shelf data-directory-order="<%= aliases.join(' ') %>" data-view="<%= initialView %>" data-layout="<%= initialDeck ? 'covers' : 'directory' %>" <%= initialDeck ? 'data-deck' : '' %>>
   <div class="library-shelf-toolbar">
-    <div class="library-shelf-tabs" role="group" aria-label="Book collections" hidden>
+    <div class="library-shelf-tabs" role="group" aria-label="Book collections">
       <% for (const [id, label, titles] of collections) { if (titles.length) { %>
-        <button type="button" data-shelf-view="<%= id %>" data-titles="<%= titles.join(' ') %>"><%= label %></button>
+        <button type="button" aria-pressed="<%= id === initialView %>" data-shelf-view="<%= id %>" data-titles="<%= titles.join(' ') %>"><%= label %></button>
       <% } } %>
     </div>
-    <div class="library-shelf-tools" hidden>
+    <div class="library-shelf-tools">
       <%- include('rail_search.ejs', { inputId: 'home-book-search', label: 'Search all books by title or author', placeholder: 'Search books', clearLabel: 'Clear book search', resultsId: 'home-books' }) %>
     </div>
   </div>
-  <%- include('library_volumes', { shelfId: 'home-books', shelfLabel: 'Hadith books', shelfBooks, bookHref: book => utils.urlFor(req, '/' + book.alias), bookIcon: book => history.includes(book.alias) ? 'bi-clock-history' : 'bi-book' }) %>
+  <%- include('library_volumes', { shelfId: 'home-books', shelfLabel: 'Hadith books', shelfBooks: orderedBooks, visibleCount: firstBooks.length, initialDeck, bookHref: book => utils.urlFor(req, '/' + book.alias), bookIcon: book => history.includes(book.alias) ? 'bi-clock-history' : 'bi-book' }) %>
   <p class="library-empty" hidden>No books match your search.</p>
   <span class="visually-hidden" aria-live="polite" data-shelf-status></span>
 </section>
