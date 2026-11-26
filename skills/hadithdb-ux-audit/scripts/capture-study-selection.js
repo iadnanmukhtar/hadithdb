@@ -95,17 +95,44 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
           const selected = body.locator('.ayah-selected');
           await selected.evaluate(el => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
           const prefix = path.join(output, width + '-121');
-          await page.screenshot({ path: prefix + '-viewport.png' });
+          const geometry = () => body.evaluate(async el => {
+            await document.fonts.ready;
+            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+            const words = [...el.querySelectorAll('.quran-corpus-word')].map(word => ({
+              text: word.textContent,
+              rects: [...word.getClientRects()].map(rect => rect.toJSON())
+            }));
+            const bounds = el.getBoundingClientRect();
+            const x = Math.max(0, Math.floor(bounds.left));
+            const y = Math.max(0, Math.floor(bounds.top));
+            const clip = { x, y, width: Math.min(innerWidth, Math.ceil(bounds.right)) - x,
+              height: Math.min(innerHeight, Math.ceil(bounds.bottom)) - y };
+            return { words, scrollX, scrollY, clip };
+          });
+          const before = await geometry();
+          assert.ok(before.words.length, 'Expected Arabic word rectangles');
+          const images = {};
+          const takePair = async suffix => {
+            images['-viewport' + suffix] = await page.screenshot();
+            images['-ar-' + (suffix ? 'transparent' : 'filled')] =
+              await page.screenshot({ clip: before.clip });
+            assert.deepEqual(await geometry(), before, 'Arabic passage moved during capture');
+          };
+          await takePair('');
           const control = await page.addStyleTag({
             content: '.quran-passage-section [lang="ar"] .body.passage .ayah-selected { background-color: transparent !important; }'
           });
           try {
-            await page.screenshot({ path: prefix + '-viewport-transparent.png' });
-            await body.screenshot({ path: prefix + '-ar-transparent.png' });
+            const after = await geometry();
+            assert.deepEqual(after, before, 'Fill comparison changed word rectangles or scroll position');
+            assert.equal(await selected.evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)');
+            await takePair('-transparent');
+            await fs.writeFile(prefix + '-geometry.json', JSON.stringify({ filled: before, transparent: after }));
           } finally {
             await control.evaluate(el => el.remove());
           }
-          await body.screenshot({ path: prefix + '-ar-filled.png' });
+          for (const [name, bytes] of Object.entries(images))
+            await fs.writeFile(prefix + name + '.png', bytes);
         }
       }
     }
