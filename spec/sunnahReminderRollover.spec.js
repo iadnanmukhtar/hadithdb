@@ -40,7 +40,7 @@ describe('open homepage Sunnah dialog at the EST boundary', () => {
       const record = choose(pool, Object.fromEntries(params), day);
       const id = record?.hId;
       const response = { ok: true, status: id ? 200 : 204, json: async () => ({
-        day, id: String(id), num: id + 'a', english: 'English ' + id, arabic: 'عربي ' + id, more: pool.length > 1
+        alias: id === 44 ? 'adhkar' : 'yawm-laylah', bookName: id === 44 ? 'Al-Adhkar' : 'ʿAmal al-Yawm wa-l-Laylah', day, id: String(id), num: id + 'a', english: 'English ' + id, arabic: 'عربي ' + id, more: pool.length > 1
       }) };
       if (holdNext) {
         const hold = holdNext;
@@ -57,9 +57,11 @@ describe('open homepage Sunnah dialog at the EST boundary', () => {
     expect(dialog.open).toBe(true);
     expect(dialog.querySelector('[data-sunnah-text=ar]').textContent).toBe('عربي ' + id);
     expect(dialog.querySelector('[data-sunnah-text=en]').textContent).toBe('English ' + id);
-    expect(dialog.querySelector('[data-sunnah-ref]').textContent).toBe('Mujtaba ' + id + 'a');
+    const book = id === 44 ? 'adhkar' : 'yawm-laylah';
+    expect(dialog.querySelector('[data-sunnah-action=browse]').pathname).toBe('/' + book);
+    expect(dialog.querySelector('[data-sunnah-ref]').textContent).toBe((id === 44 ? 'Al-Adhkar' : 'ʿAmal al-Yawm wa-l-Laylah') + ' ' + id + 'a');
     for (const link of dialog.querySelectorAll('[data-sunnah-text], [data-sunnah-ref]'))
-      expect(link.pathname).toBe('/mujtaba:' + id + 'a');
+      expect(link.pathname).toBe('/' + book + ':' + id + 'a');
   }
   function expected(offset = 0) {
     return pool[(Math.floor(midnight / dayLength) + offset) % pool.length].hId;

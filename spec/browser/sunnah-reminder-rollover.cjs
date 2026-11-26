@@ -24,7 +24,7 @@ async function verify(browser, width) {
       const options = Object.fromEntries(new URL(route.request().url()).searchParams);
       const { hId } = choose(pool, options, serverDay);
       const json = {
-        id: String(hId), num: numberFor(hId), day: serverDay, more: true,
+        alias: 'mujtaba', bookName: 'Mujtaba', id: String(hId), num: numberFor(hId), day: serverDay, more: true,
         arabic: ('عربي ' + hId + ' ').repeat(100), english: ('English ' + hId + ' ').repeat(100)
       };
       if (pending && options.another) {

@@ -15,10 +15,10 @@
       </section>
     <% } %>
     <aside class="tags reader-social-actions quran-ayah-hero-toolbar col-12">
-      <% for (const [action, label, icon] of [['another','Another reminder','arrow-clockwise'],['browse','Browse Mujtaba','book']]) {
+      <% for (const [action, label, icon] of [['another','Another reminder','arrow-clockwise'],['browse','Browse book','book']]) {
         const tag = action === 'browse' ? 'a' : 'button';
       %>
-        <<%= tag %> <%- action === 'browse' ? 'href="/mujtaba"' : 'type="button"' %> data-sunnah-action="<%= action %>" class="quran-ayah-action icon text-accent" title="<%= label %>" aria-label="<%= label %>">
+        <<%= tag %> <%- action === 'browse' ? 'href="/books"' : 'type="button"' %> data-sunnah-action="<%= action %>" class="quran-ayah-action icon text-accent" title="<%= label %>" aria-label="<%= label %>">
           <span class="bi bi-<%= icon %>" aria-hidden="true"></span><span class="quran-ayah-action-label"><%= label %></span>
         </<%= tag %>>
       <% } %>

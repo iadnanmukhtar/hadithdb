@@ -146,8 +146,14 @@
         const next = await response.json();
         if (loadingDay !== day || day !== estDay()) return;
         const ref = card.querySelector('[data-sunnah-ref]');
-        ref.textContent = 'Mujtaba ' + next.num;
-        ref.href = '/mujtaba:' + encodeURIComponent(next.num);
+        const bookPath = '/' + encodeURIComponent(next.alias);
+        ref.textContent = next.bookName + ' ' + next.num;
+        ref.href = bookPath + ':' + encodeURIComponent(next.num);
+        const browse = action('browse');
+        browse.href = bookPath;
+        browse.title = 'Browse ' + next.bookName;
+        browse.setAttribute('aria-label', browse.title);
+        browse.querySelector('.quran-ayah-action-label').textContent = browse.title;
         for (const excerpt of excerpts) {
           const paragraph = document.createElement('p');
           paragraph.textContent = excerpt.dataset.sunnahText === 'ar' ? next.arabic : next.english;

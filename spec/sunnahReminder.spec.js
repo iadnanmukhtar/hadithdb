@@ -1,6 +1,6 @@
 const { get } = require('../lib/SunnahReminder');
 
-describe('Mujtaba reminder', () => {
+describe('Daily Sunnah reminder', () => {
   const originalQuery = global.query;
   const midnight = Date.UTC(2026, 10, 25, 5);
   let ids;
@@ -9,9 +9,12 @@ describe('Mujtaba reminder', () => {
     ids = [21, 44, 62];
     jest.useFakeTimers().setSystemTime(midnight - 1);
     global.query = jest.fn(async statement => {
-      expect(statement).toContain('book_id=100429');
-      if (statement.includes("ORDER BY SHA2(CONCAT('mujtaba-daily:', hId), 256), hId"))
-        return ids.map(hId => ({ hId }));
+
+      if (statement.includes('ORDER BY SHA2')) {
+        expect(statement).toContain("book_alias IN ('mujtaba', 'adhkar', 'yawm-laylah')");
+        return ids.map(hId => ({ hId, book_alias: 'adhkar' }));
+      }
+      expect(statement).toContain("book_alias='adhkar'");
       const id = Number(statement.match(/hId=(\d+) LIMIT 1/)[1]);
       expect(ids).toContain(id);
       return [{ num: id + 'a', body: 'عربي', body_en: 'English' }];

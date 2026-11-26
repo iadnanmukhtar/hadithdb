@@ -1305,6 +1305,7 @@ router.get('/reminders/sunnah', async function (req, res, next) {
     });
     if (!reminder) return res.sendStatus(204);
     return res.json({
+      alias: reminder.alias, bookName: reminder.bookName,
       id: reminder.id, day: reminder.day, num: reminder.num, more: reminder.more,
       arabic: Utils.heroReadingText(reminder.body),
       english: Utils.heroReadingText(reminder.body_en)
