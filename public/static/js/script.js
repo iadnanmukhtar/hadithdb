@@ -4496,6 +4496,8 @@ function applyQuranHeroTranslationAlias(alias, options) {
 		var selectedAlias = book && book.source !== 'default' ? book.alias : '';
 		var root = options.root || document;
 		var targets = Array.from(root.querySelectorAll('[data-quran-translation-target="1"]'));
+		// Newly inserted Study passages may still hold their original notes below the text.
+		targets.forEach(storeDefaultQuranTranslationTarget);
 		clearQuranSelectedTranslationFootnotes(root);
 		return applyQuranTranslationToTargets(targets, book).catch(function () {
 			return applyQuranTranslationToTargets(targets, quranDefaultTranslationBook(books));
