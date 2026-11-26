@@ -2,7 +2,7 @@ const { get } = require('../lib/SunnahReminder');
 
 describe('Mujtaba reminder', () => {
   const originalQuery = global.query;
-  const midnight = Date.UTC(2026, 10, 25);
+  const midnight = Date.UTC(2026, 10, 25, 5);
   let ids;
 
   beforeEach(() => {
@@ -23,7 +23,7 @@ describe('Mujtaba reminder', () => {
     jest.useRealTimers();
   });
 
-  test('daily identity survives reload, a manual choice lasts until UTC rollover', async () => {
+  test('daily identity survives reload, a manual choice lasts until EST rollover', async () => {
     const daily = await get({});
     expect(await get({})).toEqual(daily);
     const another = await get({ id: daily.id, day: String(daily.day), another: true });

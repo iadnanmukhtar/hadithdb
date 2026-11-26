@@ -16,7 +16,22 @@
   const originals = new Map();
   let current;
   let opener;
-  let loading = false;
+  const dayLength = 86400000;
+  const estTime = () => Date.now() - 5 * 3600000;
+  const estDay = () => Math.floor(estTime() / dayLength);
+  let loadingDay;
+  let timer;
+
+  function scheduleRefresh(delay = dayLength - estTime() % dayLength) {
+    clearTimeout(timer);
+    if (dialog.open) timer = setTimeout(refreshOpenDialog, delay);
+  }
+
+  function refreshOpenDialog() {
+    if (!dialog.open) return;
+    if (current?.day !== estDay()) load();
+    else scheduleRefresh();
+  }
 
   function layout() {
     for (const trigger of triggers) trigger.hidden = !current;
@@ -80,12 +95,19 @@
     return dialog.animate(opening ? [small, full] : [full, small], { duration: 240, easing: 'ease-in-out' }).finished.catch(() => {});
   }
 
+  let openWhenReady = false;
   function openReminder() {
     if (!current || dialog.open) return;
+    if (current.day !== estDay()) {
+      openWhenReady = true;
+      load();
+      return;
+    }
     opener = visibleTrigger();
     dialog.showModal();
     fitExcerpts();
     animateDialog(true);
+    refreshOpenDialog();
   }
 
   let closing = false;
@@ -98,8 +120,10 @@
   }
 
   async function load(another = false) {
-    if (loading) return;
-    loading = true;
+    const day = estDay();
+    if (loadingDay === day) return;
+    loadingDay = day;
+    another = another && current?.day === day;
     const params = new URLSearchParams(read('sessionStorage', key) || '');
     if (current) {
       params.set('id', current.id);
@@ -108,12 +132,15 @@
     if (another) params.set('another', '1');
     try {
       const response = await fetch('/reminders/sunnah?' + params, { cache: 'no-store' });
+      if (loadingDay !== day || day !== estDay()) return;
       if (!response.ok) throw new Error();
       if (response.status === 204) {
+        openWhenReady = false;
         current = null;
-        dialog.close();
+        if (dialog.open) dialog.close();
       } else {
         const next = await response.json();
+        if (loadingDay !== day || day !== estDay()) return;
         const ref = card.querySelector('[data-sunnah-ref]');
         ref.textContent = 'Mujtaba ' + next.num;
         ref.href = '/mujtaba:' + encodeURIComponent(next.num);
@@ -129,33 +156,42 @@
         action('another').hidden = !next.more;
         current = next;
         write('sessionStorage', key, new URLSearchParams({ day: next.day, id: next.id }).toString());
-        if (another) card.querySelector('[role=status]').textContent = ref.textContent;
+        card.querySelector('[role=status]').textContent = another ? ref.textContent : '';
       }
       layout();
+      if (openWhenReady && current?.day === estDay()) {
+        openWhenReady = false;
+        openReminder();
+      }
     } catch {
+      if (loadingDay !== day || day !== estDay()) return;
+      openWhenReady = false;
       card.querySelector('[role=status]').textContent = 'Unable to load the reminder. Please try again.';
     } finally {
-      loading = false;
+      if (loadingDay === day) {
+        loadingDay = undefined;
+        if (day !== estDay() && (dialog.open || openWhenReady || !current)) return load();
+        scheduleRefresh(current?.day === estDay() ? undefined : 30000);
+      }
     }
   }
 
-  for (const trigger of triggers) trigger.addEventListener('click', () => {
-    openReminder();
-    if (current.day !== Math.floor(Date.now() / 86400000)) load();
-  });
+  for (const trigger of triggers) trigger.addEventListener('click', openReminder);
   dialog.querySelector('[data-sunnah-close]').addEventListener('click', minimizeDialog);
   dialog.addEventListener('cancel', event => { event.preventDefault(); minimizeDialog(); });
   dialog.addEventListener('close', () => {
+    clearTimeout(timer);
     (opener?.offsetWidth ? opener : triggers.find(el => el.offsetWidth))?.focus();
   });
   action('another').addEventListener('click', () => load(true));
   window.addEventListener('pageshow', event => {
     if (event.persisted) {
-      current = null;
-      dialog.close();
-      layout();
-      load();
+      if (dialog.open) refreshOpenDialog();
+      else load();
     }
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshOpenDialog();
   });
   window.addEventListener('resize', fitExcerpts);
   document.fonts?.ready.then(fitExcerpts);
