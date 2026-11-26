@@ -9,7 +9,7 @@ test('the initial Study passage keeps inline references and collects the notes a
     num: '9:' + ayah,
     ref: 'quran:9:' + ayah,
     quranTranslationAlias: 'en-khattab',
-    en: { body: '<section class="content-markdown"><p>Translation <sup class="footnote-ref"><a id="fnref1" href="#fn1">[1]</a></sup></p><section class="footnotes"><ol><li id="fn1">Note ' + ayah + '<a class="footnote-backref" href="#fnref1">↩</a></li></ol></section></section>' },
+    en: { body: '<section class="content-markdown"><p>Translation <sup class="footnote-ref"><a id="fnref1" href="#fn1">[1]</a></sup></p><section class="footnotes"><ol class="footnotes-list"><li class="footnote-item" id="fn1">Note ' + ayah + '<a class="footnote-backref" href="#fnref1">↩</a></li></ol></section></section>' },
     ar: { body: 'نص' }
   }));
   const html = await ejs.renderFile(path.join(__dirname, '../views/sub-views/quran.ejs'), {
@@ -24,7 +24,10 @@ test('the initial Study passage keeps inline references and collects the notes a
   const notes = $('.quran-passage-group, article').last().nextAll('.quran-study-notes');
   for (const ayah of [119, 120, 121, 122]) {
     const href = flow.find('[data-quran-ayah="' + ayah + '"] .footnote-ref a').attr('href');
+    const number = ayah - 118;
+    expect(flow.find('[data-quran-ayah="' + ayah + '"] .footnote-ref a').text()).toBe('[' + number + ']');
     const note = $(href);
+    expect(note.attr('value')).toBe(String(number));
     expect(note).toHaveLength(1);
     expect(note.closest('.quran-study-notes')[0]).toBe(notes[0]);
     expect(note.text()).toBe('Note ' + ayah + '↩');

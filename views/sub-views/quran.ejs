@@ -28,9 +28,13 @@
   var passageEndAyah = passage.length > 0 ? ayahNumber(passage[passage.length - 1]) : NaN;
   var quranGroups = [];
   var translationParts = new Map();
+  var nextNoteNumber = 1;
   passage.forEach(function (item) {
-    if (item.quranTranslationAlias && item.en && item.en.body)
-      translationParts.set(item, utils.quranPassageTranslationParts(item.en.body));
+    if (item.quranTranslationAlias && item.en && item.en.body) {
+      var parts = utils.quranPassageTranslationParts(item.en.body, nextNoteNumber);
+      translationParts.set(item, parts);
+      nextNoteNumber = parts.nextNoteNumber;
+    }
   });
   if (quranSubsections.length > 0) {
     var cursor = 0;
