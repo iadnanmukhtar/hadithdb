@@ -4,6 +4,13 @@ const fs = require('fs');
 const path = require('path');
 
 describe('Quran Study selected passage ayah highlight', () => {
+	test('positions the Arabic ink of neighboring and selected ayahs above the continuous fill', () => {
+		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
+		const passageInk = css.match(/^\.quran-passage-section \[lang="ar"\] \.body\.passage \.quran-ayah-body\s*\{([^}]+)\}/m);
+		expect(passageInk).not.toBeNull();
+		expect(passageInk[1]).toMatch(/position:\s*relative;/);
+	});
+
 	test('matches searched Mushaf ayah colors for Arabic and English without changing the hero', () => {
 		const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'), 'utf8');
 		const selectedPassageRules = css.match(/\.quran-passage-section \[lang="ar"\] \.body \.ayah-selected,[^{]*?\.body\.passage:lang\(ar\) \.ayah-selected \{([^}]+)\}/);
