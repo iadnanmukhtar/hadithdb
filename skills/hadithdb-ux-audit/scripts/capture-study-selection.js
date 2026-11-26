@@ -2,7 +2,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
-const { chromium, firefox, webkit } = require('playwright');
+const { chromium } = require('playwright');
 
 async function capture(browser, origin, output, width, height, stylesheet, overlay) {
   const phone = width === 390;
@@ -91,11 +91,10 @@ async function capture(browser, origin, output, width, height, stylesheet, overl
   const overlay = process.argv.includes('--candidate-css');
   const fallback = process.argv.includes('--fallback');
   for (const [width, height] of [[1440, 900], [390, 844]]) {
-    const engine = fallback ? (width === 390 ? webkit : firefox) : chromium;
-    const browser = await engine.launch(engine === chromium ? { channel: 'chrome' } : {});
+    const browser = await chromium.launch(fallback ? {} : { channel: 'chrome' });
     try {
       await capture(browser, origin, output, width, height, stylesheet, overlay);
-      console.log(engine.name(), browser.version(), width, height, '120 → 121 → 120 passed');
+      console.log(fallback ? 'Chrome Headless Shell' : 'Chrome', browser.version(), width, height, '120 → 121 → 120 passed');
     } finally {
       await browser.close();
     }
