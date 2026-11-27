@@ -110,6 +110,8 @@ function page(res, req, view, extra = {}) {
     feedCategory: typeof req.query?.category === 'string' ? req.query.category : '',
     page: { schemaType: view === 'everyone' ? 'CollectionPage' : 'WebPage',
       articleType: view === 'post' && extra.post && extra.post.status !== 'draft' ? (extra.post?.kind === 'article' ? 'Article' : 'SocialMediaPosting') : undefined,
+      articleAuthor: extra.post?.author?.name,
+      datePublished: require('../lib/PageFreshness').latest([extra.post?.publishedAt]),
       dateModified: view === 'everyone' ? require('../lib/PageFreshness').community(extra.initial) : view === 'post' ? require('../lib/PageFreshness').latest([extra.post?.publicUpdatedAt, extra.post?.publishedAt]) : undefined, menu: view === 'email-preferences' ? 'My Settings' : 'Community', title_en: title, description_en: extra.post?.subtitle || extra.post?.excerpt || 'Reader posts, articles, and conversations about Quran and hadith.',
       canonical: view === 'unsubscribe' || view === 'email-unsubscribe' ? '/community/email-preferences' : extra.post?.url || (req.path === '/' ? '/community' : '/community' + req.path),
       noindex: ['author', 'mine', 'following', 'write', 'moderation', 'unsubscribe', 'email-preferences', 'email-unsubscribe'].includes(view), context: { communityView: view, federationEnabled: require('../lib/ActivityPub').enabled() },
