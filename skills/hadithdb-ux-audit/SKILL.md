@@ -90,3 +90,5 @@ For daily reminders, cross midnight EST with a controlled clock while the dialog
 For the Sunnah dialog, check the longest book reference at narrow phone widths. Measure every wrapped link fragment against the narration column.
 
 For Quran reader cache changes, open an unvisited direct passage and Mushaf page after installation and scroll Study into a new section. Verify script and translation continuity and record content requests separately from the document shell and user settings.
+
+Measure cold direct Study and Mushaf visits from navigation to visible scripture in a fresh profile. Check when the first content request starts relative to the document response, including when an edition has not yet been published. Profile a sequence of scrolls for layout work and hidden editors as the document grows.

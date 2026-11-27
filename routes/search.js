@@ -14,6 +14,7 @@ const { addVirtualReferences } = require('../lib/HadithVirtualReferences');
 const Tafsir = require('../lib/Tafsir');
 const CommentaryHeadings = require('../lib/CommentaryHeadings');
 const Utils = require('../lib/Utils');
+const { defaultTranslationAlias } = require('../public/static/js/quran-reader-links');
 const { Subsection, Section, Chapter, Heading, Item, Library, Record } = require('../lib/Model');
 const Index = require('../lib/Index');
 const Arabic = require('../lib/Arabic');
@@ -1300,7 +1301,17 @@ async function renderSearchResults(req, res, next, options = {}) {
 
 // Script-capable public document navigations use the same content renderer
 // as in-reader navigation. Crawlers, exports and edit/review modes keep SSR.
-router.get(/^\/quran(?:\/page\/\d+|\/(?:[a-z][\w-]*\/)?\d+\/\d+|(?:\/[a-z][\w-]*\/quran)?:\d+:\d+(?:-\d+)?)$/i, (req, res, next) => {
+router.get(/^\/quran(?:\/page\/\d+|\/(?:[a-z][\w-]*\/)?\d+\/\d+|(?:\/[a-z][\w-]*\/quran)?:\d+:\d+(?:-\d+)?)$/i, async (req, res, next) => {
+  if (!req.query.translation && !(req.admin && req.editMode) && /^\/quran(?:\/\d+\/\d+|:\d+:\d+(?:-\d+)?)$/.test(req.path)
+      && (req.get('Sec-Fetch-Dest') !== 'document' || req.query.reader === 'server')
+      && Object.keys(req.query).every(key => ['script', 'reader'].includes(key))) {
+    const book = preferredQuranTranslationFromCookie(req) || visibleQuranTranslationByAlias(defaultTranslationAlias);
+    if (book) {
+      const suffix = req.path.startsWith('/quran:') ? req.path : req.path.slice('/quran'.length);
+      res.set('Cache-Control', 'private, no-store').vary('Sec-Fetch-Dest');
+      return res.redirect(302, appendQueryExcluding(req, Utils.quranUrl(req, '/quran/' + (book.quranBookSlug || book.alias) + suffix), []));
+    }
+  }
   if (req.get('Sec-Fetch-Dest') !== 'document' || req.admin && req.editMode ||
       Object.keys(req.query).some(key => !['script', 'ayah', 'translation'].includes(key))) return next();
   const requested = req.path.match(/^\/quran\/page\/(\d+)$/);
@@ -1309,11 +1320,13 @@ router.get(/^\/quran(?:\/page\/\d+|\/(?:[a-z][\w-]*\/)?\d+\/\d+|(?:\/[a-z][\w-]*
   const alias = req.path.match(/^\/quran\/([a-z][\w-]*)\//i)?.[1];
   if (alias && alias !== 'page' && !visibleQuranTranslationByAlias(alias)) return next();
   const book = visibleBookByAlias('quran');
-  const translation = visibleQuranTranslationByAlias(requested ? '' : alias || req.query.translation);
+  const translation = requested ? null : (alias || req.query.translation
+    ? visibleQuranTranslationByAlias(alias || req.query.translation)
+    : preferredQuranTranslationFromCookie(req) || visibleQuranTranslationByAlias(defaultTranslationAlias));
   if (translation && !['local', 'default'].includes(translation.source)) return next();
   // The canonical routes own alias redirects and the saved translation preference.
   if (!requested && ((alias && alias !== (translation?.quranBookSlug || translation?.alias))
-      || (!alias && req.query.translation) || (!alias && /^\/quran\/\d+\/\d+$/.test(req.path) && preferredQuranTranslationFromCookie(req)))) return next();
+      || (!alias && req.query.translation))) return next();
   const target = !requested && req.path.match(/(?:quran:|\/)(\d+)([:/])(\d+)(?:-(\d+))?$/);
   if (target) {
     const chapter = findSurah(Number(target[1]));
@@ -1331,7 +1344,8 @@ router.get(/^\/quran(?:\/page\/\d+|\/(?:[a-z][\w-]*\/)?\d+\/\d+|(?:\/[a-z][\w-]*
   res.locals.res = res;
   res.set('Cache-Control', 'private, no-store').vary('Sec-Fetch-Dest');
   const locals = { req, res, site: { ...global.settings.site, admin: req.admin, editMode: false }, page,
-    readerShell: true, fallback: fallback.pathname + fallback.search };
+    readerShell: true, readerInitialFiles: await require('../lib/QuranPublication').initialFiles(number, Number(target?.[1]),
+      translation, target?.[2] === ':' && (!target[4] || target[4] === target[3])).catch(() => ({})), fallback: fallback.pathname + fallback.search };
   if (requested) return res.render('quran_mushaf', { ...locals, memorize: false, review: false,
     mushaf: { number, info: { number_of_pages: 604 } }, quranHeaderJuzLinks: [] });
   res.render('quran_study_shell', locals);

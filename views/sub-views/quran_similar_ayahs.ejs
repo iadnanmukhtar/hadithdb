@@ -1,11 +1,11 @@
-<details class="quran-similar-ayahs col-12">
+<details class="quran-similar-ayahs col-12"<% if (locals.relatedRef) { %> data-related-kind="similar" data-related-ref="<%= relatedRef %>" data-related-book="<%= relatedBook %>"<% } %>>
 	<summary>
 		<span class="bi bi-intersect" aria-hidden="true"></span>
 		<span>Similar ayat</span>
 		<span class="ux-pill quran-similar-ayahs-count"><%= similarAyahs.length %></span>
 	</summary>
 	<div class="quran-similar-ayahs-list">
-		<% similarAyahs.forEach(function (ayah) {
+		<% if (!locals.relatedRef) similarAyahs.forEach(function (ayah) {
 			var ayahRef = arabic.toLatinDigits((ayah.en?.num || ayah.num || '').toString());
 			var ayahPart = ayahRef.split(':')[1] || ayahRef;
 			var ayahMarker = arabic.toArabicDigits(ayahPart);

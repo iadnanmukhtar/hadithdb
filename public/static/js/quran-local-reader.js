@@ -109,7 +109,7 @@ const QuranLocalReader = (() => {
 		return { surah: Number(m[2]), alias: m[1] || url.searchParams.get('translation'), section: passage && Number(m[3]),
 			start: ref && Number(m[3]), end: ref && Number(m[4] || m[3]) };
 	}
-	async function related(ref, translation) {
+	async function related(ref, translation, kind) {
 		const index = await bookReaderCache.read('quran', '/quran/relationships');
 		const items = new Map();
 		function item(target) {
@@ -124,20 +124,51 @@ const QuranLocalReader = (() => {
 			})());
 			return items.get(target);
 		}
-		const similarAyahs = await Promise.all((index.similar[ref] || []).map(async match =>
+		if (kind === 'similar') return Promise.all((index.similar[ref] || []).map(async match =>
 			({ ...await item(match.target), ...match })));
-		const mutashabihatPhrases = await Promise.all((index.byVerse[ref] || []).map(async id => {
+		return Promise.all((index.byVerse[ref] || []).map(async id => {
 			const phrase = index.phrases[id];
 			const matches = await Promise.all(Object.entries(phrase.ranges).filter(([other]) => other !== ref)
 				.map(async ([other,ranges]) => ({item: await item(other), ranges})));
 			return {...phrase, sourceRanges: phrase.ranges[ref], matches};
 		}));
-		return { similarAyahs, mutashabihatPhrases };
 	}
+	// Related text can span dozens of surahs. Resolve those verses when the disclosure opens.
+	document.addEventListener('toggle', async event => {
+		const details = event.target;
+		if (!details.open || !details.dataset.relatedRef || details.hasAttribute('aria-busy')) return;
+		const {relatedKind: kind, relatedRef: ref, relatedBook: book} = details.dataset;
+		const list = details.querySelector(':scope > div');
+		details.setAttribute('aria-busy','true');
+		list.textContent = 'Loading matching ayat…';
+		try {
+			const index = await indexData();
+			const translation = index.translations.find(row => row.alias === book);
+			const rows = await related(ref, translation, kind);
+			const env = environment(index, new URL(location.href));
+			const [surah] = ref.split(':').map(Number);
+			const html = kind === 'similar'
+				? render('quran_similar_ayahs', {...env, similarAyahs: rows})
+				: render('quran_mutashabihat', {...env, phrases: rows, selectedAyah: {
+					ar: {body: (await quranTextPart('uthmani',surah)).ayahsByRef[ref]}
+				}});
+			const template = document.createElement('template');
+			template.innerHTML = html.trim();
+			list.replaceChildren(...template.content.querySelector('details > div').childNodes);
+			delete details.dataset.relatedRef;
+			initQuranScriptPreference(list).catch(console.warn);
+		} catch (_) {
+			list.textContent = 'Matching ayat could not load. Close and reopen to retry.';
+		} finally {
+			details.removeAttribute('aria-busy');
+		}
+	}, true);
 	async function study(href, headOnly = false) {
 		const url = new URL(href, location.origin), target = parse(url);
 		if (!target || [...url.searchParams.keys()].some(key => !['translation','script'].includes(key))) return null;
-		const { surah, alias, start, end } = target;
+		const { surah, start, end } = target;
+		const alias = target.alias || document.body.dataset.quranSelectedTranslationAlias ||
+			storedQuranSelectedTranslationAlias() || QuranReaderLinks.defaultTranslationAlias;
 		const [index, part, outlines] = await Promise.all([indexData(), quranTextPart('uthmani', surah),
 			headOnly ? null : bookReaderCache.read('quran', '/quran/page-outlines/' + surah), templates()]);
 		const chapter = index.chapters[surah];
@@ -173,12 +204,15 @@ const QuranLocalReader = (() => {
 		const env = environment(index, url);
 		Object.assign(env.req, { quranSelectedTranslationAlias: translation?.alias || '', quranSelectedTranslationSlug: alias || '',
 			quranServerRenderedTranslationAlias: translation?.alias || '', quranTranslationCanonicalPath: url.pathname });
-		const relationships = !headOnly && selected.length === 1 ? await related(selected[0].num, translation) : {};
+		const refIndex = !headOnly && selected.length === 1 ? await bookReaderCache.read('quran', '/quran/relationships') : null;
+		const selectedRef = selected[0]?.num;
 		const intros = !headOnly && translation?.source === 'local' ? await bookReaderCache.read(translation.alias, '/quran/introductions/' + translation.alias) : null;
 		let metadata, html = '';
 		const stopAtHead = {};
 		const locals = { ...env, section, chapter: { ...chapter, book }, results, selectedAyahs: selected,
-			...relationships, commentarySurahHeading: intros?.chapters.find(c => Number(c.h1) === surah), commentaryIntroductionArticles: intros?.articles,
+			relatedRef: selectedRef, relatedBook: translation?.alias || '',
+			similarAyahs: refIndex?.similar[selectedRef] || [], mutashabihatPhrases: refIndex?.byVerse[selectedRef] || [],
+			commentarySurahHeading: intros?.chapters.find(c => Number(c.h1) === surah), commentaryIntroductionArticles: intros?.articles,
 			quranSubsections: sections.flatMap(s => s.subsections), quranHeadingOutlines: outlines, quranCommentaryBook: translation };
 		try {
 			html = render('section_quran', locals, page => {

@@ -17,14 +17,14 @@
 		return `${count} ${Number(count) === 1 ? singular : pluralForm}`;
 	}
 %>
-<details class="quran-mutashabihat col-12">
+<details class="quran-mutashabihat col-12"<% if (locals.relatedRef) { %> data-related-kind="phrases" data-related-ref="<%= relatedRef %>" data-related-book="<%= relatedBook %>"<% } %>>
 	<summary>
 		<span class="bi bi-subtract" aria-hidden="true"></span>
 		<span>Similar phrases <span class="quran-mutashabihat-name">(Mutashābihāt)</span></span>
 		<span class="quran-mutashabihat-count"><%= phrases.length %></span>
 	</summary>
 	<div class="quran-mutashabihat-list">
-		<% phrases.forEach(function (phrase) {
+		<% if (!locals.relatedRef) phrases.forEach(function (phrase) {
 			var sourceRange = phrase.sourceRanges[0] || [phrase.sourceWordFrom, phrase.sourceWordTo];
 			var sourcePhraseText = phraseText(selectedAyah, sourceRange);
 		%>

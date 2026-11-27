@@ -1,0 +1,23 @@
+<script>
+(() => {
+  const entries = <%- utils.jsonLd(readerInitialFiles) %>;
+  window.quranReaderStart = entries;
+  const match = async (cache, url) => window.caches && caches.match(url, { cacheName: cache });
+  // Start cold transfers as the head arrives. Installed books remain the first source.
+  for (const [url, entry] of Object.entries(entries)) {
+    entry.response = (async () => {
+      if (await match('hadithdb-reader-editions-v1', '/quran-library/editions/' + entry.book)) return;
+      try {
+        const local = localStorage.getItem('hadithdb:quran-reader:v1:' + url);
+        if (local && Number(/^\{"version":(\d+),/.exec(local)?.[1]) >= (entry.version || 1)) return;
+      } catch (_) {}
+      const legacy = await match('hadithdb-quran-reader-v1', url);
+      if (legacy && Number(legacy.headers.get('X-Book-Version')) >= (entry.version || 1)) return;
+      const file = entry.hash && '/quran-library/files/' + entry.hash;
+      if (file && await match('hadithdb-reader-files:' + entry.book, file)) return;
+      const response = await fetch(file || url, { priority: 'high', headers: { Accept: 'application/json' } });
+      return response.ok ? response : null;
+    })().catch(() => null);
+  }
+})();
+</script>

@@ -3527,7 +3527,7 @@ function initQuranTafsirTabs(root) {
 			});
 			};
 			var appendTranslationPreferenceHeart = function (source, book) {
-				var alias = book && book.source === 'default' ? '' : (book && book.alias || '');
+				var alias = book?.alias || '';
 				var label = quranTranslationBookLabel(book);
 				var button = $('<button>').addClass('translation-preference-heart btn btn-link p-0').attr({
 					type: 'button',
@@ -4139,7 +4139,7 @@ const publishedQuran = (() => {
 			.then(r => r.ok ? r.json() : null).catch(() => null));
 		return latest.get(book);
 	}
-	async function chunk(book, hash, background) {
+	async function chunk(book, hash, background, started) {
 		if (!background && decoded.has(hash)) return decoded.get(hash);
 		const cache = await bookStorage(book);
 		const path = root + 'files/' + hash;
@@ -4152,7 +4152,7 @@ const publishedQuran = (() => {
 		if (hit) return background ? null : remember(await hit.json());
 		const key = book + hash;
 		if (!loading.has(key)) loading.set(key, (async () => {
-			const response = await fetch(path, { priority: background ? 'low' : 'high' });
+			const response = await started || await fetch(path, { priority: background ? 'low' : 'high' });
 			if (!response.ok) throw Error('Reader file unavailable');
 			const body = await response.arrayBuffer();
 			const digest = await crypto.subtle.digest('SHA-256', body);
@@ -4215,11 +4215,13 @@ const publishedQuran = (() => {
 		const old = await installed(book);
 		return next && (!old || old.version < next.version || old.format < next.format);
 	}
-	return { read, install, needsUpdate };
+	return { read, install, needsUpdate, chunk };
 })();
 
 const bookReaderCache = (() => {
-	let manifest, knownVersions;
+	let manifest;
+	let knownVersions = Object.fromEntries(Object.values(window.quranReaderStart || {})
+		.filter(entry => entry.version).map(entry => [entry.book, entry.version]));
 	let cachePromise;
 	const pending = new Map();
 	const recent = new Map();
@@ -4314,9 +4316,34 @@ const bookReaderCache = (() => {
 		if (shouldFlushQuranProxyCache()) return json(url);
 		// Previously downloaded material can paint while the manifest revalidates.
 		const installed = await publishedQuran.read(alias, url, true).catch(() => null);
-		if (installed != null) return installed;
-		const local = await stored(url, knownVersions?.[alias], false);
-		if (local != null) { versions(); return local; }
+		if (installed != null) {
+			if (window.quranReaderStart) delete window.quranReaderStart[url];
+			return installed;
+		}
+		const initial = window.quranReaderStart?.[url];
+		const useInitial = initial?.book === alias && !(knownVersions?.[alias] > (initial.version || 0));
+		const local = await stored(url, useInitial ? initial.version : knownVersions?.[alias], false);
+		if (local != null) {
+			if (useInitial) delete initial.response;
+			else versions();
+			return local;
+		}
+		if (useInitial) {
+			try {
+				return await share('initial:' + url, async () => {
+					if (initial.hash) return publishedQuran.chunk(alias, initial.hash, false, initial.response);
+					const response = await initial.response;
+					const data = response ? await response.json() : await json(url);
+					await save(url, initial.version, data);
+					return data;
+				});
+			} catch (_) {
+				// Retry using the normal resolver if the first transfer was interrupted.
+				delete window.quranReaderStart[url];
+			} finally {
+				delete initial.response;
+			}
+		}
 		const edition = await publishedQuran.read(alias, url, false).catch(() => null);
 		if (edition != null) return edition;
 		const revisions = await versions();
@@ -4757,7 +4784,7 @@ function quranAyahStudyUrl(ref) {
 
 function storedQuranSelectedTranslationAlias() {
 	try {
-		return validQuranTranslationAlias(window.sessionStorage && window.sessionStorage.getItem(QURAN_SELECTED_TRANSLATION_STORAGE_KEY) || '');
+		return validQuranTranslationAlias(window.sessionStorage && window.sessionStorage.getItem(QURAN_SELECTED_TRANSLATION_STORAGE_KEY) || getHadithCookie(QURAN_PREFERRED_TRANSLATION_COOKIE) || '');
 	} catch (_err) {
 		return '';
 	}
@@ -4785,7 +4812,7 @@ function applyQuranHeroTranslationAlias(alias, options) {
 		var book = alias ? books.find(function (candidate) { return candidate && candidate.alias === alias; }) : quranDefaultTranslationBook(books);
 		if (!book)
 			book = quranDefaultTranslationBook(books);
-		var selectedAlias = book && book.source !== 'default' ? book.alias : '';
+		var selectedAlias = book?.alias || '';
 		var root = options.root || document;
 		var targets = Array.from(root.querySelectorAll('[data-quran-translation-target="1"]'));
 		// Newly inserted Study passages may still hold their original notes below the text.
@@ -5207,9 +5234,10 @@ function initQuranPassageTranslationSelects(root) {
 				option.dataset.search = [option.textContent, book.name_en, book.author_en, book.alias].filter(Boolean).join(' ');
 				selector.appendChild(option);
 			});
-			var preferredSelectValue = quranTranslationSelectValue(preferredAlias || '', choices);
-			if (!selectedTranslationAlias && preferredSelectValue) {
-				var preferredUrl = quranTranslationPassageUrl(preferredSelectValue, selector.dataset.passagePath);
+			const explicit = new URLSearchParams(location.search).has('translation') ||
+				/^\/quran\/[a-z][\w-]*\/(?:\d+\/|quran:)/i.test(location.pathname);
+			if (!explicit && preferredAlias && preferredAlias !== selectedTranslationAlias && !shouldFlushQuranProxyCache()) {
+				var preferredUrl = quranTranslationPassageUrl(preferredAlias, selector.dataset.passagePath);
 				if (preferredUrl) {
 					window.location.replace(preferredUrl);
 					return;
@@ -5239,7 +5267,7 @@ function initQuranPassageTranslationSelects(root) {
 			});
 			applyBookCarouselFilter($(menu).children('[data-book-carousel-filter]'));
 			selector.addEventListener('change', function () {
-				var alias = validQuranTranslationAlias(selector.value || '');
+				var alias = validQuranTranslationAlias(selector.value || quranDefaultTranslationBook(choices)?.alias);
 				var targetUrl = quranTranslationPassageUrl(alias, selector.dataset.passagePath);
 				if (!targetUrl) {
 					if (window.toastr)
@@ -5399,7 +5427,7 @@ function selectedQuranAudioTranslationBook() {
 		var alias = quranSelectedTranslationAliasFromLocation()
 			|| storedQuranSelectedTranslationAlias()
 			|| settings.translations && settings.translations.preferredAlias
-			|| '';
+			|| QuranReaderLinks.defaultTranslationAlias;
 		return (alias && books.find(function (book) { return book && book.alias === alias; }))
 			|| quranDefaultTranslationBook(books);
 	});
@@ -7365,9 +7393,9 @@ function initQuranAudioTranslationSelects(controls) {
 		return;
 	Promise.all([quranTranslationBooks(), getQuranTafsirSettings().catch(function () { return {}; })]).then(function (results) {
 		var settings = results[1] || {};
-		var preferredAlias = storedQuranSelectedTranslationAlias()
+		var preferredAlias = quranSelectedTranslationAliasFromLocation() || storedQuranSelectedTranslationAlias()
 			|| settings.translations && settings.translations.preferredAlias
-			|| '';
+			|| QuranReaderLinks.defaultTranslationAlias;
 		var choices = orderedSelectableQuranTranslationBooks(results[0], settings).filter(function (book) {
 			var disabled = settings.translations && Array.isArray(settings.translations.disabledAliases)
 				? settings.translations.disabledAliases
@@ -7379,6 +7407,7 @@ function initQuranAudioTranslationSelects(controls) {
 			choices.forEach(function (book) {
 				var option = document.createElement('option');
 				option.value = book.source === 'default' ? '' : book.alias;
+				option.dataset.bookAlias = book.alias;
 				option.textContent = quranTranslationBookLabel(book);
 				selector.appendChild(option);
 			});
@@ -7393,7 +7422,7 @@ function initQuranAudioTranslationSelects(controls) {
 			var alias = validQuranTranslationAlias(selector.value || '');
 			syncQuranAudioTranslationSelection(alias);
 			setQuranPassageTranslationSelectValue(alias);
-			saveQuranPreferredTranslationAlias(alias).catch(function (err) {
+			saveQuranPreferredTranslationAlias(selector.selectedOptions[0]?.dataset.bookAlias || alias).catch(function (err) {
 				if (window.toastr)
 					toastr.error(err.message || 'Unable to save translation preference.', 'Settings');
 			});
@@ -7689,7 +7718,7 @@ function initQuranTranslationAttributionSelectors(root) {
 					selector.value = target.dataset.quranTranslationAlias || '';
 					return;
 				}
-				var alias = validQuranTranslationAlias(selector.value || '');
+				var alias = validQuranTranslationAlias(selector.value || quranDefaultTranslationBook(choices)?.alias);
 				var targetUrl = quranTranslationPassageUrl(alias);
 				if (!targetUrl) {
 					selector.value = target.dataset.quranTranslationAlias || '';
@@ -7725,7 +7754,8 @@ function initQuranPreferredTranslationDisplays(root) {
 		return;
 	targets.forEach(function (target) {
 		storeDefaultQuranTranslationTarget(target);
-		setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), '');
+		if (!target.dataset.quranFixedTranslationAlias)
+			setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), '');
 	});
 	var hasServerRenderedTranslation = targets.every(function (target) {
 		return target.dataset.quranTranslationServerRendered === '1'
@@ -7754,7 +7784,7 @@ function initQuranPreferredTranslationDisplays(root) {
 				var surahs = new Set(targets.map(function (target) { return target.dataset.quranSurah; }).filter(Boolean));
 				var warm = function () {
 					surahs.forEach(function (surah) {
-						var request = book ? fetchQuranLocalTranslation(book, surah, 1) : defaultQuranTranslationSurah(surah);
+						var request = book?.source === 'local' ? fetchQuranLocalTranslation(book, surah, 1) : defaultQuranTranslationSurah(surah);
 						request.catch(function () {});
 					});
 				};
@@ -7775,11 +7805,7 @@ function initQuranPreferredTranslationDisplays(root) {
 			syncServerRenderedTranslation(book);
 		}) : Promise.resolve().then(function () {
 			syncServerRenderedTranslation(null);
-		})).catch(function () {
-			targets.forEach(function (target) {
-				setQuranTranslationAttribution(target, defaultQuranTranslationShortName(), '');
-			});
-		}).finally(function () {
+		})).catch(function () {}).finally(function () {
 			initQuranTranslationAttributionSelectors(scope);
 		});
 		return;
@@ -7911,7 +7937,7 @@ function getQuranTafsirSettings() {
 					.filter(function (alias) { return /^[A-Za-z0-9_-]+$/.test(alias) && !translationDisabled.has(alias); }))),
 				preferredAlias: /^[A-Za-z0-9_-]+$/.test((translations.preferredAlias || '').toString().trim())
 					? translations.preferredAlias.toString().trim()
-					: ''
+					: QuranReaderLinks.defaultTranslationAlias
 			},
 			audio: {
 				disabledReciters: Array.from(new Set((Array.isArray(audio.disabledReciters) ? audio.disabledReciters : [])
@@ -7925,7 +7951,7 @@ function getQuranTafsirSettings() {
 	};
 	var defaultSettings = function () {
 		var settings = normalizeSettings({});
-		settings.translations.preferredAlias = storedQuranSelectedTranslationAlias();
+		settings.translations.preferredAlias = storedQuranSelectedTranslationAlias() || QuranReaderLinks.defaultTranslationAlias;
 		settings.personalized = false;
 		return settings;
 	};
@@ -13122,24 +13148,19 @@ function initQuranInfinitePassageNavigation(root) {
 			document.body.classList.remove('quran-passage-nav-faded');
 		}, 240);
 	};
-	var pageMarkers = function () {
-		return Array.from(main[0].querySelectorAll('[data-quran-infinite-anchor="1"], [data-quran-infinite-page="1"]'));
-	};
-	var currentPageIndex = function () {
-		var markers = pageMarkers();
-		var position = window.pageYOffset + window.innerHeight * 0.65;
-		var index = 0;
-		markers.forEach(function (marker, markerIndex) {
-			var top = marker.getBoundingClientRect().top + window.pageYOffset;
-			if (top <= position)
-				index = markerIndex;
-		});
-		return index;
-	};
-	var pagesAhead = function () {
-		var markers = pageMarkers();
-		return Math.max(0, markers.length - currentPageIndex() - 1);
-	};
+	const markers = [initialAnchor[0]];
+	let activeNavigationMarker;
+	function currentPageIndex() {
+		const position = window.innerHeight * 0.65;
+		let first = 0, last = markers.length - 1;
+		while (first < last) {
+			const middle = Math.ceil((first + last) / 2);
+			if (markers[middle].getBoundingClientRect().top <= position) first = middle;
+			else last = middle - 1;
+		}
+		return first;
+	}
+	function pagesAhead() { return markers.length - currentPageIndex() - 1; }
 	var setMobileBottomNavLink = function (direction, href, title) {
 		var selector = direction === 'prev' ? '[data-mobile-bottom-nav-prev]' : '[data-mobile-bottom-nav-next]';
 		var current = document.querySelector(selector);
@@ -13161,8 +13182,7 @@ function initQuranInfinitePassageNavigation(root) {
 		}
 		current.replaceWith(replacement);
 	};
-	var updateInfiniteNavigation = function () {
-		var marker = pageMarkers()[currentPageIndex()];
+	var updateInfiniteNavigation = function (marker) {
 		if (!marker)
 			return;
 		activateInfinitePassageLazyLoaders(marker);
@@ -13172,9 +13192,8 @@ function initQuranInfinitePassageNavigation(root) {
 		setMobileBottomNavLink('prev', prevHref, marker.getAttribute('data-quran-prev-title') || 'Previous');
 		setMobileBottomNavLink('next', nextHref, marker.getAttribute('data-quran-next-title') || 'Next');
 	};
-	var updateInfiniteUrl = function () {
+	var updateInfiniteUrl = function (marker) {
 		if (document.documentElement.dataset.readerPrinting === '1') return;
-		var marker = pageMarkers()[currentPageIndex()];
 		var url = marker && marker.getAttribute('data-quran-url');
 		var normalized = normalizeQuranInfiniteUrl(url);
 		if (translationPicker && marker && marker.dataset.studyPath)
@@ -13192,9 +13211,14 @@ function initQuranInfinitePassageNavigation(root) {
 			return;
 		scrollFrame = window.requestAnimationFrame(function () {
 			scrollFrame = null;
-			updateInfiniteUrl();
-			updateInfiniteNavigation();
-			ensureLoadedAhead();
+			const index = currentPageIndex();
+			const marker = markers[index];
+			updateInfiniteUrl(marker);
+			if (marker !== activeNavigationMarker) {
+				updateInfiniteNavigation(marker);
+				activeNavigationMarker = marker;
+			}
+			if (markers.length - index - 1 < prefetchAhead) ensureLoadedAhead();
 		});
 	};
 	var activateInfinitePassageLazyLoaders = function (marker) {
@@ -13372,6 +13396,7 @@ function initQuranInfinitePassageNavigation(root) {
 			chunk[0].appendChild(imported);
 		});
 		chunk.insertBefore(status);
+		markers.push(chunk[0]);
 		initQuranPreferredTranslationDisplays(chunk[0]);
 		initQuranAyahHoverPairs(chunk[0]);
 		initQuranAyahSelector(chunk[0]);

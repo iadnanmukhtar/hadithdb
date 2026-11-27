@@ -1139,12 +1139,12 @@
     };
 
     const translationPreferenceAlias = (book) => {
-      return book && book.source === 'default' ? '' : (book && book.alias || '').toString();
+      return (book?.alias || '').toString();
     };
 
     const renderTranslationPreferenceButton = (book, isDisabled, label) => {
       const alias = translationPreferenceAlias(book);
-      const isPreferred = (currentSettings.translations.preferredAlias || '') === alias;
+      const isPreferred = (currentSettings.translations.preferredAlias || window.QuranReaderLinks.defaultTranslationAlias) === alias;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `translation-preference-heart btn btn-link p-0${isPreferred ? ' is-preferred' : ''}`;
@@ -1688,7 +1688,7 @@
         const books = await res.json();
         const defaultBook = (Array.isArray(books) ? books : []).find(book => book && book.source === 'default');
         if (defaultBook)
-          defaultTranslationBook = { ...defaultBook, alias: '', builtinDefault: true };
+          defaultTranslationBook = { ...defaultBook, builtinDefault: true };
         renderTranslationList(books);
       } catch (err) {
         translationStatusEl.textContent = err.message || 'Unable to load translation settings.';

@@ -1,4 +1,8 @@
 <meta charset="utf-8">
+<% if (locals.readerShell && locals.readerInitialFiles) { %>
+<link rel="preload" as="script" href="/quran/api/<%= req.path.startsWith('/quran/page/') ? 'mushaf' : 'study' %>-templates.js?v=<%= utils.scriptAssetVersion() %>">
+<%- include('quran_reader_start.ejs') %>
+<% } %>
 <% 
   function cleanCanonicalPath(path) {
     if (!path)

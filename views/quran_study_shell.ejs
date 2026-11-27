@@ -3,7 +3,7 @@
 <head>
   <%- include('sub-views/head.ejs', { site, page }); %>
 </head>
-<body>
+<body data-quran-selected-translation-alias="<%= req.quranSelectedTranslationAlias || '' %>">
   <%- include('sub-views/header.ejs', { site, page }); %>
   <main class="container chapter" data-reader-shell="study" aria-busy="true"></main>
   <noscript><meta http-equiv="refresh" content="0;url=<%= fallback %>"></noscript>

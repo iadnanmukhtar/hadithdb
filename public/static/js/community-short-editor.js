@@ -34,7 +34,7 @@
     const direction = text => /\p{Script_Extensions=Arabic}/u.test(text.match(/\p{L}/u)?.[0] || '') ? 'rtl' : 'ltr';
     // Keep DOM boundary points, including empty paragraphs and positions after
     // a BR. A document-wide text offset cannot distinguish those positions.
-    const selection=window.getSelection();
+    const selection=root.isConnected ? window.getSelection() : null;
     const points=selection?.anchorNode && root.contains(selection.anchorNode) && root.contains(selection.focusNode)
       ? [[selection.anchorNode,selection.anchorOffset],[selection.focusNode,selection.focusOffset]] : [];
     let moved=false;

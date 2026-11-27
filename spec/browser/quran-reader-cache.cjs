@@ -18,6 +18,20 @@ async function run() {
     await page.route('**/quran-library/editions/**', route => route.fulfill({ status: 404, body: '' }));
     let revisionOffset = 0;
     let quranRevisionOffset = 0;
+    // The simulated unpublished edition also supplies the initial document hints.
+    await page.route('**/quran/**', async route => {
+      if (!route.request().isNavigationRequest()) return route.fallback();
+      const response = await route.fetch({ headers: { ...route.request().headers(), 'Sec-Fetch-Dest': 'document' } });
+      const body = (await response.text()).replace(/const entries = (\{[\s\S]*?\n\});/, (_, json) => {
+        const entries = JSON.parse(json);
+        for (const entry of Object.values(entries)) {
+          entry.hash = null;
+          entry.version += entry.book === 'quran' ? quranRevisionOffset : revisionOffset;
+        }
+        return 'const entries = ' + JSON.stringify(entries) + ';';
+      });
+      await route.fulfill({ response, body });
+    });
     await page.route('**/proxy/quran-reader/versions', async route => {
       const response = await route.fetch();
       const versions = await response.json();
@@ -32,6 +46,21 @@ async function run() {
       if (url.pathname.endsWith('/translations/local') && url.searchParams.get('whole') === '1'
           && url.searchParams.get('src') === 'en-pickthall' && url.searchParams.get('s') === '2') counts.translation++;
     });
+
+    // A missing manifest or a delayed catalog must not hold the first page blank.
+    let releaseMetadata;
+    const metadata = new Promise(resolve => { releaseMetadata = resolve; });
+    const holdMetadata = async route => { await metadata; await route.fallback(); };
+    await page.route('**/quran-library/editions/**', holdMetadata);
+    await page.route('**/proxy/quran-reader/versions', holdMetadata);
+    try {
+      await page.goto(origin + '/quran/page/42', {waitUntil: 'domcontentloaded'});
+      await page.locator('[data-quran-mushaf-page="42"] .quran-corpus-word').first().waitFor({state: 'visible'});
+    } finally {
+      releaseMetadata();
+      await page.unroute('**/quran-library/editions/**', holdMetadata);
+      await page.unroute('**/proxy/quran-reader/versions', holdMetadata);
+    }
 
     async function read() {
       await page.goto(origin + '/quran/1/1', { waitUntil: 'domcontentloaded' });

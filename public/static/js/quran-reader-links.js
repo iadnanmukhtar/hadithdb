@@ -32,5 +32,5 @@
       mushaf: mushaf('mushaf'), memorize: mushaf('memorize'), review: '/quran/review'
     };
   }
-  return { reference: reference, paths: paths };
+  return { reference: reference, paths: paths, defaultTranslationAlias: 'en-khattab' };
 }));
