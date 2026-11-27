@@ -50,13 +50,14 @@ Focused checks include `mysqlLoadReduction`, `sharhPassage`, `mcpQuranNavigation
 ### Grader display dictionary
 
 Apply `grader-dictionary.sql` to the HadithDB MySQL database before enabling
-`HADITHDB_GRADER_DICTIONARY=1` on the application workers. The migration uses
+`search.graderDictionaryEnabled` (JSON boolean `true`) in the application workers’
+`~/.hadithdb/settings.json`. The migration uses
 MySQL 8.0.29+ trigger syntax. Grade opinions remain in SQL. A revision counter
 tracks committed grader changes, including direct imports. Workers check it
 every ten seconds. One worker rebuilds the small Elasticsearch
 `grader_dictionary` index under a database advisory lock. Each worker checks
 the revision and document count before installing its in-memory lookup. Set
-the flag to 0 and restart workers to return to the existing SQL lookup.
+the setting to `false` and restart workers to return to the existing SQL lookup.
 
 Before production activation, verify the index using a separate MySQL and
 Elasticsearch environment. Exercise an English-name edit, an add and a delete,
