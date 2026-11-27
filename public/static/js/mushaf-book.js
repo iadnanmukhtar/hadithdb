@@ -79,9 +79,9 @@
     const selector = `[data-quran-mushaf-reader] [data-quran-mushaf-page="${number}"] > .quran-mushaf-sheet`;
     let sheet = document.querySelector(selector);
     if (!sheet) {
-      const response = await fetch(quranApiPath('/quran/page/' + number), {signal});
-      if (!response.ok) throw new Error();
-      sheet = new DOMParser().parseFromString(await response.text(), 'text/html').querySelector(selector);
+      const doc = await publicMushafPage(number);
+      signal.throwIfAborted();
+      sheet = doc.querySelector(selector);
     }
     if (!sheet) throw new Error();
     const page = document.createElement('section');
@@ -297,6 +297,8 @@
     event.preventDefault();
     const jump = new URL(link.href);
     let page = Number(jump.searchParams.get('page'));
+    if (!page && jump.searchParams.has('ref'))
+      page = await localQuranMushafPageForRef(jump.searchParams.get('ref')).catch(() => null);
     if (!page) {
       try {
         const result = await fetch(jump);

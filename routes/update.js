@@ -1033,6 +1033,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         const BookAliases = require('../lib/BookAliases');
         await Books.ensureBookContentLastmodColumn();
         const renamed = await BookAliases.save(ids[0], status.value);
+        await Books.refreshReaderDownloads(renamed.book);
         try {
           await BookAliases.refresh(renamed.book);
           return res.status(200).json({ code: 200, value: renamed.book.alias, message: renamed.book.type === 'sharh' ? 'Book alias saved.' : 'Book alias saved. Previous URLs redirect to the new alias.' });
@@ -1049,7 +1050,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       var beforeBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
       var bookValueSql = (col === 'description') ? sqlPreserveWhitespace(status.value) : sql(status.value);
       await Books.ensureBookContentLastmodColumn();
-      var result = await global.query(`UPDATE books SET ${col}=${bookValueSql}, content_lastmod=CURRENT_TIMESTAMP() WHERE id=${ids[0]}`);
+      var result = await global.query(`UPDATE books SET ${col}=${bookValueSql}, content_lastmod=GREATEST(CURRENT_TIMESTAMP(), COALESCE(content_lastmod, '1970-01-01') + INTERVAL 1 SECOND) WHERE id=${ids[0]}`);
       if (!result || result.affectedRows < 1)
         throw createError(404, 'Book not found');
       if (isQuranCatalogBook(beforeBook))
@@ -1057,6 +1058,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
       else
         await Library.reloadBooks();
       var afterBook = (await global.query(`SELECT * FROM books WHERE id=${ids[0]} LIMIT 1`))[0];
+      await Books.refreshReaderDownloads(afterBook);
       var bookAliases = new Set();
       if (beforeBook && beforeBook.alias)
         bookAliases.add(beforeBook.alias);

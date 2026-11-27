@@ -48,8 +48,19 @@ function installToastReporting() {
 
 installToastReporting();
 
-$(function () {
+$(async function () {
 	'use strict';
+	const readerShell = document.querySelector('[data-reader-shell]');
+	if (readerShell) {
+		try { await QuranLocalReader.mount(readerShell); }
+		catch (error) {
+			console.warn('Using server reader after local render failed', error);
+			const fallback = new URL(location.href);
+			fallback.searchParams.set('reader', 'server');
+			location.replace(fallback);
+			return;
+		}
+	}
 	installToastReporting();
 
 	if (window.marked && window.marked.setOptions) {
@@ -193,6 +204,7 @@ $(function () {
 		initQuranCorpusTooltips(document);
 	});
 	initQuranScriptMutationObserver();
+	initQuranBookDownload();
 	initQuranCorpusTooltipDelay(document);
 	initQuranTafsirTabs(document);
 	initQuranTafsirFootnotePopups(document);
@@ -3682,6 +3694,9 @@ function quranTranslationBooks() {
 				if (defaultBook)
 					window.defaultQuranTranslationShortNameLabel = quranTranslationBookLabel(defaultBook);
 				return books;
+			}).catch(function (error) {
+				quranTranslationBooksPromise = null;
+				throw error;
 			});
 	}
 	return quranTranslationBooksPromise;
@@ -4102,46 +4117,323 @@ function setQuranTranslationAttribution(target, label, alias) {
 		selector.value = alias || '';
 }
 
-function fetchQuranLocalTranslation(book, surah, ayah) {
-	return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(surah)}&a=${encodeURIComponent(ayah)}&lang=${encodeURIComponent(book.lang || 'en')}&render=reader${shouldFlushQuranProxyCache() ? '&flush=1' : ''}`)
-		.then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load selected translation.');
-			return response.json();
+// Each book has its own revision, and each public reader resource URL
+// identifies the edition, language and passage requested by the reader.
+const publishedQuran = (() => {
+	const root = '/quran-library/';
+	const active = new Map(), latest = new Map(), loading = new Map();
+	const storage = () => caches.open('hadithdb-reader-editions-v1');
+	const decoded = new Map(), decoding = new Map();
+	const bookStorage = book => caches.open('hadithdb-reader-files:' + book);
+	const manifestPath = book => root + 'editions/' + encodeURIComponent(book);
+	async function installed(book) {
+		if (!window.caches) return null;
+		if (!active.has(book)) active.set(book, (async () => {
+			const response = await (await storage()).match(manifestPath(book));
+			return response ? response.json() : null;
+		})().catch(() => null));
+		return active.get(book);
+	}
+	function published(book, refresh = false) {
+		if (refresh || !latest.has(book)) latest.set(book, fetch(manifestPath(book), { cache: 'no-cache' })
+			.then(r => r.ok ? r.json() : null).catch(() => null));
+		return latest.get(book);
+	}
+	async function chunk(book, hash, background) {
+		if (!background && decoded.has(hash)) return decoded.get(hash);
+		const cache = await bookStorage(book);
+		const path = root + 'files/' + hash;
+		const hit = await cache.match(path);
+		const remember = data => {
+			if (decoded.size >= 16) decoded.delete(decoded.keys().next().value);
+			decoded.set(hash, data);
+			return data;
+		};
+		if (hit) return background ? null : remember(await hit.json());
+		const key = book + hash;
+		if (!loading.has(key)) loading.set(key, (async () => {
+			const response = await fetch(path, { priority: background ? 'low' : 'high' });
+			if (!response.ok) throw Error('Reader file unavailable');
+			const body = await response.arrayBuffer();
+			const digest = await crypto.subtle.digest('SHA-256', body);
+			if (Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('') !== hash)
+				throw Error('Incomplete reader file');
+			try {
+				await cache.put(path, new Response(body, { headers: { 'Content-Type': 'application/json' } }));
+			} catch (error) {
+				if (background) throw error;
+			}
+			return body;
+		})().finally(() => loading.delete(key)));
+		const bytes = await loading.get(key);
+		if (background) {
+			if (!await cache.match(path)) throw Error('Reader storage unavailable');
+			return null;
+		}
+		return remember(JSON.parse(new TextDecoder().decode(bytes)));
+	}
+	async function read(book, url, localOnly) {
+		if (!window.caches || !window.crypto?.subtle) return null;
+		const edition = await installed(book) || (!localOnly && await published(book));
+		const hash = edition?.files?.[url];
+		if (!hash) return null;
+		if (decoded.has(hash)) return decoded.get(hash);
+		if (!decoding.has(hash)) decoding.set(hash, chunk(book, hash, false).finally(() => decoding.delete(hash)));
+		return decoding.get(hash);
+	}
+	async function install(book, activeJob, priority) {
+		if (!window.caches || !window.crypto?.subtle) return false;
+		const next = await published(book, true);
+		if (!next) return false;
+		const work = async () => {
+			active.delete(book);
+			const old = await installed(book);
+			if (old && (old.version > next.version || old.version === next.version && old.format >= next.format)) return;
+			const entries = Object.entries(next.files).sort(([a], [b]) => priority(a) - priority(b));
+			for (let i = 0; i < entries.length && activeJob(); i += 3)
+				await Promise.all(entries.slice(i, i + 3).map(([, hash]) => chunk(book, hash, true)));
+			if (!activeJob()) return;
+			const cache = await storage();
+			await cache.put(manifestPath(book), new Response(JSON.stringify(next)));
+			active.set(book, next);
+			quranCorpusPayloadCache = {};
+			channel?.postMessage(book);
+			if (navigator.locks && old) {
+				const files = await bookStorage(book);
+				const retained = new Set(Object.values(next.files));
+				for (const hash of new Set(Object.values(old.files))) if (!retained.has(hash)) await files.delete(root + 'files/' + hash);
+			}
+		};
+		if (navigator.locks) await navigator.locks.request('quran-edition:' + book, work);
+		else await work();
+		return true;
+	}
+	const channel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('hadithdb-reader-editions') : null;
+	if (channel) channel.onmessage = event => { active.delete(event.data); quranCorpusPayloadCache = {}; };
+	async function needsUpdate(book) {
+		const next = await published(book, true);
+		const old = await installed(book);
+		return next && (!old || old.version < next.version || old.format < next.format);
+	}
+	return { read, install, needsUpdate };
+})();
+
+const bookReaderCache = (() => {
+	let manifest, knownVersions;
+	let cachePromise;
+	const pending = new Map();
+	const recent = new Map();
+	const prefix = 'hadithdb:quran-reader:v1:';
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible') manifest = null;
+	});
+
+	async function json(url, background = false) {
+		const response = await fetch(url, { cache: 'no-store', priority: background ? 'low' : 'auto',
+			headers: { Accept: 'application/json' } });
+		if (!response.ok) throw new Error('Unable to load reader data.');
+		return response.json();
+	}
+
+	function versions(refresh = false) {
+		if (refresh) manifest = null;
+		if (!manifest) {
+			manifest = json(quranApiPath('/quran/proxy/quran-reader/versions')).then(v => knownVersions = v).catch(() => {
+				manifest = null;
+				return null;
+			});
+		}
+		return manifest;
+	}
+
+	function overflow() {
+		if (!cachePromise) cachePromise = Promise.resolve().then(() => window.caches.open('hadithdb-quran-reader-v1')).catch(() => null);
+		return cachePromise;
+	}
+
+	async function stored(url, version, probe) {
+		try {
+			const raw = localStorage.getItem(prefix + url);
+			// The numeric revision is the first field. Probing a complete edition
+			// on a return visit should not deserialize every chapter.
+			const revision = raw && /^\{"version":(\d+),/.exec(raw);
+			if (revision && Number(revision[1]) >= (version || 1)) {
+				if (probe) return true;
+				try {
+					const data = JSON.parse(raw).data;
+					if (data != null) return data;
+				} catch (_) {}
+				localStorage.removeItem(prefix + url);
+			}
+		} catch (_) {}
+		try {
+			const cache = await overflow();
+			const hit = cache && await cache.match(url);
+			if (hit && Number(hit.headers.get('X-Book-Version')) >= (version || 1))
+				return probe ? true : await hit.json();
+		} catch (_) {}
+		return null;
+	}
+
+	async function save(url, version, data) {
+		if (!version || data == null || (Array.isArray(data.entries) && data.entries.some(entry => entry.edit))) return false;
+		const write = async () => {
+			// Another tab may have finished a newer edition while this fetch was in flight.
+			if (await stored(url, version, true)) return true;
+			return persist(url, version, data);
+		};
+		return navigator.locks ? navigator.locks.request(prefix + url, write) : write();
+	}
+
+	async function persist(url, version, data) {
+		try {
+			localStorage.setItem(prefix + url, JSON.stringify({ version, data }));
+			return true;
+		} catch (_) {}
+		try {
+			const cache = await overflow();
+			if (!cache) return false;
+			await cache.put(url, new Response(JSON.stringify(data), {
+				headers: { 'Content-Type': 'application/json', 'X-Book-Version': String(version) }
+			}));
+			// A newer overflow copy must also win when the device is offline.
+			try { localStorage.removeItem(prefix + url); } catch (_) {}
+			return true;
+		} catch (_) { return false; }
+	}
+
+	function share(key, load) {
+		if (pending.has(key)) return pending.get(key);
+		const result = load().finally(() => pending.delete(key));
+		pending.set(key, result);
+		return result;
+	}
+
+	async function read(alias, path) {
+		const url = quranApiPath(path);
+		if (shouldFlushQuranProxyCache()) return json(url);
+		// Previously downloaded material can paint while the manifest revalidates.
+		const installed = await publishedQuran.read(alias, url, true).catch(() => null);
+		if (installed != null) return installed;
+		const local = await stored(url, knownVersions?.[alias], false);
+		if (local != null) { versions(); return local; }
+		const edition = await publishedQuran.read(alias, url, false).catch(() => null);
+		if (edition != null) return edition;
+		const revisions = await versions();
+		const version = revisions && revisions[alias];
+		const key = [alias, version, url].join('|');
+		if (recent.has(key)) return recent.get(key);
+		const result = await share(key, async () => {
+			if (!revisions || version) {
+				const hit = await stored(url, version, false);
+				if (hit != null) return hit;
+			}
+			const data = await json(url);
+			await save(url, version, data);
+			return data;
 		});
+		// Keep just the open reader's working set decoded while moving between ayahs.
+		if (version && !recent.has(key)) {
+			if (recent.size === 6) recent.delete(recent.keys().next().value);
+			recent.set(key, result);
+		}
+		return result;
+	}
+
+	return { read, versions };
+})();
+
+let scheduleQuranBookDownload;
+
+function initQuranBookDownload() {
+	if (scheduleQuranBookDownload || !document.querySelector('[data-quran-bar], [data-quran-mushaf-reader], [data-quran-infinite-passage]')) return;
+	let generation = 0;
+	let retry;
+	let selectedAlias;
+	let installing = false;
+	async function install(current) {
+		const active = () => current === generation && !shouldFlushQuranProxyCache() && navigator.onLine !== false;
+		if (!active()) return;
+		const selectedScript = normalizeQuranScriptChoice(document.body.dataset.quranScript) || 'uthmani';
+		const currentPage = Number(document.querySelector('[data-quran-mushaf-page]')?.dataset.quranMushafPage) || 1;
+		const currentSurah = Number(document.querySelector('[data-quran-surah]')?.dataset.quranSurah) || 1;
+		const priority = path => {
+			if (path.includes('/text/' + selectedScript + '/' + Math.floor((currentSurah - 1) / 4))) return 0;
+			const page = Number(path.match(/page-data\/(\d+)$/)?.[1]);
+			if (page && Math.abs(page - currentPage) <= 1) return 1;
+			if (path.includes('s=' + currentSurah + '&') || path.endsWith('/page-outlines/' + currentSurah)) return 1;
+			return path.includes('/text/') ? 2 : 3;
+		};
+		const installTranslation = async () => {
+			const translation = await selectedQuranAudioTranslationBook();
+			if (!active()) return;
+			selectedAlias = translation?.source === 'local' && translation.alias;
+			if (selectedAlias) await publishedQuran.install(selectedAlias, active, priority);
+		};
+		await Promise.all([publishedQuran.install('quran', active, priority), installTranslation()]);
+	}
+
+	scheduleQuranBookDownload = () => {
+		const current = ++generation;
+		clearTimeout(retry);
+		const start = async () => {
+			if (current !== generation) return;
+			installing = true;
+			try { await install(current); }
+			catch (_) {
+				if (current === generation && navigator.onLine !== false) retry = setTimeout(scheduleQuranBookDownload, 60000);
+			} finally {
+				if (current === generation) installing = false;
+			}
+		};
+		if (window.requestIdleCallback) window.requestIdleCallback(start, { timeout: 2000 });
+		else setTimeout(start, 0);
+	};
+	// A reader can stay open across an import. Check the small manifest and
+	// schedule replacement of affected chunks without reloading the document.
+	setInterval(async () => {
+		if (document.visibilityState !== 'visible' || navigator.onLine === false || shouldFlushQuranProxyCache()) return;
+		if (!installing && (await publishedQuran.needsUpdate('quran') || selectedAlias && await publishedQuran.needsUpdate(selectedAlias)))
+			scheduleQuranBookDownload();
+	}, 60000);
+	window.addEventListener('online', scheduleQuranBookDownload);
+	window.addEventListener('pagehide', () => { generation++; clearTimeout(retry); });
+	window.addEventListener('pageshow', event => { if (event.persisted) scheduleQuranBookDownload(); });
+	document.addEventListener('visibilitychange', () => {
+		if (document.visibilityState === 'visible') scheduleQuranBookDownload();
+	});
+	scheduleQuranBookDownload();
 }
 
-var quranLocalTranslationRangePromises = new Map();
+function fetchQuranLocalTranslation(book, surah, ayah) {
+	return fetchQuranLocalTranslationRange(book, surah, ayah, ayah);
+}
+
+function quranTranslationPath(book, surah, ayahFrom, ayahTo) {
+	var params = new URLSearchParams({ src: book.alias, s: surah, lang: book.lang || 'en', render: 'reader' });
+	if (shouldFlushQuranProxyCache()) {
+		params.set('from', ayahFrom);
+		params.set('to', ayahTo);
+		params.set('flush', '1');
+	} else {
+		params.set('whole', '1');
+	}
+	return '/quran/proxy/translations/local?' + params;
+}
 
 function fetchQuranLocalTranslationRange(book, surah, ayahFrom, ayahTo) {
-	var alias = book && book.alias || '';
-	var lang = book && book.lang || 'en';
-	var from = Number(ayahFrom);
-	var to = Number(ayahTo);
-	var flush = shouldFlushQuranProxyCache();
-	var cacheKeyPrefix = `${alias}|${surah}|${lang}|${flush ? 'flush' : 'cache'}|`;
-	var coveringPromise = null;
-	quranLocalTranslationRangePromises.forEach(function (promise, key) {
-		if (coveringPromise || key.indexOf(cacheKeyPrefix) !== 0)
-			return;
-		var parts = key.slice(cacheKeyPrefix.length).split('-').map(Number);
-		if (parts.length === 2 && parts[0] <= from && parts[1] >= to)
-			coveringPromise = promise;
+	return bookReaderCache.read(book.alias, quranTranslationPath(book, surah, ayahFrom, ayahTo)).then(function (payload) {
+		return { entries: payload.entries.filter(function (entry) {
+			var start = Number(entry.ayahs_start);
+			return start <= ayahTo && start + Number(entry.count || 0) >= ayahFrom;
+		}) };
 	});
-	if (coveringPromise)
-		return coveringPromise;
-	var cacheKey = `${cacheKeyPrefix}${from}-${to}`;
-	var requestPromise = fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(alias)}&s=${encodeURIComponent(surah)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&lang=${encodeURIComponent(lang)}&render=reader${flush ? '&flush=1' : ''}`)
-		.then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load selected translation.');
-			return response.json();
-		});
-	quranLocalTranslationRangePromises.set(cacheKey, requestPromise);
-	return requestPromise.catch(function (err) {
-		quranLocalTranslationRangePromises.delete(cacheKey);
-		throw err;
-	});
+}
+
+async function defaultQuranTranslationSurah(surah) {
+	const part = await quranTextPart('uthmani', surah);
+	return Object.fromEntries(Object.entries(part.records).filter(([ref]) => ref.startsWith(surah + ':'))
+		.map(([ref, verse]) => [ref, verse.translation]));
 }
 
 function applyQuranTranslationEntryToTarget(target, book, entry) {
@@ -5113,18 +5405,15 @@ function selectedQuranAudioTranslationBook() {
 	});
 }
 
-function defaultQuranAudioTranslation(ref) {
-	return fetch(quranUrl(`/quran:${ref.surah}:${ref.ayah}?json=1`), {
-		credentials: 'same-origin',
-		headers: { Accept: 'application/json' }
-	}).then(function (response) {
-		if (!response.ok)
-			throw new Error('Unable to load Quran translation.');
-		return response.json();
-	}).then(function (payload) {
-		var ayah = Array.isArray(payload) ? payload[0] : payload;
-		return ayah && ayah.en && ayah.en.body ? ayah.en.body.toString().replace(/\s+/g, ' ').trim() : '';
-	});
+async function defaultQuranAudioTranslation(ref) {
+	const key = ref.surah + ':' + ref.ayah;
+	const word = document.querySelector('.quran-mushaf-sheet [data-quran-ref="' + cssEscape(key) + '"]');
+	const page = word && word.closest('.mushaf-book-leaf, [data-quran-mushaf-page]');
+	if (page && !page.hasAttribute('data-quran-memorize-page')) {
+		const data = await mushafPageData(Number(page.dataset.bookPage || page.dataset.quranMushafPage));
+		if (data.defaultTranslation[key]) return data.defaultTranslation[key].text;
+	}
+	return (await defaultQuranTranslationSurah(ref.surah))[key] || '';
 }
 
 function quranAudioTranslationPlainText(value) {
@@ -6265,7 +6554,10 @@ function setQuranPassageAudioHighlight(control, item) {
 		if (reader && reader.quranMushafLoadNext && !reader.quranAudioPageLoading) {
 			var requestId = quranPassageAudioState.requestId;
 			reader.quranAudioPageLoading = true;
-			Promise.resolve(reader.quranMushafLoadNext(quranMushafEditionUrl('/quran/navigate?mode=mushaf&ref=' + encodeURIComponent(ref)))).then(function (loaded) {
+			const pageLookup = reader.hasAttribute('data-quran-memorize-reader') ? Promise.resolve(null)
+				: localQuranMushafPageForRef(ref).catch(() => null);
+			pageLookup.then(page => reader.quranMushafLoadNext(page ? '/quran/page/' + page
+				: '/quran/navigate?mode=mushaf&ref=' + encodeURIComponent(ref))).then(function (loaded) {
 				if (loaded && quranPassageAudioState.requestId === requestId) {
 					var current = quranPassageAudioState.playlist[quranPassageAudioState.index];
 					if (current) setQuranPassageAudioHighlight(control, current);
@@ -7246,6 +7538,7 @@ function waitForHadithAuthClient() {
 function saveQuranPreferredTranslationAlias(alias) {
 	alias = validQuranTranslationAlias(alias);
 	storeQuranSelectedTranslationAlias(alias);
+	if (scheduleQuranBookDownload) scheduleQuranBookDownload();
 	return getQuranTafsirSettings().then(function (currentSettings) {
 		var nextOverride = Object.assign({}, currentSettings || {}, {
 			translations: Object.assign({}, currentSettings && currentSettings.translations || {}, {
@@ -7457,6 +7750,17 @@ function initQuranPreferredTranslationDisplays(root) {
 				normalizeQuranSelectedTranslationFootnotes(passage.querySelector('[data-quran-selected-translation-footnotes]'));
 		});
 		var syncServerRenderedTranslation = function (book) {
+			if (!shouldFlushQuranProxyCache()) {
+				var surahs = new Set(targets.map(function (target) { return target.dataset.quranSurah; }).filter(Boolean));
+				var warm = function () {
+					surahs.forEach(function (surah) {
+						var request = book ? fetchQuranLocalTranslation(book, surah, 1) : defaultQuranTranslationSurah(surah);
+						request.catch(function () {});
+					});
+				};
+				if (window.requestIdleCallback) window.requestIdleCallback(warm);
+				else window.setTimeout(warm, 0);
+			}
 			var label = selectedTranslationAlias ? quranTranslationBookLabel(book) : defaultQuranTranslationShortName();
 			targets.forEach(function (target) {
 				applyQuranCommentaryFootnoteSize(quranSelectedTranslationFootnoteHolder(target), book);
@@ -8555,13 +8859,13 @@ function applyQuranShareTranslation(modal, card, alias, requireSelected) {
 		var parts = quranShareRefParts(card);
 		if (!parts.surah || !parts.ayahFrom)
 			return;
-		return fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(parts.surah)}&from=${encodeURIComponent(parts.ayahFrom)}&to=${encodeURIComponent(parts.ayahTo)}&lang=${encodeURIComponent(book.lang || 'en')}${shouldFlushQuranProxyCache() ? '&flush=1' : ''}`)
+		var request = shouldFlushQuranProxyCache() ? fetch(`${quranApiPath('/proxy/translations/local')}?src=${encodeURIComponent(book.alias)}&s=${encodeURIComponent(parts.surah)}&from=${encodeURIComponent(parts.ayahFrom)}&to=${encodeURIComponent(parts.ayahTo)}&lang=${encodeURIComponent(book.lang || 'en')}&flush=1`)
 			.then(function (response) {
 				if (!response.ok)
 					throw new Error('Unable to load selected translation.');
 				return response.json();
-			})
-			.then(function (payload) {
+			}) : fetchQuranLocalTranslationRange(book, parts.surah, parts.ayahFrom, parts.ayahTo);
+		return request.then(function (payload) {
 				var entries = Array.isArray(payload && payload.entries) ? payload.entries : [payload];
 				var ayah = Number(parts.ayahFrom);
 				var spans = entries.filter(Boolean).map(function (entry, index) {
@@ -12235,6 +12539,115 @@ function initQuranMushafSearchAyahScroll(root) {
 	});
 }
 
+// Remove the superseded page-fragment format while preserving every other
+// book resource and all settings in either browser storage area.
+async function removeLegacyMushafPages() {
+	const prefix = 'hadithdb:quran-reader:v1:';
+	const isPage = path => /^\/(?:quran\/)?api\/page\/\d+(?:\?|$)/.test(path);
+	const migrated = 'hadithdb:quran-reader:json-pages';
+	try {
+		if (localStorage.getItem(migrated)) return;
+		for (const key of Object.keys(localStorage)) {
+			if (key.startsWith(prefix) && isPage(key.slice(prefix.length))) localStorage.removeItem(key);
+		}
+	} catch (_) {}
+	try {
+		const name = 'hadithdb-quran-reader-v1';
+		if (window.caches && await caches.has(name)) {
+			const cache = await caches.open(name);
+			for (const request of await cache.keys()) {
+				if (isPage(new URL(request.url).pathname)) await cache.delete(request);
+			}
+		}
+		localStorage.setItem(migrated, '1');
+	} catch (_) {}
+}
+
+function mushafPageData(number) {
+	return bookReaderCache.read('quran', '/quran/page-data/' + number);
+}
+
+let mushafTemplateRequest;
+
+function mushafPageTemplates() {
+	if (!mushafTemplateRequest) {
+		mushafTemplateRequest = new Promise((resolve, reject) => {
+			const script = document.createElement('script');
+			script.src = quranApiPath('/quran/mushaf-templates.js') + new URL(document.querySelector('script[src*="/static/js/script.js"]').src).search;
+			script.onload = () => resolve(window.mushafTemplates);
+			script.onerror = () => reject(new Error('Unable to load the Mushaf renderer.'));
+			document.head.append(script);
+		}).catch(error => { mushafTemplateRequest = null; throw error; });
+	}
+	return mushafTemplateRequest;
+}
+
+function mushafPageHead(doc, metadata) {
+	doc.title = metadata.title;
+	for (const { rel, href } of metadata.links) {
+		const link = doc.createElement('link');
+		link.rel = rel;
+		link.href = href;
+		doc.head.append(link);
+	}
+	for (const item of metadata.meta) {
+		const meta = doc.createElement('meta');
+		if (item.name) meta.name = item.name;
+		if (item.property) meta.setAttribute('property', item.property);
+		meta.content = item.content;
+		doc.head.append(meta);
+	}
+	for (const item of metadata.schema) {
+		const script = doc.createElement('script');
+		script.type = 'application/ld+json';
+		if (item.page) script.setAttribute('data-page-schema', '');
+		script.textContent = JSON.stringify(item.data);
+		doc.head.append(script);
+	}
+}
+
+async function publicMushafPage(number) {
+	const [data, templates] = await Promise.all([mushafPageData(number), mushafPageTemplates()]);
+	const utils = {
+		defaultQuranTranslationLabel: defaultQuranTranslationShortName,
+		quranUrl: (_, path) => quranUrl(path),
+		quranStudySectionPath: heading => '/quran/' + heading.surah + '/' + heading.section,
+		quranSurahHeaderSvgPath: surah => '/static/img/quran/surah-header/names/' + Number(surah) + '.svg'
+	};
+	const locals = { mushaf: data, surahs: data.surahs, firstJuz: data.firstJuz, firstSurah: data.firstSurah,
+		pagePassages: data.pagePassages, audioRanges: data.audioRanges, subsectionAudioRanges: data.repeatRanges,
+		memorize: false, review: false, selectedAyahRefs: new Set(), req: {}, arabic: { toArabicDigits }, utils };
+	const html = templates.page(locals, undefined, (name, args) => {
+		if (name !== 'quran_audio_control.ejs') throw new Error('Unknown Mushaf control.');
+		return templates.audio({ ...args, utils });
+	});
+	const doc = document.implementation.createHTMLDocument('');
+	const main = doc.createElement('main');
+	main.dataset.quranMushafReader = '';
+	main.dataset.nextUrl = '/quran/page/' + (number < data.totalPages ? number + 1 : 1);
+	main.innerHTML = html;
+	doc.body.append(main);
+	mushafPageHead(doc, data.metadata);
+	const studyBook = validQuranTranslationAlias(getHadithCookie(QURAN_PREFERRED_TRANSLATION_COOKIE));
+	appendQuranModeBar(doc, data.firstRef, number, studyBook);
+	return doc;
+}
+
+function appendQuranModeBar(doc, ref, page, studyBook) {
+	const paths = QuranReaderLinks.paths({ ref, page, studyBook,
+		script: document.body.dataset.quranScript });
+	const bar = doc.createElement('nav');
+	Object.assign(bar.dataset, { quranBar: '', quranStudyBook: studyBook, quranCurrentRef: ref });
+	for (const [mode, path] of Object.entries(paths)) {
+		const link = doc.createElement('a');
+		link.dataset.quranReaderModeLink = mode;
+		link.href = quranUrl(path);
+		bar.append(link);
+	}
+	doc.body.append(bar);
+	return doc;
+}
+
 function initQuranMushafInfinite(root) {
 	var reader = (root || document).querySelector('[data-quran-mushaf-reader]');
 	if (!reader || reader.dataset.quranMushafBound === '1')
@@ -12289,6 +12702,14 @@ function initQuranMushafInfinite(root) {
 	}
 	var initialPage = reader.querySelector('[data-quran-mushaf-page]');
 	if (initialPage) {
+		if (!reader.hasAttribute('data-quran-memorize-reader') && !reader.hasAttribute('data-quran-review-reader')) {
+			const warm = () => {
+				removeLegacyMushafPages();
+				mushafPageData(Number(initialPage.dataset.quranMushafPage)).catch(() => {});
+			};
+			if (window.requestIdleCallback) window.requestIdleCallback(warm);
+			else window.setTimeout(warm, 0);
+		}
 		rememberReaderHead(document, initialPage);
 		copyQuranReaderModeHrefs(document, initialPage);
 		updateQuranMushafVisiblePage(initialPage.getAttribute('data-quran-mushaf-page'), initialPage);
@@ -12300,12 +12721,22 @@ function initQuranMushafInfinite(root) {
 		loading = true;
 		if (sentinel)
 			sentinel.textContent = 'Loading the next page…';
-		return fetch(quranApiPath(nextUrl), { credentials: 'same-origin' }).then(function (response) {
+		var publicPage = /^\/quran\/page\/(\d+)$/.exec(nextUrl);
+		var usePageData = publicPage && !reader.hasAttribute('data-quran-memorize-reader') && !reader.hasAttribute('data-quran-review-reader');
+		var request = usePageData
+			? publicMushafPage(Number(publicPage[1])) : fetch(quranApiPath(nextUrl), { credentials: 'same-origin' }).then(function (response) {
 			if (!response.ok)
 				throw new Error('Unable to load the next Mushaf page.');
-			return response.text();
-		}).then(function (html) {
-			var parsed = new DOMParser().parseFromString(html, 'text/html');
+			return response.text().then(html => new DOMParser().parseFromString(html, 'text/html'));
+		});
+		return request.then(async function (parsed) {
+			if (usePageData) {
+				const surahs = new Set(Array.from(parsed.querySelectorAll('.quran-corpus-word[data-quran-ref]'), word => word.dataset.quranRef.split(':')[0]));
+				await Promise.all(Array.from(surahs, async surah => {
+					if (!quranHeadingOutlineForSurah(surah)) Object.assign(quranHeadingOutlineRegistry,
+						await bookReaderCache.read('quran', '/quran/page-outlines/' + surah));
+				}));
+			}
 			registerQuranHeadingOutlines(parsed);
 			var remoteReader = parsed.querySelector('[data-quran-mushaf-reader]');
 			var page = remoteReader && remoteReader.querySelector('[data-quran-mushaf-page]');
@@ -12386,6 +12817,27 @@ function initQuranMushafInfinite(root) {
 	reader.quranMushafLoadNext = loadNextPage;
 }
 
+async function localQuranMushafPageForRef(value) {
+	const { surah, ayah } = quranAudioRefParts(value);
+	if (!surah || !ayah) return null;
+	const part = await quranTextPart('uthmani', surah);
+	return part.records[surah + ':' + ayah]?.page || null;
+}
+
+async function localQuranReaderAyah(surah, ayah) {
+	const part = await quranTextPart('uthmani', surah);
+	const ref = surah + ':' + ayah;
+	const verse = part.records[ref];
+	const chapter = part.chapters[surah];
+	if (!verse || !chapter) throw new Error('Selected ayah was not found.');
+	const markdown = text => String(text || '').replace(/([\\()[\]_*`~>#+\-=|{}.!])/g, '\\$1');
+	return { id: verse.id, num: ref, h1_title_en: chapter.title,
+		ar: { num: toArabicDigits(ref), body: markdown(verse.display), body_alt: markdown(part.ayahsByRef[ref]) },
+		en: { num: ref, body: markdown(verse.translation), footnote: markdown(verse.footnotes) },
+		prev_ref: ayah > 0 ? 'quran:' + (ayah === 1 ? (surah === 1 ? 114 : surah - 1) + ':' + chapter.previousCount : surah + ':' + (ayah - 1)) : '',
+		next_ref: ayah > 0 ? 'quran:' + (ayah === chapter.count ? (surah === 114 ? 1 : surah + 1) + ':1' : surah + ':' + (ayah + 1)) : '' };
+}
+
 function initQuranDynamicPassageHero(root) {
 	var scope = root || document;
 	if (!$(scope).find('[data-quran-selected-ayah-hero]').length)
@@ -12404,9 +12856,13 @@ function initQuranDynamicPassageHero(root) {
 			return;
 		}
 		// Use the destination's public identity, including its translation and chapter.
-		const response = await fetch(quranApiPath(path), { credentials: 'same-origin' });
-		if (!response.ok) return;
-		const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+		let parsed = !shouldFlushQuranProxyCache() && typeof QuranLocalReader !== 'undefined' &&
+			await QuranLocalReader.study(path, true).catch(() => null);
+		if (!parsed) {
+			const response = await fetch(quranApiPath(path), { credentials: 'same-origin' });
+			if (!response.ok) return;
+			parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+		}
 		if (path !== location.pathname + location.search || !parsed.head.querySelector('[data-page-schema]')) return;
 		const selectedHead = {};
 		rememberReaderHead(parsed, selectedHead);
@@ -12482,15 +12938,18 @@ function initQuranDynamicPassageHero(root) {
 		var ref = `${refMatch[1]}:${refMatch[2]}`;
 		if (pendingRequest && pendingRequest.abort)
 			pendingRequest.abort();
-		pendingRequest = new AbortController();
-		return fetch(quranUrl(`${target.pathname}?json=1`), {
-			credentials: 'same-origin',
-			signal: pendingRequest.signal
-		}).then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load selected ayah.');
+		const controller = new AbortController();
+		pendingRequest = controller;
+		const fromServer = () => fetch(quranUrl(`${target.pathname}?json=1`), {
+			credentials: 'same-origin', signal: controller.signal
+		}).then(response => {
+			if (!response.ok) throw new Error('Unable to load selected ayah.');
 			return response.json();
-		}).then(function (data) {
+		});
+		const selection = shouldFlushQuranProxyCache() ? fromServer()
+			: localQuranReaderAyah(Number(refMatch[1]), Number(refMatch[2])).catch(fromServer);
+		return selection.then(function (data) {
+			if (controller.signal.aborted) return;
 			var ayah = Array.isArray(data) ? data[0] : data;
 			if (!ayah)
 				throw new Error('Selected ayah was not found.');
@@ -12529,7 +12988,7 @@ function initQuranDynamicPassageHero(root) {
 				return;
 			throw err;
 		}).finally(function () {
-			pendingRequest = null;
+			if (pendingRequest === controller) pendingRequest = null;
 		});
 	};
 	var initialSelectedRef = selectedRefFromPath();
@@ -12825,8 +13284,8 @@ function initQuranInfinitePassageNavigation(root) {
 	});
 	$(window).on('resize.quranInfinitePassageNav', scheduleInfiniteWork);
 
-	var appendPassage = function (html, url) {
-		var parsed = new DOMParser().parseFromString(html, 'text/html');
+	var appendPassage = function (content, url) {
+		var parsed = typeof content === 'string' ? new DOMParser().parseFromString(content, 'text/html') : content;
 		registerQuranHeadingOutlines(parsed);
 		var remoteMain = parsed.querySelector('[data-quran-infinite-passage="1"]');
 		if (!remoteMain)
@@ -12957,14 +13416,18 @@ function initQuranInfinitePassageNavigation(root) {
 		}
 		retryAfter = 0;
 		status.removeAttr('data-infinite-load-error').text('Loading next passage...');
-		loadingPromise = fetch(quranApiPath(targetUrl), {
-			credentials: 'same-origin',
-			headers: { 'Accept': 'text/html' }
-		}).then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load next Quran passage.');
+		const serverPassage = async () => {
+			const response = await fetch(quranApiPath(targetUrl), { credentials: 'same-origin', headers: { Accept: 'text/html' } });
+			if (!response.ok) throw new Error('Unable to load next Quran passage.');
 			return response.text();
-		}).then(function (html) {
+		};
+		loadingPromise = (async () => {
+			if (!shouldFlushQuranProxyCache() && typeof QuranLocalReader !== 'undefined') {
+				const doc = await QuranLocalReader.study(targetUrl).catch(error => { console.warn(error); return null; });
+				if (doc) return doc;
+			}
+			return serverPassage();
+		})().then(function (html) {
 			var chunk = appendPassage(html, targetUrl);
 			loadedUrls.add(normalized);
 			status.text('');
@@ -13538,7 +14001,6 @@ function quranSurahFromInfiniteUrl(url) {
 }
 
 var quranCorpusPayloadCache = {};
-var quranScriptPayloadCache = {};
 
 function quranScriptDisplayText(text, script) {
 	text = (text || '').toString();
@@ -13629,7 +14091,8 @@ function applyQuranScriptPayload(root, script, payload) {
 		this.textContent = texts.join(' ');
 		this.setAttribute('data-quran-script-applied', script);
 	});
-	var pages = $(scope).find('[data-quran-mushaf-page]').addBack('[data-quran-mushaf-page]').get();
+	var pageSelector = '[data-quran-mushaf-page], .mushaf-book-leaf';
+	var pages = $(scope).find(pageSelector).addBack(pageSelector).get();
 	pages.forEach(function (page) {
 		var refs = new Set(Array.from(page.querySelectorAll('[data-quran-script-text="word"][data-quran-ref]')).map(function (word) {
 			return word.getAttribute('data-quran-ref');
@@ -13647,6 +14110,28 @@ function applyQuranScriptPayload(root, script, payload) {
 	});
 	if (pages.length > 0)
 		scheduleQuranMushafLineFit(scope);
+}
+
+function quranTextPath(script, part) {
+	return '/quran/text/' + script + '/' + part;
+}
+
+function quranTextPart(script, surah) {
+	return bookReaderCache.read('quran', quranTextPath(script, Math.floor((Number(surah) - 1) / 4)));
+}
+
+async function fetchQuranScriptRefs(script, refs) {
+	const partFor = ref => Math.floor((Number(ref.split(':')[0]) - 1) / 4);
+	const parts = Array.from(new Set(refs.map(partFor)));
+	const data = await Promise.all(parts.map(part => bookReaderCache.read('quran', quranTextPath(script, part))));
+	const chunks = new Map(parts.map((part, index) => [part, data[index]]));
+	const combined = { ayahsByRef: {}, wordsByAyah: {} };
+	for (const ref of refs) {
+		const chunk = chunks.get(partFor(ref));
+		if (ref in chunk.ayahsByRef) combined.ayahsByRef[ref] = chunk.ayahsByRef[ref];
+		if (ref in chunk.wordsByAyah) combined.wordsByAyah[ref] = chunk.wordsByAyah[ref];
+	}
+	return combined;
 }
 
 function initQuranScriptPreference(root) {
@@ -13667,16 +14152,7 @@ function initQuranScriptPreference(root) {
 		if (script === 'uthmani' || refs.length < 1)
 			return script;
 		document.body.classList.add(`quran-script-${script}`);
-		var cacheKey = `${script}:${refs.slice().sort().join(',')}`;
-		quranScriptPayloadCache[cacheKey] = quranScriptPayloadCache[cacheKey] || fetch(
-			`${quranApiPath(`/quran/script/${encodeURIComponent(script)}`)}?refs=${encodeURIComponent(refs.join(','))}`,
-			{ credentials: 'same-origin', cache: 'no-store', headers: { 'Accept': 'application/json' } }
-		).then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load the selected Quran script.');
-			return response.json();
-		});
-		return quranScriptPayloadCache[cacheKey].then(function (payload) {
+		return fetchQuranScriptRefs(script, refs).then(function (payload) {
 			applyQuranScriptPayload(scope, script, payload);
 			return script;
 		});
@@ -13878,13 +14354,9 @@ function initQuranCorpusTooltips(root) {
 			scriptUrl.searchParams.set('script', script);
 			url = `${scriptUrl.pathname}${scriptUrl.search}`;
 		}
-		quranCorpusPayloadCache[url] = quranCorpusPayloadCache[url] || fetch(quranApiPath(url), {
-			credentials: 'same-origin',
-			headers: { 'Accept': 'application/json' }
-		}).then(function (response) {
-			if (!response.ok)
-				throw new Error('Unable to load Quran corpus words');
-			return response.json();
+		quranCorpusPayloadCache[url] = quranCorpusPayloadCache[url] || (typeof QuranLocalReader !== 'undefined' && !shouldFlushQuranProxyCache() ? QuranLocalReader.corpus(url, script) : bookReaderCache.read('quran', url)).catch(function (err) {
+			delete quranCorpusPayloadCache[url];
+			throw err;
 		});
 		quranCorpusPayloadCache[url]
 			.then(function (payload) {

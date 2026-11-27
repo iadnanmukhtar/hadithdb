@@ -399,6 +399,7 @@ const startupPromise = (async () => {
     res.type('text/plain').send(OPENAI_APPS_CHALLENGE_TOKEN);
   });
   // Keep presentation assets available while application data is initializing.
+  app.use('/quran-library', require('./lib/QuranPublication').router);
   app.use('/static', express.static(STATIC_DIRECTORY, PUBLIC_STATIC_OPTIONS));
   app.use(function rejectRequestsUntilStartupIsReady(req, res, next) {
     if (app.locals.startupReady)

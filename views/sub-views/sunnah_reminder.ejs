@@ -10,7 +10,7 @@
     <% for (const lang of ['ar', 'en']) { %>
       <section class="col-12" lang="<%= lang %>" dir="<%= lang === 'ar' ? 'rtl' : 'ltr' %>">
         <div class="quran-ayah-hero-body"><div class="quran-ayah-hero-ayah">
-          <a class="quran-ayah-hero-link quran-ayah-hero-text" data-sunnah-text="<%= lang %>"></a><% if (lang === 'en') { %>&nbsp;<span class="quran-translation-attribution">— <a data-sunnah-ref></a></span><% } %>
+          <a class="quran-ayah-hero-link quran-ayah-hero-text" data-sunnah-text="<%= lang %>"></a><% if (lang === 'en') { %> <span class="quran-translation-attribution">— <a data-sunnah-ref></a></span><% } %>
         </div></div>
       </section>
     <% } %>

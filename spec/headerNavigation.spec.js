@@ -20,6 +20,7 @@ describe('shared header navigation', () => {
     path.join(__dirname, '..', 'public', 'static', 'css', 'style.css'),
     'utf8'
   );
+  const readerSourcePickerRule = styles.match(/^\.reader-source-picker\s*(?:,[^{}]*)?\{([^}]*)\}/m)?.[1];
   const scripts = fs.readFileSync(
     path.join(__dirname, '..', 'public', 'static', 'js', 'script.js'),
     'utf8'
@@ -220,7 +221,7 @@ describe('shared header navigation', () => {
 	});
 
 	test('links Mushaf footer headings and subheadings to their H2 section', () => {
-		const mushaf = fs.readFileSync(path.join(__dirname, '..', 'views', 'quran_mushaf.ejs'), 'utf8');
+		const mushaf = fs.readFileSync(path.join(__dirname, '..', 'views', 'sub-views', 'quran_mushaf_page.ejs'), 'utf8');
 		expect(mushaf).toContain('utils.quranStudySectionPath(passage)');
 		expect(mushaf).toContain('utils.quranStudySectionPath({ surah: subsection.surah, section: subsection.section })');
 	});
@@ -266,18 +267,18 @@ describe('shared header navigation', () => {
 	});
 
 	test('fades the tafsir book carousel with reader navigation chrome', () => {
-	  expect(styles).toContain('body.reader-infinite-nav-faded main.tafsir-only-page > .quran-commentary-passage-carousel');
-	  expect(styles).toMatch(/\.tafsir-only-page > \.quran-commentary-passage-carousel\s*\{[^}]*transition: opacity \.22s ease, transform \.22s ease;/s);
+	  expect(styles).toMatch(/body\.reader-infinite-nav-faded main\.tafsir-only-page > \.quran-commentary-passage-carousel\s*\{[^}]*opacity: 0;/);
+	  expect(readerSourcePickerRule).toContain('transition: opacity .22s ease, transform .22s ease;');
 	});
 
 	test('keeps a passage-linked tafsir carousel at the top below the live header height', () => {
 	  expect(tafsirPassage.indexOf("include('sub-views/quran_commentary_book_nav.ejs'")).toBeLessThan(tafsirPassage.indexOf("include('sub-views/commentary_surah_heading.ejs'"));
 	  expect(tafsirPassage).toContain('quranCommentaryPassage: { surah: surah.num, ayah: tafsirEntryStart, endAyah: tafsirEntryEnd }');
 	  expect(commentaryBookNav).toContain("Tafsir.passageUrl(book, commentaryNavPassageSurah, commentaryNavPassageAyah, endAyah)");
-	  expect(commentaryBookNav).toContain("' quran-commentary-passage-carousel'");
 	  expect(commentaryBookNav).toContain('data-commentary-slug="<%= commentaryNavSlug(book) %>"');
 	  expect(quranTafsirs).toContain("dedicatedTafsirPage ? ' d-none' : ''");
-	  expect(styles).toMatch(/\.tafsir-only-page > \.quran-commentary-passage-carousel\s*\{[^}]*position: sticky;[^}]*top: var\(--site-fixed-header-height, 4\.25rem\);/s);
+	  expect(readerSourcePickerRule).toContain('position: sticky;');
+	  expect(readerSourcePickerRule).toContain('top: var(--site-fixed-header-height, 4.25rem);');
 	  expect(scripts).toContain('updateTafsirPassageCarouselRef(quranRef);');
 	  expect(scripts).toContain("var isPassageCarousel = carousel.attr('data-commentary-passage-carousel') === '1';");
 	  expect(scripts).toContain('initFixedHeaderOffsetObserver();');

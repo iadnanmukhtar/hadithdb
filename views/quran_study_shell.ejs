@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <%- include('sub-views/head.ejs', { site, page }); %>
+</head>
+<body>
+  <%- include('sub-views/header.ejs', { site, page }); %>
+  <main class="container chapter" data-reader-shell="study" aria-busy="true"></main>
+  <noscript><meta http-equiv="refresh" content="0;url=<%= fallback %>"></noscript>
+  <%- include('sub-views/mobile_navigation.ejs', { site, page }); %>
+  <%- include('sub-views/page_end.ejs', { site, page }); %>
+</body>
+</html>

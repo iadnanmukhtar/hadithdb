@@ -7955,6 +7955,14 @@ main .intro[lang="ar"][data-prop="toc.intro"]:not(.content-markdown) * {
 	grid-template-columns: minmax(0, 1fr);
 }
 
+.toc-hadith-total {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: subgrid;
+	align-items: baseline;
+	row-gap: inherit;
+}
+
 .tafsir-book-title-line {
 	font-size: var(--content-size-body);
 	font-weight: 400;
@@ -13308,6 +13316,11 @@ header.hadith-chapter-title h2.title[lang="ar"] :is(a, [data-prop]) {
 }
 #sunnah-dialog::backdrop { background: rgb(0 0 0 / 50%); }
 #sunnah-dialog .sunnah-hero { margin-bottom: 0; }
+
+#sunnah-dialog .quran-translation-attribution {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 #sunnah-dialog h2 { display: flex; align-items: center; gap: .45em; }
 .sunnah-nav-icon { width: 1.1em; height: 1.1em; vertical-align: -.14em; }

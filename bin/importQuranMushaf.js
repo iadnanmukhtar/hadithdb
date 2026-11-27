@@ -95,11 +95,13 @@ async function run() {
 			await insertRows('quran_mushaf_pages', ['page_number', 'line_number', 'line_type', 'is_centered', 'first_word_id', 'last_word_id', 'surah_number'], pages);
 			await insertRows('quran_mushaf_words', ['global_word_id', 'surah', 'ayah', 'word', 'corpus_word_id', 'source_text', 'source_meaning_en', 'source_grammar', 'is_ayah_marker'], wordMap);
 			await QuranMushaf.syncSectionMappings();
+			await global.query("UPDATE books SET content_lastmod=GREATEST(NOW(), COALESCE(content_lastmod, '1970-01-01') + INTERVAL 1 SECOND) WHERE id=0");
 			await global.query('COMMIT');
 		} catch (err) {
 			await global.query('ROLLBACK');
 			throw err;
 		}
+		await require('../lib/ReaderDownloads').catalogChanged(global.query);
 		console.log(`Imported ${pages.length} lines across ${info.number_of_pages} pages and mapped ${wordMap.length} Quran words/markers.`);
 	} finally {
 		db.close();

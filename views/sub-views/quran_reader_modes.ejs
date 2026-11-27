@@ -24,11 +24,12 @@
     ['review', 'Mudhakkir', 'arrow-repeat', modeReviewHref]
   ]; %>
   <% const selectedMode = readerMode === 'translations' ? 'passage' : readerMode; %>
-  <% for (const [key, label, icon, href] of modes) { %>
-    <a class="ux-view-option" href="<%= href %>" data-quran-reader-mode-link="<%= key %>"<% if (selectedMode === key) { %> aria-current="page"<% } %>><i class="bi bi-<%= icon %>" aria-hidden="true"></i><span><%= label %></span></a>
-  <% } %>
+  <% const shortcutMode = selectedMode === 'mushaf' ? 'passage' : 'mushaf'; %>
   <select class="quran-mode-picker ux-view-option" aria-label="Quran reading mode" hidden>
     <% if (!modes.some(([key]) => key === selectedMode)) { %><option value="" selected disabled>Mode</option><% } %>
     <% for (const [key, label] of modes) { %><option value="<%= key %>"<% if (selectedMode === key) { %> selected<% } %>><%= label %></option><% } %>
   </select>
+  <% for (const [key, label, icon, href] of modes) { %>
+    <a class="ux-view-option" href="<%= href %>" data-quran-reader-mode-link="<%= key %>"<% if (key === shortcutMode) { %> data-quran-mode-shortcut aria-label="<%= label %>" title="<%= label %>"<% } %><% if (selectedMode === key) { %> aria-current="page"<% } %>><i class="bi bi-<%= icon %>" aria-hidden="true"></i><span><%= label %></span></a>
+  <% } %>
 </span>

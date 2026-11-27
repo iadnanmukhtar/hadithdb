@@ -82,9 +82,11 @@ test('Mushaf surah-name trigger opens the Surah tab for the clicked page', async
   dom.window.close();
 });
 function mushafLabels() {
-  const template=fs.readFileSync(path.join(__dirname,'../views/quran_mushaf.ejs'),'utf8');
+  const template=fs.readFileSync(path.join(__dirname,'../views/sub-views/quran_mushaf_page.ejs'),'utf8');
   const start=template.indexOf('<span class="quran-mushaf-page-meta">');
-  return ejs.render(template.slice(start,template.indexOf('</header>',start)),{firstJuz:{num:1},firstSurah:surahs[0],mushaf:{number:604}});
+  const number=template.indexOf('<span class="quran-mushaf-page-number"');
+  const labels=template.slice(start,template.indexOf('</header>',start)) + template.slice(number,template.indexOf('</section>',number));
+  return ejs.render(labels,{firstJuz:{num:1},firstSurah:surahs[0],mushaf:{number:604},memorize:false,review:false});
 }
 test('Mushaf navigation labels render without number inputs or forms', () => {
   const dom=new JSDOM(mushafLabels()), doc=dom.window.document;

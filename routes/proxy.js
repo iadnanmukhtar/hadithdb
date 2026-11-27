@@ -10,6 +10,7 @@ const path = require('path');
 const Index = require('../lib/Index');
 const Tafsir = require('../lib/Tafsir');
 const Books = require('../lib/Books');
+const ReaderDownloads = require('../lib/ReaderDownloads');
 const ContentTranslations = require('../lib/ContentTranslations');
 const PaymentConfig = require('../lib/PaymentConfig');
 const QuranRecitations = require('../lib/QuranRecitations');
@@ -104,6 +105,22 @@ router.get('/tafsir/books', async function (req, res) {
   res.json(rows);
 });
 
+router.get('/quran-reader/versions', async function (req, res) {
+  setPrivateProxyCache(res);
+  res.json(await ReaderDownloads.versions());
+});
+
+router.get('/quran-reader/default/:surah', async function (req, res) {
+  const surah = Number(req.params.surah);
+  if (!validQuranRange(surah, 1, 1, false)) return res.sendStatus(404);
+  setPrivateProxyCache(res);
+  const body = await ReaderDownloads.json('quran', 'default/' + surah, async () => {
+    const rows = await global.query(`SELECT num, body_en FROM hadiths WHERE bookId=0 AND h1=${surah} ORDER BY ordinal`);
+    return Object.fromEntries(rows.map(row => [row.num, row.body_en || '']));
+  });
+  res.type('json').send(body);
+});
+
 router.get('/translations/books', async function (req, res) {
   debug('proxy translations books start');
   const rows = await Tafsir.visibleTranslations();
@@ -116,8 +133,10 @@ router.get('/translations/local', async function (req, res) {
   const aliases = uniqueAliases((req.query.src || '').toString().split(','));
   const surah = Number(req.query.s);
   const ayah = req.query.a === undefined ? NaN : Number(req.query.a);
-  const ayahFrom = req.query.from === undefined ? ayah : Number(req.query.from);
-  const ayahTo = req.query.to === undefined ? ayahFrom : Number(req.query.to);
+  const wholeSurah = req.query.whole === '1' && aliases.length === 1 && req.query.render === 'reader';
+  const ayahFrom = wholeSurah ? 0 : req.query.from === undefined ? ayah : Number(req.query.from);
+  const info = wholeSurah && (global.surahs || []).find(item => Number(item.num) === surah);
+  const ayahTo = info ? Number(info.ayahs || info.ayat) : req.query.to === undefined ? ayahFrom : Number(req.query.to);
   const lang = (req.query.lang || 'en').toString();
   if (aliases.length < 1 || aliases.length > 100 ||
       !Number.isInteger(surah) || surah < 1 || surah > 114 ||
@@ -127,13 +146,27 @@ router.get('/translations/local', async function (req, res) {
     res.status(400).json({ error: 'Invalid local translation request.' });
     return;
   }
-  debug(`proxy local translations start aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
-  const rows = await localCommentaryRowsForAliases(aliases, surah, ayahFrom, ayahTo);
-  debug(`proxy local translations rows=${rows.length} aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}`);
   const editMode = isEditMode(req);
+  const reader = req.query.render === 'reader';
+  const build = () => localTranslationPayload(aliases, surah, ayahFrom, ayahTo, lang, wholeSurah, editMode, reader);
+  if (wholeSurah && !editMode && !('flush' in req.query)) {
+    const body = await ReaderDownloads.json(aliases[0], `translation/${lang}/${surah}`, build);
+    setPrivateProxyCache(res);
+    return res.type('json').send(body);
+  }
+  setPublicProxyContentCache(req, res, editMode);
+  res.json(await build());
+});
+
+async function localTranslationPayload(aliases, surah, ayahFrom, ayahTo, lang, wholeSurah, editMode, reader) {
+  debug(`proxy local translations start aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo} lang=${lang || ''}`);
+  const rows = wholeSurah
+    ? await localCommentaryRowsForAliasesFromDb(aliases, surah, ayahFrom, ayahTo, 5000)
+    : await localCommentaryRowsForAliases(aliases, surah, ayahFrom, ayahTo);
+  debug(`proxy local translations rows=${rows.length} aliases=${aliases.join(',')} ref=${surah}:${ayahFrom}-${ayahTo}`);
   if (editMode)
     aliases.forEach(alias => addMissingEditableCommentaryRows(rows, alias, surah, ayahFrom, ayahTo));
-  const renderEditableContent = editMode && (req.query.render || '').toString() !== 'reader';
+  const renderEditableContent = editMode && !reader;
   const translationBooks = new Map(Tafsir.visibleTranslationsSync().map(book => [book.alias, book]));
   const translationRows = renderEditableContent ? rows : rows.flatMap(row => Tafsir.splitTranslationRowByAyah(
     row,
@@ -164,9 +197,8 @@ router.get('/translations/local', async function (req, res) {
       } : {})
     };
   }).filter(entry => entry.alias && (!lang || entry.html || Number.isInteger(Number(entry.ayahs_start))));
-  setPublicProxyContentCache(req, res, editMode);
-  res.json({ entries: entries });
-});
+  return { entries };
+}
 
 router.get('/tafsir/local', async function (req, res) {
   const src = (req.query.src || '').toString();
@@ -810,3 +842,5 @@ function escapeHtml(text) {
 }
 
 module.exports = router;
+
+module.exports.localTranslationPayload = localTranslationPayload;

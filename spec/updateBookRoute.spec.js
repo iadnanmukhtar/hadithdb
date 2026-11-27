@@ -22,6 +22,7 @@ describe('book update route', () => {
 	jest.spyOn(Utils, 'flushBookDiskCache').mockResolvedValue({ alias: 'rida', files: 12, directories: 2, targets: 2 });
 	jest.spyOn(RuntimeRefresh, 'publish').mockResolvedValue('generation');
     jest.spyOn(Books, 'touchBookContentLastmodById').mockResolvedValue();
+    jest.spyOn(Books, 'refreshReaderDownloads').mockResolvedValue();
     jest.spyOn(Tafsir, 'invalidateMemoryCaches');
   });
 

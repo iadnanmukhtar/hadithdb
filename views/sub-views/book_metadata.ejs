@@ -65,7 +65,7 @@
             && tocHadithCount !== null && tocHadithCount !== undefined && tocHadithCount !== ''
             && Number.isSafeInteger(Number(tocHadithCount)) && Number(tocHadithCount) >= 0;
         %>
-        <div class="tafsir-book-meta text-muted mb-3<%= tocBookNameAr || tocBookAuthorAr || tocBookDeathAr ? '' : ' tafsir-book-meta-single' %>">
+        <div class="tafsir-book-meta text-muted mb-3<%= tocBookNameAr || tocBookAuthorAr || tocBookDeathAr || showTocHadithCount ? '' : ' tafsir-book-meta-single' %>">
           <% if (editableBook) { %>
             <div><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName_en" data-placeholder="English short name"><%- tocDisplayBook.shortName_en || '' %></span></div>
             <div lang="ar" dir="rtl"><span class="_e" data-id="<%= editableBookId %>" data-prop="book.shortName" data-placeholder="الاسم المختصر"><%- tocDisplayBook.shortName || '' %></span></div>
@@ -85,8 +85,10 @@
             <% if (tocDisplayBook.aqidah) { %><div><%- tocDisplayBook.aqidah %></div><% } %>
           <% } %>
           <% if (showTocHadithCount) { %>
-            <div>Total ahadith: <%= Number(tocHadithCount).toLocaleString('en-US') %></div>
-            <div lang="ar" dir="rtl">عدد الأحاديث: <%= Number(tocHadithCount).toLocaleString('ar') %></div>
+            <div class="toc-hadith-total">
+              <div>Total ahadith: <%= Number(tocHadithCount).toLocaleString('en-US') %></div>
+              <div lang="ar" dir="rtl">عدد الأحاديث: <%= Number(tocHadithCount).toLocaleString('ar') %></div>
+            </div>
           <% } %>
         </div>
         <% } %>

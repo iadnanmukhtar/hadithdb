@@ -25,6 +25,7 @@ const Surahs = require('../lib/Surahs');
 const QuranCorpus = require('../lib/QuranCorpus');
 const SunnahReminder = require('../lib/SunnahReminder');
 const QuranScripts = require('../lib/QuranScripts');
+const ReaderDownloads = require('../lib/ReaderDownloads');
 const QuranTocSubdivisions = require('../lib/QuranTocSubdivisions');
 const QuranHeadingOutlines = require('../lib/QuranHeadingOutlines');
 const HadithHeadingOutlines = require('../lib/HadithHeadingOutlines');
@@ -1297,6 +1298,45 @@ async function renderSearchResults(req, res, next, options = {}) {
   return true;
 }
 
+// Script-capable public document navigations use the same content renderer
+// as in-reader navigation. Crawlers, exports and edit/review modes keep SSR.
+router.get(/^\/quran(?:\/page\/\d+|\/(?:[a-z][\w-]*\/)?\d+\/\d+|(?:\/[a-z][\w-]*\/quran)?:\d+:\d+(?:-\d+)?)$/i, (req, res, next) => {
+  if (req.get('Sec-Fetch-Dest') !== 'document' || req.admin && req.editMode ||
+      Object.keys(req.query).some(key => !['script', 'ayah', 'translation'].includes(key))) return next();
+  const requested = req.path.match(/^\/quran\/page\/(\d+)$/);
+  const number = requested && Number(requested[1]);
+  if (requested && (number < 1 || number > 604)) return next();
+  const alias = req.path.match(/^\/quran\/([a-z][\w-]*)\//i)?.[1];
+  if (alias && alias !== 'page' && !visibleQuranTranslationByAlias(alias)) return next();
+  const book = visibleBookByAlias('quran');
+  const translation = visibleQuranTranslationByAlias(requested ? '' : alias || req.query.translation);
+  if (translation && !['local', 'default'].includes(translation.source)) return next();
+  // The canonical routes own alias redirects and the saved translation preference.
+  if (!requested && ((alias && alias !== (translation?.quranBookSlug || translation?.alias))
+      || (!alias && req.query.translation) || (!alias && /^\/quran\/\d+\/\d+$/.test(req.path) && preferredQuranTranslationFromCookie(req)))) return next();
+  const target = !requested && req.path.match(/(?:quran:|\/)(\d+)([:/])(\d+)(?:-(\d+))?$/);
+  if (target) {
+    const chapter = findSurah(Number(target[1]));
+    if (!chapter || Number(target[3]) > Number(chapter.ayahs) || Number(target[4] || target[3]) > Number(chapter.ayahs)
+        || Number(target[4] || target[3]) < Number(target[3]) || Number(target[3]) === 0) return next();
+  }
+  req.quranSelectedTranslationAlias = translation?.alias;
+  req.quranSelectedTranslationSlug = translation?.quranBookSlug || translation?.alias;
+  const canonical = req.path;
+  const page = { menu: 'Section', title_en: requested ? 'Quran Mushaf Page ' + number : 'Quran Study',
+    canonical, context: { book, passage: true, quranCommentaryBook: translation } };
+  const fallback = new URL(req.originalUrl, 'http://localhost');
+  fallback.searchParams.set('reader', 'server');
+  res.locals.req = req;
+  res.locals.res = res;
+  res.set('Cache-Control', 'private, no-store').vary('Sec-Fetch-Dest');
+  const locals = { req, res, site: { ...global.settings.site, admin: req.admin, editMode: false }, page,
+    readerShell: true, fallback: fallback.pathname + fallback.search };
+  if (requested) return res.render('quran_mushaf', { ...locals, memorize: false, review: false,
+    mushaf: { number, info: { number_of_pages: 604 } }, quranHeaderJuzLinks: [] });
+  res.render('quran_study_shell', locals);
+});
+
 router.get('/reminders/sunnah', async function (req, res, next) {
   res.set('Cache-Control', 'no-store');
   try {
@@ -1384,17 +1424,52 @@ router.use(['/quran/corpus', '/quran-corpus'], function (req, res, next) {
   next();
 });
 
+router.get('/quran/study-templates.js', (req, res) =>
+  res.type('js').set('Cache-Control', req.query.v === Utils.scriptAssetVersion() ? 'public, max-age=31536000, immutable' : 'no-cache').send(require('../lib/QuranReaderTemplates')()));
+
+router.get('/quran/relationships', async (req, res) => {
+  res.type('json').send(await ReaderDownloads.json('quran', 'relationships', require('../lib/QuranStudyIndex').relationships));
+});
+router.get('/quran/introductions/:alias', async (req, res) => {
+  const book = visibleQuranTranslationByAlias(req.params.alias);
+  if (!book) return res.sendStatus(404);
+  res.type('json').send(await ReaderDownloads.json(book.alias, 'introductions', () => require('../lib/QuranStudyIndex').introductions(book)));
+});
+
+router.get('/quran/corpus-chapter/:surah', async (req, res) => {
+  const surah = global.surahs.find(row => Number(row.num) === Number(req.params.surah));
+  if (!surah) return res.sendStatus(404);
+  const data = await ReaderDownloads.json('quran', 'corpus-chapter/' + surah.num, async () =>
+    QuranCorpus.wordsByAyah(await QuranCorpus.wordsForRange(surah.num, 1, surah.ayahs)));
+  res.type('json').send(data);
+});
+
+router.get('/quran/study-index', async function (req, res) {
+  const body = await ReaderDownloads.json('quran', 'study-index-v3', require('../lib/QuranStudyIndex').build);
+  res.set('Cache-Control', 'no-store').type('json').send(body);
+});
+
+router.get('/quran/text/:script/:part', async function (req, res) {
+  const { script } = req.params;
+  const part = Number(req.params.part);
+  if (!['uthmani', 'indo-pak', 'warsh'].includes(script) || !Number.isInteger(part) || part < 0 || part > 28)
+    return res.sendStatus(404);
+  const body = await ReaderDownloads.json('quran', `text-v3/${script}/${part}`, () => QuranScripts.editionPart(script, part));
+  res.set('Cache-Control', 'no-store').type('json').send(body);
+});
+
 router.get('/quran/script/:script', async function (req, res, next) {
   var script = QuranScripts.normalizeSlug(req.params.script);
   if (!script)
     return next(createError(404, `Quran script '${req.params.script}' not found`));
   var refs = QuranScripts.normalizeRefs(req.query.refs);
-  if (refs.length < 1)
-    return next(createError(400, 'At least one valid Quran reference is required'));
+  var surah = Number(req.query.surah);
+  if (refs.length < 1 && !(Number.isInteger(surah) && surah >= 1 && surah <= 114))
+    return next(createError(400, 'A valid surah or Quran reference is required'));
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Robots-Tag', 'noindex, nofollow');
-  res.end(JSON.stringify(await QuranScripts.passage(script, refs)));
+  res.end(JSON.stringify(await QuranScripts.passage(script, refs, surah)));
 });
 
 router.get(['/quran/corpus/:surah/:sectionNum', '/quran-corpus/:surah/:sectionNum'], async function (req, res, next) {
@@ -2546,6 +2621,38 @@ router.get('/quran/progress', function (req, res) {
   res.redirect(301, Utils.quranUrl(req, '/quran/review'));
 });
 
+// Compile trusted application templates once. The page response contains book
+// data only, so a layout change can take effect without republishing the Quran.
+let mushafBrowserTemplates;
+router.get('/quran/mushaf-templates.js', function (req, res) {
+  if (!mushafBrowserTemplates) {
+    const compile = name => ejs.compile(fs.readFileSync(
+      `${__dirname}/../views/sub-views/${name}.ejs`, 'utf8'
+    ), { client: true, compileDebug: false }).toString();
+    mushafBrowserTemplates = `window.mushafTemplates = { page: ${compile('quran_mushaf_page')}, audio: ${compile('quran_audio_control')} };`;
+  }
+  res.set('Cache-Control', req.query.v === Utils.scriptAssetVersion() ? 'public, max-age=31536000, immutable' : 'no-cache').type('application/javascript').send(mushafBrowserTemplates);
+});
+
+router.get('/quran/page-outlines/:surah', async function (req, res) {
+  const surah = Number(req.params.surah);
+  if (!Number.isInteger(surah) || surah < 1 || surah > 114) return res.sendStatus(404);
+  const body = await ReaderDownloads.json('quran', 'outline/' + surah, () => quranHeadingOutlinesForSurahs([surah]));
+  res.set('Cache-Control', 'no-store').type('json').send(body);
+});
+
+async function mushafPageMetadata(res, locals) {
+  const head = await ejs.renderFile(`${__dirname}/../views/sub-views/head.ejs`,
+    cachedRenderLocals(res, { ...locals, site: global.settings.site, newrelic: null }));
+  const $ = require('cheerio').load(head);
+  return {
+    title: $('title').text(),
+    links: $('link[rel="canonical"], link[rel="prev"], link[rel="next"]').map((_, el) => ({ rel: el.attribs.rel, href: el.attribs.href })).get(),
+    meta: $('meta[name="description"], meta[name="robots"], meta[property^="og:"], meta[name^="twitter:"]').map((_, el) => el.attribs).get(),
+    schema: $('script[type="application/ld+json"]').map((_, el) => ({ page: Object.hasOwn(el.attribs, 'data-page-schema'), data: JSON.parse($(el).text()) })).get()
+  };
+}
+
 async function renderQuranMushafPage(req, res, next, options) {
   var reviewRef = normalizeQuranReviewRef(req.query.reviewRef) || normalizeQuranReviewRef(req.query.review);
   var review = req.query.review !== undefined || Boolean(reviewRef);
@@ -2626,7 +2733,7 @@ async function renderQuranMushafPage(req, res, next, options) {
   var mushafSurahs = mushaf.lines.flatMap(line => line.words || []).map(function (word) {
     return Number(word.surah);
   });
-  var quranHeadingOutlines = await quranHeadingOutlinesForSurahs(mushafSurahs);
+  var quranHeadingOutlines = options.json ? {} : await quranHeadingOutlinesForSurahs(mushafSurahs);
   var firstSurah = firstWord && (global.surahs || []).find(function (surah) {
     return Number(surah.num) === Number(firstWord.surah);
   });
@@ -2636,7 +2743,7 @@ async function renderQuranMushafPage(req, res, next, options) {
     var startAyah = Number(parts[1]);
     return startSurah < Number(firstWord.surah) || (startSurah === Number(firstWord.surah) && startAyah <= Number(firstWord.ayah));
   }).pop();
-  var quranHeaderJuzLinks = (await Promise.all(juzRows.map(async function (juz) {
+  var quranHeaderJuzLinks = options.json ? [] : (await Promise.all(juzRows.map(async function (juz) {
     var startParts = (juz.start || '').toString().split(':');
     var startSurah = Number(startParts[0]);
     var startAyah = Number(startParts[1]);
@@ -2810,6 +2917,32 @@ async function renderQuranMushafPage(req, res, next, options) {
       context: pageContext
     }
   };
+  if (options.json) {
+    const ranges = audioRanges.map(({ surah, from, to }) =>
+      `(h1=${Number(surah)} AND numInChapter BETWEEN ${Number(from)} AND ${Number(to)})`);
+    const [translations, metadata] = await Promise.all([
+      ranges.length ? global.query(`SELECT num, body_en, footnote_en FROM hadiths WHERE bookId=0 AND (${ranges.join(' OR ')})`) : [],
+      mushafPageMetadata(res, renderLocals)
+    ]);
+    const surahs = (global.surahs || []).filter(item => mushafSurahs.includes(Number(item.num))
+      || mushaf.lines.some(line => Number(line.surah_number) === Number(item.num)))
+      .map(({ num, name_en, name_ar }) => ({ num, name_en, name_ar }));
+    const headings = audioRanges.flatMap(({ surah, from, to }) => {
+      const overlaps = range => range.start <= to && range.end >= from;
+      return (sectionRangesBySurah[surah] || []).filter(overlaps).map(range => ({
+        surah, ...range, subsections: (subsectionRangesBySurah[surah] || [])
+          .filter(sub => sub.section === range.section && overlaps(sub))
+      }));
+    });
+    return {
+      number: pageNumber, totalPages: Number(mushaf.info.number_of_pages), lines: mushaf.lines,
+      surahs, firstSurah: surahs.find(item => Number(item.num) === Number(firstWord?.surah)),
+      firstJuz: firstJuz && { num: firstJuz.num }, firstRef: renderLocals.firstRef,
+      audioRanges, repeatRanges: subsectionAudioRanges, pagePassages,
+      headings, metadata,
+      defaultTranslation: Object.fromEntries(translations.map(row => [row.num, { text: row.body_en || '', footnotes: row.footnote_en || '' }]))
+    };
+  }
   if (options.cachedFile && Utils.diskCacheEnabled()) {
     var html = await ejs.renderFile(`${__dirname}/../views/quran_mushaf.ejs`, cachedRenderLocals(res, {
       noadmin: true,
@@ -2884,7 +3017,43 @@ router.get('/quran/page', async function (req, res) {
   return res.redirect(302, Utils.quranUrl(req, `/quran/page/${pageNumber}${req.query.memorize !== undefined ? '?memorize' : ''}`));
 });
 
-router.get('/quran/page/:page', async function (req, res, next) {
+router.get('/quran/page/:page', serveMushafPage);
+router.get('/quran/page-data/:page', async function (req, res, next) {
+  if (Object.keys(req.query).length) return res.sendStatus(400);
+  const body = await cachedMushafPage(req, res, Number(req.params.page));
+  res.set('Cache-Control', 'no-store').type('json').send(body);
+});
+
+router.get('/quran/page-batch/:pages', async function (req, res) {
+  const numbers = req.params.pages.split(',').map(Number);
+  if (Object.keys(req.query).length || numbers.length > 8 || numbers.some(n => !Number.isInteger(n) || n < 1 || n > 604))
+    return res.sendStatus(400);
+  const pages = [];
+  for (const number of numbers) pages.push(await cachedMushafPage(req, res, number));
+  res.set('Cache-Control', 'no-store').type('json').send('[' + pages.join(',') + ']');
+});
+
+function cachedMushafPage(req, res, number) {
+  if (!Number.isInteger(number) || number < 1 || number > 604) throw createError(404, 'Mushaf page not found');
+  const site = global.settings.site;
+  const origin = site.quranUrl || Utils.quranBaseUrl(req);
+  return ReaderDownloads.json('quran', `page/${origin}/${number}`, () => publicMushafPageData(req, res, number));
+}
+
+async function publicMushafPageData(req, res, pageNumber) {
+  res.locals.req = req;
+  res.locals.res = res;
+  // The public metadata needs the section and chapter; navigation lists and
+  // previous/next records belong to the initial server-rendered document.
+  const mapped = await QuranMushaf.sectionForPage(pageNumber);
+  if (!mapped) throw createError(404, 'Quran passage not found');
+  const section = Number(mapped.level) === 2 ? Heading.toLevel(mapped)
+    : await Section.sectionFromRef(`quran/${mapped.surah}/${mapped.h2}`);
+  return renderQuranMushafPage(req, res, error => { throw error; }, { json: true, pageNumber, book: visibleBookByAlias('quran'),
+    section, chapter: await section.getChapter() });
+}
+
+async function serveMushafPage(req, res, next) {
   res.locals.req = req;
   res.locals.res = res;
   var pageNumber = parsePositiveIntegerParam(req.params.page);
@@ -2934,7 +3103,7 @@ router.get('/quran/page/:page', async function (req, res, next) {
     section: section,
     cachedFile: cachedFile
   });
-});
+}
 
 // BOOK: TABLE OF CONTENTS
 router.get('/:bookAlias', async function (req, res, next) {

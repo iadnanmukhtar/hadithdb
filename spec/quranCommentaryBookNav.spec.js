@@ -28,6 +28,7 @@ function render(extra = {}) {
 		req: {},
 		utils: {
 			quranUrl: (_req, href) => href,
+			scriptAssetVersion: () => 'test',
 			emptyIfNull: value => value == null ? '' : value
 		},
 		Tafsir,
@@ -52,7 +53,11 @@ describe('Quran commentary book navigation', () => {
 		});
 
 		expect(html).toContain('href="/quran/tafsir/rida/quran:1:0"');
-		expect(html).toContain('data-commentary-passage-carousel="1"');
+		const $ = require('cheerio').load(html);
+		const carousel = $('[data-commentary-passage-carousel="1"]');
+		expect(carousel).toHaveLength(1);
+		expect(carousel.hasClass('quran-commentary-passage-carousel')).toBe(true);
+		expect(carousel.hasClass('reader-source-picker')).toBe(true);
 		expect(html).toContain('data-commentary-quran-ref="1:0"');
 	});
 });

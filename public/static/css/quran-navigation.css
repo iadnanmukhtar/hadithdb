@@ -13,7 +13,9 @@
   .quran-mode-toolbar .quran-navigate span { display: none; }
 }
 @container quran-toolbar (max-width: 774px) {
-  .quran-mode-toolbar:has(.quran-mode-picker:not([hidden])) [data-quran-reader-mode-link] { display: none; }
+  .quran-mode-picker:not([hidden]) ~ [data-quran-reader-mode-link]:not([data-quran-mode-shortcut]),
+  .quran-mode-picker:not([hidden]) ~ [data-quran-mode-shortcut] > span { display: none; }
+  .quran-mode-picker:not([hidden]) ~ [data-quran-mode-shortcut] { inline-size: 44px; min-block-size: 44px; justify-content: center; }
   .quran-mode-toolbar .quran-mode-picker:not([hidden]) { display: inline-flex; align-items: center; }
   .quran-mode-toolbar { flex-wrap: wrap; gap: .3rem; }
   .quran-mode-toolbar:has(.quran-mode-picker:not([hidden])) { flex-wrap: nowrap; }

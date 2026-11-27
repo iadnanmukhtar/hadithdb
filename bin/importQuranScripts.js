@@ -191,11 +191,13 @@ async function run() {
 		try {
 			for (const edition of editions) await replaceEdition(query, edition);
 			for (const edition of editions) await verifyEdition(query, edition);
+			await query("UPDATE books SET content_lastmod=GREATEST(NOW(), COALESCE(content_lastmod, '1970-01-01') + INTERVAL 1 SECOND) WHERE id=0");
 			await query('COMMIT');
 		} catch (err) {
 			await query('ROLLBACK');
 			throw err;
 		}
+		await require('../lib/ReaderDownloads').catalogChanged(query);
 		await removeLegacyTables(query);
 		for (const edition of editions)
 			console.log(`Imported ${edition.name}: ${edition.ayahs.length} ayahs and ${edition.words.length} words.`);

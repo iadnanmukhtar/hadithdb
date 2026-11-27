@@ -9,7 +9,7 @@ Use the exact report supplied. For a reference, retrieve the record with HadithD
 
 ## Narrative and speech
 
-Follow [Bukhari 1](https://hadithunlocked.com/bukhari:1). Preserve the Arabic wording, diacritics, honorifics and speaker sequence. Keep the narrator's framing in plain type. Set the Prophet's direct speech in italics, using Arabic guillemets in Arabic and double quotation marks in English. For example, the English pattern is `I heard the Messenger of Allah ﷺ say, *"…."*`. Keep a companion's question or another speaker's reply in narrative type so the change of voice is clear.
+Follow [Bukhari 1](https://hadithunlocked.com/bukhari:1). Preserve the Arabic wording, diacritics, honorifics and speaker sequence. Keep the narrator's framing in plain type. In both languages, reserve single-asterisk italics (`*…*`) for words spoken directly by the Prophet ﷺ. Use underscore italics (`_…_`) whenever ordinary text needs emphasis, including a work’s title in a narrator’s or editor’s note, as in `al-Nawawi cites _Sahih Muslim_.` Mark Prophetic quotations using Arabic guillemets in Arabic and double quotation marks in English. For example, the English pattern is `I heard the Messenger of Allah ﷺ say, *"…."*`. Keep a companion's question or another speaker's reply in narrative type so the change of voice is clear.
 
 Use the vocabulary Muslim readers commonly use in English. For example, use Allah, salah for the ritual prayer, dua for supplication, and zakat for the obligatory alms when those terms fit the Arabic. Let context guide the choice. Keep the English meaning of a recited dua clear enough for the reader to understand what they are asking Allah for.
 
@@ -38,7 +38,7 @@ Link the reference label alone, in parentheses beside the quotation. Use Arabic 
 
 Follow [Abu Dawud 832](https://hadithunlocked.com/abudawud:832) wherever the report actually gives words of remembrance or supplication. A passing mention of prayer uses ordinary narrative formatting. Keep each recitation where its speaker says it, including any intervening question or action.
 
-In Arabic, place the vocalized formula in bold italics on its own paragraph. In English, give the transliteration in bold italics on its own line and the complete meaning in italic parentheses immediately beneath. Preserve an introduction such as “Say” only where the Arabic has it. This excerpt illustrates the paired body fields:
+In Arabic, place the vocalized formula in bold italics on its own paragraph. In English, give the transliteration in bold italics on its own line and the complete meaning in italic parentheses immediately beneath. Choose the Markdown markers by speaker. Use `***formula***` for a formula spoken or dictated by the Prophet ﷺ and `**_formula_**` for another speaker’s recitation. Use `_(meaning)_` for the explanatory English gloss. Preserve an introduction such as “Say” only where the Arabic has it. This excerpt illustrates the paired body fields:
 
 Arabic Markdown
 
@@ -53,7 +53,7 @@ English Markdown
 ```markdown
 He said: *"Say:*
 ***allāhumma irḥamnī wa-urzuqnī wa-ʿāfinī wa-ihdinī***
-*(O Allah, have mercy on me, provide for me, grant me well-being, and guide me.)"*
+_(O Allah, have mercy on me, provide for me, grant me well-being, and guide me.)_"
 ```
 
 Match every transliterated phrase and its meaning to the target Arabic in order. Check long vowels, consonants and pronouns. For example, the first formula in the model record ends at بِاللَّهِ in Arabic, although its transliteration continues. Follow the target report's actual ending.

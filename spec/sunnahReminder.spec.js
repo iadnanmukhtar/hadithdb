@@ -28,7 +28,8 @@ describe('Daily Sunnah reminder', () => {
 
   test('daily identity survives reload, a manual choice lasts until EST rollover', async () => {
     const daily = await get({});
-    expect(await get({})).toEqual(daily);
+    expect(await Promise.all(Array.from({length: 100}, () => get({})))).toEqual(Array(100).fill(daily));
+    expect(global.query).toHaveBeenCalledTimes(2);
     const another = await get({ id: daily.id, day: String(daily.day), another: true });
     expect(another.id).not.toEqual(daily.id);
     const stored = { id: another.id, day: String(another.day) };
