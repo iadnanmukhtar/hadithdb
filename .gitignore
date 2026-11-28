@@ -30,6 +30,7 @@ docs
 !docs/
 docs/*
 !docs/context/
+!docs/features/
 !docs/TAFSIR_CATEGORIES.md
 *test*
 ecosystem.config.cjs

@@ -7385,6 +7385,22 @@ body:has(.quran-audio-translation-marquee:not([hidden])) {
 	padding: 0;
 	width: 1.5rem;
 }
+.hadith-entry-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .25rem;
+}
+.hadith-entry-toolbar > .hadith-admin-action {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: .45rem;
+  border-color: var(--bs-border-color);
+}
+.hadith-entry-toolbar > .hadith-admin-action .bi { font-size: .9rem !important; }
+.hadith-entry-toolbar > .hadith-similar-admin-search { flex-basis: 100%; }
+.hadith-entry-toolbar > [hidden] { display: none !important; }
 .hadith-pair-manager-modal .modal-dialog { max-width: min(56rem, calc(100vw - 2rem)); }
 .hadith-pair-manager-row,
 .hadith-pair-manager-new {

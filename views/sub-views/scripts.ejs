@@ -479,7 +479,9 @@
 	          setMarkdownPreview(this, value);
 	        if (hasLoadingButton) {
 	          $loadingButton.prop('disabled', true);
-	          $loadingButton.html(`<span class="spinner-border spinner-border-sm" aria-hidden="true"></span> ${$loadingButton.data('loading-label') || 'Working'}`);
+	          const spinner = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span>';
+	          $loadingButton.html(spinner);
+	          if (!$loadingButton.closest('.hadith-entry-toolbar').length) $loadingButton.append(document.createTextNode(' ' + ($loadingButton.data('loading-label') || 'Working')));
 	        }
 	        var reqBody = {
 	          id: id,
@@ -662,6 +664,7 @@
           body: JSON.stringify({
             id: reqBody.id,
             prop: reqBody.prop,
+            expectedOriginalId: reqBody.expectedOriginalId,
 	            arabizi: reqBody.arabizi,
 	            value: reqBody.value,
 	            pairedNarrator: reqBody.pairedNarrator,
@@ -752,6 +755,22 @@
 	        const excludedIds = new Set(($search.attr('data-exclude-ids') || '').split(',').map(Number).filter(id => Number.isSafeInteger(id) && id > 0));
 	        const excludedRefs = new Set(($search.attr('data-exclude-refs') || '').split(',').map(value => value.trim().replace(/^\//, '')).filter(Boolean));
 	        const setStatus = (message, isError) => $status.text(message).toggleClass('text-danger', !!isError);
+	        if (isVirtual) {
+	          const $openers = $search.siblings('[data-open-hadith-picker]');
+	          $openers.on('click', function () {
+	            if (saving) return;
+	            const mode = this.dataset.openHadithPicker;
+	            const $mode = $search.find('[data-hadith-picker-action]');
+	            const close = !$search.prop('hidden') && $mode.val() === mode;
+	            $mode.val(mode);
+	            $openers.attr('aria-expanded', 'false');
+	            $search.prop('hidden', close);
+	            if (!close) {
+	              $(this).attr('aria-expanded', 'true');
+	              $input.trigger('focus');
+	            }
+	          });
+	        }
 	        const addSuggestion = async (item) => {
 	          const itemId = Number(item && item.id);
 	          const itemRef = ((item && item.ref) || '').toString().replace(/^\//, '');
@@ -760,14 +779,16 @@
 	            setStatus('هذا الحديث مضاف بالفعل.', true);
 	            return;
 	          }
-	          saving = true;
 	          let refreshPending = false;
 	          const action = isVirtual ? $search.find('[data-hadith-picker-action]').val() : 'add';
+	          const deleting = action === 'replace_delete';
+	          if (deleting && !window.confirm(`Replace ${$search.attr('data-original-ref')} with ${itemRef}, move its commentary, and delete the placeholder?`)) return;
+	          saving = true;
 	          $search.find('input, select, button').prop('disabled', true);
-	          setStatus(`${action === 'replace_selected' ? 'Replacing with' : 'Adding'} ${itemRef || 'hadith'}…`, false);
+	          setStatus(`${action !== 'add' && action !== 'add_selected' ? 'Replacing with' : 'Adding'} ${itemRef || 'hadith'}…`, false);
 	          try {
 	            const result = await update(isVirtual
-	              ? { id: String(virtualId), prop: `hadith_virtual.${action}`, arabizi: false, value: itemId }
+	              ? { id: String(virtualId), prop: `hadith_virtual.${action}`, arabizi: false, value: itemId, expectedOriginalId: deleting ? Number($search.attr('data-original-id')) : undefined }
 	              : { id: `${parentId},${itemId}`, prop: 'hadiths_sim.add', arabizi: false, value: '' });
 	            if (result.code !== 200) { setStatus(result.message || 'Unable to save the hadith.', true); return; }
 	            if (isVirtual && result.refreshPending) {
@@ -776,7 +797,7 @@
 	              $('<button type="button">').addClass('btn btn-sm btn-outline-secondary mt-2').text('Refresh page').on('click', () => window.location.reload()).appendTo($status);
 	              return;
 	            }
-	            rememberUpdateSuccessToast(isVirtual ? 'Virtual hadith updated' : 'Similar hadith added', `${itemRef || 'The selected hadith'} was ${action === 'replace_selected' ? 'selected as the replacement' : 'added'}.`);
+	            rememberUpdateSuccessToast(isVirtual ? 'Virtual hadith updated' : 'Similar hadith added', `${itemRef || 'The selected hadith'} was ${action.startsWith('replace') ? 'selected as the replacement' : 'added'}.`);
 	            window.location.reload();
 	          } catch (err) {
 	            setStatus('Unable to save the hadith. Please try again.', true);

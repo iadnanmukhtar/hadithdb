@@ -4,6 +4,8 @@ HadithDB (Hadith Unlocked) is a website for reading, searching, and citing the Q
 
 Every record keeps the original Arabic text alongside an English translation where one is available, together with chapter listings and grading information. For ḥadīth, the chain of narrators (isnād) and the report itself (matn) are stored separately so each can be read and searched on its own.
 
+For screen-by-screen guides to the library, readers, personal tools and administration, see the [feature handbook](docs/features/README.md).
+
 ## Memory diagnostics
 
 Set `MEMORY_LOG=false` in `.env` to disable runtime memory logging,

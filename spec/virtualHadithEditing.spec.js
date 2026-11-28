@@ -72,3 +72,35 @@ test('deletion rolls back when the delete fails', async () => {
   expect(connection.commit).not.toHaveBeenCalled();
   expect(connection.release).toHaveBeenCalledTimes(1);
 });
+
+describe('replace and delete', () => {
+  const replace = () => Editing.selectHadith(10, 200, 'replace_delete', 'admin', 100);
+  function sourceQueries({ alias = 'misc', shared = false, conflict = false } = {}) {
+    const normal = connection.query.getMockImplementation();
+    connection.query.mockImplementation((sql,args,cb) => {
+      if (sql.startsWith('SELECT h.num,b.alias')) return cb(null, [{ alias, num: 'riyad-5' }]);
+      if (sql.includes('AND id<>? LIMIT')) return cb(null, shared ? [{ id: 12 }] : []);
+      if (sql.startsWith('SELECT h.*, b.alias')) return cb(null, [{ id: 100, alias, bookId: 9999, tocId: 85, type: 'hadith' }]);
+      if (conflict && sql.startsWith('UPDATE hdith_hadith_sharh')) return cb(Object.assign(new Error(), { code: 'ER_DUP_ENTRY' }));
+      return normal(sql,args,cb);
+    });
+  }
+  test('moves commentary before deleting the placeholder in the same transaction', async () => {
+    sourceQueries();
+    const result = await replace();
+    expect(result.deleted.id).toBe(100);
+    const queries = connection.query.mock.calls.map(([s]) => s);
+    expect(queries.findIndex(s => s.startsWith('UPDATE hdith_hadith_sharh'))).toBeLessThan(queries.indexOf('DELETE FROM hadiths WHERE id=?'));
+    expect(connection.commit).toHaveBeenCalledTimes(1);
+  });
+  test.each([{ alias: 'bukhari' }, { shared: true }, { conflict: true }])('preserves both entries on conflict %j', async options => {
+    sourceQueries(options);
+    await expect(replace()).rejects.toThrow();
+    expect(connection.rollback).toHaveBeenCalledTimes(1);
+    expect(connection.commit).not.toHaveBeenCalled();
+  });
+  test('rejects a stale placeholder identity', async () => {
+    await expect(Editing.selectHadith(10, 200, 'replace_delete', 'admin', 99)).rejects.toThrow('changed');
+    expect(connection.commit).not.toHaveBeenCalled();
+  });
+});

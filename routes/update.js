@@ -55,7 +55,7 @@ async function requireAdmin(req, res, next) {
   }
   if (!user)
     return next(createError(401, 'Authentication required'));
-  const admin = /^(hdith_pair|legacy_grader)\./.test(String(req.params.prop || ''))
+  const admin = /^(hdith_pair|legacy_grader)\./.test(String(req.params?.prop || ''))
     ? await UserSettings.isAdminUser(user.uid)
     : user.admin === true || await UserSettings.isAdminUser(user.uid);
   if (!admin)
@@ -145,17 +145,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
       if (col === 'delete') {
         const deleted = await HadithDeletion.remove(req.params.id);
-        await Index.delete(Item.INDEX, deleted.id);
-        await Index.refresh(Item.INDEX);
-        await require('../lib/HadithSharhIndex').syncHadiths([{ hId: deleted.id, book_alias: deleted.alias }]);
-        HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
-        invalidateBookChapterCache({ book_id: deleted.bookId });
-        await Books.touchBookContentLastmodById(deleted.bookId);
-        await Utils.flushCacheContaining(`${deleted.alias}:${deleted.num}`);
-        await Utils.flushCacheContaining(`book:${deleted.alias}`);
-        await flushBookCaches(new Set([deleted.alias]));
-        await reindexSearchScope(`book_id=${Number(deleted.bookId)}`, { refresh: true });
-        await Library.reloadBooks();
+        await refreshDeletedHadith(deleted);
         return res.status(200).json({ code: 200, message: 'Hadith deleted', redirect: `/${deleted.alias}` });
       }
 
@@ -1084,7 +1074,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
 
     } else if (type == 'hadith_virtual') {
       var result = "";
-      if (['add_selected', 'replace_selected', 'del', 'ref_num', 'hadithId'].includes(col)) {
+      if (['add_selected', 'replace_selected', 'replace_delete', 'del', 'ref_num', 'hadithId'].includes(col)) {
         let replacementId = status.value;
         if (col === 'ref_num') {
           const targets = await global.query(`SELECT h.id FROM hadiths h JOIN books b ON b.id=h.bookId
@@ -1095,7 +1085,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
         const action = ['ref_num', 'hadithId'].includes(col) ? 'replace_selected' : col;
         const selected = action === 'del'
           ? await VirtualHadithEditing.remove(req.params.id)
-          : await VirtualHadithEditing.selectHadith(req.params.id, replacementId, action, userId);
+          : await VirtualHadithEditing.selectHadith(req.params.id, replacementId, action, userId, req.body.expectedOriginalId);
         if (col === 'del') await refreshVirtualHadithEdit(selected);
         else {
           // The transaction is committed. A whole-book snapshot/index refresh can
@@ -1104,7 +1094,7 @@ router.post('/:id/:prop', requireAdmin, async function (req, res, next) {
           void safeBackground(`refreshing saved virtual hadith ${selected.id}`, () => refreshVirtualHadithEdit(selected, true));
         }
         status.code = 200;
-        status.message = col === 'del' ? 'Virtual hadith deleted' : action === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
+        status.message = col === 'del' ? 'Virtual hadith deleted' : action === 'replace_delete' ? 'Hadith replaced and placeholder deleted' : action === 'replace_selected' ? 'Hadith replaced' : 'Hadith added';
       } else {
 
 
@@ -3267,7 +3257,23 @@ async function waitForQueuedVirtualSnapshot(bookId) {
   }
 }
 
+async function refreshDeletedHadith(deleted) {
+  await Index.delete(Item.INDEX, deleted.id);
+  await Index.refresh(Item.INDEX);
+  await require('../lib/HadithSharhIndex').syncHadiths([{ hId: deleted.id, book_alias: deleted.alias }]);
+  HdithMetadata.invalidatePrimaryNarratorSuggestionCache();
+  invalidateBookChapterCache({ book_id: deleted.bookId });
+  await Books.touchBookContentLastmodById(deleted.bookId);
+  await Utils.flushCacheContaining(`${deleted.alias}:${deleted.num}`);
+  await Utils.flushCacheContaining(`book:${deleted.alias}`);
+  await flushBookCaches(new Set([deleted.alias]));
+  await reindexSearchScope(`book_id=${Number(deleted.bookId)}`, { refresh: true });
+  await Library.reloadBooks();
+  await Utils.flushBookDiskCache(deleted.alias, { strict: true });
+}
+
 async function refreshVirtualHadithEdit(selected, useDatabaseQueue = false) {
+  if (selected.deleted) await refreshDeletedHadith(selected.deleted);
   // The virtual-row triggers enqueue the edit inside its transaction. The
   // scheduled event removes the request after committing the snapshot.
   if (!useDatabaseQueue || !await waitForQueuedVirtualSnapshot(selected.bookId))

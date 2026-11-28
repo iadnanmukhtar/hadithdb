@@ -416,55 +416,60 @@
 
 		<%# Admin  ............................................................. %>
 		<% if (site.editMode && lang === "en") { %>
-		<aside class="admin hadith-admin-actions">
+		<aside class="admin hadith-admin-actions hadith-entry-toolbar">
 			<% if (!isSimilarSection) { %>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Revise this hadith" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
-					<span class="bi bi-magic"></span> Revise
+				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Revise this hadith" aria-label="Revise this hadith" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.revise" data-loading-label="Revising">
+					<span class="bi bi-magic" aria-hidden="true"></span>
 				</button>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Enrich from hdith.com" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.enrich" data-loading-label="Enriching">
-					<span class="bi bi-database-add"></span> Enrich
+				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Enrich from hdith.com" aria-label="Enrich from hdith.com" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.enrich" data-loading-label="Enriching">
+					<span class="bi bi-server" aria-hidden="true"></span>
 				</button>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
-					<span class="bi bi-search"></span> Similar
+				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Find similar hadith offline" aria-label="Find similar hadith offline" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.similar" data-loading-label="Starting">
+					<span class="bi bi-search" aria-hidden="true"></span>
 				</button>
 			<% } %>
 			<% if (i.book_virtual != 1 && (page.menu == 'Chapter' || page.menu == 'Section')) { %>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup" data-loading-label="Moving">
-					<span class="bi bi-caret-up-square-fill"></span> Move Up
+				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Move Up" aria-label="Move Up" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.moveup" data-loading-label="Moving">
+					<span class="bi bi-arrow-up" aria-hidden="true"></span>
 				</button>
-				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn" data-loading-label="Moving">
-					<span class="bi bi-caret-down-square-fill"></span> Move Down
+				<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Move Down" aria-label="Move Down" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadith.movedn" data-loading-label="Moving">
+					<span class="bi bi-arrow-down" aria-hidden="true"></span>
 				</button>
 			<% }
 			   if (i.book_virtual != 1) { %>
 				<% if (isSimilarSection && i.similarCandidate) { %>
-					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Make actual similar hadith" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarSecondHopCandidate && i.similarRemoveId1 && i.similarRemoveId2 ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.add" data-loading-label="Adding">
-						<span class="bi bi-check2-circle"></span> Make Similar
+					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Make actual similar hadith" aria-label="Make actual similar hadith" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarSecondHopCandidate && i.similarRemoveId1 && i.similarRemoveId2 ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.add" data-loading-label="Adding">
+						<span class="bi bi-check2-circle" aria-hidden="true"></span>
 					</button>
 				<% } else if (isSimilarSection && i.similarDemotable) { %>
-					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Make similar candidate" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarSecondHopCandidate && i.similarRemoveId1 && i.similarRemoveId2 ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.demote" data-loading-label="Moving">
-						<span class="bi bi-arrow-down-circle"></span> Make Candidate
+					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Make similar candidate" aria-label="Make similar candidate" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarSecondHopCandidate && i.similarRemoveId1 && i.similarRemoveId2 ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.demote" data-loading-label="Moving">
+						<span class="bi bi-arrow-down-circle" aria-hidden="true"></span>
 					</button>
 				<% } %>
 				<% if (isSimilarSection && i.similarRemovable) { %>
-					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarRemoveId1 && i.similarRemoveId2 && (Number(i.similarRemoveId1) !== Number(i.parentId) || Number(i.similarRemoveId2) !== Number(i.actual ? i.actual.id : i.id)) ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
-						<span class="bi bi-trash"></span> Remove
+					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Remove Association" aria-label="Remove Association" data-id="<%= i.parentId %>,<%= i.actual ? i.actual.id : i.id %><%= i.similarRemoveId1 && i.similarRemoveId2 && (Number(i.similarRemoveId1) !== Number(i.parentId) || Number(i.similarRemoveId2) !== Number(i.actual ? i.actual.id : i.id)) ? `,${i.similarRemoveId1},${i.similarRemoveId2}` : '' %>" data-prop="hadiths_sim.del" data-loading-label="Removing">
+						<span class="bi bi-trash" aria-hidden="true"></span>
 					</button>
 				<% } else if (!isSimilarSection) { %>
-					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Remove All Similar Candidates" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
-						<span class="bi bi-trash"></span> Remove All
+					<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Remove All Similar Candidates" aria-label="Remove All Similar Candidates" data-id="<%= i.actual ? i.actual.id : i.id %>" data-prop="hadiths_sim.delall" data-loading-label="Removing">
+						<span class="bi bi-trash" aria-hidden="true"></span>
 					</button>
 				<% } %>
 		<% } else if (i.book_virtual == 1) { %>
-			<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action ms-1 mb-1" title="Delete" data-id="<%= i.id %>" data-prop="hadith_virtual.del" data-loading-label="Deleting">
-				<span class="bi bi-trash"></span> Delete
+			<button type="button" class="_click btn btn-sm btn-outline-secondary hadith-admin-action" title="Remove virtual entry" aria-label="Remove virtual entry" data-id="<%= i.id %>" data-prop="hadith_virtual.del" data-loading-label="Deleting">
+				<span class="bi bi-journal-minus" aria-hidden="true"></span>
 			</button>
 			<% if (!isSimilarSection) { %>
-                <div class="hadith-similar-admin-search my-2" data-hadith-similar-search data-virtual-id="<%= i.id %>">
+                <% const placeholder = i.actual?.book_alias === 'misc' && String(i.num_ref || '').startsWith(i.book_alias + '-');
+                   const actions = [['add_selected','Add after this hadith','plus-lg'], ['replace_selected','Replace this hadith','arrow-left-right']];
+                   if (placeholder) actions.push(['replace_delete','Replace and delete placeholder','arrow-repeat']); %>
+                <% for (const [mode,label,icon] of actions) { %>
+                  <button type="button" class="btn btn-sm hadith-admin-action btn-outline-secondary" data-open-hadith-picker="<%= mode %>" aria-expanded="false" title="<%= label %>" aria-label="<%= label %>"><span class="bi bi-<%= icon %>" aria-hidden="true"></span></button>
+                <% } %>
+                <div hidden class="hadith-similar-admin-search" data-hadith-similar-search data-virtual-id="<%= i.id %>" data-original-id="<%= i.hId_ref %>" data-original-ref="<%= i.book_alias_ref %>:<%= i.num_ref %>">
                   <div class="d-flex flex-wrap gap-2" dir="ltr">
                     <select class="form-select form-select-sm w-auto" data-hadith-picker-action aria-label="Hadith action">
-                      <option value="add_selected">Add after this hadith</option>
-                      <option value="replace_selected">Replace this hadith</option>
+                      <% for (const [mode,label] of actions) { %><option value="<%= mode %>"><%= label %></option><% } %>
                     </select>
                     <input type="search" class="form-control form-control-sm hadith-similar-search-input flex-grow-1" style="flex-basis: 16rem; width: auto;" dir="auto" placeholder="Search text or reference…" aria-label="Find a hadith to add or replace" autocomplete="off">
                   </div>
@@ -474,7 +479,7 @@
 			<% } %>
 		<% } %>
 			<% if (!isQuranItem && !isSimilarSection && i.book_virtual != 1) { %>
-				<button type="button" class="_click btn btn-sm btn-outline-danger hadith-admin-action ms-1 mb-1" data-id="<%= i.id %>" data-prop="hadith.delete" data-delete-reference="<%= i.ref || (i.book_alias + ':' + i.num) %>" data-loading-label="Deleting"><span class="bi bi-trash"></span> Delete hadith</button>
+				<button type="button" class="_click btn btn-sm btn-outline-danger hadith-admin-action" data-id="<%= i.id %>" title="Delete original hadith" aria-label="Delete original hadith" data-prop="hadith.delete" data-delete-reference="<%= i.ref || (i.book_alias + ':' + i.num) %>" data-loading-label="Deleting"><span class="bi bi-trash" aria-hidden="true"></span></button>
 			<% } %>
 		</aside>
 	<% } %>
